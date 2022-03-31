@@ -224,8 +224,12 @@ def ground_truth(X, show=False):
 def main():
     X = create_data(10000)
     ground_truth(X, show=False)
-    reductions, vars = get_gini_reductions(create_histogram(X, 0), ret_vars=True))
-    print(np.argmax(reductions))
+    h = create_histogram(X, 0)
+    reductions, vars = get_gini_reductions(h, ret_vars=True)
+    print(reductions)
+    print(vars)
+    print(np.argmin(reductions))
+    print(h[0])
 
 
 if __name__ == "__main__":
