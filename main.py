@@ -54,26 +54,14 @@ def get_best_split(histogram):
     else:
         return bin_edges[best_split_idx], best_split_idx
 
-
-def create_histogram(X, feature_idx, bins=10):
-    """
-    TODO: Edge cases with feature value equal to leftmost or rightmost edges
-    """
-    feature = X[:, feature_idx]
+def add_to_histogram(X, feature_idx, histogram):  # TODO: Make sure feature_idex is consistent, like in histogram class for idx
+    feature_values = X[:, feature_idx]
     Y = X[:, -1]
 
-    max = feature.max()
-    min = feature.min()
+    bin_edges, zeros, ones = histogram
+    assert len(zeros) == len(ones) == len(bin_edges) + 1, "Histogram is malformed"
 
-    # TODO: Don't hardcode these edges
-    bin_edges = np.linspace(0.0, 1.0, bins + 1)  # this actually creates bin_edges + 2 virtual bins, for tails too
-    zeros = np.zeros(bins + 2, dtype=np.int32)  # + 2 for tails
-    ones = np.zeros(bins + 2, dtype=np.int32)  # + 2 for tails
-
-    # Zeros should contain the number of zeros to the LEFT of every bin edge, except for last element which counts to the right of max
-    # Ones should contain the number of ones to the LEFT of every bin edge, except for last element which counts to the right of max
-    print(bin_edges)
-    for idx, f in enumerate(feature):
+    for idx, f in enumerate(feature_values):
         # TODO(@motiwari): Change this to a binary search
         y = Y[idx]
         count_bucket = zeros if y == 0 else ones
@@ -87,6 +75,27 @@ def create_histogram(X, feature_idx, bins=10):
                     break
         if not assigned:
             count_bucket[-1] += 1
+
+    return bin_edges, zeros, ones
+
+def create_histogram(X, feature_idx, bins=10):
+    """
+    TODO: Edge cases with feature value equal to leftmost or rightmost edges
+    """
+    feature_values = X[:, feature_idx]
+    Y = X[:, -1]
+
+    max = feature_values.max()
+    min = feature_values.min()
+
+    # TODO: Don't hardcode these edges
+    bin_edges = np.linspace(0.0, 1.0, bins + 1)  # this actually creates bin_edges + 2 virtual bins, for tails too
+    zeros = np.zeros(bins + 2, dtype=np.int32)  # + 2 for tails
+    ones = np.zeros(bins + 2, dtype=np.int32)  # + 2 for tails
+
+    # Zeros should contain the number of zeros to the LEFT of every bin edge, except for last element which counts to the right of max
+    # Ones should contain the number of ones to the LEFT of every bin edge, except for last element which counts to the right of max
+    bin_edges, zeros, ones = add_to_histogram(X, feature_idx, (bin_edges, zeros, ones))
     print(bin_edges)
     print(zeros)
     print(ones)
