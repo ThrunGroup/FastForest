@@ -70,7 +70,7 @@ def solve_mab(X, feature_idcs):
             exact_mask[exact_accesses] = 1
             T_samples[exact_accesses] += N
 
-            cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
+            cand_condition = np.where((lcbs < np.nanmin(ucbs)) & (exact_mask == 0))
             candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
 
         # The last candidates were computed exactly
@@ -89,7 +89,7 @@ def solve_mab(X, feature_idcs):
         lcbs[accesses] = estimates[accesses] - cb_delta[accesses]
         ucbs[accesses] = estimates[accesses] + cb_delta[accesses]
 
-        cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))  # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
+        cand_condition = np.where((lcbs < np.nanmin(ucbs)) & (exact_mask == 0))  # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
         round_count += 1
 
