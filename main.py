@@ -11,31 +11,12 @@ import matplotlib.pyplot as plt
 
 def create_data(N=1000):
     y = np.random.choice([0, 1], size=(N))
-    x1 = np.random.rand(N)  # whether x1 disagrees or not
+    X = np.zeros((N, 3))
+    X[:, 2] = y
 
-    # TODO: Optimize
-    # TODO: Add floor and ceiling
-    for i in range(len(x1)):
-        x1[i] = y[i] if x1[i] < 0.8 else 1 - y[i]
-    x1 += np.random.normal(loc=0, scale=0.1, size=(N))  # Add noise
-    x1 = np.minimum(1, np.maximum(x1, 0))  # Different from np.min and np.max!
-
-    # TODO: Optimize
-    # TODO: Add floor and ceiling
-    x2 = np.random.rand(N)
-    for i in range(len(x2)):
-        x2[i] = y[i] if x2[i] < 0.5 else 1 - y[i]
-    x2 += np.random.normal(loc=0, scale=0.1, size=(N))  # Add noise
-    x2 = np.minimum(1, np.maximum(x2, 0))  # Different from np.min and np.max!
-
-    dataset = np.zeros((N, 3))
-    dataset[:, 0] = x1
-    dataset[:, 1] = x2
-    dataset[:, 2] = y
-
-    # print(len(np.where(dataset[:, 1] != dataset[:, 2])[0])) # Sanity check
-    # print(len(np.where(dataset[:, 0] != dataset[:, 2])[0])) # Sanity check
-    return dataset
+    X[:, 0] = np.random.normal(loc=y, scale=0.2, size=N)
+    X[:, 1] = np.random.rand(N)
+    return X
 
 def get_best_split(histogram):
     bin_edges, zeros, ones = histogram
@@ -61,14 +42,13 @@ def get_best_split(histogram):
         R0 -= zeros[b_idx]
         R1 -= ones[b_idx]
         R_n -= zeros[b_idx] + ones[b_idx]
-        import ipdb; ipdb.set_trace()
 
         ginis_left[b_idx] = 1 - (L0/L_n)**2 - (L1/L_n)**2
         ginis_right[b_idx] = 1 - (R0/R_n)**2 - (R1/R_n)**2
 
     gini_reductions = (ginis_left + ginis_right) - curr_gini
     print(gini_reductions)
-    best_split_idx = np.argmax(gini_reductions)
+    best_split_idx = np.argmin(gini_reductions)
     if gini_reductions[best_split_idx] > 0:  # We should not split the node because any way of doing so would increase impurity, e.g., best_split is B + 1
         return None
     else:
@@ -84,31 +64,29 @@ def create_histogram(X, feature_idx, bins=10):
 
     max = feature.max()
     min = feature.min()
-    bin_edges = np.linspace(min, max, bins + 1)  # this actually creates bin_edges + 2 virtual bins, for tails too
+
+    # TODO: Don't hardcode these edges
+    bin_edges = np.linspace(0.0, 1.0, bins + 1)  # this actually creates bin_edges + 2 virtual bins, for tails too
     zeros = np.zeros(bins + 2, dtype=np.int32)  # + 2 for tails
     ones = np.zeros(bins + 2, dtype=np.int32)  # + 2 for tails
 
     # Zeros should contain the number of zeros to the LEFT of every bin edge, except for last element which counts to the right of max
     # Ones should contain the number of ones to the LEFT of every bin edge, except for last element which counts to the right of max
+    print(bin_edges)
     for idx, f in enumerate(feature):
         # TODO(@motiwari): Change this to a binary search
         y = Y[idx]
         count_bucket = zeros if y == 0 else ones
         assigned = False
-        for b_e_idx in range(len(bin_edges) + 1):
+        for b_e_idx in range(len(bin_edges)):
             if b_e_idx < len(bin_edges):
                 b_e = bin_edges[b_e_idx]
                 if f < b_e:  # Using < instead of <= prefers the right bucket # Causes problems!! Use <=!!!
                     count_bucket[b_e_idx] += 1
                     assigned = True
                     break
-            else:
-                assert b_e_idx == len(bin_edges)
-                if f <= b_e:
-                    count_bucket[b_e_idx - 1] += 1 # Truncate the last bin
-                    assigned = True
         if not assigned:
-            raise Exception("error")
+            count_bucket[-1] += 1
     print(bin_edges)
     print(zeros)
     print(ones)
