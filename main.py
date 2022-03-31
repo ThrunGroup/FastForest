@@ -21,45 +21,50 @@ def sample_targets(X, feature_idcs, histograms, batch_size):
     # histograms should be a list of histograms
     assert len(histograms) == len(feature_idcs), "Need one histogram per feature"
     F = len(feature_idcs)  # TODO: Map back to feature idcs
-    B = 12  # TODO: Fix this hardcoding
-    samples = np.random.choice(X, size=batch_size)
-    gini_reductions = np.zeros(F, B)
-    cb_deltas = np.zeros(F, B)
+    B = 11  # TODO: Fix this hardcoding
+    N = len(X)
+    sample_idcs = np.random.choice(N, size=batch_size)  # Default: with replacement (replace=True)
+    samples = X[sample_idcs]
+    gini_reductions = np.zeros((F, B))
+    cb_deltas = np.zeros((F, B))
 
     for f_idx, f in enumerate(feature_idcs):
         h = histograms[f_idx]
-        h = add_to_histogram(samples, f, h)
-        gini_reductions[f_idx, :], cb_deltas[f_idx, :] = get_gini_reductions(h, ret_confidences=True)  # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
-    return
+        h = add_to_histogram(samples, f, h)  # This is where the labels are used
+        gini_reductions[f_idx, :], cb_deltas[f_idx, :] = get_gini_reductions(h, ret_vars=True)  # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
+        cb_deltas[f_idx, :] = np.sqrt(cb_deltas[f_idx, :])  # The above fn returns the vars
 
-def solve_MAB(X, feature_idcs, bin_edges):
+    return gini_reductions.reshape(-1), cb_deltas.reshape(-1) # TODO(@motiwari): This seems dangerous, because access appears to be a linear index to the array
+
+
+def solve_mab(X, feature_idcs):
     # Right now, we assume the number of bin edges is constant across features
     F = len(feature_idcs)  # TODO: Map back to feature idcs
     N = len(X)
-    B = 12  # TODO: Fix this hardcoding
-    assert bin_edges.shape == (F, B)
     batch_size = 100  # Right now, constant batch size
     p = 0
     round_count = 0
+    B = 11  # TODO: Fix this hardcoding
 
-    candidates = np.array(list(itertools.product(range(k), range(N))))
+    candidates = np.array(list(itertools.product(range(F), range(B))))
     # NOTE: Instantiating these as np.inf gives runtime errors and nans. Find a better way to do this instead of using 1000
     estimates = 1000 * np.ones((F, B))
     lcbs = 1000 * np.ones((F, B))
     ucbs = 1000 * np.ones((F, B))
     T_samples = np.zeros((F, B))
     exact_mask = np.zeros((F, B))
+    cb_delta = np.zeros((F, B))
 
     histograms = []
     for f_idx in range(F):
-        histograms.append(create_histogram(X, feature_idcs[f], bins=10))
+        histograms.append(create_histogram(X, feature_idcs[f_idx], bins=10))
 
     while len(candidates) > 0:
         comp_exactly_condition = np.where((T_samples + batch_size >= N) & (exact_mask == 0))
         compute_exactly = np.array(list(zip(comp_exactly_condition[0], comp_exactly_condition[1])))
         if len(compute_exactly) > 0:
             exact_accesses = (compute_exactly[:, 0], compute_exactly[:, 1])
-            estimates[exact_accesses], _, histograms = sample_targets(X, feature_idcs, bin_edges, histograms, batch_size)
+            estimates[exact_accesses], _ = sample_targets(X, feature_idcs, histograms, batch_size)  # TODO: update
             lcbs[exact_accesses] = estimates[exact_accesses]
             ucbs[exact_accesses] = estimates[exact_accesses]
             exact_mask[exact_accesses] = 1
@@ -73,24 +78,24 @@ def solve_MAB(X, feature_idcs, bin_edges):
             break
 
         accesses = (candidates[:, 0], candidates[:, 1])
-        new_samples, sigmas, histograms = sample_targets(X, feature_idcs, bin_edges, histograms, batch_size)
+        new_samples, sigmas = sample_targets(X, feature_idcs, histograms, batch_size)
         sigmas = sigmas.reshape(F, B)  # So that can access it with sigmas[accesses] below
 
         # Update running average of estimates and confidence bounce
-        estimates[accesses] = ((T_samples[accesses] * estimates[accesses]) + (batch_size * new_samples)) / (batch_size + T_samples[accesses])
+        #estimates[accesses] = ((T_samples[accesses] * estimates[accesses]) + (batch_size * new_samples)) / (batch_size + T_samples[accesses]) # TODO: update
+        estimates[accesses], cb_delta[accesses] = sample_targets(X, feature_idcs, histograms, batch_size)  # TODO: update
         T_samples[accesses] += batch_size
         # NOTE: Sigmas contains a value for EVERY arm, even non-candidates, so need [accesses]
-        cb_delta = sigmas[accesses] * np.sqrt(np.log(1 / p) / T_samples[accesses])
-        lcbs[accesses] = estimates[accesses] - cb_delta
-        ucbs[accesses] = estimates[accesses] + cb_delta
+        lcbs[accesses] = estimates[accesses] - cb_delta[accesses]
+        ucbs[accesses] = estimates[accesses] + cb_delta[accesses]
 
-        cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))  # BUG: Fix this since it's 2D
+        cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))  # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
         round_count += 1
 
     # Choose the minimum amongst all losses and perform the swap
     # NOTE: possible to get first elem of zip object without converting to list?
-    best_splits = zip(np.where(lcbs == lcbs.min())[0], np.where(lcbs == lcbs.min())[1])
+    best_splits = zip(np.where(lcbs == np.nanmin(lcbs))[0], np.where(lcbs == np.nanmin(lcbs))[1])
     best_splits = list(best_splits)
     best_split = best_splits[0]
     return best_split
@@ -124,7 +129,6 @@ def get_gini_reductions(histogram, ret_vars=False):
     V_ginis_left = np.zeros(B)
     ginis_right = np.zeros(B)  # 11
     V_ginis_right = np.zeros(B)
-    cb_deltas = np.zeros(B)  # TODO(@motiwari): Only do this if ret_confidences
 
     L0 = 0
     L1 = 0
@@ -230,6 +234,7 @@ def main():
     print(vars)
     print(np.argmin(reductions))
     print(h[0])
+    print(solve_mab(X, [0, 1]))
 
 
 if __name__ == "__main__":
