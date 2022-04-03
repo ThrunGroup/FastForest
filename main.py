@@ -173,9 +173,9 @@ def get_entropy(zero_count, one_count, ret_var=False):
     n = zero_count + one_count
     p0 = zero_count / n
     p1 = one_count / n
-    V_p0 = -math.log(x=p0) * p0
-    V_p1 = -math.log(x=p1) * p1
-    I = V_p0 + V_p1
+    V_p0 = p0 * (1 - p0) / n
+    V_p1 = p1 * (1 - p1) / n
+    I = - math.log(x=p0) * p0 - math.log(x=p1) * p1
     # This variance comes from propagation of error formula, see
     # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
     # This makes a number of assumptions which are likely unreasonable, like independence, so this estimate is likely an
@@ -184,6 +184,32 @@ def get_entropy(zero_count, one_count, ret_var=False):
         V_I = (math.log(p0) + 1) ** 2 * V_p0 + (math.log(p1) + 1) ** 2 * V_p1
         return I, V_I
     return I
+
+
+def get_variance(zero_count, one_count, ret_var=False):
+    """
+    Compute the variance for a given node, where the node is represented by the number of counts of each class
+    label.
+
+    :param zero_count: Number of zeros in the node
+    :param one_count: Number of ones in the node
+    :param ret_var: Whether to the variance of the estimate
+    :return: the variance of the node, as well as its estimated variance if ret_var
+    """
+    n = zero_count + one_count
+    p0 = zero_count / n
+    p1 = one_count / n
+    V_p0 = p0 * (1 - p0) / n
+    V_p1 = p1 * (1 - p1) / n
+    V = V_p0 + V_p1  # Assuming the independence
+    # This variance comes from propagation of error formula, see
+    # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
+    # This makes a number of assumptions which are likely unreasonable, like independence, so this estimate is likely an
+    # UNDERestimate
+    if ret_var:
+        V_V = (2 * p1 / n) ^ 2 * V_p0 + (2 * p0 / n) ^ 2 * V_p1
+        return V, V_V
+    return V
 
 
 def get_impurity_reductions(histogram, ret_vars=False, impurity_measure="GINI"):
@@ -197,10 +223,14 @@ def get_impurity_reductions(histogram, ret_vars=False, impurity_measure="GINI"):
 
     Impurity is measured either by Gini index or entropy
     """
+
+    # get_impurity is a function of measuring impurity for a node 
     if impurity_measure == "GINI":
         get_impurity = get_gini
     elif impurity_measure == "ENTROPY":
         get_impurity = get_entropy
+    elif impurity_measure == "VARIANCE":
+        get_impurity = get_variance
     else:
         Exception('Did not assign any measure for impurity calculation in get_impurity_reduction function')
 
