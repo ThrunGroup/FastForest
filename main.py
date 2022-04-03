@@ -1,6 +1,7 @@
 import sys
 import numpy as np
 import itertools
+import math
 
 import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeClassifier, plot_tree, export_text
@@ -10,7 +11,7 @@ from sklearn.tree import DecisionTreeClassifier, plot_tree, export_text
 def sample_targets(X, feature_idcs, histograms, batch_size):
     """
     Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
-    their feature values into the (potentially non-empty) histograms and recompute the changes in Gini impurity
+    their feature values into the (potentially non-empty) histograms and recompute the changes in impurity
     for each potential bin split
     """
 
@@ -23,17 +24,17 @@ def sample_targets(X, feature_idcs, histograms, batch_size):
     N = len(X)
     sample_idcs = np.random.choice(N, size=batch_size)  # Default: with replacement (replace=True)
     samples = X[sample_idcs]
-    gini_reductions = np.zeros((F, B))
+    impurity_reductions = np.zeros((F, B))
     cb_deltas = np.zeros((F, B))
     for f_idx, f in enumerate(feature_idcs):
         h = histograms[f_idx]
         h = add_to_histogram(samples, f, h)  # This is where the labels are used
         # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
-        gini_reductions[f_idx, :], cb_deltas[f_idx, :] = get_gini_reductions(h, ret_vars=True)
+        impurity_reductions[f_idx, :], cb_deltas[f_idx, :] = get_impurity_reductions(h, ret_vars=True)
         cb_deltas[f_idx, :] = np.sqrt(cb_deltas[f_idx, :])  # The above fn returns the vars
 
     # TODO(@motiwari): This seems dangerous, because access appears to be a linear index to the array
-    return gini_reductions.reshape(-1), cb_deltas.reshape(-1)
+    return impurity_reductions.reshape(-1), cb_deltas.reshape(-1)
 
 
 def solve_mab(X, feature_idcs):
@@ -42,9 +43,9 @@ def solve_mab(X, feature_idcs):
     that feature should be split at.
 
     - The arms correspond to the (feature, feature_value) pairs. There are F x B of them.
-    - The true arm return corresponds to the actual reduction in Gini impurity if we were to perform that split.
+    - The true arm return corresponds to the actual reduction in impurity if we were to perform that split.
     - Pulling an arm corresponds to drawing a new datapoint from X and seeing it would have on the splits under
-    consideration, i.e., raising or lowering the Gini impurity.
+    consideration, i.e., raising or lowering the impurity.
     - The confidence interval for each arm return is computed via propagation of uncertainty formulas in other fns.
 
     :param X: Full dataset
@@ -111,7 +112,7 @@ def solve_mab(X, feature_idcs):
     best_splits = zip(np.where(lcbs == np.nanmin(lcbs))[0], np.where(lcbs == np.nanmin(lcbs))[1])
     best_splits = list(best_splits)  # possible to get first elem of zip object without converting to list?
     best_split = best_splits[0]
-    # Only return non-None if the best split would indeed lower Gini impurity
+    # Only return non-None if the best split would indeed lower impurity
     return best_split if estimates[best_split] < 0 else None
 
 
@@ -148,7 +149,7 @@ def get_gini(zero_count, one_count, ret_var=False):
     p1 = one_count / n
     V_p0 = p0 * (1 - p0) / n
     V_p1 = p1 * (1 - p1) / n
-    G = 1 - p0**2 - p1**2
+    G = 1 - p0 ** 2 - p1 ** 2
     # This variance comes from propagation of error formula, see
     # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
     # This makes a number of assumptions which are likely unreasonable, like independence, so this estimate is likely an
@@ -158,22 +159,58 @@ def get_gini(zero_count, one_count, ret_var=False):
         return G, V_G
     return G
 
-def get_gini_reductions(histogram, ret_vars=False):
+
+def get_entropy(zero_count, one_count, ret_var=False):
     """
-    Given a histogram of counts for each bin, compute the Gini impurity reductions if were to split a node on any of the
+    Compute the entropy impurity for a given node, where the node is represented by the number of counts of each class
+    label. The entropy impurity is equal to - \sum{i=1}^k (p_i * \log_2 p_i)
+
+    :param zero_count: Number of zeros in the node
+    :param one_count: Number of ones in the node
+    :param ret_var: Whether to the variance of the estimate
+    :return: the entropy impurity of the node, as well as its estimated variance if ret_var
+    """
+    n = zero_count + one_count
+    p0 = zero_count / n
+    p1 = one_count / n
+    V_p0 = -math.log(x=p0) * p0
+    V_p1 = -math.log(x=p1) * p1
+    I = V_p0 + V_p1
+    # This variance comes from propagation of error formula, see
+    # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
+    # This makes a number of assumptions which are likely unreasonable, like independence, so this estimate is likely an
+    # UNDERestimate
+    if ret_var:
+        V_I = (math.log(p0) + 1) ** 2 * V_p0 + (math.log(p1) + 1) ** 2 * V_p1
+        return I, V_I
+    return I
+
+
+def get_impurity_reductions(histogram, ret_vars=False, impurity_measure="GINI"):
+    """
+    Given a histogram of counts for each bin, compute the impurity reductions if were to split a node on any of the
     histogram's bin edges.
 
     Walking from the leftmost bin to the rightmost bin, this function keeps a running tally of the number of zeros and
-    ones to the left and right of each bin edge. The sum of Gini impurities from the two nodes that would result in
-    splitting at each bin edge is calculated and compared to the original node's Gini impurity.
+    ones to the left and right of each bin edge. The sum of impurities from the two nodes that would result in
+    splitting at each bin edge is calculated and compared to the original node's impurity.
+
+    Impurity is measured either by Gini index or entropy
     """
+    if impurity_measure == "GINI":
+        get_impurity = get_gini
+    elif impurity_measure == "ENTROPY":
+        get_impurity = get_entropy
+    else:
+        Exception('Did not assign any measure for impurity calculation in get_impurity_reduction function')
+
     bin_edges, zeros, ones = histogram
     assert len(zeros) == len(ones) == len(bin_edges) + 1, "Histogram is malformed"
     B = len(bin_edges)  # If there are 10 middle_bins, there will be 11 binedges and 12 total bins
-    ginis_left = np.zeros(B)  # We can split at any bin edge (11)
-    V_ginis_left = np.zeros(B)
-    ginis_right = np.zeros(B)  # We can split at any bin edge (11)
-    V_ginis_right = np.zeros(B)
+    impurities_left = np.zeros(B)  # We can split at any bin edge (11)
+    V_impurities_left = np.zeros(B)
+    impurities_right = np.zeros(B)  # We can split at any bin edge (11)
+    V_impurities_right = np.zeros(B)
 
     L0 = 0
     L1 = 0
@@ -182,7 +219,7 @@ def get_gini_reductions(histogram, ret_vars=False):
     R1 = np.sum(ones)
     R_n = np.sum(zeros) + np.sum(ones)
 
-    gini_curr, V_gini_curr = get_gini(R0, R1, ret_var=True)
+    impurity_curr, V_impurity_curr = get_impurity(R0, R1, ret_var=True)
     # Walk from leftmost bin to rightmost
     for b_idx in range(B):
         L0 += zeros[b_idx]
@@ -192,19 +229,19 @@ def get_gini_reductions(histogram, ret_vars=False):
         R1 -= ones[b_idx]
         R_n -= zeros[b_idx] + ones[b_idx]
 
-        G_L, V_G_L = get_gini(L0, L1, ret_var=True)
-        ginis_left[b_idx], V_ginis_left[b_idx] = G_L, V_G_L
-        G_R, V_G_R = get_gini(R0, R1, ret_var=True)
-        ginis_right[b_idx], V_ginis_right[b_idx] = G_R, V_G_R
+        I_L, V_I_L = get_impurity(L0, L1, ret_var=True)
+        impurities_left[b_idx], V_impurities_left[b_idx] = I_L, V_I_L
+        I_R, V_I_R = get_impurity(R0, R1, ret_var=True)
+        impurities_right[b_idx], V_impurities_right[b_idx] = I_R, V_I_R
 
-    # TODO(@motiwari): Might not need to subtract off gini_curr since it doesn't affect reduction in a single feature?
+    # TODO(@motiwari): Might not need to subtract off impurity_curr since it doesn't affect reduction in a single feature?
     # (once best feature is determined)
-    gini_reductions = (ginis_left + ginis_right) - gini_curr
+    impurity_reductions = (impurities_left + impurities_right) - impurity_curr
     if ret_vars:
         # Note the last plus because Var(X-Y) = Var(X) + Var(Y) if X, Y are independent (this is an UNDERestimate)
-        gini_vars = V_ginis_left + V_ginis_right + V_gini_curr
-        return gini_reductions, gini_vars
-    return gini_reductions
+        impurity_vars = V_impurities_left + V_impurities_right + V_impurity_curr
+        return impurity_reductions, impurity_vars
+    return impurity_reductions
 
 
 # TODO: Make sure feature_idex is consistent, like in histogram class for idx
@@ -281,7 +318,7 @@ def create_empty_histogram(X, feature_idx, middle_bins=10):
     zeros = np.zeros(middle_bins + 2, dtype=np.int32)  # + 2 for tails
     ones = np.zeros(middle_bins + 2, dtype=np.int32)  # + 2 for tails
     return bin_edges, zeros, ones
-    
+
 
 def ground_truth_stump(X, show=False):
     """
@@ -306,7 +343,7 @@ def main():
     X = create_data(10000)
     ground_truth_stump(X, show=False)
     h = create_histogram(X, 0)
-    reductions, vars = get_gini_reductions(h, ret_vars=True)
+    reductions, vars = get_impurity_reductions(h, ret_vars=True)
     print(reductions)
     print(vars)
     print(np.argmin(reductions))
