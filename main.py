@@ -147,7 +147,7 @@ def get_gini(zero_count, one_count, ret_var=False):
     n = zero_count + one_count
     p0 = zero_count / n
     p1 = one_count / n
-    V_p0 = p0 * (1 - p0) / n
+    V_p0 = p0 * (1 - p0) / n # Assuming the independence
     G = 1 - p0 ** 2 - p1 ** 2
     # This variance comes from propagation of error formula, see
     # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
@@ -197,16 +197,15 @@ def get_variance(zero_count, one_count, ret_var=False):
     n = zero_count + one_count
     p0 = zero_count / n
     p1 = one_count / n
-    V_p0 = p0 * (1 - p0) / n
-    V = V_p0 + V_p1  # Assuming the independence
+    V_target = p0 * (1 - p0) # Assume that each target is from bernoulli distribution
     # This variance comes from propagation of error formula, see
     # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
     # This makes a number of assumptions which are likely unreasonable, like independence, so this estimate is likely an
     # UNDERestimate
     if ret_var:
-        V_V = 4 / n**2 * (1 - 2*p0) ^ 2 * V_p0
-        return V, V_V
-    return V
+        V_V_target = (1 - 2*p0) ** 2 * V_target
+        return V_target, V_V_target
+    return V_target
 
 
 def get_impurity_reductions(histogram, ret_vars=False, impurity_measure="GINI"):
