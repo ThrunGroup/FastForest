@@ -5,10 +5,12 @@ import math
 
 import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeClassifier, plot_tree, export_text
+from typing import List, Tuple, Callable, Union
 
 
 # TODO: Define histogram class
-def sample_targets(X, feature_idcs, histograms, batch_size):
+def sample_targets(X: np.ndarray, feature_idcs: List[int], histograms: List[any], batch_size: int) \
+        -> Tuple[np.ndarray, np.ndarray]:
     """
     Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
     their feature values into the (potentially non-empty) histograms and recompute the changes in impurity
@@ -37,7 +39,7 @@ def sample_targets(X, feature_idcs, histograms, batch_size):
     return impurity_reductions.reshape(-1), cb_deltas.reshape(-1)
 
 
-def solve_mab(X, feature_idcs):
+def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
     that feature should be split at.
@@ -134,7 +136,7 @@ def create_data(N=1000):
     return X
 
 
-def get_gini(zero_count, one_count, ret_var=False):
+def get_gini(zero_count: int, one_count: int, ret_var: bool = False) -> Union[Tuple[float, float], float]:
     """
     Compute the Gini impurity for a given node, where the node is represented by the number of counts of each class
     label. The Gini impurity is equal to 1 - \sum_{i=1}^k (p_i^2)
@@ -147,19 +149,19 @@ def get_gini(zero_count, one_count, ret_var=False):
     n = zero_count + one_count
     p0 = zero_count / n
     p1 = one_count / n
-    V_p0 = p0 * (1 - p0) / n # Assuming the independence
+    V_p0 = p0 * (1 - p0) / n  # Assuming the independence
     G = 1 - p0 ** 2 - p1 ** 2
     # This variance comes from propagation of error formula, see
     # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
     # This makes a number of assumptions which are likely unreasonable, like independence, so this estimate is likely an
     # UNDERestimate
     if ret_var:
-        V_G = (-2 * p0 -2 * p1) ** 2 * V_p0
+        V_G = (-2 * p0 - 2 * p1) ** 2 * V_p0
         return G, V_G
     return G
 
 
-def get_entropy(zero_count, one_count, ret_var=False):
+def get_entropy(zero_count: int, one_count: int, ret_var=False) -> Union[Tuple[float, float], float]:
     """
     Compute the entropy impurity for a given node, where the node is represented by the number of counts of each class
     label. The entropy impurity is equal to - \sum{i=1}^k (p_i * \log_2 p_i)
@@ -184,7 +186,7 @@ def get_entropy(zero_count, one_count, ret_var=False):
     return I
 
 
-def get_variance(zero_count, one_count, ret_var=False):
+def get_variance(zero_count: int, one_count: int, ret_var=False) -> Union[Tuple[float, float], float]:
     """
     Compute the variance for a given node, where the node is represented by the number of counts of each class
     label.
@@ -197,18 +199,19 @@ def get_variance(zero_count, one_count, ret_var=False):
     n = zero_count + one_count
     p0 = zero_count / n
     p1 = one_count / n
-    V_target = p0 * (1 - p0) # Assume that each target is from bernoulli distribution
+    V_target = p0 * (1 - p0)  # Assume that each target is from bernoulli distribution
     # This variance comes from propagation of error formula, see
     # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
     # This makes a number of assumptions which are likely unreasonable, like independence, so this estimate is likely an
     # UNDERestimate
     if ret_var:
-        V_V_target = (1 - 2*p0) ** 2 * V_target
+        V_V_target = (1 - 2 * p0) ** 2 * V_target
         return V_target, V_V_target
     return V_target
 
 
-def get_impurity_reductions(histogram, ret_vars=False, impurity_measure="GINI"):
+def get_impurity_reductions(histogram: List[any], ret_vars: bool = False, impurity_measure: str = "GINI") \
+        -> Union[Tuple[float, float], float]:
     """
     Given a histogram of counts for each bin, compute the impurity reductions if were to split a node on any of the
     histogram's bin edges.
@@ -222,11 +225,11 @@ def get_impurity_reductions(histogram, ret_vars=False, impurity_measure="GINI"):
 
     # get_impurity is a function of measuring impurity for a node 
     if impurity_measure == "GINI":
-        get_impurity = get_gini
+        get_impurity: Callable = get_gini
     elif impurity_measure == "ENTROPY":
-        get_impurity = get_entropy
+        get_impurity: Callable = get_entropy
     elif impurity_measure == "VARIANCE":
-        get_impurity = get_variance
+        get_impurity: Callable = get_variance
     else:
         Exception('Did not assign any measure for impurity calculation in get_impurity_reduction function')
 
@@ -241,9 +244,9 @@ def get_impurity_reductions(histogram, ret_vars=False, impurity_measure="GINI"):
     L0 = 0
     L1 = 0
     L_n = 0
-    R0 = np.sum(zeros)
-    R1 = np.sum(ones)
-    R_n = np.sum(zeros) + np.sum(ones)
+    R0 = int(np.sum(zeros))
+    R1 = int(np.sum(ones))
+    R_n = int(np.sum(zeros) + np.sum(ones))
 
     impurity_curr, V_impurity_curr = get_impurity(R0, R1, ret_var=True)
     # Walk from leftmost bin to rightmost
@@ -255,9 +258,9 @@ def get_impurity_reductions(histogram, ret_vars=False, impurity_measure="GINI"):
         R1 -= ones[b_idx]
         R_n -= zeros[b_idx] + ones[b_idx]
 
-        I_L, V_I_L = get_impurity(L0, L1, ret_var=True)
+        I_L, V_I_L = get_impurity(int(L0), int(L1), ret_var=True)
         impurities_left[b_idx], V_impurities_left[b_idx] = I_L, V_I_L
-        I_R, V_I_R = get_impurity(R0, R1, ret_var=True)
+        I_R, V_I_R = get_impurity(int(R0), int(R1), ret_var=True)
         impurities_right[b_idx], V_impurities_right[b_idx] = I_R, V_I_R
 
     # TODO(@motiwari): Might not need to subtract off impurity_curr since it doesn't affect reduction in a single feature?
@@ -271,7 +274,8 @@ def get_impurity_reductions(histogram, ret_vars=False, impurity_measure="GINI"):
 
 
 # TODO: Make sure feature_idex is consistent, like in histogram class for idx
-def add_to_histogram(X, feature_idx, histogram):
+def add_to_histogram(X: np.ndarray, feature_idx: List[int], histogram: List[any]) -> Tuple[any, any, any]:  # Might
+    # change type "any" to "numpy.typing.ArrayLike"
     """
     Given the full dataset and feature index, as well as the existing histogram for that feature, add the all the
     points in the dataset to the histogram.
@@ -309,7 +313,7 @@ def add_to_histogram(X, feature_idx, histogram):
     return bin_edges, zeros, ones
 
 
-def create_histogram(X, feature_idx, middle_bins=10):
+def create_histogram(X: np.ndarray, feature_idx: List[int], middle_bins: int=10) -> Tuple[any, any, any]:
     """
     Create an empty histogram out of the given dataset and features with the given number of bins.
 
@@ -326,7 +330,7 @@ def create_histogram(X, feature_idx, middle_bins=10):
     return bin_edges, zeros, ones
 
 
-def create_empty_histogram(X, feature_idx, middle_bins=10):
+def create_empty_histogram(X: np.ndarray, feature_idx: List[int], middle_bins: int=10) -> Tuple[any, any, any]:
     """
     Create an empty (unfilled) histogram from the given dataset and feature index.
 
@@ -346,7 +350,7 @@ def create_empty_histogram(X, feature_idx, middle_bins=10):
     return bin_edges, zeros, ones
 
 
-def ground_truth_stump(X, show=False):
+def ground_truth_stump(X: np.ndarray, show: bool=False):
     """
     Given a dataset, perform the first step of making a tree: find the single best (feature, feature_value) pair
     to split on using the sklearn implementation.
