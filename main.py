@@ -148,14 +148,13 @@ def get_gini(zero_count, one_count, ret_var=False):
     p0 = zero_count / n
     p1 = one_count / n
     V_p0 = p0 * (1 - p0) / n
-    V_p1 = p1 * (1 - p1) / n
     G = 1 - p0 ** 2 - p1 ** 2
     # This variance comes from propagation of error formula, see
     # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
     # This makes a number of assumptions which are likely unreasonable, like independence, so this estimate is likely an
     # UNDERestimate
     if ret_var:
-        V_G = 4 * (p0 ** 2) * V_p0 + 4 * (p1 ** 2) * V_p1
+        V_G = (-2 * p0 -2 * p1) ** 2 * V_p0
         return G, V_G
     return G
 
@@ -174,14 +173,13 @@ def get_entropy(zero_count, one_count, ret_var=False):
     p0 = zero_count / n
     p1 = one_count / n
     V_p0 = p0 * (1 - p0) / n
-    V_p1 = p1 * (1 - p1) / n
     I = - math.log(x=p0) * p0 - math.log(x=p1) * p1
     # This variance comes from propagation of error formula, see
     # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
     # This makes a number of assumptions which are likely unreasonable, like independence, so this estimate is likely an
     # UNDERestimate
     if ret_var:
-        V_I = (math.log(p0) + 1) ** 2 * V_p0 + (math.log(p1) + 1) ** 2 * V_p1
+        V_I = (- math.log(p0) - 1 + math.log(p1) + 1) ** 2 * V_p0
         return I, V_I
     return I
 
@@ -200,14 +198,13 @@ def get_variance(zero_count, one_count, ret_var=False):
     p0 = zero_count / n
     p1 = one_count / n
     V_p0 = p0 * (1 - p0) / n
-    V_p1 = p1 * (1 - p1) / n
     V = V_p0 + V_p1  # Assuming the independence
     # This variance comes from propagation of error formula, see
     # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
     # This makes a number of assumptions which are likely unreasonable, like independence, so this estimate is likely an
     # UNDERestimate
     if ret_var:
-        V_V = (2 * p1 / n) ^ 2 * V_p0 + (2 * p0 / n) ^ 2 * V_p1
+        V_V = 4 / n**2 * (1 - 2*p0) ^ 2 * V_p0
         return V, V_V
     return V
 
