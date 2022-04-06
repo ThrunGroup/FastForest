@@ -153,10 +153,8 @@ def get_gini(zero_count: int, one_count: int, ret_var: bool = False) -> Union[Tu
     G = 1 - p0 ** 2 - p1 ** 2
     # This variance comes from propagation of error formula, see
     # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
-    # This makes a number of assumptions which are likely unreasonable, like independence, so this estimate is likely an
-    # UNDERestimate
     if ret_var:
-        V_G = (-2 * p0 - 2 * p1) ** 2 * V_p0
+        V_G = (-2 * p0 + 2 * p1) ** 2 * V_p0
         return G, V_G
     return G
 
@@ -178,10 +176,8 @@ def get_entropy(zero_count: int, one_count: int, ret_var=False) -> Union[Tuple[f
     I = - math.log(x=p0) * p0 - math.log(x=p1) * p1
     # This variance comes from propagation of error formula, see
     # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
-    # This makes a number of assumptions which are likely unreasonable, like independence, so this estimate is likely an
-    # UNDERestimate
     if ret_var:
-        V_I = (- math.log(p0) - 1 + math.log(p1) + 1) ** 2 * V_p0
+        V_I = (- math.log(p0) + math.log(p1)) ** 2 * V_p0
         return I, V_I
     return I
 
@@ -202,8 +198,6 @@ def get_variance(zero_count: int, one_count: int, ret_var=False) -> Union[Tuple[
     V_target = p0 * (1 - p0)  # Assume that each target is from bernoulli distribution
     # This variance comes from propagation of error formula, see
     # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
-    # This makes a number of assumptions which are likely unreasonable, like independence, so this estimate is likely an
-    # UNDERestimate
     if ret_var:
         V_V_target = (1 - 2 * p0) ** 2 * V_target
         return V_target, V_V_target
