@@ -100,7 +100,7 @@ def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
 
         accesses = (candidates[:, 0], candidates[:, 1])  # Massage arm indices for use by numpy slicing
         # NOTE: cb_delta contains a value for EVERY arm, even non-candidates, so need [accesses]
-        estimates, cb_delta = sample_targets(X, feature_idcs, histograms, batch_size)
+        estimates[accesses], cb_delta[accesses] = sample_targets(X, feature_idcs, histograms, batch_size)
         num_samples[accesses] += batch_size
         lcbs[accesses] = estimates[accesses] - cb_delta[accesses]
         ucbs[accesses] = estimates[accesses] + cb_delta[accesses]
