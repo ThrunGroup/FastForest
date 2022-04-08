@@ -100,7 +100,7 @@ def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
 
         accesses = (candidates[:, 0], candidates[:, 1])  # Massage arm indices for use by numpy slicing
         # NOTE: cb_delta contains a value for EVERY arm, even non-candidates, so need [accesses]
-        estimates[accesses], cb_delta[accesses] = sample_targets(X, feature_idcs, histograms, batch_size)
+        estimates, cb_delta = sample_targets(X, feature_idcs, histograms, batch_size)
         num_samples[accesses] += batch_size
         lcbs[accesses] = estimates[accesses] - cb_delta[accesses]
         ucbs[accesses] = estimates[accesses] + cb_delta[accesses]
@@ -146,7 +146,7 @@ def get_gini(zero_count: int, one_count: int, ret_var: bool = False) -> Union[Tu
     :param ret_var: Whether to the variance of the estimate
     :return: the Gini impurity of the node, as well as its estimated variance if ret_var
     """
-    n = zero_count + one_count
+    n = zero_count + one_count + 1
     p0 = zero_count / n
     p1 = one_count / n
     V_p0 = p0 * (1 - p0) / n  # Assuming the independence
@@ -268,7 +268,7 @@ def get_impurity_reductions(histogram: List[any], ret_vars: bool = False, impuri
 
 
 # TODO: Make sure feature_idex is consistent, like in histogram class for idx
-def add_to_histogram(X: np.ndarray, feature_idx: List[int], histogram: List[any]) -> Tuple[any, any, any]:  # Might
+def add_to_histogram(X: np.ndarray, feature_idx: int, histogram: List[any]) -> Tuple[any, any, any]:  # Might
     # change type "any" to "numpy.typing.ArrayLike"
     """
     Given the full dataset and feature index, as well as the existing histogram for that feature, add the all the
