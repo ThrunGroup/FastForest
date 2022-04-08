@@ -2,37 +2,44 @@ import sys
 import numpy as np
 import itertools
 import math
-
+import bisect
 import matplotlib.pyplot as plt
+
 from sklearn.tree import DecisionTreeClassifier, plot_tree, export_text
 from typing import List, Tuple, Callable, Union
+from histogram import Histogram
 
 
 # TODO: Define histogram class
-def sample_targets(X: np.ndarray, feature_idcs: List[int], histograms: List[any], batch_size: int) \
-        -> Tuple[np.ndarray, np.ndarray]:
+def sample_targets(X: np.ndarray, accesses: Tuple[np.ndarray, np.ndarray],
+                   histograms: List[object], batch_size: int) -> Tuple[np.ndarray, np.ndarray]:
     """
     Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
     their feature values into the (potentially non-empty) histograms and recompute the changes in impurity
     for each potential bin split
+    :param X: original dataset
+    :param accesses: all (f, b) pairs that are in candidates
+    :param histograms: list of the histograms for ALL feature indices
+    :param batch_size: the number of samples we're going to choose
     """
 
     # TODO(@motiwari): Samples all bin edges for a given feature, should only sample those under consideration.
-
+    _feature_idcs, _bin_edge_idcs = accesses
     # histograms variable should be a list of histograms, one per feature
-    assert len(histograms) == len(feature_idcs), "Need one histogram per feature"
-    F = len(feature_idcs)  # TODO: Map back to feature idcs
-    B = 11  # TODO: Fix this hardcoding
+    F = len(_feature_idcs)  # TODO: Map back to feature idcs
+    B = len(_bin_edge_idcs)
     N = len(X)
     sample_idcs = np.random.choice(N, size=batch_size)  # Default: with replacement (replace=True)
     samples = X[sample_idcs]
+
+    # NOTE: impurity_reductions and cb_deltas are smaller subsets than the original
     impurity_reductions = np.zeros((F, B))
     cb_deltas = np.zeros((F, B))
-    for f_idx, f in enumerate(feature_idcs):
-        h = histograms[f_idx]
-        h = add_to_histogram(samples, f, h)  # This is where the labels are used
+    for f_idx, f in enumerate(_feature_idcs):
+        h = histograms[f]
+        h.add(samples)  # This is where the labels are used
         # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
-        impurity_reductions[f_idx, :], cb_deltas[f_idx, :] = get_impurity_reductions(h, ret_vars=True)
+        impurity_reductions[f_idx, :], cb_deltas[f_idx, :] = get_impurity_reductions(h, _bin_edge_idcs, ret_vars=True)
         cb_deltas[f_idx, :] = np.sqrt(cb_deltas[f_idx, :])  # The above fn returns the vars
 
     # TODO(@motiwari): This seems dangerous, because access appears to be a linear index to the array
@@ -56,7 +63,7 @@ def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
     """
     # Right now, we assume the number of bin edges is constant across features
     F = len(feature_idcs)  # TODO: Map back to feature idcs
-    B = 11  # TODO: Fix this hardcoding
+    B = 11  # TODO: Fix this hard-coding
     N = len(X)
     batch_size = 100  # Right now, constant batch size
     round_count = 0
@@ -71,10 +78,10 @@ def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
     exact_mask = np.zeros((F, B))
     cb_delta = np.zeros((F, B))
 
-    # Create a list of histograms, one per feature
+    # Create a list of histogram objects, one per feature
     histograms = []
     for f_idx in range(F):
-        histograms.append(create_histogram(X, feature_idcs[f_idx], middle_bins=10))
+        histograms.append(Histogram(feature_idcs[f_idx], middle_bins=10))
 
     while len(candidates) > 0:
         # If we have already pulled the arms more times than the number of datapoints in the original dataset,
@@ -84,7 +91,7 @@ def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
         compute_exactly = np.array(list(zip(comp_exactly_condition[0], comp_exactly_condition[1])))
         if len(compute_exactly) > 0:
             exact_accesses = (compute_exactly[:, 0], compute_exactly[:, 1])
-            estimates[exact_accesses], _vars = sample_targets(X, feature_idcs, histograms, batch_size)
+            estimates[exact_accesses], _vars = sample_targets(X, exact_accesses, histograms, batch_size)
             # The confidence intervals now only contain a point, since the return has been computed exactly
             lcbs[exact_accesses] = ucbs[exact_accesses] = estimates[exact_accesses]
             exact_mask[exact_accesses] = 1
@@ -94,13 +101,13 @@ def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
             cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
             candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
 
-        if len(candidates) == 0:
-            # Break here because the last candidates were computed exactly
+        if len(candidates) == 1:
+            # Break here because we have found our best candidate
             break
 
         accesses = (candidates[:, 0], candidates[:, 1])  # Massage arm indices for use by numpy slicing
         # NOTE: cb_delta contains a value for EVERY arm, even non-candidates, so need [accesses]
-        estimates[accesses], cb_delta[accesses] = sample_targets(X, feature_idcs, histograms, batch_size)
+        estimates[accesses], cb_delta[accesses] = sample_targets(X, accesses, histograms, batch_size)
         num_samples[accesses] += batch_size
         lcbs[accesses] = estimates[accesses] - cb_delta[accesses]
         ucbs[accesses] = estimates[accesses] + cb_delta[accesses]
@@ -146,7 +153,11 @@ def get_gini(zero_count: int, one_count: int, ret_var: bool = False) -> Union[Tu
     :param ret_var: Whether to the variance of the estimate
     :return: the Gini impurity of the node, as well as its estimated variance if ret_var
     """
-    n = zero_count + one_count
+    n = zero_count + one_count + 1
+    print(zero_count)
+    print("\n")
+    print(one_count)
+
     p0 = zero_count / n
     p1 = one_count / n
     V_p0 = p0 * (1 - p0) / n  # Assuming the independence
@@ -204,10 +215,10 @@ def get_variance(zero_count: int, one_count: int, ret_var=False) -> Union[Tuple[
     return V_target
 
 
-def get_impurity_reductions(histogram: List[any], ret_vars: bool = False, impurity_measure: str = "GINI") \
-        -> Union[Tuple[float, float], float]:
+def get_impurity_reductions(histogram: object, _bin_edge_idcs: List[int], ret_vars: bool = False,
+                            impurity_measure: str = "GINI") -> Union[Tuple[float, float], float]:
     """
-    Given a histogram of counts for each bin, compute the impurity reductions if were to split a node on any of the
+    Given a histogram of counts for each bin, compute the impurity reductions if we were to split a node on any of the
     histogram's bin edges.
 
     Walking from the leftmost bin to the rightmost bin, this function keeps a running tally of the number of zeros and
@@ -227,12 +238,12 @@ def get_impurity_reductions(histogram: List[any], ret_vars: bool = False, impuri
     else:
         Exception('Did not assign any measure for impurity calculation in get_impurity_reduction function')
 
-    bin_edges, zeros, ones = histogram
+    bin_edges, zeros, ones = histogram.return_decomposition()
     assert len(zeros) == len(ones) == len(bin_edges) + 1, "Histogram is malformed"
-    B = len(bin_edges)  # If there are 10 middle_bins, there will be 11 binedges and 12 total bins
-    impurities_left = np.zeros(B)  # We can split at any bin edge (11)
+    B = len(_bin_edge_idcs)  # If there are 10 middle_bins, there will be 11 bin_edges and 12 total bins
+    impurities_left = np.zeros(B)  # We can split at any bin edge
     V_impurities_left = np.zeros(B)
-    impurities_right = np.zeros(B)  # We can split at any bin edge (11)
+    impurities_right = np.zeros(B)  # We can split at any bin edge
     V_impurities_right = np.zeros(B)
 
     L0 = 0
@@ -244,7 +255,7 @@ def get_impurity_reductions(histogram: List[any], ret_vars: bool = False, impuri
 
     impurity_curr, V_impurity_curr = get_impurity(R0, R1, ret_var=True)
     # Walk from leftmost bin to rightmost
-    for b_idx in range(B):
+    for b_idx in _bin_edge_idcs:
         L0 += zeros[b_idx]
         L1 += ones[b_idx]
         L_n += zeros[b_idx] + ones[b_idx]
@@ -252,10 +263,8 @@ def get_impurity_reductions(histogram: List[any], ret_vars: bool = False, impuri
         R1 -= ones[b_idx]
         R_n -= zeros[b_idx] + ones[b_idx]
 
-        I_L, V_I_L = get_impurity(int(L0), int(L1), ret_var=True)
-        impurities_left[b_idx], V_impurities_left[b_idx] = I_L, V_I_L
-        I_R, V_I_R = get_impurity(int(R0), int(R1), ret_var=True)
-        impurities_right[b_idx], V_impurities_right[b_idx] = I_R, V_I_R
+        impurities_left[b_idx], V_impurities_left[b_idx] = get_impurity(int(L0), int(L1), ret_var=True)
+        impurities_right[b_idx], V_impurities_right[b_idx] = get_impurity(int(R0), int(R1), ret_var=True)
 
     # TODO(@motiwari): Might not need to subtract off impurity_curr since it doesn't affect reduction in a single feature?
     # (once best feature is determined)
@@ -265,83 +274,6 @@ def get_impurity_reductions(histogram: List[any], ret_vars: bool = False, impuri
         impurity_vars = V_impurities_left + V_impurities_right + V_impurity_curr
         return impurity_reductions, impurity_vars
     return impurity_reductions
-
-
-# TODO: Make sure feature_idex is consistent, like in histogram class for idx
-def add_to_histogram(X: np.ndarray, feature_idx: List[int], histogram: List[any]) -> Tuple[any, any, any]:  # Might
-    # change type "any" to "numpy.typing.ArrayLike"
-    """
-    Given the full dataset and feature index, as well as the existing histogram for that feature, add the all the
-    points in the dataset to the histogram.
-
-    Right now, it walks through each bin to find the correct one; this should be changed to a binary search.
-
-    :param X: Full dataset to be histogrammed
-    :param feature_idx: Index of the feature to analze
-    :param histogram: Existing histogram for the feature (should allow None values)
-    :return: None, but modify the histogram to include the relevant feature values
-    """
-    feature_values = X[:, feature_idx]
-    Y = X[:, -1]
-    bin_edges, zeros, ones = histogram
-    assert len(zeros) == len(ones) == len(bin_edges) + 1, "Histogram is malformed"
-
-    for idx, f in enumerate(feature_values):
-        y = Y[idx]
-        count_bucket = zeros if y == 0 else ones
-        assigned = False
-        # TODO(@motiwari): Change this to a binary search
-        # TODO: Edge cases with feature value equal to leftmost or rightmost edges
-        for b_e_idx in range(len(bin_edges)):
-            if b_e_idx < len(bin_edges):
-                b_e = bin_edges[b_e_idx]
-                if f < b_e:  # Using < instead of <= prefers the right bucket. Revisit this line; should it be <= ?
-                    count_bucket[b_e_idx] += 1
-                    assigned = True
-                    break
-
-        # If the value wasn't less than any bin edge, it's greater than the max bin edge and put it in the last bin
-        if not assigned:
-            count_bucket[-1] += 1
-
-    return bin_edges, zeros, ones
-
-
-def create_histogram(X: np.ndarray, feature_idx: List[int], middle_bins: int=10) -> Tuple[any, any, any]:
-    """
-    Create an empty histogram out of the given dataset and features with the given number of bins.
-
-    :param X: Full dataset to be histogrammed
-    :param feature_idx: Index of the feature to analze
-    :param bins: Number of dividers. Note that there will actually be (bins + 2) bins in the histogram because we need
-    to include each tail. E.g., if middle_bins=2 is passed and the edges are 0, 1, and 2, there will be four bins: <0, 0 to 1,
-    1 to 2, and >2.
-    """
-    bin_edges, zeros, ones = create_empty_histogram(X, feature_idx, middle_bins=10)
-
-    # TODO(@motiwari): Remove this to a separate call. Create_histogram should only create blank ones.
-    bin_edges, zeros, ones = add_to_histogram(X, feature_idx, (bin_edges, zeros, ones))
-    return bin_edges, zeros, ones
-
-
-def create_empty_histogram(X: np.ndarray, feature_idx: List[int], middle_bins: int=10) -> Tuple[any, any, any]:
-    """
-    Create an empty (unfilled) histogram from the given dataset and feature index.
-
-    :param X: Full dataset
-    :param feature_idx: Index of the feature for which to create a histogram
-    :param middle_bins: Number of bins in the middle, excluding tails. There will be middle_bins + 1 bin edges and
-    middle_bins + 2 total bins, one for each tail.
-    :return:
-    """
-    # TODO: Don't hardcode these edges, maybe use max and min feature values?
-    bin_edges = np.linspace(0.0, 1.0, middle_bins + 1)  # this creates middle_bins + 2 virtual bins to include tails
-
-    # zeros should contain the number of zeros to the left of every bin edge, except for the last element which contains
-    # the number of zeros to the right of the max. Similarly for ones.
-    zeros = np.zeros(middle_bins + 2, dtype=np.int32)  # + 2 for tails
-    ones = np.zeros(middle_bins + 2, dtype=np.int32)  # + 2 for tails
-    return bin_edges, zeros, ones
 
 
 def ground_truth_stump(X: np.ndarray, show: bool=False):
@@ -366,12 +298,17 @@ def ground_truth_stump(X: np.ndarray, show: bool=False):
 def main():
     X = create_data(10000)
     ground_truth_stump(X, show=False)
-    h = create_histogram(X, 0)
-    reductions, vars = get_impurity_reductions(h, ret_vars=True)
+    h = Histogram(0, middle_bins=10)
+    h.add(X)
+    reductions, vars = get_impurity_reductions(h, np.arange(len(h.bin_edges)), ret_vars=True)
+    print("=> THIS IS GROUND TRUTH\n")
     print(reductions)
     print(vars)
     print(np.argmin(reductions))
-    print(h[0])
+    #print(h[0])
+    print("\n\n")
+
+    print("=> THIS IS MAB\n")
     print(solve_mab(X, [0, 1]))
 
 
