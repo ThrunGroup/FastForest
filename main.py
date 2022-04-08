@@ -241,6 +241,7 @@ def get_impurity_reductions(histogram: List[any], ret_vars: bool = False, impuri
     R0 = int(np.sum(zeros))
     R1 = int(np.sum(ones))
     R_n = int(np.sum(zeros) + np.sum(ones))
+    n = R_n
 
     impurity_curr, V_impurity_curr = get_impurity(R0, R1, ret_var=True)
     # Walk from leftmost bin to rightmost
@@ -252,10 +253,12 @@ def get_impurity_reductions(histogram: List[any], ret_vars: bool = False, impuri
         R1 -= ones[b_idx]
         R_n -= zeros[b_idx] + ones[b_idx]
 
+        # Impurity is weighted by population of each node during a split
         I_L, V_I_L = get_impurity(int(L0), int(L1), ret_var=True)
-        impurities_left[b_idx], V_impurities_left[b_idx] = I_L, V_I_L
+        impurities_left[b_idx], V_impurities_left[b_idx] = I_L * ((L0 + L1)/ n), V_I_L * ((L0 + L1)/ n) ** 2
         I_R, V_I_R = get_impurity(int(R0), int(R1), ret_var=True)
-        impurities_right[b_idx], V_impurities_right[b_idx] = I_R, V_I_R
+        impurities_right[b_idx], V_impurities_right[b_idx] = I_R * ((R0 + R1)/ n), V_I_R * ((R0 + R1)/ n) ** 2 # var(ax)
+        # = a^2 * var(x)
 
     # TODO(@motiwari): Might not need to subtract off impurity_curr since it doesn't affect reduction in a single feature?
     # (once best feature is determined)
