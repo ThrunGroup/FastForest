@@ -263,7 +263,7 @@ def get_impurity_reductions(histogram: Histogram, _bin_edge_idcs: List[int], ret
         
         # Impurity is weighted by population of each node during a split
         left_weight = (h.left_zeros[b_idx] + h.left_ones[b_idx]) / n
-        right_weight = (h.right_zeros[b_idx + h.right_ones[b_idx]]) / n
+        right_weight = (h.right_zeros[b_idx] + h.right_ones[b_idx]) / n
         impurities_left[i], V_impurities_left[i] = left_weight * IL, left_weight ** 2 * V_IL
         impurities_right[i], V_impurities_right[i] = right_weight * IL, right_weight ** 2 * V_IR
 
