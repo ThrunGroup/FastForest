@@ -93,14 +93,19 @@ def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
     for f_idx in range(F):
         # Set the minimum and maximum of bins as the minimum of maximum of data of a feature
         # Can optimize by calculating min and max at the same time?
-        min_bin, max_bin = np.min(X[f_idx]), np.max(X[f_idx])
+        min_bin, max_bin = np.min(X[:, f_idx]), np.max(X[:, f_idx])
+        min_bin, max_bin = 0, 1
         histograms.append(Histogram(feature_idcs[f_idx], num_bins=B, min_bin=min_bin, max_bin=max_bin))
 
-    while len(candidates) > 1:
+    while len(candidates) > 0:
         # If we have already pulled the arms more times than the number of datapoints in the original dataset,
         # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
         exact_accesses = np.where((num_samples + batch_size >= N) & (exact_mask == 0))
+        h = histograms[0]
+        print(h.left_zeros, h.right_zeros)
+        print(h.left_ones, h.right_ones)
+        print(get_impurity_reductions(h, list(range(11))))
         if len(exact_accesses[0]) > 0:
             estimates[exact_accesses], _vars = sample_targets(X, exact_accesses, histograms, batch_size)
             # The confidence intervals now only contain a point, since the return has been computed exactly
@@ -112,17 +117,16 @@ def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
             cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
             candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
 
-        if len(candidates) == 1:
+        if len(candidates) <= 1: # cadndiates could be empty after all candidates are exactly computed
             # Break here because we have found our best candidate
             break
 
-        print(candidates)
         accesses = (candidates[:, 0], candidates[:, 1])  # Massage arm indices for use by numpy slicing
         # NOTE: cb_delta contains a value for EVERY arm, even non-candidates, so need [accesses]
         estimates[accesses], cb_delta[accesses] = sample_targets(X, accesses, histograms, batch_size)
         num_samples[accesses] += batch_size
-        lcbs[accesses] = estimates[accesses] - 10 * cb_delta[accesses]
-        ucbs[accesses] = estimates[accesses] + 10 * cb_delta[accesses]
+        lcbs[accesses] = estimates[accesses] - 1 * cb_delta[accesses]
+        ucbs[accesses] = estimates[accesses] + 1 * cb_delta[accesses]
 
         # TODO(@motiwari): Can't use nanmin here -- why?
         # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
@@ -165,6 +169,11 @@ def get_gini(zero_count: int, one_count: int, ret_var: bool = False) -> Union[Tu
     :param ret_var: Whether to the variance of the estimate
     :return: the Gini impurity of the node, as well as its estimated variance if ret_var
     """
+    if zero_count == 0 or one_count == 0:
+        if ret_var:
+            return 0, 0 # We have to think about its variance as 0 variance means we have no confidence bound
+        else:
+            return 0
     n = zero_count + one_count
     p0 = zero_count / n
     p1 = one_count / n
@@ -188,6 +197,11 @@ def get_entropy(zero_count: int, one_count: int, ret_var=False) -> Union[Tuple[f
     :param ret_var: Whether to the variance of the estimate
     :return: the entropy impurity of the node, as well as its estimated variance if ret_var
     """
+    if zero_count == 0 or one_count == 0:
+        if ret_var:
+            return 0, 0 # We have to think about its variance as 0 variance means we have no confidence bound
+        else:
+            return 0
     n = zero_count + one_count
     p0 = zero_count / n
     p1 = one_count / n
@@ -211,6 +225,11 @@ def get_variance(zero_count: int, one_count: int, ret_var=False) -> Union[Tuple[
     :param ret_var: Whether to the variance of the estimate
     :return: the variance of the node, as well as its estimated variance if ret_var
     """
+    if zero_count == 0 or one_count == 0:
+        if ret_var:
+            return 0, 0 # We have to think about its variance as 0 variance means we have no confidence bound
+        else:
+            return 0
     n = zero_count + one_count
     p0 = zero_count / n
     p1 = one_count / n
@@ -265,13 +284,20 @@ def get_impurity_reductions(histogram: Histogram, _bin_edge_idcs: List[int], ret
         left_weight = (h.left_zeros[b_idx] + h.left_ones[b_idx]) / n
         right_weight = (h.right_zeros[b_idx] + h.right_ones[b_idx]) / n
         impurities_left[i], V_impurities_left[i] = left_weight * IL, left_weight ** 2 * V_IL
-        impurities_right[i], V_impurities_right[i] = right_weight * IL, right_weight ** 2 * V_IR
+        impurities_right[i], V_impurities_right[i] = right_weight * IR, right_weight ** 2 * V_IR
 
     impurity_curr, V_impurity_curr = get_impurity(h.left_zeros[0] + h.right_zeros[0], h.left_ones[0] + h.right_ones[0]
                                                   , ret_var=True)
     # TODO(@motiwari): Might not need to subtract off impurity_curr since it doesn't affect reduction in a single feature?
     # (once best feature is determined)
     impurity_reductions = (impurities_left + impurities_right) - impurity_curr
+    # print("h.left_zeros & h.right_zeros", h.left_zeros, h.right_zeros)
+    # print("h.left_ones & h.right_ones", h.left_ones, h.right_ones)
+    # print("impurities_left:", impurities_left)
+    # print("impurities_right:", impurities_right)
+    # print("impurities_curr:", impurity_curr)
+    # print("bin_edge:", _bin_edge_idcs)
+
     if ret_vars:
         # Note the last plus because Var(X-Y) = Var(X) + Var(Y) if X, Y are independent (this is an UNDERestimate)
         impurity_vars = V_impurities_left + V_impurities_right + V_impurity_curr
@@ -303,6 +329,7 @@ def main():
     ground_truth_stump(X, show=False)
     h = Histogram(0, num_bins=11)
     h.add(X)
+
     reductions, vars = get_impurity_reductions(h, np.arange(len(h.bin_edges)), ret_vars=True)
     print("=> THIS IS GROUND TRUTH\n")
     print(reductions)
