@@ -166,7 +166,6 @@ def get_gini(zero_count: int, one_count: int, ret_var: bool = False) -> Union[Tu
     :return: the Gini impurity of the node, as well as its estimated variance if ret_var
     """
     n = zero_count + one_count
-
     p0 = zero_count / n
     p1 = one_count / n
     V_p0 = p0 * (1 - p0) / n  # Assuming the independence
