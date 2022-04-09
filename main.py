@@ -29,10 +29,10 @@ def sample_targets(X: np.ndarray, accesses: Tuple[np.ndarray, np.ndarray],
 
     # TODO(@motiwari): Samples all bin edges for a given feature, should only sample those under consideration.
     feature_idcs, bin_edge_idcs = accesses
-    l = len(bin_edge_idcs) # l is the total number of accesses we want to update
-    f2bin_dict = defaultdict(list) # f2bin_dict[i] contains bin indices list of ith feature
+    l = len(bin_edge_idcs)  # l is the total number of accesses we want to update
+    f2bin_dict = defaultdict(list)  # f2bin_dict[i] contains bin indices list of ith feature
 
-    for idx in range(l): # NOTE: Using list instead of dictionary is a way more efficient, but for readability, I use
+    for idx in range(l):  # NOTE: Using list instead of dictionary is a way more efficient, but for readability, I use
         # dictioanry here
         feature = feature_idcs[idx]
         bin_edge = bin_edge_idcs[idx]
@@ -50,7 +50,7 @@ def sample_targets(X: np.ndarray, accesses: Tuple[np.ndarray, np.ndarray],
         # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
         i_r, cb_d = get_impurity_reductions(h, f2bin_dict[f], ret_vars=True)
         impurity_reductions = np.concatenate([impurity_reductions, i_r])
-        cb_deltas = np.concatenate([cb_deltas, np.sqrt(cb_d)]) # The above fn returns the vars
+        cb_deltas = np.concatenate([cb_deltas, np.sqrt(cb_d)])  # The above fn returns the vars
 
     # TODO(@motiwari): This seems dangerous, because access appears to be a linear index to the array
     return impurity_reductions, cb_deltas
@@ -252,14 +252,20 @@ def get_impurity_reductions(histogram: Histogram, _bin_edge_idcs: List[int], ret
     impurities_right = np.zeros(b)
     V_impurities_left = np.zeros(b)
     V_impurities_right = np.zeros(b)
-
-    left_zeros, left_ones, right_zeros, right_ones = histogram.return_decomposition()
+    
+    n = h.left_zeros[0] + h.left_ones[0] + h.right_zeros[0] + h.right_ones[0]
     for i in range(b):
         b_idx = _bin_edge_idcs[i]
-        impurities_left[i], V_impurities_left[i] = get_impurity(h.left_zeros[b_idx], h.left_ones[b_idx],
-                                                                        ret_var=True)
-        impurities_right[i], V_impurities_right[i] = get_impurity(h.right_zeros[b_idx], h.right_ones[b_idx]
-                                                                          , ret_var=True)
+        IL, V_IL = get_impurity(h.left_zeros[b_idx], h.left_ones[b_idx],
+                                ret_var=True)
+        IR, V_IR = get_impurity(h.right_zeros[b_idx], h.right_ones[b_idx]
+                                , ret_var=True)
+        
+        # Impurity is weighted by population of each node during a split
+        left_weight = (h.left_zeros[b_idx] + h.left_ones[b_idx]) / n
+        right_weight = (h.right_zeros[b_idx + h.right_ones[b_idx]]) / n
+        impurities_left[i], V_impurities_left[i] = left_weight * IL, left_weight ** 2 * V_IL
+        impurities_right[i], V_impurities_right[i] = right_weight * IL, right_weight ** 2 * V_IR
 
     impurity_curr, V_impurity_curr = get_impurity(h.left_zeros[0] + h.right_zeros[0], h.left_ones[0] + h.right_ones[0]
                                                   , ret_var=True)
