@@ -103,9 +103,6 @@ def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
         exact_accesses = np.where((num_samples + batch_size >= N) & (exact_mask == 0))
         h = histograms[0]
-        print(h.left_zeros, h.right_zeros)
-        print(h.left_ones, h.right_ones)
-        print(get_impurity_reductions(h, list(range(11))))
         if len(exact_accesses[0]) > 0:
             estimates[exact_accesses], _vars = sample_targets(X, exact_accesses, histograms, batch_size)
             # The confidence intervals now only contain a point, since the return has been computed exactly
@@ -339,7 +336,7 @@ def main():
     print("\n\n")
 
     print("=> THIS IS MAB\n")
-    print(solve_mab(X, [0, 1]))
+    print("best arm is: ", solve_mab(X, [0, 1]))
 
 
 if __name__ == "__main__":
