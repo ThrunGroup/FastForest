@@ -27,7 +27,7 @@ class Histogram:
         return self.left_zeros, self.left_ones, self.right_zeros, self.right_ones
 
     @staticmethod
-    def get_bin(val: int, bin_edges: np.ndarray) -> int:
+    def get_bin(val: float, bin_edges: np.ndarray) -> int:
         """
         Binary Search for the value in bin_edges array.
         NOTE:
@@ -54,9 +54,9 @@ class Histogram:
             insert_idx = self.get_bin(val=f, bin_edges=self.bin_edges)
             if y == 0:
                 self.right_zeros[:insert_idx] += 1
-                self.left_zeros[:insert_idx] += 1
+                self.left_zeros[insert_idx:] += 1
             elif y == 1:
                 self.right_ones[:insert_idx] += 1
-                self.left_ones[:insert_idx] += 1
+                self.left_ones[insert_idx:] += 1
             else:
                 Exception(f'{i}th output of Y is not equal to 0 or 1')
