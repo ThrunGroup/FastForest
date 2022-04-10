@@ -16,7 +16,7 @@ class Histogram:
 
         # TODO: Don't hardcode these edges, maybe use max and min feature values?
         # this creates middle_bins + 2 virtual bins to include tails
-        self.bin_edges = np.linspace(min_bin, max_bin, num_bins)
+        self.bin_edges = np.linspace(min_bin, max_bin, num_bins)  # These are not at even numbers, just evenly spaced
         self.left_zeros = np.zeros(num_bins, dtype=np.int32)
         self.left_ones = np.zeros(num_bins, dtype=np.int32)
         self.right_zeros = np.zeros(num_bins, dtype=np.int32)

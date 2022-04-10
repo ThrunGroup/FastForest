@@ -193,4 +193,10 @@ def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
     best_splits = list(best_splits)  # possible to get first elem of zip object without converting to list?
     best_split = best_splits[0]
     # Only return non-None if the best split would indeed lower impurity
-    return best_split if estimates[best_split] < 0 else None
+
+    best_feature = best_split[0]
+    best_value = histograms[best_feature].bin_edges[best_split[1]]
+    best_reduction = estimates[best_split]
+
+    # print(histograms[best_feature].bin_edges)  # These are not at even numbers, just evenly spaced
+    return best_feature, best_value, best_reduction if best_reduction < 0 else None
