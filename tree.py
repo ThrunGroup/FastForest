@@ -45,6 +45,7 @@ class Tree:
 
 
     def fit(self) -> None:
+        import ipdb; ipdb.set_trace()
         sufficient_impurity_decrease = True
         while sufficient_impurity_decrease:
             best_leaf = None
@@ -59,12 +60,12 @@ class Tree:
                     continue
 
                 reduction = leaf.calculate_best_split()
-                if reduction < best_leaf_reduction:
+                if reduction is not None and reduction < best_leaf_reduction:
                     best_leaf = leaf
                     best_leaf_idx = leaf_idx
                     best_leaf_reduction = reduction
 
-            if best_leaf_reduction < self.min_impurity_decrease:
+            if best_leaf_reduction is not None and best_leaf_reduction < self.min_impurity_decrease:
                 best_leaf.split()
                 split_leaf = self.leaves.pop(best_leaf_idx)
                 self.leaves.append(split_leaf.left)

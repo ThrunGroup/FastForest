@@ -49,7 +49,8 @@ def main():
     print("best arm is: ", solve_mab(data, labels))
     import ipdb; ipdb.set_trace()
     t = Tree(X[:, 0:2], X[:, 2], max_depth=3)
-    print('hi')
+    t.fit()
+    t.tree_print()
 
 if __name__ == "__main__":
     np.set_printoptions(threshold=sys.maxsize)
