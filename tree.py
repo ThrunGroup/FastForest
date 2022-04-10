@@ -4,30 +4,15 @@ from typing import List
 
 from node import Node
 
-"""
-Tree fitting algorithm:
-
-- Start with one node with all the data
-
-while(still fitting):
-    Find best node to split
-    split that node
-    
-still_fitting: min_impurity_decrease or max_depth
-
-"""
-
-
-
-class Tree(object):
+class Tree:
     """
     Tree object. Contains a node attribute, the root, as well as fitting parameters that are global to the tree (i.e.,
     are used in splitting the nodes)
     """
-    def __init__(self, data: np.ndarray, features: List[int]):
-        self.node = Node(self)
-        self.features = features
+    def __init__(self, data: np.ndarray, labels: np.ndarray):
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
+        self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
+        self.node = Node(tree=self, data=self.data, labels=self.labels, depth=0)  # Root node contains all the data
         self.n_classes = 2
 
         # These are copied from the link below. We won't need all of them.
@@ -46,13 +31,15 @@ class Tree(object):
         self.class_weight = None
         self.ccp_alpha = 0.0
 
-    def fit(self):
-        # Iterate over leaves and decide which to split
+
+    def fit(self) -> None:
         sufficient_impurity_decrease = True
         while sufficient_impurity_decrease:
             best_leaf = None
             best_leaf_idx = None
             best_leaf_reduction = None
+
+            # Iterate over leaves and decide which to split
             for leaf_idx, leaf in enumerate(self.leaves):
                 reduction = leaf.calculate_best_split()
                 if reduction < best_leaf_reduction:
@@ -67,6 +54,15 @@ class Tree(object):
                 self.leaves.append(split_leaf.right)
             else:
                 sufficient_impurity_decrease = False
+
+        print("Fitting finished")
+
+    def tree_print(self) -> None:
+        """
+        Print the tree depth-first
+        """
+        self.node.n_print()
+
 
 
 

@@ -46,10 +46,8 @@ def get_impurity_reductions(
     n = h.left_zeros[0] + h.left_ones[0] + h.right_zeros[0] + h.right_ones[0]
     for i in range(b):
         b_idx = _bin_edge_idcs[i]
-        IL, V_IL = get_impurity(h.left_zeros[b_idx], h.left_ones[b_idx],
-                                ret_var=True)
-        IR, V_IR = get_impurity(h.right_zeros[b_idx], h.right_ones[b_idx],
-                                ret_var=True)
+        IL, V_IL = get_impurity(h.left_zeros[b_idx], h.left_ones[b_idx], ret_var=True)
+        IR, V_IR = get_impurity(h.right_zeros[b_idx], h.right_ones[b_idx], ret_var=True)
 
         # Impurity is weighted by population of each node during a split
         left_weight = (h.left_zeros[b_idx] + h.left_ones[b_idx]) / n
@@ -60,7 +58,7 @@ def get_impurity_reductions(
     impurity_curr, V_impurity_curr = get_impurity(
         h.left_zeros[0] + h.right_zeros[0],
         h.left_ones[0] + h.right_ones[0],
-        ret_var=True
+        ret_var=True,
     )
     # TODO(@motiwari): Might not need to subtract off impurity_curr since it doesn't affect reduction in a single feature?
     # (once best feature is determined)
@@ -116,6 +114,7 @@ def sample_targets(
     return impurity_reductions, cb_deltas
 
 
+# TODO (@motiwari): This doesn't appear to be actually returning a tuple?
 def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
@@ -195,39 +194,3 @@ def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
     best_split = best_splits[0]
     # Only return non-None if the best split would indeed lower impurity
     return best_split if estimates[best_split] < 0 else None
-
-def build_tree(X: np.ndarray):
-
-    return DecisionTreeClassifier
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
