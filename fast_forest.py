@@ -195,3 +195,39 @@ def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
     best_split = best_splits[0]
     # Only return non-None if the best split would indeed lower impurity
     return best_split if estimates[best_split] < 0 else None
+
+def build_tree(X: np.ndarray):
+
+    return DecisionTreeClassifier
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
