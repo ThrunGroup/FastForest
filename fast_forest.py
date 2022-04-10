@@ -103,9 +103,10 @@ def sample_targets(
     N = len(data)
     sample_idcs = np.random.choice(N, size=batch_size)  # Default: with replacement (replace=True)
     samples = data[sample_idcs]
+    sample_labels = labels[sample_idcs]
     for f_idx, f in enumerate(f2bin_dict):
         h = histograms[f]
-        h.add(samples, labels)  # This is where the labels are used
+        h.add(samples, sample_labels)  # This is where the labels are used
         # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
         i_r, cb_d = get_impurity_reductions(h, f2bin_dict[f], ret_vars=True)
         impurity_reductions = np.concatenate([impurity_reductions, i_r])

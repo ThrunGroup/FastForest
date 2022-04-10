@@ -46,7 +46,9 @@ class Histogram:
         assert len(self.bin_edges) == len(self.left_zeros) \
                == len(self.left_ones) \
                == len(self.right_zeros) \
-               == len(self.right_ones), "Histogram is malformed"
+               == len(self.right_ones), "Error: histogram is malformed"
+
+        assert len(X) == len(Y), "Error: sample sizes and label sizes must be the same"
 
         feature_values = X[:, self.feature_idx]
         for idx, f in enumerate(feature_values):
