@@ -44,8 +44,8 @@ class Histogram:
         :param _X: dataset to be histogrammed (subset of original X, although could be the same size)
         :return: None, but modify the histogram to include the relevant feature values
         """
-        assert (len(self.bin_edges) == len(self.left_zeros) == len(self.left_ones)
-                == len(self.right_zeros) == len(self.right_ones), "Histogram is malformed")
+        assert len(self.bin_edges) == len(self.left_zeros) == len(self.left_ones) \
+               == len(self.right_zeros) == len(self.right_ones), "Histogram is malformed"
 
         feature_values = _X[:, self.feature_idx]
         Y = _X[:, -1]
