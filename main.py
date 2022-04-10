@@ -166,6 +166,7 @@ def get_gini(zero_count: int, one_count: int, ret_var: bool = False) -> Union[Tu
     :param ret_var: Whether to the variance of the estimate
     :return: the Gini impurity of the node, as well as its estimated variance if ret_var
     """
+    # When p0 = 0 or p1 = 0, gini impurity and its variance should be equal to 0
     if zero_count == 0 or one_count == 0:
         if ret_var:
             return 0, 0 # We have to think about its variance as 0 variance means we have no confidence bound
