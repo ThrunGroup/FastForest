@@ -269,7 +269,7 @@ def get_impurity_reductions(histogram: Histogram, _bin_edge_idcs: List[int], ret
     h = histogram
     b = len(_bin_edge_idcs)
     assert b <= h.num_bins, \
-        "len(bin_edges) we want to calculate impurity reductions is greater than len(total_bin_edges"
+        "len(bin_edges) whose impurity reductions we want to calculate is greater than len(total_bin_edges)"
     impurities_left = np.zeros(b)
     impurities_right = np.zeros(b)
     V_impurities_left = np.zeros(b)
