@@ -9,18 +9,22 @@ from sklearn.tree import DecisionTreeClassifier, plot_tree, export_text
 from typing import List, Tuple, Callable, Union
 from histogram import Histogram
 from collections import defaultdict
+from params import CONF_MULTIPLIER
 
 
 # TODO: Define histogram class
-def sample_targets(X: np.ndarray, accesses: Tuple[np.ndarray, np.ndarray],
-                   histograms: List[object], batch_size: int) -> Tuple[np.ndarray, np.ndarray]:
+def sample_targets(
+        X: np.ndarray,
+        arms: Tuple[np.ndarray, np.ndarray],
+        histograms: List[object],
+        batch_size: int
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
     their feature values into the (potentially non-empty) histograms and recompute the changes in impurity
     for each potential bin split
     :param X: original dataset
-    :param accesses: a parameter "accesses" is Tuple(f, b) where f and b are arrays that
-    (f[i], b[i]) is the position of accesses we want to update their impurity reduction. #Jay: Better to call it arms?
+    :param arms: arms we want to consider
     :param histograms: list of the histograms for ALL feature indices
     :param batch_size: the number of samples we're going to choose
 
@@ -28,12 +32,10 @@ def sample_targets(X: np.ndarray, accesses: Tuple[np.ndarray, np.ndarray],
     """
 
     # TODO(@motiwari): Samples all bin edges for a given feature, should only sample those under consideration.
-    feature_idcs, bin_edge_idcs = accesses
+    feature_idcs, bin_edge_idcs = arms
     l = len(bin_edge_idcs)  # l is the total number of accesses we want to update
     f2bin_dict = defaultdict(list)  # f2bin_dict[i] contains bin indices list of ith feature
-
-    for idx in range(l):  # NOTE: Using list instead of dictionary is a way more efficient, but for readability, I use
-        # dictioanry here
+    for idx in range(l):
         feature = feature_idcs[idx]
         bin_edge = bin_edge_idcs[idx]
         f2bin_dict[feature].append(bin_edge)
@@ -44,9 +46,9 @@ def sample_targets(X: np.ndarray, accesses: Tuple[np.ndarray, np.ndarray],
     N = len(X)
     sample_idcs = np.random.choice(N, size=batch_size)  # Default: with replacement (replace=True)
     samples = X[sample_idcs]
-    for f_idx, f in enumerate(f2bin_dict.keys()):
+    for f_idx, f in enumerate(f2bin_dict):
         h = histograms[f]
-        h.add(samples)  # This is where the labels are used
+        h.add(samples, samples[:, -1])  # This is where the labels are used
         # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
         i_r, cb_d = get_impurity_reductions(h, f2bin_dict[f], ret_vars=True)
         impurity_reductions = np.concatenate([impurity_reductions, i_r])
@@ -94,7 +96,6 @@ def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
         # Set the minimum and maximum of bins as the minimum of maximum of data of a feature
         # Can optimize by calculating min and max at the same time?
         min_bin, max_bin = np.min(X[:, f_idx]), np.max(X[:, f_idx])
-        min_bin, max_bin = 0, 1
         histograms.append(Histogram(feature_idcs[f_idx], num_bins=B, min_bin=min_bin, max_bin=max_bin))
 
     while len(candidates) > 0:
@@ -114,7 +115,7 @@ def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
             cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
             candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
 
-        if len(candidates) <= 1: # cadndiates could be empty after all candidates are exactly computed
+        if len(candidates) <= 1:  # cadndiates could be empty after all candidates are exactly computed
             # Break here because we have found our best candidate
             break
 
@@ -122,8 +123,8 @@ def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
         # NOTE: cb_delta contains a value for EVERY arm, even non-candidates, so need [accesses]
         estimates[accesses], cb_delta[accesses] = sample_targets(X, accesses, histograms, batch_size)
         num_samples[accesses] += batch_size
-        lcbs[accesses] = estimates[accesses] - 1 * cb_delta[accesses]
-        ucbs[accesses] = estimates[accesses] + 1 * cb_delta[accesses]
+        lcbs[accesses] = estimates[accesses] - CONF_MULTIPLIER * cb_delta[accesses]
+        ucbs[accesses] = estimates[accesses] + CONF_MULTIPLIER * cb_delta[accesses]
 
         # TODO(@motiwari): Can't use nanmin here -- why?
         # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
@@ -169,14 +170,8 @@ def get_gini(zero_count: int, one_count: int, ret_var: bool = False) -> Union[Tu
     # When p0 = 0 or p1 = 0, gini impurity and its variance should be equal to 0
     if zero_count == 0 or one_count == 0:
         if ret_var:
-            return 0, 0 # We have to think about its variance as 0 variance means we have no confidence bound
-        else:
-            return 0
-    if zero_count == 0 or one_count == 0:
-        if ret_var:
-            return 0, 0 # We have to think about its variance as 0 variance means we have no confidence bound
-        else:
-            return 0
+            return 0, 0  # We have to think about its variance as 0 variance means we have no confidence bound
+        return 0
     n = zero_count + one_count
     p0 = zero_count / n
     p1 = one_count / n
@@ -202,9 +197,8 @@ def get_entropy(zero_count: int, one_count: int, ret_var=False) -> Union[Tuple[f
     """
     if zero_count == 0 or one_count == 0:
         if ret_var:
-            return 0, 0 # We have to think about its variance as 0 variance means we have no confidence bound
-        else:
-            return 0
+            return 0, 0  # We have to think about its variance as 0 variance means we have no confidence bound
+        return 0
     n = zero_count + one_count
     p0 = zero_count / n
     p1 = one_count / n
@@ -230,9 +224,8 @@ def get_variance(zero_count: int, one_count: int, ret_var=False) -> Union[Tuple[
     """
     if zero_count == 0 or one_count == 0:
         if ret_var:
-            return 0, 0 # We have to think about its variance as 0 variance means we have no confidence bound
-        else:
-            return 0
+            return 0, 0  # We have to think about its variance as 0 variance means we have no confidence bound
+        return 0
     n = zero_count + one_count
     p0 = zero_count / n
     p1 = one_count / n
@@ -245,8 +238,12 @@ def get_variance(zero_count: int, one_count: int, ret_var=False) -> Union[Tuple[
     return V_target
 
 
-def get_impurity_reductions(histogram: Histogram, _bin_edge_idcs: List[int], ret_vars: bool = False,
-                            impurity_measure: str = "GINI") -> Union[Tuple[float, float], float]:
+def get_impurity_reductions(
+        histogram: Histogram,
+        _bin_edge_idcs: List[int],
+        ret_vars: bool = False,
+        impurity_measure: str = "GINI"
+) -> Union[Tuple[float, float], float]:
     """
     Given a histogram of counts for each bin, compute the impurity reductions if we were to split a node on any of the
     histogram's bin edges.
@@ -280,26 +277,23 @@ def get_impurity_reductions(histogram: Histogram, _bin_edge_idcs: List[int], ret
         b_idx = _bin_edge_idcs[i]
         IL, V_IL = get_impurity(h.left_zeros[b_idx], h.left_ones[b_idx],
                                 ret_var=True)
-        IR, V_IR = get_impurity(h.right_zeros[b_idx], h.right_ones[b_idx]
-                                , ret_var=True)
+        IR, V_IR = get_impurity(h.right_zeros[b_idx], h.right_ones[b_idx],
+                                ret_var=True)
 
         # Impurity is weighted by population of each node during a split
         left_weight = (h.left_zeros[b_idx] + h.left_ones[b_idx]) / n
         right_weight = (h.right_zeros[b_idx] + h.right_ones[b_idx]) / n
-        impurities_left[i], V_impurities_left[i] = left_weight * IL, left_weight ** 2 * V_IL
-        impurities_right[i], V_impurities_right[i] = right_weight * IR, right_weight ** 2 * V_IR
+        impurities_left[i], V_impurities_left[i] = left_weight * IL, (left_weight ** 2) * V_IL
+        impurities_right[i], V_impurities_right[i] = right_weight * IR, (right_weight ** 2) * V_IR
 
-    impurity_curr, V_impurity_curr = get_impurity(h.left_zeros[0] + h.right_zeros[0], h.left_ones[0] + h.right_ones[0]
-                                                  , ret_var=True)
+    impurity_curr, V_impurity_curr = get_impurity(
+        h.left_zeros[0] + h.right_zeros[0],
+        h.left_ones[0] + h.right_ones[0],
+        ret_var=True
+    )
     # TODO(@motiwari): Might not need to subtract off impurity_curr since it doesn't affect reduction in a single feature?
     # (once best feature is determined)
     impurity_reductions = (impurities_left + impurities_right) - impurity_curr
-    # print("h.left_zeros & h.right_zeros", h.left_zeros, h.right_zeros)
-    # print("h.left_ones & h.right_ones", h.left_ones, h.right_ones)
-    # print("impurities_left:", impurities_left)
-    # print("impurities_right:", impurities_right)
-    # print("impurities_curr:", impurity_curr)
-    # print("bin_edge:", _bin_edge_idcs)
 
     if ret_vars:
         # Note the last plus because Var(X-Y) = Var(X) + Var(Y) if X, Y are independent (this is an UNDERestimate)
@@ -331,7 +325,7 @@ def main():
     X = create_data(10000)
     ground_truth_stump(X, show=False)
     h = Histogram(0, num_bins=11)
-    h.add(X)
+    h.add(X, X[:, -1])
 
     reductions, vars = get_impurity_reductions(h, np.arange(len(h.bin_edges)), ret_vars=True)
     print("=> THIS IS GROUND TRUTH\n")
