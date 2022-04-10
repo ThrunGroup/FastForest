@@ -47,7 +47,6 @@ def main():
     data = X[:, :2]
     labels = X[:, 2]
     print("best arm is: ", solve_mab(data, labels))
-    import ipdb; ipdb.set_trace()
     t = Tree(X[:, 0:2], X[:, 2], max_depth=3)
     t.fit()
     t.tree_print()

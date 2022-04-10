@@ -45,12 +45,11 @@ class Tree:
 
 
     def fit(self) -> None:
-        import ipdb; ipdb.set_trace()
         sufficient_impurity_decrease = True
         while sufficient_impurity_decrease:
             best_leaf = None
             best_leaf_idx = None
-            best_leaf_reduction = None
+            best_leaf_reduction = float('inf')
 
             # Iterate over leaves and decide which to split
             for leaf_idx, leaf in enumerate(self.leaves):
