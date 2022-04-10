@@ -72,7 +72,8 @@ def get_impurity_reductions(
 
 
 def sample_targets(
-        X: np.ndarray,
+        data: np.ndarray,
+        labels: np.ndarray,
         arms: Tuple[np.ndarray, np.ndarray],
         histograms: List[object],
         batch_size: int
@@ -99,12 +100,12 @@ def sample_targets(
     # NOTE: impurity_reductions and cb_deltas are smaller subsets than the original
     impurity_reductions = np.array([], dtype=float)
     cb_deltas = np.array([], dtype=float)
-    N = len(X)
+    N = len(data)
     sample_idcs = np.random.choice(N, size=batch_size)  # Default: with replacement (replace=True)
-    samples = X[sample_idcs]
+    samples = data[sample_idcs]
     for f_idx, f in enumerate(f2bin_dict):
         h = histograms[f]
-        h.add(samples, samples[:, -1])  # This is where the labels are used
+        h.add(samples, labels)  # This is where the labels are used
         # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
         i_r, cb_d = get_impurity_reductions(h, f2bin_dict[f], ret_vars=True)
         impurity_reductions = np.concatenate([impurity_reductions, i_r])
@@ -115,7 +116,7 @@ def sample_targets(
 
 
 # TODO (@motiwari): This doesn't appear to be actually returning a tuple?
-def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
+def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
     that feature should be split at.
@@ -126,14 +127,14 @@ def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
     consideration, i.e., raising or lowering the impurity.
     - The confidence interval for each arm return is computed via propagation of uncertainty formulas in other fns.
 
-    :param X: Full dataset
-    :param feature_idcs: Feature indices of the dataset under consideration
+    :param data: Feature set
+    :param labels: Labels of datapoints
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
     # Right now, we assume the number of bin edges is constant across features
-    F = len(feature_idcs)  # TODO: Map back to feature idcs
+    F = len(data[0])
     B = 11  # TODO: Fix this hard-coding
-    N = len(X)
+    N = len(data)
     batch_size = 100  # Right now, constant batch size
     round_count = 0
 
@@ -152,8 +153,8 @@ def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
     for f_idx in range(F):
         # Set the minimum and maximum of bins as the minimum of maximum of data of a feature
         # Can optimize by calculating min and max at the same time?
-        min_bin, max_bin = np.min(X[:, f_idx]), np.max(X[:, f_idx])
-        histograms.append(Histogram(feature_idcs[f_idx], num_bins=B, min_bin=min_bin, max_bin=max_bin))
+        min_bin, max_bin = np.min(data[:, f_idx]), np.max(data[:, f_idx])
+        histograms.append(Histogram(f_idx, num_bins=B, min_bin=min_bin, max_bin=max_bin))
 
     while len(candidates) > 0:
         # If we have already pulled the arms more times than the number of datapoints in the original dataset,
@@ -162,7 +163,7 @@ def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
         exact_accesses = np.where((num_samples + batch_size >= N) & (exact_mask == 0))
         h = histograms[0]
         if len(exact_accesses[0]) > 0:
-            estimates[exact_accesses], _vars = sample_targets(X, exact_accesses, histograms, batch_size)
+            estimates[exact_accesses], _vars = sample_targets(data, labels, exact_accesses, histograms, batch_size)
             # The confidence intervals now only contain a point, since the return has been computed exactly
             lcbs[exact_accesses] = ucbs[exact_accesses] = estimates[exact_accesses]
             exact_mask[exact_accesses] = 1
@@ -178,7 +179,7 @@ def solve_mab(X: np.ndarray, feature_idcs: List[int]) -> Tuple[int, float]:
 
         accesses = (candidates[:, 0], candidates[:, 1])  # Massage arm indices for use by numpy slicing
         # NOTE: cb_delta contains a value for EVERY arm, even non-candidates, so need [accesses]
-        estimates[accesses], cb_delta[accesses] = sample_targets(X, accesses, histograms, batch_size)
+        estimates[accesses], cb_delta[accesses] = sample_targets(data, labels, accesses, histograms, batch_size)
         num_samples[accesses] += batch_size
         lcbs[accesses] = estimates[accesses] - CONF_MULTIPLIER * cb_delta[accesses]
         ucbs[accesses] = estimates[accesses] + CONF_MULTIPLIER * cb_delta[accesses]

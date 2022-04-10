@@ -37,7 +37,7 @@ class Histogram:
 
         return bisect.bisect_right(bin_edges, val)
 
-    def add(self, X: np.ndarray, Y:np.ndarray):
+    def add(self, X: np.ndarray, Y: np.ndarray):
         """
         Given dataset X , add all the points in the dataset to the histogram.
         :param X: dataset to be histogrammed (subset of original X, although could be the same size)

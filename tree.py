@@ -32,7 +32,7 @@ class Tree:
         self.class_weight = None
         self.ccp_alpha = 0.0
 
-        self.depth = self.get_max_depth()
+        self.depth = self.get_depth()
         self.max_depth = max_depth
 
 

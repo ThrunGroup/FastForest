@@ -1,6 +1,12 @@
+from __future__ import annotations
+
 import numpy as np
-from tree import Tree
 from fast_forest import solve_mab
+
+# We need to do this below to avoid the circular import: Tree <--> Node
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from tree import Tree
 
 class Node:
     def __init__(self, tree: Tree, data: np.ndarray, labels: np.ndarray, depth: int) -> None:
@@ -26,7 +32,7 @@ class Node:
         :return: None, but assign
         """
         # Use MAB solution here
-        self.split_feature, self.split_value, self.split_reduction = solve_mab(self.data, self.tree.features)
+        self.split_feature, self.split_value, self.split_reduction = solve_mab(self.data, self.labels)
 
 
     def split(self) -> None:

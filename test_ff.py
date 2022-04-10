@@ -1,10 +1,13 @@
 import numpy as np
-from sklearn.tree import DecisionTreeClassifier, plot_tree, export_text
-from data_generator import create_data
-import matplotlib.pyplot as plt
 import sys
+import matplotlib.pyplot as plt
+
+from sklearn.tree import DecisionTreeClassifier, plot_tree, export_text
+
+from data_generator import create_data
 from histogram import Histogram
 from fast_forest import get_impurity_reductions, solve_mab
+from tree import Tree
 
 
 def ground_truth_stump(X: np.ndarray, show: bool = False):
@@ -41,8 +44,12 @@ def main():
     print("\n\n")
 
     print("=> THIS IS MAB\n")
-    print("best arm is: ", solve_mab(X, [0, 1]))
-
+    data = X[:, :2]
+    labels = X[:, 2]
+    print("best arm is: ", solve_mab(data, labels))
+    import ipdb; ipdb.set_trace()
+    t = Tree(X[:, 0:2], X[:, 2], max_depth=3)
+    print('hi')
 
 if __name__ == "__main__":
     np.set_printoptions(threshold=sys.maxsize)
