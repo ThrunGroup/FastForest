@@ -172,6 +172,11 @@ def get_gini(zero_count: int, one_count: int, ret_var: bool = False) -> Union[Tu
             return 0, 0 # We have to think about its variance as 0 variance means we have no confidence bound
         else:
             return 0
+    if zero_count == 0 or one_count == 0:
+        if ret_var:
+            return 0, 0 # We have to think about its variance as 0 variance means we have no confidence bound
+        else:
+            return 0
     n = zero_count + one_count
     p0 = zero_count / n
     p1 = one_count / n
@@ -269,7 +274,7 @@ def get_impurity_reductions(histogram: Histogram, _bin_edge_idcs: List[int], ret
     impurities_right = np.zeros(b)
     V_impurities_left = np.zeros(b)
     V_impurities_right = np.zeros(b)
-    
+
     n = h.left_zeros[0] + h.left_ones[0] + h.right_zeros[0] + h.right_ones[0]
     for i in range(b):
         b_idx = _bin_edge_idcs[i]
@@ -277,7 +282,7 @@ def get_impurity_reductions(histogram: Histogram, _bin_edge_idcs: List[int], ret
                                 ret_var=True)
         IR, V_IR = get_impurity(h.right_zeros[b_idx], h.right_ones[b_idx]
                                 , ret_var=True)
-        
+
         # Impurity is weighted by population of each node during a split
         left_weight = (h.left_zeros[b_idx] + h.left_ones[b_idx]) / n
         right_weight = (h.right_zeros[b_idx] + h.right_ones[b_idx]) / n
