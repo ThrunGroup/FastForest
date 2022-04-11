@@ -6,12 +6,15 @@ from fast_forest import solve_mab
 # We need to do this below to avoid the circular import: Tree <--> Node
 # See https://adamj.eu/tech/2021/05/13/python-type-hints-how-to-fix-circular-imports/
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from tree import Tree
 
 
 class Node:
-    def __init__(self, tree: Tree, data: np.ndarray, labels: np.ndarray, depth: int) -> None:
+    def __init__(
+        self, tree: Tree, data: np.ndarray, labels: np.ndarray, depth: int
+    ) -> None:
         self.tree = tree
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels
@@ -33,7 +36,9 @@ class Node:
         :return: None, but assign
         """
         # Use MAB solution here
-        self.split_feature, self.split_value, self.split_reduction = solve_mab(self.data, self.labels)
+        self.split_feature, self.split_value, self.split_reduction = solve_mab(
+            self.data, self.labels
+        )
         return self.split_reduction
 
     def split(self) -> None:
@@ -42,12 +47,14 @@ class Node:
         :return: None
         """
         if self.split_on is not None:
-            raise Exception('Error: this node is already split')
+            raise Exception("Error: this node is already split")
 
         if self.split_feature is None:
             self.calculate_best_split()
 
-        assert self.split_reduction < 0, "Error: splitting this node would increase impurity. Should never be here"
+        assert (
+            self.split_reduction < 0
+        ), "Error: splitting this node would increase impurity. Should never be here"
 
         # Creat left and right children with appropriate datasets
         # NOTE: Asymmetry with <= and >
@@ -69,14 +76,20 @@ class Node:
         Me: split x < 5:
 
         """
-        assert (self.left and self.right) or (self.left is None and self.right is None), "Error: split is malformed"
+        assert (self.left and self.right) or (
+            self.left is None and self.right is None
+        ), "Error: split is malformed"
         if self.left:
-            print('\t' * self.depth,
-                  "Split on feature: ", self.split_feature,
-                  " at ", self.split_value,
-                  " for split reduction ", self.split_reduction,
-                  )
+            print(
+                "\t" * self.depth,
+                "Split on feature: ",
+                self.split_feature,
+                " at ",
+                self.split_value,
+                " for split reduction ",
+                self.split_reduction,
+            )
             self.left.n_print()
             self.right.n_print()
         else:
-            print('\t' * self.depth, "Zeros:", self.zeros, ", Ones:", self.ones)
+            print("\t" * self.depth, "Zeros:", self.zeros, ", Ones:", self.ones)

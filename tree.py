@@ -8,17 +8,20 @@ class Tree:
     Tree object. Contains a node attribute, the root, as well as fitting parameters that are global to the tree (i.e.,
     are used in splitting the nodes)
     """
+
     def __init__(self, data: np.ndarray, labels: np.ndarray, max_depth: int):
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
-        self.node = Node(tree=self, data=self.data, labels=self.labels, depth=0)  # Root node contains all the data
+        self.node = Node(
+            tree=self, data=self.data, labels=self.labels, depth=0
+        )  # Root node contains all the data
         self.n_classes = 2
 
         # These are copied from the link below. We won't need all of them.
         # https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
         self.leaves = [self.node]
-        self.criterion = 'gini'
-        self.splitter = 'best'
+        self.criterion = "gini"
+        self.splitter = "best"
         self.max_depth = 1
         self.min_samples_split = 2
         self.min_samples_leaf = 1
@@ -46,7 +49,7 @@ class Tree:
         while sufficient_impurity_decrease:
             best_leaf = None
             best_leaf_idx = None
-            best_leaf_reduction = float('inf')
+            best_leaf_reduction = float("inf")
 
             # Iterate over leaves and decide which to split
             for leaf_idx, leaf in enumerate(self.leaves):
@@ -61,7 +64,10 @@ class Tree:
                     best_leaf_idx = leaf_idx
                     best_leaf_reduction = reduction
 
-            if best_leaf_reduction is not None and best_leaf_reduction < self.min_impurity_decrease:
+            if (
+                best_leaf_reduction is not None
+                and best_leaf_reduction < self.min_impurity_decrease
+            ):
                 best_leaf.split()
                 split_leaf = self.leaves.pop(best_leaf_idx)
                 self.leaves.append(split_leaf.left)

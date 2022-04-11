@@ -12,7 +12,9 @@ from tree import Tree
 import sklearn.datasets
 
 
-def ground_truth_tree(data: np.ndarray, labels: np.ndarray, max_depth: int = 1, show: bool = False):
+def ground_truth_tree(
+    data: np.ndarray, labels: np.ndarray, max_depth: int = 1, show: bool = False
+):
     """
     Given a dataset, perform the first step of making a tree: find the single best (feature, feature_value) pair
     to split on using the sklearn implementation.
@@ -37,7 +39,9 @@ def test_iris_agreement() -> None:
     two_class_labels = iris.target[two_class_idcs]
 
     # Note: currently only support 2-class target
-    ground_truth_tree(data=two_class_data, labels=two_class_labels, max_depth=5, show=False)
+    ground_truth_tree(
+        data=two_class_data, labels=two_class_labels, max_depth=5, show=False
+    )
     t = Tree(data=two_class_data, labels=two_class_labels, max_depth=5)
     t.fit()
     t.tree_print()
@@ -52,7 +56,9 @@ def main():
     h = Histogram(0, num_bins=11)
     h.add(data, labels)
 
-    reductions, vars = get_impurity_reductions(h, np.arange(len(h.bin_edges)), ret_vars=True)
+    reductions, vars = get_impurity_reductions(
+        h, np.arange(len(h.bin_edges)), ret_vars=True
+    )
     print("=> THIS IS GROUND TRUTH\n")
     print(reductions)
     print(vars)

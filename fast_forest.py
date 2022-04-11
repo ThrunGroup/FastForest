@@ -10,10 +10,10 @@ from criteria import get_gini, get_entropy, get_variance
 
 
 def get_impurity_reductions(
-        histogram: Histogram,
-        _bin_edge_idcs: List[int],
-        ret_vars: bool = False,
-        impurity_measure: str = "GINI"
+    histogram: Histogram,
+    _bin_edge_idcs: List[int],
+    ret_vars: bool = False,
+    impurity_measure: str = "GINI",
 ) -> Union[Tuple[float, float], float]:
     """
     Given a histogram of counts for each bin, compute the impurity reductions if we were to split a node on any of the
@@ -32,12 +32,15 @@ def get_impurity_reductions(
     elif impurity_measure == "VARIANCE":
         get_impurity: Callable = get_variance
     else:
-        Exception('Did not assign any measure for impurity calculation in get_impurity_reduction function')
+        Exception(
+            "Did not assign any measure for impurity calculation in get_impurity_reduction function"
+        )
 
     h = histogram
     b = len(_bin_edge_idcs)
-    assert b <= h.num_bins, \
-        "len(bin_edges) whose impurity reductions we want to calculate is greater than len(total_bin_edges)"
+    assert (
+        b <= h.num_bins
+    ), "len(bin_edges) whose impurity reductions we want to calculate is greater than len(total_bin_edges)"
     impurities_left = np.zeros(b)
     impurities_right = np.zeros(b)
     V_impurities_left = np.zeros(b)
@@ -52,8 +55,14 @@ def get_impurity_reductions(
         # Impurity is weighted by population of each node during a split
         left_weight = (h.left_zeros[b_idx] + h.left_ones[b_idx]) / n
         right_weight = (h.right_zeros[b_idx] + h.right_ones[b_idx]) / n
-        impurities_left[i], V_impurities_left[i] = left_weight * IL, (left_weight ** 2) * V_IL
-        impurities_right[i], V_impurities_right[i] = right_weight * IR, (right_weight ** 2) * V_IR
+        impurities_left[i], V_impurities_left[i] = (
+            left_weight * IL,
+            (left_weight ** 2) * V_IL,
+        )
+        impurities_right[i], V_impurities_right[i] = (
+            right_weight * IR,
+            (right_weight ** 2) * V_IR,
+        )
 
     impurity_curr, V_impurity_curr = get_impurity(
         h.left_zeros[0] + h.right_zeros[0],
@@ -73,11 +82,11 @@ def get_impurity_reductions(
 
 
 def sample_targets(
-        data: np.ndarray,
-        labels: np.ndarray,
-        arms: Tuple[np.ndarray, np.ndarray],
-        histograms: List[object],
-        batch_size: int
+    data: np.ndarray,
+    labels: np.ndarray,
+    arms: Tuple[np.ndarray, np.ndarray],
+    histograms: List[object],
+    batch_size: int,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
@@ -91,7 +100,9 @@ def sample_targets(
     """
     # TODO(@motiwari): Samples all bin edges for a given feature, should only sample those under consideration.
     feature_idcs, bin_edge_idcs = arms
-    f2bin_dict = defaultdict(list)  # f2bin_dict[i] contains bin indices list of ith feature
+    f2bin_dict = defaultdict(
+        list
+    )  # f2bin_dict[i] contains bin indices list of ith feature
     for idx in range(len(bin_edge_idcs)):
         feature = feature_idcs[idx]
         bin_edge = bin_edge_idcs[idx]
@@ -101,7 +112,9 @@ def sample_targets(
     impurity_reductions = np.array([], dtype=float)
     cb_deltas = np.array([], dtype=float)
     N = len(data)
-    sample_idcs = np.random.choice(N, size=batch_size)  # Default: with replacement (replace=True)
+    sample_idcs = np.random.choice(
+        N, size=batch_size
+    )  # Default: with replacement (replace=True)
     samples = data[sample_idcs]
     sample_labels = labels[sample_idcs]
     for f_idx, f in enumerate(f2bin_dict):
@@ -110,7 +123,9 @@ def sample_targets(
         # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
         i_r, cb_d = get_impurity_reductions(h, f2bin_dict[f], ret_vars=True)
         impurity_reductions = np.concatenate([impurity_reductions, i_r])
-        cb_deltas = np.concatenate([cb_deltas, np.sqrt(cb_d)])  # The above fn returns the vars
+        cb_deltas = np.concatenate(
+            [cb_deltas, np.sqrt(cb_d)]
+        )  # The above fn returns the vars
 
     # TODO(@motiwari): This seems dangerous, because access appears to be a linear index to the array
     return impurity_reductions, cb_deltas
@@ -155,7 +170,9 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float]:
         # Set the minimum and maximum of bins as the minimum of maximum of data of a feature
         # Can optimize by calculating min and max at the same time?
         min_bin, max_bin = np.min(data[:, f_idx]), np.max(data[:, f_idx])
-        histograms.append(Histogram(f_idx, num_bins=B, min_bin=min_bin, max_bin=max_bin))
+        histograms.append(
+            Histogram(f_idx, num_bins=B, min_bin=min_bin, max_bin=max_bin)
+        )
 
     while len(candidates) > 0:
         # If we have already pulled the arms more times than the number of datapoints in the original dataset,
@@ -163,7 +180,9 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float]:
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
         exact_accesses = np.where((num_samples + batch_size >= N) & (exact_mask == 0))
         if len(exact_accesses[0]) > 0:
-            estimates[exact_accesses], _vars = sample_targets(data, labels, exact_accesses, histograms, batch_size)
+            estimates[exact_accesses], _vars = sample_targets(
+                data, labels, exact_accesses, histograms, batch_size
+            )
             # The confidence intervals now only contain a point, since the return has been computed exactly
             lcbs[exact_accesses] = ucbs[exact_accesses] = estimates[exact_accesses]
             exact_mask[exact_accesses] = 1
@@ -173,13 +192,20 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float]:
             cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
             candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
 
-        if len(candidates) <= 1:  # cadndiates could be empty after all candidates are exactly computed
+        if (
+            len(candidates) <= 1
+        ):  # cadndiates could be empty after all candidates are exactly computed
             # Break here because we have found our best candidate
             break
 
-        accesses = (candidates[:, 0], candidates[:, 1])  # Massage arm indices for use by numpy slicing
+        accesses = (
+            candidates[:, 0],
+            candidates[:, 1],
+        )  # Massage arm indices for use by numpy slicing
         # NOTE: cb_delta contains a value for EVERY arm, even non-candidates, so need [accesses]
-        estimates[accesses], cb_delta[accesses] = sample_targets(data, labels, accesses, histograms, batch_size)
+        estimates[accesses], cb_delta[accesses] = sample_targets(
+            data, labels, accesses, histograms, batch_size
+        )
         num_samples[accesses] += batch_size
         lcbs[accesses] = estimates[accesses] - CONF_MULTIPLIER * cb_delta[accesses]
         ucbs[accesses] = estimates[accesses] + CONF_MULTIPLIER * cb_delta[accesses]
@@ -190,8 +216,12 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float]:
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
         round_count += 1
 
-    best_splits = zip(np.where(lcbs == np.nanmin(lcbs))[0], np.where(lcbs == np.nanmin(lcbs))[1])
-    best_splits = list(best_splits)  # possible to get first elem of zip object without converting to list?
+    best_splits = zip(
+        np.where(lcbs == np.nanmin(lcbs))[0], np.where(lcbs == np.nanmin(lcbs))[1]
+    )
+    best_splits = list(
+        best_splits
+    )  # possible to get first elem of zip object without converting to list?
     best_split = best_splits[0]
     # Only return non-None if the best split would indeed lower impurity
 
