@@ -20,7 +20,7 @@ class Tree:
         # These are copied from the link below. We won't need all of them.
         # https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
         self.leaves = [self.node]
-        self.criterion = "gini"
+        self.criterion = "GINI"
         self.splitter = "best"
         self.max_depth = 1
         self.min_samples_split = 2
