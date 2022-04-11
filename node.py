@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from tree import Tree
 
+
 class Node:
     def __init__(self, tree: Tree, data: np.ndarray, labels: np.ndarray, depth: int) -> None:
         self.tree = tree
@@ -26,7 +27,6 @@ class Node:
         self.split_value = None
         self.split_reduction = None
 
-
     def calculate_best_split(self):
         """
         Speculatively calculate the best split
@@ -35,7 +35,6 @@ class Node:
         # Use MAB solution here
         self.split_feature, self.split_value, self.split_reduction = solve_mab(self.data, self.labels)
         return self.split_reduction
-
 
     def split(self) -> None:
         """
@@ -64,7 +63,6 @@ class Node:
 
         self.split_on = self.split_feature
 
-
     def n_print(self) -> None:
         """
         Print the node's children depth-first
@@ -82,5 +80,3 @@ class Node:
             self.right.n_print()
         else:
             print('\t' * self.depth, "Zeros:", self.zeros, ", Ones:", self.ones)
-
-

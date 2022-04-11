@@ -21,7 +21,6 @@ def ground_truth_tree(data: np.ndarray, labels: np.ndarray, max_depth: int = 1, 
     :param show: Whether to display the visual plot
     :return: None
     """
-
     DT = DecisionTreeClassifier(max_depth=max_depth)
     DT.fit(data, labels)
     print(export_text(DT))
@@ -36,14 +35,12 @@ def test_iris_agreement() -> None:
     two_class_idcs = np.where((iris.target == 0) | (iris.target == 1))
     two_class_data = iris.data[two_class_idcs]
     two_class_labels = iris.target[two_class_idcs]
-    import ipdb; ipdb.set_trace()
 
     # Note: currently only support 2-class target
-    ground_truth_tree(data=two_class_data, labels=two_class_labels, max_depth=5, show=True)
+    ground_truth_tree(data=two_class_data, labels=two_class_labels, max_depth=5, show=False)
     t = Tree(data=two_class_data, labels=two_class_labels, max_depth=5)
     t.fit()
     t.tree_print()
-
 
 
 def main():
@@ -71,7 +68,9 @@ def main():
     t.fit()
     t.tree_print()
 
+    print("Testing iris dataset agreement:")
     test_iris_agreement()
+
 
 if __name__ == "__main__":
     np.set_printoptions(threshold=sys.maxsize)

@@ -5,7 +5,7 @@ import math
 def get_gini(zero_count: int, one_count: int, ret_var: bool = False) -> Union[Tuple[float, float], float]:
     """
     Compute the Gini impurity for a given node, where the node is represented by the number of counts of each class
-    label. The Gini impurity is equal to 1 - \sum_{i=1}^k (p_i^2)
+    label. The Gini impurity is equal to 1 - sum_{i=1}^k (p_i^2)
 
     :param zero_count: Number of zeros in the node
     :param one_count: Number of ones in the node
@@ -33,7 +33,7 @@ def get_gini(zero_count: int, one_count: int, ret_var: bool = False) -> Union[Tu
 def get_entropy(zero_count: int, one_count: int, ret_var=False) -> Union[Tuple[float, float], float]:
     """
     Compute the entropy impurity for a given node, where the node is represented by the number of counts of each class
-    label. The entropy impurity is equal to - \sum{i=1}^k (p_i * \log_2 p_i)
+    label. The entropy impurity is equal to - sum{i=1}^k (p_i * log_2 p_i)
 
     :param zero_count: Number of zeros in the node
     :param one_count: Number of ones in the node
@@ -48,13 +48,13 @@ def get_entropy(zero_count: int, one_count: int, ret_var=False) -> Union[Tuple[f
     p0 = zero_count / n
     p1 = one_count / n
     V_p0 = p0 * (1 - p0) / n
-    I = - math.log(x=p0) * p0 - math.log(x=p1) * p1
+    E = - math.log(x=p0) * p0 - math.log(x=p1) * p1
     # This variance comes from propagation of error formula, see
     # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
     if ret_var:
-        V_I = (- math.log(p0) + math.log(p1)) ** 2 * V_p0
-        return I, V_I
-    return I
+        V_E = (- math.log(p0) + math.log(p1)) ** 2 * V_p0
+        return E, V_E
+    return E
 
 
 def get_variance(zero_count: int, one_count: int, ret_var=False) -> Union[Tuple[float, float], float]:
@@ -74,7 +74,7 @@ def get_variance(zero_count: int, one_count: int, ret_var=False) -> Union[Tuple[
     n = zero_count + one_count
     p0 = zero_count / n
     p1 = one_count / n
-    V_target = p0 * (1 - p0)  # Assume that each target is from bernoulli distribution
+    V_target = p0 * p1  # Assume that each target is from bernoulli distribution
     # This variance comes from propagation of error formula, see
     # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
     if ret_var:

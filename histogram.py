@@ -61,4 +61,4 @@ class Histogram:
                 self.right_ones[:insert_idx] += 1
                 self.left_ones[insert_idx:] += 1
             else:
-                Exception(f'{i}th output of Y is not equal to 0 or 1')
+                Exception(f'{idx}th output of Y is not equal to 0 or 1')

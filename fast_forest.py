@@ -60,7 +60,8 @@ def get_impurity_reductions(
         h.left_ones[0] + h.right_ones[0],
         ret_var=True,
     )
-    # TODO(@motiwari): Might not need to subtract off impurity_curr since it doesn't affect reduction in a single feature?
+    # TODO(@motiwari): Might not need to subtract off impurity_curr
+    #  since it doesn't affect reduction in a single feature?
     # (once best feature is determined)
     impurity_reductions = (impurities_left + impurities_right) - impurity_curr
 
@@ -90,9 +91,8 @@ def sample_targets(
     """
     # TODO(@motiwari): Samples all bin edges for a given feature, should only sample those under consideration.
     feature_idcs, bin_edge_idcs = arms
-    l = len(bin_edge_idcs)  # l is the total number of accesses we want to update
     f2bin_dict = defaultdict(list)  # f2bin_dict[i] contains bin indices list of ith feature
-    for idx in range(l):
+    for idx in range(len(bin_edge_idcs)):
         feature = feature_idcs[idx]
         bin_edge = bin_edge_idcs[idx]
         f2bin_dict[feature].append(bin_edge)
@@ -162,7 +162,6 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float]:
         # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
         exact_accesses = np.where((num_samples + batch_size >= N) & (exact_mask == 0))
-        h = histograms[0]
         if len(exact_accesses[0]) > 0:
             estimates[exact_accesses], _vars = sample_targets(data, labels, exact_accesses, histograms, batch_size)
             # The confidence intervals now only contain a point, since the return has been computed exactly

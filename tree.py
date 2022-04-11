@@ -1,8 +1,7 @@
 import numpy as np
 
-from typing import List
-
 from node import Node
+
 
 class Tree:
     """
@@ -35,14 +34,12 @@ class Tree:
         self.depth = self.get_depth()
         self.max_depth = max_depth
 
-
     def get_depth(self):
         max_depth = -1
         for leaf in self.leaves:
             if leaf.depth > max_depth:
                 max_depth = leaf.depth
         return max_depth
-
 
     def fit(self) -> None:
         sufficient_impurity_decrease = True
@@ -81,13 +78,3 @@ class Tree:
         Print the tree depth-first
         """
         self.node.n_print()
-
-
-
-
-
-
-
-
-
-
