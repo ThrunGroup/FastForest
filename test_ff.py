@@ -96,7 +96,7 @@ def test_forest_iris() -> None:
         data=data, labels=labels, n_estimators=100, max_depth=5, n_classes=2
     )
 
-    f = Forest(data=data, labels=labels, n_estimators=1, max_depth=5, n_classes=2)
+    f = Forest(data=data, labels=labels, n_estimators=20, max_depth=5, n_classes=2)
     f.fit()
     acc = np.sum(f.predict_batch(data)[0] == labels)
     print("MAB solution Forest Train Accuracy:", acc / len(data))
