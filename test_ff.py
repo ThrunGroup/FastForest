@@ -9,8 +9,10 @@ from histogram import Histogram
 from fast_forest import get_impurity_reductions, solve_mab
 from tree import Tree
 
+import sklearn.datasets
 
-def ground_truth_stump(X: np.ndarray, show: bool = False):
+
+def ground_truth_tree(data: np.ndarray, labels: np.ndarray, max_depth: int = 1, show: bool = False):
     """
     Given a dataset, perform the first step of making a tree: find the single best (feature, feature_value) pair
     to split on using the sklearn implementation.
@@ -19,21 +21,39 @@ def ground_truth_stump(X: np.ndarray, show: bool = False):
     :param show: Whether to display the visual plot
     :return: None
     """
-    # Since y is mostly correlated with the first feature, we expect a 1-node stump to look at the first feature
-    # and choose that. So if x0 < 0.5, choose 0, otherwise choose 1
-    DT = DecisionTreeClassifier(max_depth=1)
-    DT.fit(X[:, :2], X[:, 2])
+
+    DT = DecisionTreeClassifier(max_depth=max_depth)
+    DT.fit(data, labels)
     print(export_text(DT))
     if show:
         plot_tree(DT)
         plt.show()
 
 
+def test_iris_agreement() -> None:
+    iris = sklearn.datasets.load_iris()
+
+    two_class_idcs = np.where((iris.target == 0) | (iris.target == 1))
+    two_class_data = iris.data[two_class_idcs]
+    two_class_labels = iris.target[two_class_idcs]
+    import ipdb; ipdb.set_trace()
+
+    # Note: currently only support 2-class target
+    ground_truth_tree(data=two_class_data, labels=two_class_labels, max_depth=5, show=True)
+    t = Tree(data=two_class_data, labels=two_class_labels, max_depth=5)
+    t.fit()
+    t.tree_print()
+
+
+
 def main():
     X = create_data(10000)
-    ground_truth_stump(X, show=False)
+    data = X[:, :-1]
+    labels = X[:, -1]
+
+    ground_truth_tree(data, labels, show=False)
     h = Histogram(0, num_bins=11)
-    h.add(X, X[:, -1])
+    h.add(data, labels)
 
     reductions, vars = get_impurity_reductions(h, np.arange(len(h.bin_edges)), ret_vars=True)
     print("=> THIS IS GROUND TRUTH\n")
@@ -50,6 +70,8 @@ def main():
     t = Tree(X[:, 0:2], X[:, 2], max_depth=3)
     t.fit()
     t.tree_print()
+
+    test_iris_agreement()
 
 if __name__ == "__main__":
     np.set_printoptions(threshold=sys.maxsize)
