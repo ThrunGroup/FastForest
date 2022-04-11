@@ -23,8 +23,6 @@ def get_impurity_reductions(
 
     Return impurity reduction when splitting node by bins in _bin_edge_idcs
     """
-
-    # get_impurity is a function of measuring impurity for a node
     if impurity_measure == "GINI":
         get_impurity: Callable = get_gini
     elif impurity_measure == "ENTROPY":
