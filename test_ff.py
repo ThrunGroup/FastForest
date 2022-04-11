@@ -43,9 +43,9 @@ def ground_truth_tree(
 def ground_truth_forest(
     data: np.ndarray,
     labels: np.ndarray,
-    max_depth: int = 1,
-    show: bool = False,
     n_estimators: int = 100,
+    max_depth: int = 5,
+    n_classes: int = 2,
 ) -> None:
     """
     Given a dataset, create the ground truth tree using sklearn.
@@ -59,11 +59,13 @@ def ground_truth_forest(
     RF = RandomForestClassifier(
         data=data,
         labels=labels,
-        n_estimators=100,
-        max_depth=5,
-        n_classes=2,
+        n_estimators=n_estimators,
+        max_depth=max_depth,
+        n_classes=n_classes,
     )
     RF.fit()
+    acc = np.sum(RF.predict(data) == labels) / len(data)
+    print("Ground truth random forest Train Accuracy:", acc)
 
 
 def test_iris_agreement() -> None:
@@ -82,9 +84,8 @@ def test_iris_agreement() -> None:
     t.fit()
     t.tree_print()
     acc = 0
-    for d_idx, datapoint in enumerate(two_class_data):
-        if t.predict(datapoint)[0] == two_class_labels[d_idx]:
-            acc += 1
+
+    acc = np.sum(t.predict_batch(two_class_data)[0] == two_class_labels)
     print("MAB solution Train Accuracy:", acc / len(two_class_data))
 
 
