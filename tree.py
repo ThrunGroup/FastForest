@@ -15,7 +15,7 @@ class Tree(TreeClassifier):
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
         self.node = Node(
-            tree=self, data=self.data, labels=self.labels, depth=0
+            tree=self, parent=None, data=self.data, labels=self.labels, depth=0
         )  # Root node contains all the data
         self.n_classes = 2
 

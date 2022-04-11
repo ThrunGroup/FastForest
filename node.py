@@ -10,9 +10,10 @@ type_check()
 
 class Node:
     def __init__(
-        self, tree: Tree, data: np.ndarray, labels: np.ndarray, depth: int
+        self, tree: Tree, parent: Node, data: np.ndarray, labels: np.ndarray, depth: int
     ) -> None:
         self.tree = tree
+        self.parent = parent  # To allow walking back upwards
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels
         self.depth = depth
@@ -32,10 +33,14 @@ class Node:
         Speculatively calculate the best split
         :return: None, but assign
         """
-        # Use MAB solution here
-        self.split_feature, self.split_value, self.split_reduction = solve_mab(
-            self.data, self.labels
-        )
+        try:
+            self.split_feature, self.split_value, self.split_reduction = solve_mab(
+                self.data, self.labels
+            )
+        except:
+            import ipdb
+
+            ipdb.set_trace()
         return self.split_reduction
 
     def split(self) -> None:
@@ -58,12 +63,14 @@ class Node:
         left_idcs = np.where(self.data[:, self.split_feature] <= self.split_value)
         left_data = self.data[left_idcs]
         left_labels = self.labels[left_idcs]
-        self.left = Node(self.tree, left_data, left_labels, self.depth + 1)
+        if len(left_data) == 0:
+            print("ERROR!!!")
+        self.left = Node(self.tree, self, left_data, left_labels, self.depth + 1)
 
         right_idcs = np.where(self.data[:, self.split_feature] > self.split_value)
         right_data = self.data[right_idcs]
         right_labels = self.labels[right_idcs]
-        self.right = Node(self.tree, right_data, right_labels, self.depth + 1)
+        self.right = Node(self.tree, self, right_data, right_labels, self.depth + 1)
 
         self.split_on = self.split_feature
 

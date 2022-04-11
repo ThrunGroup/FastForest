@@ -1,22 +1,20 @@
 import numpy as np
 import sys
 import matplotlib.pyplot as plt
+import sklearn.datasets
 
+from typing import Tuple
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import (
     DecisionTreeClassifier,
     plot_tree,
     export_text,
 )
 
-from sklearn.ensemble import RandomForestClassifier
-
 from data_generator import create_data
 from mab_functions import solve_mab
 from tree import Tree
-
-import sklearn.datasets
-
-from typing import Tuple
+from forest import Forest
 
 
 def ground_truth_tree(
@@ -59,13 +57,10 @@ def ground_truth_forest(
     :return: None
     """
     RF = RandomForestClassifier(
-        data=data,
-        labels=labels,
         n_estimators=n_estimators,
         max_depth=max_depth,
-        n_classes=n_classes,
     )
-    RF.fit()
+    RF.fit(data, labels)
     acc = np.sum(RF.predict(data) == labels) / len(data)
     print("Ground truth random forest Train Accuracy:", acc)
 
@@ -80,7 +75,7 @@ def reduce_to_2class(
     return two_class_data, two_class_labels
 
 
-def test_iris_agreement() -> None:
+def test_tree_iris() -> None:
     iris = sklearn.datasets.load_iris()
     data, labels = reduce_to_2class(iris.data, iris.target)
 
@@ -89,13 +84,25 @@ def test_iris_agreement() -> None:
     t = Tree(data=data, labels=labels, max_depth=5)
     t.fit()
     t.tree_print()
-    acc = 0
-
     acc = np.sum(t.predict_batch(data)[0] == labels)
-    print("MAB solution Train Accuracy:", acc / len(data))
+    print("MAB solution Tree Train Accuracy:", acc / len(data))
 
 
-def test_toy_data(show: bool = False) -> None:
+def test_forest_iris() -> None:
+    iris = sklearn.datasets.load_iris()
+    data, labels = reduce_to_2class(iris.data, iris.target)
+
+    ground_truth_forest(
+        data=data, labels=labels, n_estimators=100, max_depth=5, n_classes=2
+    )
+
+    f = Forest(data=data, labels=labels, n_estimators=100, max_depth=5, n_classes=2)
+    f.fit()
+    acc = np.sum(f.predict_batch(data)[0] == labels)
+    print("MAB solution Forest Train Accuracy:", acc / len(data))
+
+
+def test_tree_toy(show: bool = False) -> None:
     X = create_data(10000)
     data = X[:, :-1]
     labels = X[:, -1]
@@ -112,17 +119,17 @@ def test_toy_data(show: bool = False) -> None:
     t.tree_print()
 
 
-def forest_test(show: bool = False) -> None:
-    pass
-
-
 def main():
     print("Testing toy data decision stump:")
-    test_toy_data(show=False)
+    test_tree_toy(show=False)
 
     print("\n" * 4)
-    print("Testing iris dataset agreement:")
-    test_iris_agreement()
+    print("Testing tree iris dataset agreement:")
+    test_tree_iris()
+
+    print("\n" * 4)
+    print("Testing forest iris dataset agreement:")
+    # test_forest_iris()
 
 
 if __name__ == "__main__":

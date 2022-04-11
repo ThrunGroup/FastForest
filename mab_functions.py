@@ -157,11 +157,9 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float]:
     round_count = 0
 
     candidates = np.array(list(itertools.product(range(F), range(B))))
-    # NOTE: Instantiating these as np.inf gives runtime errors and nans.
-    # TODO (@motiwari): Find a better way to do this instead of using 1000
-    estimates = 1000 * np.ones((F, B))
-    lcbs = 1000 * np.ones((F, B))
-    ucbs = 1000 * np.ones((F, B))
+    estimates = np.empty((F, B))
+    lcbs = np.empty((F, B))
+    ucbs = np.empty((F, B))
     num_samples = np.zeros((F, B))
     exact_mask = np.zeros((F, B))
     cb_delta = np.zeros((F, B))

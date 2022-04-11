@@ -57,12 +57,13 @@ class Forest(TreeClassifier):
         self.trees = []
         if self.feature_subsampling == "SQRT":
             feature_idcs = np.random.choice(
-                self.num_features, size=np.ceiling(np.sqrt(self.num_features))
+                self.num_features, size=int(np.ceil(np.sqrt(self.num_features)))
             )
         else:
             raise Exception("Bad feature subsampling method")
 
         for i in range(self.n_estimators):
+            print("Fitting tree", i)
             tree = Tree(
                 data=self.data[
                     :, feature_idcs
