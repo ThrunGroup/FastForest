@@ -22,13 +22,12 @@ class Forest(TreeClassifier):
         self.num_features = len(data[0])
         self.labels = labels
         self.trees = []
-        self.classes = n_classes
+        self.n_classes = n_classes
         self.n_estimators = n_estimators
         self.feature_subsampling = "SQRT"
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
-        self.n_estimators = 100
         self.criterion = "gini"
         self.max_depth = max_depth
         self.min_samples_split = 2
@@ -47,6 +46,9 @@ class Forest(TreeClassifier):
         self.ccp_alpha = 0.0
         self.max_samples = None
 
+        # Need this to do remapping when features are shuffled
+        self.tree_feature_idcs = {}
+
     def fit(self) -> None:
         """
         Fit the random forest classifier by training trees, where each tree is trained with only a subset of the
@@ -59,11 +61,13 @@ class Forest(TreeClassifier):
             feature_idcs = np.random.choice(
                 self.num_features, size=int(np.ceil(np.sqrt(self.num_features)))
             )
+            print(feature_idcs)
         else:
             raise Exception("Bad feature subsampling method")
 
         for i in range(self.n_estimators):
             print("Fitting tree", i)
+            self.tree_feature_idcs[i] = feature_idcs
             tree = Tree(
                 data=self.data[
                     :, feature_idcs
@@ -81,10 +85,12 @@ class Forest(TreeClassifier):
         :return: a tuple containing class label, probability of class label
         """
         T = len(self.trees)
-        agg_preds = np.array((T, self.classes))
+        agg_preds = np.empty((T, self.n_classes))
 
         for tree_idx, tree in enumerate(self.trees):
-            agg_preds[tree_idx] = tree.predict(datapoint)
+            agg_preds[tree_idx] = tree.predict(
+                datapoint[self.tree_feature_idcs[tree_idx]]
+            )[1]
 
         avg_preds = agg_preds.mean(axis=0)
         return avg_preds.argmax(), avg_preds
