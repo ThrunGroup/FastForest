@@ -6,7 +6,7 @@ from sklearn.tree import DecisionTreeClassifier, plot_tree, export_text
 
 from data_generator import create_data
 from histogram import Histogram
-from fast_forest import get_impurity_reductions, solve_mab
+from mab_functions import get_impurity_reductions, solve_mab
 from tree import Tree
 
 import sklearn.datasets

@@ -8,6 +8,10 @@ from params import CONF_MULTIPLIER
 
 from criteria import get_gini, get_entropy, get_variance
 
+from utils import type_check
+
+type_check()
+
 
 def get_impurity_reductions(
     histogram: Histogram,

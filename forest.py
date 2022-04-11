@@ -1,5 +1,5 @@
 import numpy as np
-from Typing import Tuple
+from typing import Tuple
 
 from tree import Tree
 

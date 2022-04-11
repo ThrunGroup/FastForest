@@ -1,14 +1,11 @@
 from __future__ import annotations
 
 import numpy as np
-from fast_forest import solve_mab
+from mab_functions import solve_mab
 
-# We need to do this below to avoid the circular import: Tree <--> Node
-# See https://adamj.eu/tech/2021/05/13/python-type-hints-how-to-fix-circular-imports/
-from typing import TYPE_CHECKING
+from utils import type_check
 
-if TYPE_CHECKING:
-    from tree import Tree
+type_check()
 
 
 class Node:
