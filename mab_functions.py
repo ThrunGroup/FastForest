@@ -53,29 +53,29 @@ def get_impurity_reductions(
     V_impurities_left = np.zeros(b)
     V_impurities_right = np.zeros(b)
 
-    n = h.left_zeros[0] + h.left_ones[0] + h.right_zeros[0] + h.right_ones[0]
+    n = np.sum(h.left[0, :]) + np.sum(h.right[0, :])
     for i in range(b):
         b_idx = _bin_edge_idcs[i]
-        IL, V_IL = get_impurity(h.left_zeros[b_idx], h.left_ones[b_idx], ret_var=True)
-        IR, V_IR = get_impurity(h.right_zeros[b_idx], h.right_ones[b_idx], ret_var=True)
+        IL, V_IL = get_impurity(h.left[b_idx, :], ret_var=True)
+        IR, V_IR = get_impurity(h.right[b_idx, :], ret_var=True)
 
         # Impurity is weighted by population of each node during a split
-        left_weight = (h.left_zeros[b_idx] + h.left_ones[b_idx]) / n
-        right_weight = (h.right_zeros[b_idx] + h.right_ones[b_idx]) / n
+        left_weight = np.sum(h.left[b_idx, :]) / n
+        right_weight = np.sum(h.right[b_idx, :]) / n
         impurities_left[i], V_impurities_left[i] = (
-            left_weight * IL,
-            (left_weight ** 2) * V_IL,
+            float(left_weight * IL),
+            float((left_weight ** 2) * V_IL),
         )
         impurities_right[i], V_impurities_right[i] = (
-            right_weight * IR,
-            (right_weight ** 2) * V_IR,
+            float(right_weight * IR),
+            float((right_weight ** 2) * V_IR),
         )
 
     impurity_curr, V_impurity_curr = get_impurity(
-        h.left_zeros[0] + h.right_zeros[0],
-        h.left_ones[0] + h.right_ones[0],
-        ret_var=True,
+        h.left[0, :] + h.right[0, :], ret_var=True,
     )
+    impurity_curr = float(impurity_curr)
+    V_impurity_curr = float(V_impurity_curr)
     # TODO(@motiwari): Might not need to subtract off impurity_curr
     #  since it doesn't affect reduction in a single feature?
     # (once best feature is determined)
@@ -85,7 +85,7 @@ def get_impurity_reductions(
         # Note the last plus because Var(X-Y) = Var(X) + Var(Y) if X, Y are independent (this is an UNDERestimate)
         impurity_vars = V_impurities_left + V_impurities_right + V_impurity_curr
         return impurity_reductions, impurity_vars
-    return impurity_reductions
+    return impurity_reductions  # Jay: we can change the type of impurity_reductions to List[np.ndarray] whose each array has size 1
 
 
 def sample_targets(
@@ -178,7 +178,7 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 
 
 # TODO (@motiwari): This doesn't appear to be actually returning a tuple?
-def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float]:
+def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
     that feature should be split at.
@@ -210,12 +210,13 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float]:
 
     # Create a list of histogram objects, one per feature
     histograms = []
+    classes = tuple(set(labels))
     for f_idx in range(F):
         # Set the minimum and maximum of bins as the minimum of maximum of data of a feature
         # Can optimize by calculating min and max at the same time?
         min_bin, max_bin = np.min(data[:, f_idx]), np.max(data[:, f_idx])
         histograms.append(
-            Histogram(f_idx, num_bins=B, min_bin=min_bin, max_bin=max_bin)
+            Histogram(f_idx, classes=classes, num_bins=B, min_bin=min_bin, max_bin=max_bin)
         )
 
     while len(candidates) > 0:
