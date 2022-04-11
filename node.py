@@ -81,15 +81,25 @@ class Node:
         ), "Error: split is malformed"
         if self.left:
             print(
-                "\t" * self.depth,
-                "Split on feature: ",
-                self.split_feature,
-                " at ",
-                self.split_value,
-                " for split reduction ",
-                self.split_reduction,
+                ("|   " * self.depth)
+                + "|--- feature_"
+                + str(self.split_on)
+                + " <= "
+                + str(self.split_value)
             )
             self.left.n_print()
+            print(
+                ("|   " * self.depth)
+                + "|--- feature_"
+                + str(self.split_on)
+                + " > "
+                + str(self.split_value)
+            )
             self.right.n_print()
         else:
-            print("\t" * self.depth, "Zeros:", self.zeros, ", Ones:", self.ones)
+            print(
+                ("|   " * self.depth)
+                + "|--- "
+                + "class: "
+                + ("1" if self.ones > self.zeros else "0")
+            )

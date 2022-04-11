@@ -34,13 +34,14 @@ def ground_truth_tree(
 def test_iris_agreement() -> None:
     iris = sklearn.datasets.load_iris()
 
-    two_class_idcs = np.where((iris.target == 0) | (iris.target == 1))
+    two_class_idcs = np.where((iris.target == 2) | (iris.target == 1))
     two_class_data = iris.data[two_class_idcs]
     two_class_labels = iris.target[two_class_idcs]
+    two_class_labels[np.where(two_class_labels == 2)] = 0
 
     # Note: currently only support 2-class target
     ground_truth_tree(
-        data=two_class_data, labels=two_class_labels, max_depth=5, show=False
+        data=two_class_data, labels=two_class_labels, max_depth=5, show=True
     )
     t = Tree(data=two_class_data, labels=two_class_labels, max_depth=5)
     t.fit()
@@ -74,7 +75,7 @@ def main():
     t.fit()
     t.tree_print()
 
-    print("Testing iris dataset agreement:")
+    print("\n\nTesting iris dataset agreement:")
     test_iris_agreement()
 
 
