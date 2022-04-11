@@ -98,7 +98,7 @@ class Tree:
         :param datapoint: datapoint to fit
         :return: the probabilities of the datapoint being each class label
         """
-        node = self.Node
+        node = self.node
         while node.left:
             feature_value = datapoint[node.split_on]
             if feature_value <= node.split_value:
@@ -111,10 +111,11 @@ class Tree:
         ones = node.ones
         probs = np.array([zeros / (zeros + ones), ones / (zeros + ones)])
         assert np.allclose(probs.sum(), 1), "Probabilities don't sum to 1"
-        return probs.argmax, probs
+        return probs.argmax(), probs
 
     def tree_print(self) -> None:
         """
         Print the tree depth-first in a format matching sklearn
         """
         self.node.n_print()
+        print("\n")  # For consistency with sklearn

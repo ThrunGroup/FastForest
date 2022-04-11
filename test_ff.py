@@ -2,11 +2,16 @@ import numpy as np
 import sys
 import matplotlib.pyplot as plt
 
-from sklearn.tree import DecisionTreeClassifier, plot_tree, export_text
+from sklearn.tree import (
+    DecisionTreeClassifier,
+    plot_tree,
+    export_text,
+)
+
+from sklearn.ensemble import RandomForestClassifier
 
 from data_generator import create_data
-from histogram import Histogram
-from mab_functions import get_impurity_reductions, solve_mab
+from mab_functions import solve_mab
 from tree import Tree
 
 import sklearn.datasets
@@ -14,9 +19,10 @@ import sklearn.datasets
 
 def ground_truth_tree(
     data: np.ndarray, labels: np.ndarray, max_depth: int = 1, show: bool = False
-):
+) -> None:
     """
-    Given a dataset, perform the first step of making a tree: find the single best (feature, feature_value) pair
+    Given a dataset, create the ground truth tree using sklearn.
+    If max_depth = 1, perform the first step of making a tree: find the single best (feature, feature_value) pair
     to split on using the sklearn implementation.
 
     :param X: Dataset to build a stump out of
@@ -29,6 +35,29 @@ def ground_truth_tree(
     if show:
         plot_tree(DT)
         plt.show()
+
+    acc = np.sum(DT.predict(data) == labels) / len(data)
+    print("Ground truth tree Train Accuracy:", acc)
+
+
+def ground_truth_forest(
+    data: np.ndarray,
+    labels: np.ndarray,
+    max_depth: int = 1,
+    show: bool = False,
+    n_estimators: int = 100,
+) -> None:
+    """
+    Given a dataset, create the ground truth tree using sklearn.
+    If n_estimators = 1, fits only the first ree
+    :param data: data to fit
+    :param labels: labels of the data
+    :param max_depth: max depth of an individual tree
+    :param show: whether to show the random forest using matplotlib
+    :return: None
+    """
+    RF = RandomForestClassifier(max_depth=5, random_state=0)
+    RF.fit(data, labels)
 
 
 def test_iris_agreement() -> None:
@@ -46,9 +75,14 @@ def test_iris_agreement() -> None:
     t = Tree(data=two_class_data, labels=two_class_labels, max_depth=5)
     t.fit()
     t.tree_print()
+    acc = 0
+    for d_idx, datapoint in enumerate(two_class_data):
+        if t.predict(datapoint)[0] == two_class_labels[d_idx]:
+            acc += 1
+    print("MAB solution Train Accuracy:", acc / len(two_class_data))
 
 
-def test_toy_data(show=False) -> None:
+def test_toy_data(show: bool = False) -> None:
     X = create_data(10000)
     data = X[:, :-1]
     labels = X[:, -1]
@@ -63,6 +97,10 @@ def test_toy_data(show=False) -> None:
     t = Tree(data, labels, max_depth=3)
     t.fit()
     t.tree_print()
+
+
+def forest_test(show: bool = False) -> None:
+    pass
 
 
 def main():
