@@ -4,13 +4,27 @@ import itertools
 from typing import List, Tuple, Callable, Union
 from histogram import Histogram
 from collections import defaultdict
-from params import CONF_MULTIPLIER
+from params import CONF_MULTIPLIER, TOLERANCE
 
 from criteria import get_gini, get_entropy, get_variance
 
 from utils import type_check
 
 type_check()
+
+
+def get_impurity_fn(impurity_measure: str) -> Callable:
+    if impurity_measure == "GINI":
+        get_impurity: Callable = get_gini
+    elif impurity_measure == "ENTROPY":
+        get_impurity: Callable = get_entropy
+    elif impurity_measure == "VARIANCE":
+        get_impurity: Callable = get_variance
+    else:
+        Exception(
+            "Did not assign any measure for impurity calculation in get_impurity_reduction function"
+        )
+    return get_impurity
 
 
 def get_impurity_reductions(
@@ -133,6 +147,36 @@ def sample_targets(
     return impurity_reductions, cb_deltas
 
 
+def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bool:
+    zeros = np.sum(labels == 0)
+    ones = np.sum(labels == 1)
+    p0 = zeros / (zeros + ones)
+    p1 = ones / (zeros + ones)
+    root_impurity = 1 - (p0 ** 2) - (p1 ** 2)
+
+    left_idcs = np.where(data[:, feature] <= value)
+    left_labels = labels[left_idcs]
+    L_zeros = np.sum(left_labels == 0)
+    L_ones = np.sum(left_labels == 1)
+    p0_L = L_zeros / (L_zeros + L_ones)
+    p1_L = L_ones / (L_zeros + L_ones)
+
+    right_idcs = np.where(data[:, feature] > value)
+    right_labels = labels[right_idcs]
+    R_zeros = np.sum(right_labels == 0)
+    R_ones = np.sum(right_labels == 1)
+    p0_R = R_zeros / (R_zeros + R_ones)
+    p1_R = R_ones / (R_zeros + R_ones)
+
+    split_impurity = (L_zeros + L_ones) * (1 - (p0_L ** 2) - (p1_L ** 2)) + (
+        R_zeros + R_ones
+    ) * (1 - (p0_R ** 2) - (p1_R ** 2))
+    split_impurity /= zeros + ones
+
+    print("Split impurity:", split_impurity, "Root impurity:", root_impurity)
+    return split_impurity < root_impurity - TOLERANCE
+
+
 # TODO (@motiwari): This doesn't appear to be actually returning a tuple?
 def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float]:
     """
@@ -230,4 +274,11 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float]:
     best_reduction = estimates[best_split]
 
     # print(histograms[best_feature].bin_edges)  # These are not at even numbers, just evenly spaced
-    return best_feature, best_value, best_reduction if best_reduction < 0 else None
+    print(best_reduction)
+
+    # ERROR: Still returning even on gini impurity change of 0! Due to parsing of the last condition
+    # return best_feature, best_value, best_reduction if best_reduction < 0 else None
+    if verify_reduction(
+        data=data, labels=labels, feature=best_feature, value=best_value
+    ):
+        return best_feature, best_value, best_reduction

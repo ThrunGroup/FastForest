@@ -20,8 +20,12 @@ class Node:
         self.left = None
         self.right = None
 
-        self.zeros = len(np.where(labels == 0)[0])
-        self.ones = len(np.where(labels == 1)[0])
+        self.zeros = len(
+            np.where(labels == 0)[0]
+        )  # TODO: change this to np.sum(labels == 1)?
+        self.ones = len(
+            np.where(labels == 1)[0]
+        )  # TODO: change this to np.sum(labels == 1)?
 
         self.split_on = None
         self.split_feature = None
