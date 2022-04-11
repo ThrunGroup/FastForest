@@ -37,15 +37,10 @@ class Node:
         Speculatively calculate the best split
         :return: None, but assign
         """
-        try:
-            self.split_feature, self.split_value, self.split_reduction = solve_mab(
-                self.data, self.labels
-            )
-        except:
-            import ipdb
-
-            ipdb.set_trace()
-        return self.split_reduction
+        results = solve_mab(self.data, self.labels)
+        if results is not None:
+            self.split_feature, self.split_value, self.split_reduction = results
+            return self.split_reduction
 
     def split(self) -> None:
         """
@@ -56,27 +51,29 @@ class Node:
             raise Exception("Error: this node is already split")
 
         if self.split_feature is None:
-            self.calculate_best_split()
+            _ = self.calculate_best_split()
 
-        assert (
-            self.split_reduction < 0
-        ), "Error: splitting this node would increase impurity. Should never be here"
+        # Verify that splitting would actually help
+        if self.split_reduction is not None:
+            assert (
+                self.split_reduction < 0
+            ), "Error: splitting this node would increase impurity. Should never be here"
 
-        # Creat left and right children with appropriate datasets
-        # NOTE: Asymmetry with <= and >
-        left_idcs = np.where(self.data[:, self.split_feature] <= self.split_value)
-        left_data = self.data[left_idcs]
-        left_labels = self.labels[left_idcs]
-        if len(left_data) == 0:
-            print("ERROR!!!")
-        self.left = Node(self.tree, self, left_data, left_labels, self.depth + 1)
+            # Creat left and right children with appropriate datasets
+            # NOTE: Asymmetry with <= and >
+            left_idcs = np.where(self.data[:, self.split_feature] <= self.split_value)
+            left_data = self.data[left_idcs]
+            left_labels = self.labels[left_idcs]
+            if len(left_data) == 0:
+                print("ERROR!!!")
+            self.left = Node(self.tree, self, left_data, left_labels, self.depth + 1)
 
-        right_idcs = np.where(self.data[:, self.split_feature] > self.split_value)
-        right_data = self.data[right_idcs]
-        right_labels = self.labels[right_idcs]
-        self.right = Node(self.tree, self, right_data, right_labels, self.depth + 1)
+            right_idcs = np.where(self.data[:, self.split_feature] > self.split_value)
+            right_data = self.data[right_idcs]
+            right_labels = self.labels[right_idcs]
+            self.right = Node(self.tree, self, right_data, right_labels, self.depth + 1)
 
-        self.split_on = self.split_feature
+            self.split_on = self.split_feature
 
     def n_print(self) -> None:
         """
