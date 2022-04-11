@@ -38,6 +38,10 @@ class Tree:
         self.max_depth = max_depth
 
     def get_depth(self) -> int:
+        """
+        Get the maximum depth of this tree.
+        :return: an integer representing the maximum depth of any node (root = 0)
+        """
         max_depth = -1
         for leaf in self.leaves:
             if leaf.depth > max_depth:
@@ -45,6 +49,13 @@ class Tree:
         return max_depth
 
     def fit(self) -> None:
+        """
+        Fit the tree by recursively splitting nodes until the termination condition is reached.
+        The termination condition can be a number of splits, a required reduction in impurity, or a max depth.
+        Other termination conditions are to be implemented later.
+
+        :return: None
+        """
         sufficient_impurity_decrease = True
         while sufficient_impurity_decrease:
             best_leaf = None
@@ -79,11 +90,34 @@ class Tree:
 
         print("Fitting finished")
 
+    def predict(self, datapoint: np.ndarray) -> Tuple[int, np.ndarray]:
+        """
+        Calculate the predicted probabilities that the given datapoint belongs to each classifier
+
+        :param datapoint: datapoint to fit
+        :return: the probabilities of the datapoint being each class label
+        """
+        # Find the correct node
+        # Look at that node's zeros and ones (or, more generally, class probs)
+        probs = np.array(self.n_classes)
+
+        node = self.Node
+        while node.left:
+            feature_value = datapoint[node.split_on]
+            if feature_value <= node.split_value:
+                node = node.left
+            else:
+                node = node.right
+        assert node.right is None, "Tree is malformed"
+
+        zeros = node.zeros
+        ones = node.ones
+        probs = np.array([zeros / (zeros + ones), ones / (zeros + ones)])
+        assert np.allclose(probs.sum(), 1), "Probabilities don't sum to 1"
+        return probs.argmax, probs
+
     def tree_print(self) -> None:
         """
-        Print the tree depth-first
+        Print the tree depth-first in a format matching sklearn
         """
         self.node.n_print()
-
-    def classify(datapoint: np.ndarray):
-        raise NotImplementedError("Classification not yet implemented")

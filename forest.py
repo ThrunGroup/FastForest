@@ -15,13 +15,13 @@ class Forest:
         labels: np.ndarray,
         n_estimators: int = 100,
         max_depth: int = None,
-        classes: int = 2,
+        n_classes: int = 2,
     ) -> None:
         self.data = data
         self.num_features = len(data[0])
         self.labels = labels
         self.trees = []
-        self.classes = classes
+        self.classes = n_classes
         self.n_estimators = n_estimators
         self.feature_subsampling = "SQRT"
 
