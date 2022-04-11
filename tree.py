@@ -98,10 +98,6 @@ class Tree:
         :param datapoint: datapoint to fit
         :return: the probabilities of the datapoint being each class label
         """
-        # Find the correct node
-        # Look at that node's zeros and ones (or, more generally, class probs)
-        probs = np.array(self.n_classes)
-
         node = self.Node
         while node.left:
             feature_value = datapoint[node.split_on]
