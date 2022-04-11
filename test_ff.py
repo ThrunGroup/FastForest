@@ -41,7 +41,7 @@ def test_iris_agreement() -> None:
 
     # Note: currently only support 2-class target
     ground_truth_tree(
-        data=two_class_data, labels=two_class_labels, max_depth=5, show=True
+        data=two_class_data, labels=two_class_labels, max_depth=5, show=False
     )
     t = Tree(data=two_class_data, labels=two_class_labels, max_depth=5)
     t.fit()
