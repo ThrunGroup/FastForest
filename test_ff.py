@@ -48,34 +48,29 @@ def test_iris_agreement() -> None:
     t.tree_print()
 
 
-def main():
+def test_toy_data(show=False) -> None:
     X = create_data(10000)
     data = X[:, :-1]
     labels = X[:, -1]
 
-    ground_truth_tree(data, labels, show=False)
-    h = Histogram(0, num_bins=11)
-    h.add(data, labels)
+    print("=> Ground truth:\n")
+    ground_truth_tree(data, labels, show=show)
 
-    reductions, vars = get_impurity_reductions(
-        h, np.arange(len(h.bin_edges)), ret_vars=True
-    )
-    print("=> THIS IS GROUND TRUTH\n")
-    print(reductions)
-    print(vars)
-    print(np.argmin(reductions))
-    # print(h[0])
-    print("\n\n")
+    print("\n\n=> MAB:\n")
+    print("Best arm from solve_mab is: ", solve_mab(data, labels))
 
-    print("=> THIS IS MAB\n")
-    data = X[:, :2]
-    labels = X[:, 2]
-    print("best arm is: ", solve_mab(data, labels))
+    print("\n\n=> Tree fitting:")
     t = Tree(data, labels, max_depth=3)
     t.fit()
     t.tree_print()
 
-    print("\n\nTesting iris dataset agreement:")
+
+def main():
+    print("Testing toy data decision stump:")
+    test_toy_data(show=False)
+
+    print("\n" * 4)
+    print("Testing iris dataset agreement:")
     test_iris_agreement()
 
 
