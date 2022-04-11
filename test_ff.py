@@ -16,6 +16,8 @@ from tree import Tree
 
 import sklearn.datasets
 
+from typing import Tuple
+
 
 def ground_truth_tree(
     data: np.ndarray, labels: np.ndarray, max_depth: int = 1, show: bool = False
@@ -68,25 +70,29 @@ def ground_truth_forest(
     print("Ground truth random forest Train Accuracy:", acc)
 
 
+def reduce_to_2class(
+    data: np.ndarray, labels: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray]:
+    two_class_idcs = np.where((labels == 2) | (labels == 1))
+    two_class_data = data[two_class_idcs]
+    two_class_labels = labels[two_class_idcs]
+    two_class_labels[np.where(two_class_labels == 2)] = 0
+    return two_class_data, two_class_labels
+
+
 def test_iris_agreement() -> None:
     iris = sklearn.datasets.load_iris()
-
-    two_class_idcs = np.where((iris.target == 2) | (iris.target == 1))
-    two_class_data = iris.data[two_class_idcs]
-    two_class_labels = iris.target[two_class_idcs]
-    two_class_labels[np.where(two_class_labels == 2)] = 0
+    data, labels = reduce_to_2class(iris.data, iris.target)
 
     # Note: currently only support 2-class target
-    ground_truth_tree(
-        data=two_class_data, labels=two_class_labels, max_depth=5, show=False
-    )
-    t = Tree(data=two_class_data, labels=two_class_labels, max_depth=5)
+    ground_truth_tree(data=data, labels=labels, max_depth=5, show=False)
+    t = Tree(data=data, labels=labels, max_depth=5)
     t.fit()
     t.tree_print()
     acc = 0
 
-    acc = np.sum(t.predict_batch(two_class_data)[0] == two_class_labels)
-    print("MAB solution Train Accuracy:", acc / len(two_class_data))
+    acc = np.sum(t.predict_batch(data)[0] == labels)
+    print("MAB solution Train Accuracy:", acc / len(data))
 
 
 def test_toy_data(show: bool = False) -> None:
