@@ -9,7 +9,7 @@ class Tree:
     are used in splitting the nodes)
     """
 
-    def __init__(self, data: np.ndarray, labels: np.ndarray, max_depth: int):
+    def __init__(self, data: np.ndarray, labels: np.ndarray, max_depth: int) -> None:
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
         self.node = Node(
@@ -37,7 +37,7 @@ class Tree:
         self.depth = self.get_depth()
         self.max_depth = max_depth
 
-    def get_depth(self):
+    def get_depth(self) -> int:
         max_depth = -1
         for leaf in self.leaves:
             if leaf.depth > max_depth:
@@ -84,3 +84,6 @@ class Tree:
         Print the tree depth-first
         """
         self.node.n_print()
+
+    def classify(datapoint: np.ndarray):
+        raise NotImplementedError("Classification not yet implemented")

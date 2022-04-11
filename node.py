@@ -30,7 +30,7 @@ class Node:
         self.split_value = None
         self.split_reduction = None
 
-    def calculate_best_split(self):
+    def calculate_best_split(self) -> float:
         """
         Speculatively calculate the best split
         :return: None, but assign
