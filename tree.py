@@ -2,9 +2,10 @@ import numpy as np
 from typing import Tuple
 
 from node import Node
+from tree_classifier import TreeClassifier
 
 
-class Tree:
+class Tree(TreeClassifier):
     """
     Tree object. Contains a node attribute, the root, as well as fitting parameters that are global to the tree (i.e.,
     are used in splitting the nodes)

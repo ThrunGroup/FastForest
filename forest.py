@@ -2,9 +2,10 @@ import numpy as np
 from typing import Tuple
 
 from tree import Tree
+from tree_classifier import TreeClassifier
 
 
-class Forest:
+class Forest(TreeClassifier):
     """
     Class for vanilla random forest model, which averages each tree's predictions
     """
@@ -72,7 +73,7 @@ class Forest:
             tree.fit()
             self.trees.append(tree)
 
-    def predict(self, datapoint: np.ndarray) -> Tuple(int, np.ndarray):
+    def predict(self, datapoint: np.ndarray) -> Tuple[int, np.ndarray]:
         """
         Generate a prediction for the given datapoint by averaging over all trees' predictions
         :param datapoint: datapoint to predict

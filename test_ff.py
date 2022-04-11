@@ -56,8 +56,14 @@ def ground_truth_forest(
     :param show: whether to show the random forest using matplotlib
     :return: None
     """
-    RF = RandomForestClassifier(max_depth=5, random_state=0)
-    RF.fit(data, labels)
+    RF = RandomForestClassifier(
+        data=data,
+        labels=labels,
+        n_estimators=100,
+        max_depth=5,
+        n_classes=2,
+    )
+    RF.fit()
 
 
 def test_iris_agreement() -> None:
