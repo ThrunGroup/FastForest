@@ -1,5 +1,6 @@
 import numpy as np
 import bisect
+from typing import List, Any, Tuple
 
 
 class Histogram:
@@ -11,11 +12,16 @@ class Histogram:
     def __init__(
         self,
         feature_idx: int,
+        classes: Tuple[Any] = (
+            0,
+            1,
+        ),  # classes is the tuple of labels (labels can be any type)
         num_bins: int = 11,
-        min_bin: float = 0.0,
-        max_bin: float = 1.0,
+        min_bin: int = 0.0,
+        max_bin: int = 1.0,
     ):
         self.feature_idx = feature_idx
+        self.classes = classes
         self.num_bins = num_bins
         self.min_bin = min_bin
         self.max_bin = max_bin
@@ -25,13 +31,8 @@ class Histogram:
         self.bin_edges = np.linspace(
             min_bin, max_bin, num_bins
         )  # These are not at even numbers, just evenly spaced
-        self.left_zeros = np.zeros(num_bins, dtype=np.int32)
-        self.left_ones = np.zeros(num_bins, dtype=np.int32)
-        self.right_zeros = np.zeros(num_bins, dtype=np.int32)
-        self.right_ones = np.zeros(num_bins, dtype=np.int32)
-
-    def return_decomposition(self):
-        return self.left_zeros, self.left_ones, self.right_zeros, self.right_ones
+        self.left = np.zeros((num_bins, len(classes)), dtype=np.int32)
+        self.right = np.zeros((num_bins, len(classes)), dtype=np.int32)
 
     @staticmethod
     def get_bin(val: float, bin_edges: np.ndarray) -> int:
@@ -53,10 +54,8 @@ class Histogram:
         """
         assert (
             len(self.bin_edges)
-            == len(self.left_zeros)
-            == len(self.left_ones)
-            == len(self.right_zeros)
-            == len(self.right_ones)
+            == np.size(self.left, axis=0)
+            == np.size(self.right, axis=0)
         ), "Error: histogram is malformed"
 
         assert len(X) == len(Y), "Error: sample sizes and label sizes must be the same"
@@ -64,12 +63,8 @@ class Histogram:
         feature_values = X[:, self.feature_idx]
         for idx, f in enumerate(feature_values):
             y = Y[idx]
+            y_idx = self.classes.index(y)
             insert_idx = self.get_bin(val=f, bin_edges=self.bin_edges)
-            if y == 0:
-                self.right_zeros[:insert_idx] += 1
-                self.left_zeros[insert_idx:] += 1
-            elif y == 1:
-                self.right_ones[:insert_idx] += 1
-                self.left_ones[insert_idx:] += 1
-            else:
-                Exception(f"{idx}th output of Y is not equal to 0 or 1")
+            # left, right[x, y] gives # of data on the left and right of xth bin of yth class
+            self.right[:insert_idx, y_idx] += 1
+            self.left[insert_idx:, y_idx] += 1
