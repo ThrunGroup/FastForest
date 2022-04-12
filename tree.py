@@ -108,9 +108,8 @@ class Tree(TreeClassifier):
                 node = node.right
         assert node.right is None, "Tree is malformed"
 
-        zeros = node.zeros
-        ones = node.ones
-        probs = np.array([zeros / (zeros + ones), ones / (zeros + ones)])
+        idx = np.argmax(node.counts)
+        probs = node.counts / np.sum(node.counts)
         assert np.allclose(probs.sum(), 1), "Probabilities don't sum to 1"
         return probs.argmax(), probs
 
