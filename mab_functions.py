@@ -122,6 +122,8 @@ def sample_targets(
     sample_idcs = np.random.choice(
         N, size=batch_size
     )  # Default: with replacement (replace=True)
+    if N <= batch_size:
+        sample_idcs = np.arange(N)
     samples = data[sample_idcs]
     sample_labels = labels[sample_idcs]
     for f_idx, f in enumerate(f2bin_dict):
