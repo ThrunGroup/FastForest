@@ -64,8 +64,6 @@ class Node:
             left_idcs = np.where(self.data[:, self.split_feature] <= self.split_value)
             left_data = self.data[left_idcs]
             left_labels = self.labels[left_idcs]
-            if len(left_data) == 0:
-                print("ERROR!!!")
             self.left = Node(self.tree, self, left_data, left_labels, self.depth + 1)
 
             right_idcs = np.where(self.data[:, self.split_feature] > self.split_value)
