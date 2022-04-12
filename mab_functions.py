@@ -32,7 +32,7 @@ def get_impurity_reductions(
     _bin_edge_idcs: List[int],
     ret_vars: bool = False,
     impurity_measure: str = "GINI",
-) -> Union[Tuple[float, float], float]:
+) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
     """
     Given a histogram of counts for each bin, compute the impurity reductions if we were to split a node on any of the
     histogram's bin edges.
@@ -216,7 +216,9 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
         # Can optimize by calculating min and max at the same time?
         min_bin, max_bin = np.min(data[:, f_idx]), np.max(data[:, f_idx])
         histograms.append(
-            Histogram(f_idx, classes=classes, num_bins=B, min_bin=min_bin, max_bin=max_bin)
+            Histogram(
+                f_idx, classes=classes, num_bins=B, min_bin=min_bin, max_bin=max_bin
+            )
         )
 
     while len(candidates) > 0:
