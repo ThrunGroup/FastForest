@@ -44,7 +44,7 @@ class Histogram:
               since len(count_bucket) = len(bin_edges) + 1
         """
 
-        return bisect.bisect_right(bin_edges, val)
+        return bisect.bisect_left(bin_edges, val)
 
     def add(self, X: np.ndarray, Y: np.ndarray):
         """
