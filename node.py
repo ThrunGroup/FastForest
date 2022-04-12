@@ -1,16 +1,19 @@
 from __future__ import annotations
 
 import numpy as np
-from mab_functions import solve_mab
+from fast_forest import solve_mab
 
-from utils import type_check
+# We need to do this below to avoid the circular import: Tree <--> Node
+# See https://adamj.eu/tech/2021/05/13/python-type-hints-how-to-fix-circular-imports/
+from typing import TYPE_CHECKING
 
-type_check()
+if TYPE_CHECKING:
+    from tree import Tree
 
 
 class Node:
     def __init__(
-        self, tree: Tree, parent: Node, data: np.ndarray, labels: np.ndarray, depth: int
+        self, tree: Tree, parent: Node, data: np.ndarray, labels: np.ndarray, depth: int, num_classes: int = 2
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
@@ -20,27 +23,27 @@ class Node:
         self.left = None
         self.right = None
 
-        self.zeros = len(
-            np.where(labels == 0)[0]
-        )  # TODO: change this to np.sum(labels == 1)?
-        self.ones = len(
-            np.where(labels == 1)[0]
-        )  # TODO: change this to np.sum(labels == 1)?
+        # Assume labels are all integers from 0 to i.
+        self.num_classes = num_classes
+        self.counts = np.zeros(self.num_classes, dtype=int)
+        for class_ in labels:
+            self.counts[int(class_)] += 1
 
         self.split_on = None
         self.split_feature = None
         self.split_value = None
         self.split_reduction = None
 
-    def calculate_best_split(self) -> float:
+    def calculate_best_split(self):
         """
         Speculatively calculate the best split
         :return: None, but assign
         """
-        results = solve_mab(self.data, self.labels)
-        if results is not None:
-            self.split_feature, self.split_value, self.split_reduction = results
-            return self.split_reduction
+        # Use MAB solution here
+        self.split_feature, self.split_value, self.split_reduction = solve_mab(
+            self.data, self.labels
+        )
+        return self.split_reduction
 
     def split(self) -> None:
         """
@@ -59,19 +62,19 @@ class Node:
                 self.split_reduction < 0
             ), "Error: splitting this node would increase impurity. Should never be here"
 
-            # Creat left and right children with appropriate datasets
-            # NOTE: Asymmetry with <= and >
-            left_idcs = np.where(self.data[:, self.split_feature] <= self.split_value)
-            left_data = self.data[left_idcs]
-            left_labels = self.labels[left_idcs]
-            self.left = Node(self.tree, self, left_data, left_labels, self.depth + 1)
+        # Creat left and right children with appropriate datasets
+        # NOTE: Asymmetry with <= and >
+        left_idcs = np.where(self.data[:, self.split_feature] <= self.split_value)
+        left_data = self.data[left_idcs]
+        left_labels = self.labels[left_idcs]
+        self.left = Node(self.tree, left_data, left_labels, self.depth + 1)
 
-            right_idcs = np.where(self.data[:, self.split_feature] > self.split_value)
-            right_data = self.data[right_idcs]
-            right_labels = self.labels[right_idcs]
-            self.right = Node(self.tree, self, right_data, right_labels, self.depth + 1)
+        right_idcs = np.where(self.data[:, self.split_feature] > self.split_value)
+        right_data = self.data[right_idcs]
+        right_labels = self.labels[right_idcs]
+        self.right = Node(self.tree, right_data, right_labels, self.depth + 1)
 
-            self.split_on = self.split_feature
+        self.split_on = self.split_feature
 
     def n_print(self) -> None:
         """
@@ -100,9 +103,5 @@ class Node:
             )
             self.right.n_print()
         else:
-            print(
-                ("|   " * self.depth)
-                + "|--- "
-                + "class: "
-                + ("1" if self.ones > self.zeros else "0")
-            )
+            class_predicted = np.argmax(self.counts)
+            print(("|   " * self.depth) + "|--- " + "class: " + str(class_predicted))
