@@ -63,12 +63,12 @@ class Node:
             left_idcs = np.where(self.data[:, self.split_feature] <= self.split_value)
             left_data = self.data[left_idcs]
             left_labels = self.labels[left_idcs]
-            self.left = Node(self.tree, self, left_data, left_labels, self.depth + 1)
+            self.left = Node(self.tree, self, left_data, left_labels, self.depth + 1, self.num_classes)
 
             right_idcs = np.where(self.data[:, self.split_feature] > self.split_value)
             right_data = self.data[right_idcs]
             right_labels = self.labels[right_idcs]
-            self.right = Node(self.tree, self, right_data, right_labels, self.depth + 1)
+            self.right = Node(self.tree, self, right_data, right_labels, self.depth + 1, self.num_classes)
 
             self.split_on = self.split_feature
 
