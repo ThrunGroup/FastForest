@@ -10,7 +10,13 @@ type_check()
 
 class Node:
     def __init__(
-        self, tree: Tree, parent: Node, data: np.ndarray, labels: np.ndarray, depth: int, num_classes: int = 2
+        self,
+        tree: Tree,
+        parent: Node,
+        data: np.ndarray,
+        labels: np.ndarray,
+        depth: int,
+        num_classes: int = 2,
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
@@ -38,7 +44,9 @@ class Node:
         :return: None, but assign
         """
         if self.is_calculate_best:
-            return self.split_reduction # If we already calculate it, return self.split_reduction right away
+            return (
+                self.split_reduction
+            )  # If we already calculate it, return self.split_reduction right away
         self.is_calculate_best = True
         results = solve_mab(self.data, self.labels)
         if results is not None:
@@ -67,12 +75,26 @@ class Node:
             left_idcs = np.where(self.data[:, self.split_feature] <= self.split_value)
             left_data = self.data[left_idcs]
             left_labels = self.labels[left_idcs]
-            self.left = Node(self.tree, self, left_data, left_labels, self.depth + 1, self.num_classes)
+            self.left = Node(
+                self.tree,
+                self,
+                left_data,
+                left_labels,
+                self.depth + 1,
+                self.num_classes,
+            )
 
             right_idcs = np.where(self.data[:, self.split_feature] > self.split_value)
             right_data = self.data[right_idcs]
             right_labels = self.labels[right_idcs]
-            self.right = Node(self.tree, self, right_data, right_labels, self.depth + 1, self.num_classes)
+            self.right = Node(
+                self.tree,
+                self,
+                right_data,
+                right_labels,
+                self.depth + 1,
+                self.num_classes,
+            )
 
             self.split_on = self.split_feature
 

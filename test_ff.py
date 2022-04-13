@@ -56,10 +56,7 @@ def ground_truth_forest(
     :param show: whether to show the random forest using matplotlib
     :return: None
     """
-    RF = RandomForestClassifier(
-        n_estimators=n_estimators,
-        max_depth=max_depth,
-    )
+    RF = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth,)
     RF.fit(data, labels)
     acc = np.sum(RF.predict(data) == labels) / len(data)
     print("Ground truth random forest Train Accuracy:", acc)
@@ -98,10 +95,13 @@ def test_forest_iris() -> None:
         data=data, labels=labels, n_estimators=100, max_depth=5, n_classes=num_classes
     )
 
-    f = Forest(data=data, labels=labels, n_estimators=20, max_depth=5, n_classes=num_classes)
+    f = Forest(
+        data=data, labels=labels, n_estimators=20, max_depth=5, n_classes=num_classes
+    )
     f.fit()
     acc = np.sum(f.predict_batch(data)[0] == labels)
     print("MAB solution Forest Train Accuracy:", acc / len(data))
+
 
 def test_forest_digits() -> None:
     digits = sklearn.datasets.load_digits()
@@ -112,11 +112,12 @@ def test_forest_digits() -> None:
         data=data, labels=labels, n_estimators=5, max_depth=5, n_classes=num_classes
     )
 
-    f = Forest(data=data, labels=labels, n_estimators=5, max_depth=5, n_classes=num_classes)
+    f = Forest(
+        data=data, labels=labels, n_estimators=5, max_depth=5, n_classes=num_classes
+    )
     f.fit()
     acc = np.sum(f.predict_batch(data)[0] == labels)
     print("MAB solution Forest Train Accuracy:", acc / len(data))
-
 
 
 def test_tree_toy(show: bool = False) -> None:

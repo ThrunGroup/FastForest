@@ -16,7 +16,12 @@ class Tree(TreeClassifier):
         self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
         self.n_classes = len(set(labels))
         self.node = Node(
-            tree=self, parent=None, data=self.data, labels=self.labels, depth=0, num_classes=self.n_classes
+            tree=self,
+            parent=None,
+            data=self.data,
+            labels=self.labels,
+            depth=0,
+            num_classes=self.n_classes,
         )  # Root node contains all the data
 
         # These are copied from the link below. We won't need all of them.
