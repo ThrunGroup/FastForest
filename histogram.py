@@ -46,6 +46,9 @@ class Histogram:
 
         return bisect.bisect_left(bin_edges, val)
 
+    def set_bin(self, bin_array: np.ndarray):
+        self.bin_edges = bin_array
+
     def add(self, X: np.ndarray, Y: np.ndarray):
         """
         Given dataset X , add all the points in the dataset to the histogram.
