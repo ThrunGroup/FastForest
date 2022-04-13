@@ -85,7 +85,7 @@ def get_impurity_reductions(
         # Note the last plus because Var(X-Y) = Var(X) + Var(Y) if X, Y are independent (this is an UNDERestimate)
         impurity_vars = V_impurities_left + V_impurities_right + V_impurity_curr
         return impurity_reductions, impurity_vars
-    return impurity_reductions  # Jay: we can change the type of impurity_reductions to List[np.ndarray] whose each array has size 1
+    return impurity_reductions  # Jay: we can change the type of impurity_reductions to Tuple[np.ndarray] whose each array has size 1
 
 
 def sample_targets(
@@ -212,7 +212,7 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
 
     # Create a list of histogram objects, one per feature
     histograms = []
-    classes = tuple(set(labels))
+    classes = tuple(set(labels)) # Not assume labels are 0 to i here
     for f_idx in range(F):
         # Set the minimum and maximum of bins as the minimum of maximum of data of a feature
         # Can optimize by calculating min and max at the same time?
