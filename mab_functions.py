@@ -141,42 +141,46 @@ def sample_targets(
 
 
 def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bool:
-    zeros = np.sum(labels == 0)
-    ones = np.sum(labels == 1)
-    p0 = zeros / (zeros + ones)
-    p1 = ones / (zeros + ones)
-    root_impurity = 1 - (p0 ** 2) - (p1 ** 2)
+    num_classes = (
+        int(np.max(labels)) + 1
+    )  # Some labels can be missing as it's a subset of whole dataset. But it's
+    # still okay as classes that don't appear in this subset don't affect impurity
+    counts = np.zeros(num_classes)  # Redundant calculation. It should be optimized
+
+    for label in labels:  # Assume labels are all integers
+        counts[int(label)] += 1
+    p = counts.astype(float) / len(labels)
+    root_impurity = 1 - np.dot(p, p)
 
     left_idcs = np.where(data[:, feature] <= value)
     left_labels = labels[left_idcs]
-    L_zeros = np.sum(left_labels == 0)
-    L_ones = np.sum(left_labels == 1)
+    L_counts = np.zeros(num_classes)
+    for left_label in left_labels:
+        L_counts[int(left_label)] += 1
 
     # This is already a pure node
-    if L_zeros + L_ones == 0:
+    if len(left_idcs[0]) == 0:
         return False
-    p0_L = L_zeros / (L_zeros + L_ones)
-    p1_L = L_ones / (L_zeros + L_ones)
+    p_L = L_counts.astype(float) / np.sum(L_counts)
 
     right_idcs = np.where(data[:, feature] > value)
     right_labels = labels[right_idcs]
-    R_zeros = np.sum(right_labels == 0)
-    R_ones = np.sum(right_labels == 1)
+    R_counts = np.zeros(num_classes)
+    for right_label in right_labels:
+        R_counts[int(right_label)] += 1
 
     # This is already a pure node
-    if R_zeros + R_ones == 0:
+    if len(right_idcs[0]) == 0:
         return False
+    p_R = R_counts.astype(float) / np.sum(R_counts)
 
-    p0_R = R_zeros / (R_zeros + R_ones)
-    p1_R = R_ones / (R_zeros + R_ones)
+    split_impurity = (1 - np.dot(p_L, p_L)) * np.sum(L_counts) + (
+        1 - np.dot(p_R, p_R)
+    ) * np.sum(R_counts)
+    split_impurity /= len(labels)
 
-    split_impurity = (L_zeros + L_ones) * (1 - (p0_L ** 2) - (p1_L ** 2)) + (
-        R_zeros + R_ones
-    ) * (1 - (p0_R ** 2) - (p1_R ** 2))
-    split_impurity /= zeros + ones
-
-    # print("Split impurity:", split_impurity, "Root impurity:", root_impurity)
-    return split_impurity < root_impurity - TOLERANCE
+    print("Split impurity:", split_impurity, "Root impurity:", root_impurity)
+    return TOLERANCE > root_impurity - split_impurity
 
 
 # TODO (@motiwari): This doesn't appear to be actually returning a tuple?
@@ -212,7 +216,7 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
 
     # Create a list of histogram objects, one per feature
     histograms = []
-    classes = tuple(set(labels)) # Not assume labels are 0 to i here
+    classes = tuple(set(labels))  # Not assume labels are 0 to i here
     for f_idx in range(F):
         # Set the minimum and maximum of bins as the minimum of maximum of data of a feature
         # Can optimize by calculating min and max at the same time?
@@ -278,7 +282,9 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
     best_reduction = estimates[best_split]
 
     # Only return the split if it would indeed lower the impurity
-    if verify_reduction(
-        data=data, labels=labels, feature=best_feature, value=best_value
-    ):
+    if best_reduction < 0:
         return best_feature, best_value, best_reduction
+    # if verify_reduction(
+    #     data=data, labels=labels, feature=best_feature, value=best_value
+    # ):
+    #     return best_feature, best_value, best_reduction
