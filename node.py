@@ -30,12 +30,16 @@ class Node:
         self.split_feature = None
         self.split_value = None
         self.split_reduction = None
+        self.is_calculate_best = False
 
     def calculate_best_split(self):
         """
         Speculatively calculate the best split
         :return: None, but assign
         """
+        if self.is_calculate_best:
+            return self.split_reduction # If we already calculate it, return self.split_reduction right away
+        self.is_calculate_best = True
         results = solve_mab(self.data, self.labels)
         if results is not None:
             self.split_feature, self.split_value, self.split_reduction = results
