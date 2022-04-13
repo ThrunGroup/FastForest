@@ -77,7 +77,8 @@ def reduce_to_2class(
 
 def test_tree_iris() -> None:
     iris = sklearn.datasets.load_iris()
-    data, labels = reduce_to_2class(iris.data, iris.target)
+    data, labels = iris.data, iris.target
+    num_classes = len(set(labels))
 
     # Note: currently only support 2-class target
     ground_truth_tree(data=data, labels=labels, max_depth=5, show=False)
@@ -90,13 +91,14 @@ def test_tree_iris() -> None:
 
 def test_forest_iris() -> None:
     iris = sklearn.datasets.load_iris()
-    data, labels = reduce_to_2class(iris.data, iris.target)
+    data, labels = iris.data, iris.target
+    num_classes = len(set(labels))
 
     ground_truth_forest(
-        data=data, labels=labels, n_estimators=100, max_depth=5, n_classes=2
+        data=data, labels=labels, n_estimators=100, max_depth=5, n_classes=num_classes
     )
 
-    f = Forest(data=data, labels=labels, n_estimators=20, max_depth=5, n_classes=2)
+    f = Forest(data=data, labels=labels, n_estimators=20, max_depth=5, n_classes=num_classes)
     f.fit()
     acc = np.sum(f.predict_batch(data)[0] == labels)
     print("MAB solution Forest Train Accuracy:", acc / len(data))
