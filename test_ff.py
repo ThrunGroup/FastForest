@@ -103,6 +103,21 @@ def test_forest_iris() -> None:
     acc = np.sum(f.predict_batch(data)[0] == labels)
     print("MAB solution Forest Train Accuracy:", acc / len(data))
 
+def test_forest_digits() -> None:
+    digits = sklearn.datasets.load_digits()
+    data, labels = digits.data, digits.target
+    num_classes = len(set(labels))
+
+    ground_truth_forest(
+        data=data, labels=labels, n_estimators=5, max_depth=5, n_classes=num_classes
+    )
+
+    f = Forest(data=data, labels=labels, n_estimators=5, max_depth=5, n_classes=num_classes)
+    f.fit()
+    acc = np.sum(f.predict_batch(data)[0] == labels)
+    print("MAB solution Forest Train Accuracy:", acc / len(data))
+
+
 
 def test_tree_toy(show: bool = False) -> None:
     X = create_data(10000)
@@ -132,6 +147,10 @@ def main():
     print("\n" * 4)
     print("Testing forest iris dataset agreement:")
     test_forest_iris()
+
+    print("\n" * 4)
+    print("Testing forest digit dataset agreement:")
+    test_forest_digits()
 
 
 if __name__ == "__main__":
