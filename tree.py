@@ -20,7 +20,6 @@ class Tree(TreeClassifier):
             np.unique(labels) == np.arange(self.n_classes)
         ).all(), "Labels are not 0, 1, ... K-1"
 
-        assert np.unique(labels)
         self.node = Node(
             tree=self,
             parent=None,
