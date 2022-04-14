@@ -29,8 +29,8 @@ class Node:
         # Assume labels are all integers from 0 to i.
         self.num_classes = num_classes
         self.counts = np.zeros(self.num_classes, dtype=int)
-        for class_ in labels:
-            self.counts[int(class_)] += 1
+        for class_ in np.arange(num_classes):
+            self.counts[int(class_)] += len(np.where(labels == class_)[0])
 
         self.split_on = None
         self.split_feature = None
