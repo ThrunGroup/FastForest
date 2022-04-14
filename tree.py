@@ -14,10 +14,21 @@ class Tree(TreeClassifier):
     def __init__(self, data: np.ndarray, labels: np.ndarray, max_depth: int) -> None:
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
+        self.n_classes = len(np.unique(labels))
+        # np.unique returns the labels in sorted order
+        assert (
+            np.unique(labels) == np.arange(self.n_classes)
+        ).all(), "Labels are not 0, 1, ... K-1"
+
+        assert np.unique(labels)
         self.node = Node(
-            tree=self, parent=None, data=self.data, labels=self.labels, depth=0
+            tree=self,
+            parent=None,
+            data=self.data,
+            labels=self.labels,
+            depth=0,
+            num_classes=self.n_classes,
         )  # Root node contains all the data
-        self.n_classes = 2
 
         # These are copied from the link below. We won't need all of them.
         # https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
@@ -108,9 +119,7 @@ class Tree(TreeClassifier):
                 node = node.right
         assert node.right is None, "Tree is malformed"
 
-        zeros = node.zeros
-        ones = node.ones
-        probs = np.array([zeros / (zeros + ones), ones / (zeros + ones)])
+        probs = node.counts / np.sum(node.counts)
         assert np.allclose(probs.sum(), 1), "Probabilities don't sum to 1"
         return probs.argmax(), probs
 

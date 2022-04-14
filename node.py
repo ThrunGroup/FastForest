@@ -10,7 +10,13 @@ type_check()
 
 class Node:
     def __init__(
-        self, tree: Tree, parent: Node, data: np.ndarray, labels: np.ndarray, depth: int
+        self,
+        tree: Tree,
+        parent: Node,
+        data: np.ndarray,
+        labels: np.ndarray,
+        depth: int,
+        num_classes: int = 2,
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
@@ -20,23 +26,29 @@ class Node:
         self.left = None
         self.right = None
 
-        self.zeros = len(
-            np.where(labels == 0)[0]
-        )  # TODO: change this to np.sum(labels == 1)?
-        self.ones = len(
-            np.where(labels == 1)[0]
-        )  # TODO: change this to np.sum(labels == 1)?
+        # NOTE: Assume labels are all integers from 0 to num_classes-1
+        # This is asserted in Tree
+        self.num_classes = num_classes
+        self.counts = np.zeros(self.num_classes, dtype=int)
+        for class_ in np.arange(num_classes):
+            self.counts[int(class_)] += len(np.where(labels == class_)[0])
 
         self.split_on = None
         self.split_feature = None
         self.split_value = None
         self.split_reduction = None
+        self.is_calculate_best = False
 
-    def calculate_best_split(self) -> float:
+    def calculate_best_split(self):
         """
         Speculatively calculate the best split
         :return: None, but assign
         """
+        if self.is_calculate_best:
+            return (
+                self.split_reduction
+            )  # If we already calculate it, return self.split_reduction right away
+        self.is_calculate_best = True
         results = solve_mab(self.data, self.labels)
         if results is not None:
             self.split_feature, self.split_value, self.split_reduction = results
@@ -64,12 +76,26 @@ class Node:
             left_idcs = np.where(self.data[:, self.split_feature] <= self.split_value)
             left_data = self.data[left_idcs]
             left_labels = self.labels[left_idcs]
-            self.left = Node(self.tree, self, left_data, left_labels, self.depth + 1)
+            self.left = Node(
+                self.tree,
+                self,
+                left_data,
+                left_labels,
+                self.depth + 1,
+                self.num_classes,
+            )
 
             right_idcs = np.where(self.data[:, self.split_feature] > self.split_value)
             right_data = self.data[right_idcs]
             right_labels = self.labels[right_idcs]
-            self.right = Node(self.tree, self, right_data, right_labels, self.depth + 1)
+            self.right = Node(
+                self.tree,
+                self,
+                right_data,
+                right_labels,
+                self.depth + 1,
+                self.num_classes,
+            )
 
             self.split_on = self.split_feature
 
@@ -100,9 +126,5 @@ class Node:
             )
             self.right.n_print()
         else:
-            print(
-                ("|   " * self.depth)
-                + "|--- "
-                + "class: "
-                + ("1" if self.ones > self.zeros else "0")
-            )
+            class_predicted = np.argmax(self.counts)
+            print(("|   " * self.depth) + "|--- " + "class: " + str(class_predicted))
