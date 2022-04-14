@@ -26,7 +26,8 @@ class Node:
         self.left = None
         self.right = None
 
-        # Assume labels are all integers from 0 to i.
+        # NOTE: Assume labels are all integers from 0 to num_classes-1
+        # This is asserted in Tree
         self.num_classes = num_classes
         self.counts = np.zeros(self.num_classes, dtype=int)
         for class_ in np.arange(num_classes):

@@ -19,7 +19,7 @@ def get_gini(
         if ret_var:
             return 0, 0
         return 0
-    p = counts.astype(float) / n
+    p = counts / n
     V_p = p * (1 - p) / n
     G = 1 - np.dot(p, p)
     # This variance comes from propagation of error formula, see
@@ -48,7 +48,7 @@ def get_entropy(counts: np.ndarray, ret_var=False) -> Union[Tuple[float, float],
             return 0, 0
         return 0
 
-    p = counts.astype(float) / n
+    p = counts / n
     V_p = p * (1 - p) / n
     log_p = np.zeros(len(p))
     for i in range(len(p)):
@@ -77,13 +77,13 @@ def get_variance(
     :param ret_var: Whether to the variance of the estimate
     :return: the variance of the node, as well as its estimated variance if ret_var
     """
-
+    raise NotImplementedError("Not implemented until we do regression trees")
     n = np.sum(counts)
     if n == 0:
         if ret_var:
             return 0, 0
         return 0
-    p = counts.astype(float) / n
+    p = counts / n
     V_p = p * (1 - p) / n
     y_values = np.arange(len(counts))  # ith class label is assigned to the integer i
     V_target = np.sum((y_values ** 2) * p) - np.sum(y_values * p) ** 2

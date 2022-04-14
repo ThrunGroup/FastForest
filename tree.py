@@ -15,6 +15,12 @@ class Tree(TreeClassifier):
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
         self.n_classes = len(np.unique(labels))
+        # np.unique returns the labels in sorted order
+        assert (
+            np.unique(labels) == np.arange(self.n_classes)
+        ).all(), "Labels are not 0, 1, ... K-1"
+
+        assert np.unique(labels)
         self.node = Node(
             tree=self,
             parent=None,

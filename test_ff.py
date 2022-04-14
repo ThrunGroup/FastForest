@@ -56,7 +56,10 @@ def ground_truth_forest(
     :param show: whether to show the random forest using matplotlib
     :return: None
     """
-    RF = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth,)
+    RF = RandomForestClassifier(
+        n_estimators=n_estimators,
+        max_depth=max_depth,
+    )
     RF.fit(data, labels)
     acc = np.sum(RF.predict(data) == labels) / len(data)
     print("Ground truth random forest Train Accuracy:", acc)
@@ -75,12 +78,9 @@ def reduce_to_2class(
 def test_tree_iris() -> None:
     iris = sklearn.datasets.load_iris()
     data, labels = iris.data, iris.target
-    num_classes = len(np.unique(labels))
 
     # Note: currently only support 2-class target
-    ground_truth_tree(
-        data=data, labels=labels, max_depth=5, show=False
-    )
+    ground_truth_tree(data=data, labels=labels, max_depth=5, show=False)
     t = Tree(data=data, labels=labels, max_depth=5)
     t.fit()
     t.tree_print()
@@ -108,7 +108,7 @@ def test_forest_iris() -> None:
 def test_forest_digits() -> None:
     digits = sklearn.datasets.load_digits()
     data, labels = digits.data, digits.target
-    num_classes = len(set(labels))
+    num_classes = len(np.unique(labels))
 
     ground_truth_forest(
         data=data, labels=labels, n_estimators=10, max_depth=5, n_classes=num_classes

@@ -72,7 +72,8 @@ def get_impurity_reductions(
         )
 
     impurity_curr, V_impurity_curr = get_impurity(
-        h.left[0, :] + h.right[0, :], ret_var=True,
+        h.left[0, :] + h.right[0, :],
+        ret_var=True,
     )
     impurity_curr = float(impurity_curr)
     V_impurity_curr = float(V_impurity_curr)
@@ -141,6 +142,10 @@ def sample_targets(
 
 
 def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bool:
+
+    # TODO: Fix this. Use a dictionary to store original labels -> label index
+    #  or use something like label_idx,
+    #  label in np.unique(labels) to avoid assuming that the labels are 0, ... K-1
     num_classes = (
         int(np.max(labels)) + 1
     )  # Some labels can be missing as it's a subset of whole dataset. But it's
