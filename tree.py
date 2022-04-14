@@ -14,7 +14,7 @@ class Tree(TreeClassifier):
     def __init__(self, data: np.ndarray, labels: np.ndarray, max_depth: int) -> None:
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
-        self.n_classes = len(set(labels))
+        self.n_classes = len(np.unique(labels))
         self.node = Node(
             tree=self,
             parent=None,
@@ -113,7 +113,6 @@ class Tree(TreeClassifier):
                 node = node.right
         assert node.right is None, "Tree is malformed"
 
-        idx = np.argmax(node.counts)
         probs = node.counts / np.sum(node.counts)
         assert np.allclose(probs.sum(), 1), "Probabilities don't sum to 1"
         return probs.argmax(), probs

@@ -145,34 +145,35 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
         int(np.max(labels)) + 1
     )  # Some labels can be missing as it's a subset of whole dataset. But it's
     # still okay as classes that don't appear in this subset don't affect impurity
-    counts = np.zeros(num_classes)  # Redundant calculation. It should be optimized
+    counts = np.empty(num_classes)  # Redundant calculation. It should be optimized
+    classes = np.unique(labels)
 
-    for label in labels:  # Assume labels are all integers
-        counts[int(label)] += 1
-    p = counts.astype(float) / len(labels)
+    for class_ in classes:  # Assume labels are all integers
+        counts[int(class_)] = len(np.where(labels == class_)[0])
+    p = counts / len(labels)
     root_impurity = 1 - np.dot(p, p)
 
     left_idcs = np.where(data[:, feature] <= value)
     left_labels = labels[left_idcs]
     L_counts = np.zeros(num_classes)
-    for left_label in left_labels:
-        L_counts[int(left_label)] += 1
+    for class_ in classes:
+        L_counts[int(class_)] = len(np.where(left_labels == class_)[0])
 
     # This is already a pure node
     if len(left_idcs[0]) == 0:
         return False
-    p_L = L_counts.astype(float) / np.sum(L_counts)
+    p_L = L_counts / np.sum(L_counts)
 
     right_idcs = np.where(data[:, feature] > value)
     right_labels = labels[right_idcs]
     R_counts = np.zeros(num_classes)
-    for right_label in right_labels:
-        R_counts[int(right_label)] += 1
+    for class_ in classes:
+        R_counts[int(class_)] = len(np.where(right_labels == class_)[0])
 
     # This is already a pure node
     if len(right_idcs[0]) == 0:
         return False
-    p_R = R_counts.astype(float) / np.sum(R_counts)
+    p_R = R_counts / np.sum(R_counts)
 
     split_impurity = (1 - np.dot(p_L, p_L)) * np.sum(L_counts) + (
         1 - np.dot(p_R, p_R)
@@ -216,7 +217,7 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
 
     # Create a list of histogram objects, one per feature
     histograms = []
-    classes = tuple(set(labels))  # Not assume labels are 0 to i here
+    classes: Tuple = tuple(np.unique(labels))  # Not assume labels are 0 to i here
     for f_idx in range(F):
         # Set the minimum and maximum of bins as the minimum of maximum of data of a feature
         # Can optimize by calculating min and max at the same time?
