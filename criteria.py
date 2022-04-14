@@ -26,7 +26,7 @@ def get_gini(
     # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
     if ret_var:
         dG_dp = (
-            2 * p[:-1] * (p[-1] - 1)
+            -2 * p[:-1] + 2 * p[-1]
         )  # Note: len(dG_dp) is len(p) - 1 since p[-1] is dependent variable on p[:-1]
         V_G = np.dot(dG_dp ** 2, V_p[:-1])
         return float(G), float(V_G)
@@ -59,7 +59,7 @@ def get_entropy(counts: np.ndarray, ret_var=False) -> Union[Tuple[float, float],
     # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
     if ret_var:
         dE_dp = (
-            log_p[:-1] + log_p[-1] - n + 2
+            -log_p[:-1] + log_p[-1]
         )  # Note: len(dE_dp) is len(p) - 1 since p[-1] is dependent variable on p[:-1]
         V_E = np.dot(dE_dp ** 2, V_p[:-1])
         return float(E), float(V_E)
