@@ -17,8 +17,8 @@ class Histogram:
             1,
         ),  # classes is the tuple of labels (labels can be any type)
         num_bins: int = 11,
-        min_bin: int = 0.0,
-        max_bin: int = 1.0,
+        min_bin: float = 0.0,
+        max_bin: float = 1.0,
     ):
         self.feature_idx = feature_idx
         self.classes = classes
