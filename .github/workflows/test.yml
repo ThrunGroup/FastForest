@@ -1,0 +1,15 @@
+name: Run Forest Tests
+on: [push, pull_request]
+
+jobs:
+  test:
+    name: Running Forest Unit Tests
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: testing iris dataset
+        env:
+          working-directory: ./tests
+        run: pytest
+        working-directory: ${{env.working-directory}}
