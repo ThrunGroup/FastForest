@@ -1,17 +1,18 @@
 name: Run Forest Tests
+
 on: [push, pull_request]
- 
+
 jobs:
-  build:
+  test:
+    name: running forest unit tests
     runs-on: macos-latest
+    
     steps:
-    - uses: actions/checkout@v3
-   
-    - name: Install dependencies
-      run: |
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-   
-    - name: Test with pytest
-      working-directory: tests
-      run: |
-        pytest -m unittest
+      - uses: actions/checkout@v3
+
+    working-directory: tests
+      - name: testing iris dataset
+        run: python test_forests.py ForestTests.test_forest_iris
+        
+      - name: testing digit dataset
+        run: python test_forests.py ForestTests.test_forest_digits
