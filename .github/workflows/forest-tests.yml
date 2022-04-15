@@ -6,15 +6,11 @@ jobs:
   test:
     name: Running Forest Unit Tests
     runs-on: macos-latest
-    env:
-      working-directory: tests
     steps:
       - uses: actions/checkout@v3
       
       - name: testing iris dataset
         run: python test_forests.py ForestTests.test_forest_iris
-        working-directory: ${{env.working-directory}}
         
       - name: testing digit dataset
         run: python test_forests.py ForestTests.test_forest_digits
-        working-directory: ${{env.working-directory}}
