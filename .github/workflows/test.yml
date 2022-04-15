@@ -10,6 +10,6 @@ jobs:
 
       - name: testing iris dataset
         env:
-          working-directory: ./tests
+          working-directory: tests
         run: pytest
         working-directory: ${{env.working-directory}}
