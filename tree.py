@@ -11,22 +11,15 @@ class Tree(TreeClassifier):
     are used in splitting the nodes)
     """
 
-    def __init__(self, data: np.ndarray, labels: np.ndarray, max_depth: int) -> None:
+    def __init__(
+        self, data: np.ndarray, labels: np.ndarray, max_depth: int, classes: dict
+    ) -> None:
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
-        self.n_classes = len(np.unique(labels))
-        # np.unique returns the labels in sorted order
-        assert (
-            np.unique(labels) == np.arange(self.n_classes)
-        ).all(), "Labels are not 0, 1, ... K-1"
+        self.classes = classes  # contains all labels of original data
 
         self.node = Node(
-            tree=self,
-            parent=None,
-            data=self.data,
-            labels=self.labels,
-            depth=0,
-            num_classes=self.n_classes,
+            tree=self, parent=None, data=self.data, labels=self.labels, depth=0,
         )  # Root node contains all the data
 
         # These are copied from the link below. We won't need all of them.
@@ -119,8 +112,9 @@ class Tree(TreeClassifier):
         assert node.right is None, "Tree is malformed"
 
         probs = node.counts / np.sum(node.counts)
+        label_pred = list(self.classes.keys())[probs.argmax()] # Find ith key of dictionary
         assert np.allclose(probs.sum(), 1), "Probabilities don't sum to 1"
-        return probs.argmax(), probs
+        return label_pred, probs
 
     def tree_print(self) -> None:
         """

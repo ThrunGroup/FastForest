@@ -16,7 +16,6 @@ class Node:
         data: np.ndarray,
         labels: np.ndarray,
         depth: int,
-        num_classes: int = 2,
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
@@ -26,12 +25,17 @@ class Node:
         self.left = None
         self.right = None
 
-        # NOTE: Assume labels are all integers from 0 to num_classes-1
-        # This is asserted in Tree
-        self.num_classes = num_classes
-        self.counts = np.zeros(self.num_classes, dtype=int)
-        for class_ in np.arange(num_classes):
-            self.counts[int(class_)] += len(np.where(labels == class_)[0])
+        # NOTE: Not assume labels are all integers from 0 to num_classes-1
+        existing_classes = np.unique(
+            labels
+        )  # Note: It seems it's not efficient, but actually it is since it reduces
+        # the computation of finding counts of labels which aren't in "self.labels"
+        self.counts = np.zeros(
+            len(self.tree.classes)
+        )  # self.tree classes contains all classes of original data
+        for class_ in existing_classes:
+            class_idx = self.tree.classes[class_]
+            self.counts[class_idx] += len(np.where(labels == class_)[0])
 
         self.split_on = None
         self.split_feature = None
@@ -76,25 +80,13 @@ class Node:
             left_idcs = np.where(self.data[:, self.split_feature] <= self.split_value)
             left_data = self.data[left_idcs]
             left_labels = self.labels[left_idcs]
-            self.left = Node(
-                self.tree,
-                self,
-                left_data,
-                left_labels,
-                self.depth + 1,
-                self.num_classes,
-            )
+            self.left = Node(self.tree, self, left_data, left_labels, self.depth + 1,)
 
             right_idcs = np.where(self.data[:, self.split_feature] > self.split_value)
             right_data = self.data[right_idcs]
             right_labels = self.labels[right_idcs]
             self.right = Node(
-                self.tree,
-                self,
-                right_data,
-                right_labels,
-                self.depth + 1,
-                self.num_classes,
+                self.tree, self, right_data, right_labels, self.depth + 1,
             )
 
             self.split_on = self.split_feature
@@ -126,5 +118,6 @@ class Node:
             )
             self.right.n_print()
         else:
-            class_predicted = np.argmax(self.counts)
-            print(("|   " * self.depth) + "|--- " + "class: " + str(class_predicted))
+            class_idx_pred = np.argmax(self.counts)
+            class_pred = list(self.tree.classes.keys())[class_idx_pred] # print class name not class index
+            print(("|   " * self.depth) + "|--- " + "class: " + str(class_pred))

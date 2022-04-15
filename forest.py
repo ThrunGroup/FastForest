@@ -16,15 +16,16 @@ class Forest(TreeClassifier):
         labels: np.ndarray,
         n_estimators: int = 100,
         max_depth: int = None,
-        n_classes: int = 2,
     ) -> None:
         self.data = data
         self.num_features = len(data[0])
         self.labels = labels
         self.trees = []
-        self.n_classes = n_classes
         self.n_estimators = n_estimators
         self.feature_subsampling = "SQRT"
+        classes = np.unique(labels)
+        self.classes = dict(zip(classes, range(len(classes))))
+        self.n_classes = len(classes)
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
@@ -74,6 +75,7 @@ class Forest(TreeClassifier):
                 ],  # Randomly choose a subset of the available features
                 labels=self.labels,
                 max_depth=self.max_depth,
+                classes=self.classes,
             )
             tree.fit()
             self.trees.append(tree)

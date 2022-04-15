@@ -45,7 +45,6 @@ def ground_truth_forest(
     labels: np.ndarray,
     n_estimators: int = 100,
     max_depth: int = 5,
-    n_classes: int = 2,
 ) -> None:
     """
     Given a dataset, create the ground truth tree using sklearn.
@@ -78,10 +77,15 @@ def reduce_to_2class(
 def test_tree_iris() -> None:
     iris = sklearn.datasets.load_iris()
     data, labels = iris.data, iris.target
+    # Jay: issue 30: test that if tree.fit() works when we have labels different form 0, 1, and 2. Delete this after
+    # merging multi_class_bugs to main
+    labels = labels * 100
+    classes = np.unique(labels)
+    classes = dict(zip(classes, range(len(classes))))
 
     # Note: currently only support 2-class target
     ground_truth_tree(data=data, labels=labels, max_depth=5, show=False)
-    t = Tree(data=data, labels=labels, max_depth=5)
+    t = Tree(data=data, labels=labels, max_depth=5, classes=classes)
     t.fit()
     t.tree_print()
     acc = np.sum(t.predict_batch(data)[0] == labels)
@@ -94,11 +98,11 @@ def test_forest_iris() -> None:
     num_classes = len(np.unique(labels))
 
     ground_truth_forest(
-        data=data, labels=labels, n_estimators=100, max_depth=5, n_classes=num_classes
+        data=data, labels=labels, n_estimators=100, max_depth=5
     )
 
     f = Forest(
-        data=data, labels=labels, n_estimators=20, max_depth=5, n_classes=num_classes
+        data=data, labels=labels, n_estimators=20, max_depth=5
     )
     f.fit()
     acc = np.sum(f.predict_batch(data)[0] == labels)
@@ -111,11 +115,11 @@ def test_forest_digits() -> None:
     num_classes = len(np.unique(labels))
 
     ground_truth_forest(
-        data=data, labels=labels, n_estimators=10, max_depth=5, n_classes=num_classes
+        data=data, labels=labels, n_estimators=10, max_depth=5
     )
 
     f = Forest(
-        data=data, labels=labels, n_estimators=10, max_depth=5, n_classes=num_classes
+        data=data, labels=labels, n_estimators=10, max_depth=5
     )
     f.fit()
     acc = np.sum(f.predict_batch(data)[0] == labels)
@@ -126,6 +130,8 @@ def test_tree_toy(show: bool = False) -> None:
     X = create_data(10000)
     data = X[:, :-1]
     labels = X[:, -1]
+    classes = np.unique(labels)
+    classes = dict(zip(classes, range(len(classes))))
 
     print("=> Ground truth:\n")
     ground_truth_tree(data, labels, show=show)
@@ -134,7 +140,7 @@ def test_tree_toy(show: bool = False) -> None:
     print("Best arm from solve_mab is: ", solve_mab(data, labels))
 
     print("\n\n=> Tree fitting:")
-    t = Tree(data, labels, max_depth=3)
+    t = Tree(data, labels, max_depth=3, classes=classes)
     t.fit()
     t.tree_print()
 
