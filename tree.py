@@ -93,6 +93,7 @@ class Tree(TreeClassifier):
             ):
                 best_leaf.split()
                 split_leaf = self.leaves.pop(best_leaf_idx)
+                split_leaf.prediction_probs = None  # this node is no longer a leaf
                 self.leaves.append(split_leaf.left)
                 self.leaves.append(split_leaf.right)
             else:
@@ -118,7 +119,13 @@ class Tree(TreeClassifier):
                 node = node.right
         assert node.right is None, "Tree is malformed"
 
+        # if prediction already exists, return that
+        if node.prediction_probs is not None:
+            return node.prediction_probs.argmax(), node.prediction_probs
+
+        # otherwise, make prediction and cache it
         probs = node.counts / np.sum(node.counts)
+        node.prediction_probs = probs
         assert np.allclose(probs.sum(), 1), "Probabilities don't sum to 1"
         return probs.argmax(), probs
 
