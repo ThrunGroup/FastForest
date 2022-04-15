@@ -20,7 +20,7 @@ class ForestTests(unittest.TestCase):
     iris = sklearn.datasets.load_iris()
     digits = sklearn.datasets.load_digits()
 
-    def test_forest_iris(self) -> None:
+    def test_forest_iris(self):
         self.iris = sklearn.datasets.load_iris()
         data, labels = self.iris.data, self.iris.target
         num_classes = len(np.unique(labels))
@@ -40,7 +40,7 @@ class ForestTests(unittest.TestCase):
             (acc / len(data)) == 1.0
         )
 
-    def test_forest_digits(self) -> None:
+    def test_forest_digits(self):
         self.digits = sklearn.datasets.load_digits()
         data, labels = self.digits.data, self.digits.target
         num_classes = len(np.unique(labels))
