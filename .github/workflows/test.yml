@@ -8,5 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: testing iris dataset
-        run: pytest
+      - name: testing forests
+        run: |
+          pip install pytest
+          pytest
