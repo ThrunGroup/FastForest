@@ -75,6 +75,8 @@ class Tree(TreeClassifier):
                     continue
 
                 reduction = leaf.calculate_best_split()
+                if reduction:
+                    reduction *= len(self.labels)
                 if reduction is not None and reduction < best_leaf_reduction:
                     best_leaf = leaf
                     best_leaf_idx = leaf_idx
