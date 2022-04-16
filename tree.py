@@ -83,8 +83,8 @@ class Tree(TreeClassifier):
                     continue
 
                 reduction = leaf.calculate_best_split()
-                #if not leaf.is_best_reduction:  # don't add queries if best split is already computed
-                self.num_queries += leaf.num_queries[0]
+                if not leaf.is_best_reduction:  # don't add queries if best split is already computed
+                    self.num_queries += leaf.num_queries[0]
 
                 if reduction is not None and reduction < best_leaf_reduction:
                     best_leaf = leaf
