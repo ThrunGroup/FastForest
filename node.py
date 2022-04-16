@@ -112,7 +112,7 @@ class Node:
             self.right.n_print()
         else:
             class_idx_pred = np.argmax(self.counts)
-            class_pred = list(self.tree.classes.keys())[
+            class_pred = self.tree.idx_to_class[
                 class_idx_pred
             ]  # print class name not class index
             print(("|   " * self.depth) + "|--- " + "class: " + str(class_pred))
