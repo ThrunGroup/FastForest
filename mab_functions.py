@@ -8,7 +8,7 @@ from params import CONF_MULTIPLIER, TOLERANCE
 
 from criteria import get_gini, get_entropy, get_variance
 
-from utils import type_check
+from utils import type_check, count_occurrence, class_to_idx, counts_on_labels
 
 type_check()
 
@@ -145,23 +145,16 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
     # TODO: Fix this. Use a dictionary to store original labels -> label index
     #  or use something like label_idx,
     #  label in np.unique(labels) to avoid assuming that the labels are 0, ... K-1
-    classes = np.unique(labels)
-    counts = np.empty(
-        len(classes)
-    )  # counts[i] contains the counts of classes[i](which is a class)
-
-    for class_ in classes:  # Assume labels are all integers
-        class_idx = np.where(classes == class_)
-        counts[class_idx] = len(np.where(labels == class_)[0])
+    class_dict: dict = class_to_idx(np.unique(labels))
+    counts: np.ndarray = counts_on_labels(
+        class_dict, labels
+    )  # counts[i] contains the counts of class_dict[i](which is a class) in "label"
     p = counts / len(labels)
     root_impurity = 1 - np.dot(p, p)
 
     left_idcs = np.where(data[:, feature] <= value)
     left_labels = labels[left_idcs]
-    L_counts = np.zeros(len(classes))
-    for class_ in classes:
-        class_idx = np.where(classes == class_)
-        L_counts[class_idx] = len(np.where(left_labels == class_)[0])
+    L_counts: np.ndarray = counts_on_labels(class_dict, left_labels)
 
     # This is already a pure node
     if len(left_idcs[0]) == 0:
@@ -170,10 +163,7 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 
     right_idcs = np.where(data[:, feature] > value)
     right_labels = labels[right_idcs]
-    R_counts = np.zeros(len(classes))
-    for class_ in classes:
-        class_idx = np.where(classes == class_)
-        R_counts[class_idx] = len(np.where(right_labels == class_)[0])
+    R_counts: np.ndarray = counts_on_labels(class_dict, right_labels)
 
     # This is already a pure node
     if len(right_idcs[0]) == 0:
