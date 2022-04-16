@@ -12,7 +12,7 @@ class TreeClassifier(ABC):
         :return: Pair of numpy arrays where the first contains the labels and the second contains the class probs
         """
         pred_labels = np.empty(len(data))
-        pred_probs = np.empty((len(data), self.n_classes))
+        pred_probs = np.empty((len(data), len(self.classes)))
         for d_idx, datapoint in enumerate(data):
             pred_labels[d_idx], pred_probs[d_idx] = self.predict(datapoint)
         return pred_labels, pred_probs
