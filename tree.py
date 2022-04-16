@@ -48,6 +48,10 @@ class Tree(TreeClassifier):
 
         self.depth = self.get_depth()
         self.max_depth = max_depth
+        self.using_split_cache = False
+
+        # vars for runtime analysis
+        self.num_nodes = 1
         self.num_queries = 0
 
     def get_depth(self) -> int:
@@ -83,7 +87,8 @@ class Tree(TreeClassifier):
                     continue
 
                 reduction = leaf.calculate_best_split()
-                if not leaf.is_best_reduction:  # don't add queries if best split is already computed
+                # add queries if best split is not already computed and we're using cache
+                if not (self.using_split_cache and leaf.best_reduction_computed):
                     self.num_queries += leaf.num_queries[0]
 
                 if reduction is not None and reduction < best_leaf_reduction:
@@ -96,6 +101,7 @@ class Tree(TreeClassifier):
                 and best_leaf_reduction < self.min_impurity_decrease
             ):
                 best_leaf.split()
+                self.num_nodes += 2
                 split_leaf = self.leaves.pop(best_leaf_idx)
                 split_leaf.prediction_probs = None  # this node is no longer a leaf
                 self.leaves.append(split_leaf.left)
