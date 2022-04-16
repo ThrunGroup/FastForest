@@ -46,7 +46,7 @@ class ForestTests(unittest.TestCase):
 
         print(acc/len(data))
         self.assertTrue(
-            (acc / len(data)) > 0.89
+            (acc / len(data)) > 0.87
         )
 
 
