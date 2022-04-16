@@ -48,6 +48,7 @@ class Tree(TreeClassifier):
 
         self.depth = self.get_depth()
         self.max_depth = max_depth
+        self.num_queries = 0
 
     def get_depth(self) -> int:
         """
@@ -82,6 +83,9 @@ class Tree(TreeClassifier):
                     continue
 
                 reduction = leaf.calculate_best_split()
+                #if not leaf.is_best_reduction:  # don't add queries if best split is already computed
+                self.num_queries += leaf.num_queries[0]
+
                 if reduction is not None and reduction < best_leaf_reduction:
                     best_leaf = leaf
                     best_leaf_idx = leaf_idx

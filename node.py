@@ -1,8 +1,6 @@
 from __future__ import annotations
-
 import numpy as np
 from mab_functions import solve_mab
-
 from utils import type_check
 
 type_check()
@@ -38,6 +36,7 @@ class Node:
         self.split_value = None
 
         # values to cache
+        self.num_queries = [0]  # make into list to pass by reference
         self.is_best_reduction = False
         self.split_reduction = None
         self.prediction_probs = None
@@ -53,7 +52,7 @@ class Node:
             )  # If we already calculate it, return self.split_reduction right away
 
         self.is_best_reduction = True
-        results = solve_mab(self.data, self.labels)
+        results = solve_mab(self.data, self.labels, self.num_queries)
         if results is not None:
             self.split_feature, self.split_value, self.split_reduction = results
             return self.split_reduction

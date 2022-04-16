@@ -95,6 +95,7 @@ def sample_targets(
     arms: Tuple[np.ndarray, np.ndarray],
     histograms: List[object],
     batch_size: int,
+    num_queries: List[int],
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
@@ -104,6 +105,7 @@ def sample_targets(
     :param arms: arms we want to consider
     :param histograms: list of the histograms for ALL feature indices
     :param batch_size: the number of samples we're going to choose
+    :param num_queries: mutable variable to update the number of data points queried
     return: impurity_reduction and its variance of accesses
     """
     # TODO(@motiwari): Samples all bin edges for a given feature, should only sample those under consideration.
@@ -127,6 +129,8 @@ def sample_targets(
         sample_idcs = np.arange(N)
     samples = data[sample_idcs]
     sample_labels = labels[sample_idcs]
+    num_queries[0] += len(sample_idcs)
+
     for f_idx, f in enumerate(f2bin_dict):
         h = histograms[f]
         h.add(samples, sample_labels)  # This is where the labels are used
@@ -190,7 +194,7 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 
 
 # TODO (@motiwari): This doesn't appear to be actually returning a tuple?
-def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
+def solve_mab(data: np.ndarray, labels: np.ndarray, num_queries: List[int]) -> Tuple[int, float, float]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
     that feature should be split at.
@@ -203,6 +207,7 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
 
     :param data: Feature set
     :param labels: Labels of datapoints
+    :param num_queries: mutable variable to update the number of datapoints queried
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
     # Right now, we assume the number of bin edges is constant across features
@@ -240,7 +245,7 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
         exact_accesses = np.where((num_samples + batch_size >= N) & (exact_mask == 0))
         if len(exact_accesses[0]) > 0:
             estimates[exact_accesses], _vars = sample_targets(
-                data, labels, exact_accesses, histograms, batch_size
+                data, labels, exact_accesses, histograms, batch_size, num_queries
             )
             # The confidence intervals now only contain a point, since the return has been computed exactly
             lcbs[exact_accesses] = ucbs[exact_accesses] = estimates[exact_accesses]
@@ -263,7 +268,7 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
         )  # Massage arm indices for use by numpy slicing
         # NOTE: cb_delta contains a value for EVERY arm, even non-candidates, so need [accesses]
         estimates[accesses], cb_delta[accesses] = sample_targets(
-            data, labels, accesses, histograms, batch_size
+            data, labels, accesses, histograms, batch_size, num_queries
         )
         num_samples[accesses] += batch_size
         lcbs[accesses] = estimates[accesses] - CONF_MULTIPLIER * cb_delta[accesses]

@@ -45,6 +45,7 @@ class Forest(TreeClassifier):
         self.class_weight = None
         self.ccp_alpha = 0.0
         self.max_samples = None
+        self.num_queries = 0
 
         # Need this to do remapping when features are shuffled
         self.tree_feature_idcs = {}
@@ -76,6 +77,7 @@ class Forest(TreeClassifier):
                 max_depth=self.max_depth,
             )
             tree.fit()
+            self.num_queries += tree.num_queries
             self.trees.append(tree)
 
     def predict(self, datapoint: np.ndarray) -> Tuple[int, np.ndarray]:
