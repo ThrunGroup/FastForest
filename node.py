@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 from mab_functions import solve_mab
 
-from utils import type_check
+from utils import type_check, counts_on_labels
 
 type_check()
 
@@ -26,16 +26,9 @@ class Node:
         self.right = None
 
         # NOTE: Not assume labels are all integers from 0 to num_classes-1
-        existing_classes = np.unique(
-            labels
-        )  # Note: It seems it's not efficient, but actually it is since it reduces
-        # the computation of finding counts of labels which aren't in "self.labels"
-        self.counts = np.zeros(
-            len(self.tree.classes)
+        self.counts = counts_on_labels(
+            self.tree.classes, labels
         )  # self.tree classes contains all classes of original data
-        for class_ in existing_classes:
-            class_idx = self.tree.classes[class_]
-            self.counts[class_idx] += len(np.where(labels == class_)[0])
 
         self.split_on = None
         self.split_feature = None
@@ -119,5 +112,7 @@ class Node:
             self.right.n_print()
         else:
             class_idx_pred = np.argmax(self.counts)
-            class_pred = list(self.tree.classes.keys())[class_idx_pred] # print class name not class index
+            class_pred = list(self.tree.classes.keys())[
+                class_idx_pred
+            ]  # print class name not class index
             print(("|   " * self.depth) + "|--- " + "class: " + str(class_pred))

@@ -16,7 +16,7 @@ class Tree(TreeClassifier):
     ) -> None:
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
-        self.classes = classes  # contains all labels of original data
+        self.classes = classes  # a dict from class name to index
 
         self.node = Node(
             tree=self, parent=None, data=self.data, labels=self.labels, depth=0,
@@ -114,7 +114,9 @@ class Tree(TreeClassifier):
         assert node.right is None, "Tree is malformed"
 
         probs = node.counts / np.sum(node.counts)
-        label_pred = list(self.classes.keys())[probs.argmax()] # Find ith key of dictionary
+        label_pred = list(self.classes.keys())[
+            probs.argmax()
+        ]  # Find ith key of dictionary
         assert np.allclose(probs.sum(), 1), "Probabilities don't sum to 1"
         return label_pred, probs
 

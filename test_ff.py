@@ -15,6 +15,7 @@ from data_generator import create_data
 from mab_functions import solve_mab
 from tree import Tree
 from forest import Forest
+from utils import class_to_idx
 
 
 def ground_truth_tree(
@@ -41,10 +42,7 @@ def ground_truth_tree(
 
 
 def ground_truth_forest(
-    data: np.ndarray,
-    labels: np.ndarray,
-    n_estimators: int = 100,
-    max_depth: int = 5,
+    data: np.ndarray, labels: np.ndarray, n_estimators: int = 100, max_depth: int = 5,
 ) -> None:
     """
     Given a dataset, create the ground truth tree using sklearn.
@@ -55,10 +53,7 @@ def ground_truth_forest(
     :param show: whether to show the random forest using matplotlib
     :return: None
     """
-    RF = RandomForestClassifier(
-        n_estimators=n_estimators,
-        max_depth=max_depth,
-    )
+    RF = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth,)
     RF.fit(data, labels)
     acc = np.sum(RF.predict(data) == labels) / len(data)
     print("Ground truth random forest Train Accuracy:", acc)
@@ -77,11 +72,8 @@ def reduce_to_2class(
 def test_tree_iris() -> None:
     iris = sklearn.datasets.load_iris()
     data, labels = iris.data, iris.target
-    # Jay: issue 30: test that if tree.fit() works when we have labels different form 0, 1, and 2. Delete this after
-    # merging multi_class_bugs to main
-    labels = labels * 100
-    classes = np.unique(labels)
-    classes = dict(zip(classes, range(len(classes))))
+    classes_arr = np.unique(labels)
+    classes = class_to_idx(classes_arr)
 
     # Note: currently only support 2-class target
     ground_truth_tree(data=data, labels=labels, max_depth=5, show=False)
@@ -95,15 +87,10 @@ def test_tree_iris() -> None:
 def test_forest_iris() -> None:
     iris = sklearn.datasets.load_iris()
     data, labels = iris.data, iris.target
-    num_classes = len(np.unique(labels))
 
-    ground_truth_forest(
-        data=data, labels=labels, n_estimators=100, max_depth=5
-    )
+    ground_truth_forest(data=data, labels=labels, n_estimators=100, max_depth=5)
 
-    f = Forest(
-        data=data, labels=labels, n_estimators=20, max_depth=5
-    )
+    f = Forest(data=data, labels=labels, n_estimators=20, max_depth=5)
     f.fit()
     acc = np.sum(f.predict_batch(data)[0] == labels)
     print("MAB solution Forest Train Accuracy:", acc / len(data))
@@ -112,15 +99,10 @@ def test_forest_iris() -> None:
 def test_forest_digits() -> None:
     digits = sklearn.datasets.load_digits()
     data, labels = digits.data, digits.target
-    num_classes = len(np.unique(labels))
 
-    ground_truth_forest(
-        data=data, labels=labels, n_estimators=10, max_depth=5
-    )
+    ground_truth_forest(data=data, labels=labels, n_estimators=10, max_depth=5)
 
-    f = Forest(
-        data=data, labels=labels, n_estimators=10, max_depth=5
-    )
+    f = Forest(data=data, labels=labels, n_estimators=10, max_depth=5)
     f.fit()
     acc = np.sum(f.predict_batch(data)[0] == labels)
     print("MAB solution Forest Train Accuracy:", acc / len(data))
@@ -130,8 +112,8 @@ def test_tree_toy(show: bool = False) -> None:
     X = create_data(10000)
     data = X[:, :-1]
     labels = X[:, -1]
-    classes = np.unique(labels)
-    classes = dict(zip(classes, range(len(classes))))
+    classes_arr = np.unique(labels)
+    classes = class_to_idx(classes_arr)
 
     print("=> Ground truth:\n")
     ground_truth_tree(data, labels, show=show)

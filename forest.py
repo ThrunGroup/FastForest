@@ -4,6 +4,8 @@ from typing import Tuple
 from tree import Tree
 from tree_classifier import TreeClassifier
 
+from utils import class_to_idx
+
 
 class Forest(TreeClassifier):
     """
@@ -23,10 +25,10 @@ class Forest(TreeClassifier):
         self.trees = []
         self.n_estimators = n_estimators
         self.feature_subsampling = "SQRT"
-        classes = np.unique(labels)
-        self.classes = dict(zip(classes, range(len(classes))))
-        self.n_classes = len(classes)
-
+        self.classes: dict = class_to_idx(
+            np.unique(labels)
+        )  # a dictionary that maps class name to class index
+        self.n_classes = len(self.classes)
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
         self.criterion = "gini"
@@ -95,4 +97,5 @@ class Forest(TreeClassifier):
             )[1]
 
         avg_preds = agg_preds.mean(axis=0)
-        return avg_preds.argmax(), avg_preds
+        label_pred = list(self.classes.keys())[avg_preds.argmax()]
+        return label_pred, avg_preds
