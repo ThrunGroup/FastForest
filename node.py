@@ -37,7 +37,8 @@ class Node:
         self.split_feature = None
         self.split_value = None
 
-        # values needed for caching
+        # values to cache
+        self.is_best_reduction = False
         self.split_reduction = None
         self.prediction_probs = None
 
@@ -46,11 +47,12 @@ class Node:
         Speculatively calculate the best split
         :return: None, but assign
         """
-        if self.split_reduction is not None:
+        if self.is_best_reduction:
             return (
                 self.split_reduction
             )  # If we already calculate it, return self.split_reduction right away
 
+        self.is_best_reduction = True
         results = solve_mab(self.data, self.labels)
         if results is not None:
             self.split_feature, self.split_value, self.split_reduction = results

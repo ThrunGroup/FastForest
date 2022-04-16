@@ -24,14 +24,12 @@ class ForestTests(unittest.TestCase):
         self.iris = sklearn.datasets.load_iris()
         data, labels = self.iris.data, self.iris.target
         num_classes = len(np.unique(labels))
-
         f = Forest(
             data=data, labels=labels, n_estimators=20, max_depth=5, n_classes=num_classes
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
 
-        # assert that MAB training accuracy is 1.0"
         self.assertTrue(
             (acc / len(data)) > 0.99
         )
@@ -40,14 +38,12 @@ class ForestTests(unittest.TestCase):
         self.digits = sklearn.datasets.load_digits()
         data, labels = self.digits.data, self.digits.target
         num_classes = len(np.unique(labels))
-
         f = Forest(
             data=data, labels=labels, n_estimators=10, max_depth=5, n_classes=num_classes
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
 
-        # assert MAB training accuracy is > 0.92
         print(acc/len(data))
         self.assertTrue(
             (acc / len(data)) > 0.89

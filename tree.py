@@ -119,7 +119,6 @@ class Tree(TreeClassifier):
                 node = node.right
         assert node.right is None, "Tree is malformed"
 
-        # if prediction already exists, return that
         if node.prediction_probs is not None:
             return node.prediction_probs.argmax(), node.prediction_probs
 

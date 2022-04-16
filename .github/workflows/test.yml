@@ -19,6 +19,6 @@ jobs:
           pip install pytest
           pip install -r requirements.txt
           
-      - name: testing forests
+      - name: Testing forests
         run: 
           python -m pytest
