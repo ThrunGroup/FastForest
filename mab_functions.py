@@ -122,11 +122,13 @@ def sample_targets(
     impurity_reductions = np.array([], dtype=float)
     cb_deltas = np.array([], dtype=float)
     N = len(data)
-    sample_idcs = np.random.choice(
-        N, size=batch_size
-    )  # Default: with replacement (replace=True)
+
     if N <= batch_size:
         sample_idcs = np.arange(N)
+    else:
+        sample_idcs = np.random.choice(
+            N, size=batch_size
+        )  # Default: with replacement (replace=True)
     samples = data[sample_idcs]
     sample_labels = labels[sample_idcs]
     num_queries[0] += len(sample_idcs)
