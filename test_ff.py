@@ -13,7 +13,7 @@ from forest import Forest
 def test_binary_forest_time() -> None:
     num_trials = 50
     avg_queries = []
-    for i in range(5):
+    for i in range(10):
         queries = 0
         print("=> starting trees with datapoints", 1000 * pow(2, i))
         for trial in range(num_trials):
