@@ -11,9 +11,9 @@ from forest import Forest
 
 
 def test_binary_forest_time() -> None:
-    num_trials = 20
+    num_trials = 50
     avg_queries = []
-    for i in range(10):
+    for i in range(5):
         queries = 0
         print("=> starting trees with datapoints", 1000 * pow(2, i))
         for trial in range(num_trials):
@@ -30,7 +30,7 @@ def test_binary_forest_time() -> None:
 
     x_axis = [i+1 for i in range(len(avg_queries))]
     plt.plot(x_axis, avg_queries, color='r', label='MAB')
-    plt.plot(x_axis, [10000 * pow(2, i) for i in range(len(avg_queries))], color='g', label='sklearn')
+    plt.plot(x_axis, [1000 * pow(2, i) for i in range(len(avg_queries))], color='g', label='sklearn')
 
     plt.xlabel("# dataset doubled")
     plt.ylabel("queries")
