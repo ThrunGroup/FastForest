@@ -4,6 +4,8 @@ from typing import Tuple
 from tree import Tree
 from tree_classifier import TreeClassifier
 
+from utils import class_to_idx
+
 
 class Forest(TreeClassifier):
     """
@@ -16,16 +18,17 @@ class Forest(TreeClassifier):
         labels: np.ndarray,
         n_estimators: int = 100,
         max_depth: int = None,
-        n_classes: int = 2,
     ) -> None:
         self.data = data
         self.num_features = len(data[0])
         self.labels = labels
         self.trees = []
-        self.n_classes = n_classes
         self.n_estimators = n_estimators
         self.feature_subsampling = "SQRT"
-
+        self.classes: dict = class_to_idx(
+            np.unique(labels)
+        )  # a dictionary that maps class name to class index
+        self.n_classes = len(self.classes)
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
         self.criterion = "gini"
@@ -75,6 +78,7 @@ class Forest(TreeClassifier):
                 ],  # Randomly choose a subset of the available features
                 labels=self.labels,
                 max_depth=self.max_depth,
+                classes=self.classes,
             )
             tree.fit()
             self.num_queries += tree.num_queries
@@ -95,4 +99,5 @@ class Forest(TreeClassifier):
             )[1]
 
         avg_preds = agg_preds.mean(axis=0)
-        return avg_preds.argmax(), avg_preds
+        label_pred = list(self.classes.keys())[avg_preds.argmax()]
+        return label_pred, avg_preds

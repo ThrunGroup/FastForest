@@ -8,7 +8,7 @@ from data_generator import create_data
 from mab_functions import solve_mab
 from tree import Tree
 from forest import Forest
-
+from utils import class_to_idx
 
 def test_binary_forest_time() -> None:
     num_trials = 20
@@ -40,14 +40,8 @@ def test_binary_forest_time() -> None:
 
 
 def main():
-    print("Testing toy forest runtime")
+    print("Testing toy tree runtime")
     test_binary_forest_time()
-
-    """
-    print("\n" * 4)
-    print("Testing forest digit dataset agreement:")
-    test_forest_digits()
-    """
 
 
 if __name__ == "__main__":
