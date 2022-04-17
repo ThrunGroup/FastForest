@@ -1,7 +1,7 @@
 from __future__ import annotations
 import numpy as np
 from mab_functions import solve_mab
-from utils import type_check, counts_on_label
+from utils import type_check, counts_on_labels
 type_check()
 
 
