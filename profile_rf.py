@@ -31,10 +31,10 @@ def main():
 
 
 def fit_forest(args):
-    if args.data == "IRIS":
+    if args.dataset == "IRIS":
         iris = sklearn.datasets.load_iris()
         data, labels = iris.data, iris.target
-    elif args.data == "DIGITS":
+    elif args.dataset == "DIGITS":
         digits = sklearn.datasets.load_digits()
         data, labels = digits.data, digits.target
     else:
@@ -62,7 +62,7 @@ def get_file_name(args):
         + "-n-"
         + str(args.n_estimators)
         + "-d-"
-        + str(args.data)
+        + str(args.dataset)
         + "-s-"
         + str(args.seed)
     )
@@ -84,7 +84,7 @@ def parse_args():
         help="Number of tree estimators in a random forest (default: 1)",
     )
     parser.add_argument(
-        "--data",
+        "--dataset",
         type=str,
         default="IRIS",
         choices=["IRIS", "DIGIT"],
