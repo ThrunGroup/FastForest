@@ -17,6 +17,9 @@ def type_check() -> None:
 def count_occurrence(class_: np.ndarray, labels: np.ndarray) -> int:
     """
     Helpful for function for counting the occurrence of class_ in labels
+    :param class_: a class name
+    :param labels: an aarray of labels
+    :return: counts of a class in the labels array
     """
     return len(np.where(labels == class_)[0])
 
@@ -24,15 +27,19 @@ def count_occurrence(class_: np.ndarray, labels: np.ndarray) -> int:
 def class_to_idx(classes: np.ndarray,) -> dict:
     """
     Helpful for function for generating dictionary that maps class names to class index
+    :param classes: an array of class names
+    :return: a dictionary that maps class names to class index
     """
     return dict(zip(classes, range(len(classes))))
 
 
-def counts_of_labels(class_dict: dict, labels: np.ndarray) -> np.ndarray:
+def counts_on_labels(class_dict: dict, labels: np.ndarray) -> np.ndarray:
     """
     Helper function for generating counts array.
     Counts is a numpy array that stores counts of the classes in labels.
-    :return: counts
+    :param class_dict: a dictionary that maps class name to class index
+    :param labels: an array of labels
+    :return: counts of each class in labels
     """
     classes = np.unique(labels)
     counts = np.zeros(len(class_dict))
