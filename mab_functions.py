@@ -8,7 +8,7 @@ from params import CONF_MULTIPLIER, TOLERANCE
 
 from criteria import get_gini, get_entropy, get_variance
 
-from utils import type_check, count_occurrence, class_to_idx, counts_on_labels
+from utils import type_check
 
 type_check()
 
@@ -72,7 +72,8 @@ def get_impurity_reductions(
         )
 
     impurity_curr, V_impurity_curr = get_impurity(
-        h.left[0, :] + h.right[0, :], ret_var=True,
+        h.left[0, :] + h.right[0, :],
+        ret_var=True,
     )
     impurity_curr = float(impurity_curr)
     V_impurity_curr = float(V_impurity_curr)
@@ -94,7 +95,7 @@ def sample_targets(
     arms: Tuple[np.ndarray, np.ndarray],
     histograms: List[object],
     batch_size: int,
-) -> Tuple[np.ndarray, np.ndarray, int]:
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
     their feature values into the (potentially non-empty) histograms and recompute the changes in impurity
@@ -106,7 +107,6 @@ def sample_targets(
     return: impurity_reduction and its variance of accesses
     """
     # TODO(@motiwari): Samples all bin edges for a given feature, should only sample those under consideration.
-    num_queries = 0
     feature_idcs, bin_edge_idcs = arms
     f2bin_dict = defaultdict(
         list
@@ -120,17 +120,13 @@ def sample_targets(
     impurity_reductions = np.array([], dtype=float)
     cb_deltas = np.array([], dtype=float)
     N = len(data)
-
+    sample_idcs = np.random.choice(
+        N, size=batch_size
+    )  # Default: with replacement (replace=True)
     if N <= batch_size:
         sample_idcs = np.arange(N)
-    else:
-        sample_idcs = np.random.choice(
-            N, size=batch_size
-        )  # Default: with replacement (replace=True)
     samples = data[sample_idcs]
     sample_labels = labels[sample_idcs]
-    num_queries += len(sample_idcs)
-
     for f_idx, f in enumerate(f2bin_dict):
         h = histograms[f]
         h.add(samples, sample_labels)  # This is where the labels are used
@@ -142,7 +138,7 @@ def sample_targets(
         )  # The above fn returns the vars
 
     # TODO(@motiwari): This seems dangerous, because access appears to be a linear index to the array
-    return impurity_reductions, cb_deltas, num_queries
+    return impurity_reductions, cb_deltas
 
 
 def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bool:
@@ -150,16 +146,23 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
     # TODO: Fix this. Use a dictionary to store original labels -> label index
     #  or use something like label_idx,
     #  label in np.unique(labels) to avoid assuming that the labels are 0, ... K-1
-    class_dict: dict = class_to_idx(np.unique(labels))
-    counts: np.ndarray = counts_on_labels(
-        class_dict, labels
-    )  # counts[i] contains the counts of class_dict[i](which is a class) in "label"
+    num_classes = (
+        int(np.max(labels)) + 1
+    )  # Some labels can be missing as it's a subset of whole dataset. But it's
+    # still okay as classes that don't appear in this subset don't affect impurity
+    counts = np.empty(num_classes)  # Redundant calculation. It should be optimized
+    classes = np.unique(labels)
+
+    for class_ in classes:  # Assume labels are all integers
+        counts[int(class_)] = len(np.where(labels == class_)[0])
     p = counts / len(labels)
     root_impurity = 1 - np.dot(p, p)
 
     left_idcs = np.where(data[:, feature] <= value)
     left_labels = labels[left_idcs]
-    L_counts: np.ndarray = counts_on_labels(class_dict, left_labels)
+    L_counts = np.zeros(num_classes)
+    for class_ in classes:
+        L_counts[int(class_)] = len(np.where(left_labels == class_)[0])
 
     # This is already a pure node
     if len(left_idcs[0]) == 0:
@@ -168,7 +171,9 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 
     right_idcs = np.where(data[:, feature] > value)
     right_labels = labels[right_idcs]
-    R_counts: np.ndarray = counts_on_labels(class_dict, right_labels)
+    R_counts = np.zeros(num_classes)
+    for class_ in classes:
+        R_counts[int(class_)] = len(np.where(right_labels == class_)[0])
 
     # This is already a pure node
     if len(right_idcs[0]) == 0:
@@ -180,11 +185,12 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
     ) * np.sum(R_counts)
     split_impurity /= len(labels)
 
-    return TOLERANCE < root_impurity - split_impurity
+    print("Split impurity:", split_impurity, "Root impurity:", root_impurity)
+    return TOLERANCE > root_impurity - split_impurity
 
 
 # TODO (@motiwari): This doesn't appear to be actually returning a tuple?
-def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, int]:
+def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
     that feature should be split at.
@@ -197,7 +203,6 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, 
 
     :param data: Feature set
     :param labels: Labels of datapoints
-    :param num_queries: mutable variable to update the number of datapoints queried
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
     # Right now, we assume the number of bin edges is constant across features
@@ -228,14 +233,13 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, 
             )
         )
 
-    total_queries = 0
     while len(candidates) > 0:
         # If we have already pulled the arms more times than the number of datapoints in the original dataset,
         # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
         exact_accesses = np.where((num_samples + batch_size >= N) & (exact_mask == 0))
         if len(exact_accesses[0]) > 0:
-            estimates[exact_accesses], _vars, num_queries = sample_targets(
+            estimates[exact_accesses], _vars = sample_targets(
                 data, labels, exact_accesses, histograms, batch_size
             )
             # The confidence intervals now only contain a point, since the return has been computed exactly
@@ -258,7 +262,7 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, 
             candidates[:, 1],
         )  # Massage arm indices for use by numpy slicing
         # NOTE: cb_delta contains a value for EVERY arm, even non-candidates, so need [accesses]
-        estimates[accesses], cb_delta[accesses], num_queries = sample_targets(
+        estimates[accesses], cb_delta[accesses] = sample_targets(
             data, labels, accesses, histograms, batch_size
         )
         num_samples[accesses] += batch_size
@@ -269,7 +273,6 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, 
         # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
         cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
-        total_queries += num_queries
         round_count += 1
 
     best_splits = zip(
@@ -286,9 +289,8 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, 
 
     # Only return the split if it would indeed lower the impurity
     if best_reduction < 0:
-        return best_feature, best_value, best_reduction, total_queries
-    # Uncomment when debugging
+        return best_feature, best_value, best_reduction
     # if verify_reduction(
-    #    data=data, labels=labels, feature=best_feature, value=best_value
-    #):
-    #    return best_feature, best_value, best_reduction
+    #     data=data, labels=labels, feature=best_feature, value=best_value
+    # ):
+    #     return best_feature, best_value, best_reduction
