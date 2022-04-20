@@ -1,7 +1,10 @@
 from __future__ import annotations
+
 import numpy as np
 from mab_functions import solve_mab
-from utils import type_check, counts_on_labels
+
+from utils import type_check
+
 type_check()
 
 
@@ -13,6 +16,7 @@ class Node:
         data: np.ndarray,
         labels: np.ndarray,
         depth: int,
+        num_classes: int = 2,
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
@@ -22,17 +26,19 @@ class Node:
         self.left = None
         self.right = None
 
-        # NOTE: Not assume labels are all integers from 0 to num_classes-1
-        self.counts = counts_on_labels(
-            self.tree.classes, labels
-        )  # self.tree classes contains all classes of original data
+        # NOTE: Assume labels are all integers from 0 to num_classes-1
+        # This is asserted in Tree
+        self.num_classes = num_classes
+        self.counts = np.zeros(self.num_classes, dtype=int)
+        for class_ in np.arange(num_classes):
+            self.counts[int(class_)] += len(np.where(labels == class_)[0])
 
         self.split_on = None
         self.split_feature = None
         self.split_value = None
 
-        self.num_queries = 0 
-        self.best_reduction_computed = False
+        # values to cache
+        self.is_best_reduction = False
         self.split_reduction = None
         self.prediction_probs = None
 
@@ -41,15 +47,15 @@ class Node:
         Speculatively calculate the best split
         :return: None, but assign
         """
-        if self.best_reduction_computed:
+        if self.is_best_reduction:
             return (
                 self.split_reduction
             )  # If we already calculate it, return self.split_reduction right away
 
-        self.best_reduction_computed = True
+        self.is_best_reduction = True
         results = solve_mab(self.data, self.labels)
         if results is not None:
-            self.split_feature, self.split_value, self.split_reduction, self.num_queries = results
+            self.split_feature, self.split_value, self.split_reduction = results
             return self.split_reduction
 
     def split(self) -> None:
@@ -74,13 +80,25 @@ class Node:
             left_idcs = np.where(self.data[:, self.split_feature] <= self.split_value)
             left_data = self.data[left_idcs]
             left_labels = self.labels[left_idcs]
-            self.left = Node(self.tree, self, left_data, left_labels, self.depth + 1,)
+            self.left = Node(
+                self.tree,
+                self,
+                left_data,
+                left_labels,
+                self.depth + 1,
+                self.num_classes,
+            )
 
             right_idcs = np.where(self.data[:, self.split_feature] > self.split_value)
             right_data = self.data[right_idcs]
             right_labels = self.labels[right_idcs]
             self.right = Node(
-                self.tree, self, right_data, right_labels, self.depth + 1,
+                self.tree,
+                self,
+                right_data,
+                right_labels,
+                self.depth + 1,
+                self.num_classes,
             )
             self.split_on = self.split_feature
 
@@ -111,8 +129,5 @@ class Node:
             )
             self.right.n_print()
         else:
-            class_idx_pred = np.argmax(self.counts)
-            class_pred = self.tree.idx_to_class[
-                class_idx_pred
-            ]  # print class name not class index
-            print(("|   " * self.depth) + "|--- " + "class: " + str(class_pred))
+            class_predicted = np.argmax(self.counts)
+            print(("|   " * self.depth) + "|--- " + "class: " + str(class_predicted))
