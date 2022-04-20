@@ -24,12 +24,14 @@ def test_binary_forest_time(verbose=True) -> None:
     max_exponent = 5
     starting_size = 100
     num_trials = 50
+    max_depth = 15
 
     avg_norm_queries = []
     for i in range(max_exponent):
         norm_queries = 0
         total_queries = 0
         total_splits = 0
+
         for trial in range(num_trials):
             # create the dataset
             X = create_data(starting_size * pow(base, i))
@@ -39,7 +41,7 @@ def test_binary_forest_time(verbose=True) -> None:
             classes = class_to_idx(classes_arr)
 
             # create tree and fit
-            t = Tree(data=data, labels=labels, max_depth=5, classes=classes)
+            t = Tree(data=data, labels=labels, max_depth=max_depth, classes=classes)
             t.fit()
 
             # cache relevant values
@@ -50,12 +52,14 @@ def test_binary_forest_time(verbose=True) -> None:
         avg_norm_queries.append(norm_queries / num_trials)
         if verbose:
             print("=> built trees with datapoints", starting_size * pow(base, i))
-            print("=> --total queries:", total_queries/num_trials)
+            print("=> --MAB total queries:", total_queries/num_trials)
             print("=> --total splits:", total_splits/num_trials)
+            print("=> --max depth:", max_depth)
             print("\n")
 
     base = [starting_size * pow(base, i) for i in range(len(avg_norm_queries))]
     plt.plot(base, avg_norm_queries, color='r', label='normalized queries')
+    #plt.plot(base, avg_sklearn, color='g', label='sklearn queries')
     plt.xlabel("Number of Datapoints")
     plt.ylabel("Number of Queries")
     plt.savefig('norm_queries.png')
