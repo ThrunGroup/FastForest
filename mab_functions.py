@@ -94,8 +94,7 @@ def sample_targets(
     arms: Tuple[np.ndarray, np.ndarray],
     histograms: List[object],
     batch_size: int,
-    num_queries: List[int],
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray, int]:
     """
     Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
     their feature values into the (potentially non-empty) histograms and recompute the changes in impurity
@@ -104,10 +103,10 @@ def sample_targets(
     :param arms: arms we want to consider
     :param histograms: list of the histograms for ALL feature indices
     :param batch_size: the number of samples we're going to choose
-    :param num_queries: mutable variable to update the number of data points queried
     return: impurity_reduction and its variance of accesses
     """
     # TODO(@motiwari): Samples all bin edges for a given feature, should only sample those under consideration.
+    num_queries = 0
     feature_idcs, bin_edge_idcs = arms
     f2bin_dict = defaultdict(
         list
@@ -130,7 +129,7 @@ def sample_targets(
         )  # Default: with replacement (replace=True)
     samples = data[sample_idcs]
     sample_labels = labels[sample_idcs]
-    num_queries[0] += len(sample_idcs)
+    num_queries += len(sample_idcs)
 
     for f_idx, f in enumerate(f2bin_dict):
         h = histograms[f]
@@ -143,7 +142,7 @@ def sample_targets(
         )  # The above fn returns the vars
 
     # TODO(@motiwari): This seems dangerous, because access appears to be a linear index to the array
-    return impurity_reductions, cb_deltas
+    return impurity_reductions, cb_deltas, num_queries
 
 
 def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bool:
@@ -185,7 +184,7 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 
 
 # TODO (@motiwari): This doesn't appear to be actually returning a tuple?
-def solve_mab(data: np.ndarray, labels: np.ndarray, num_queries: List[int]) -> Tuple[int, float, float]:
+def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, int]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
     that feature should be split at.
@@ -229,14 +228,15 @@ def solve_mab(data: np.ndarray, labels: np.ndarray, num_queries: List[int]) -> T
             )
         )
 
+    total_queries = 0
     while len(candidates) > 0:
         # If we have already pulled the arms more times than the number of datapoints in the original dataset,
         # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
         exact_accesses = np.where((num_samples + batch_size >= N) & (exact_mask == 0))
         if len(exact_accesses[0]) > 0:
-            estimates[exact_accesses], _vars = sample_targets(
-                data, labels, exact_accesses, histograms, batch_size, num_queries
+            estimates[exact_accesses], _vars, num_queries = sample_targets(
+                data, labels, exact_accesses, histograms, batch_size
             )
             # The confidence intervals now only contain a point, since the return has been computed exactly
             lcbs[exact_accesses] = ucbs[exact_accesses] = estimates[exact_accesses]
@@ -258,8 +258,8 @@ def solve_mab(data: np.ndarray, labels: np.ndarray, num_queries: List[int]) -> T
             candidates[:, 1],
         )  # Massage arm indices for use by numpy slicing
         # NOTE: cb_delta contains a value for EVERY arm, even non-candidates, so need [accesses]
-        estimates[accesses], cb_delta[accesses] = sample_targets(
-            data, labels, accesses, histograms, batch_size, num_queries
+        estimates[accesses], cb_delta[accesses], num_queries = sample_targets(
+            data, labels, accesses, histograms, batch_size
         )
         num_samples[accesses] += batch_size
         lcbs[accesses] = estimates[accesses] - CONF_MULTIPLIER * cb_delta[accesses]
@@ -269,6 +269,7 @@ def solve_mab(data: np.ndarray, labels: np.ndarray, num_queries: List[int]) -> T
         # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
         cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
+        total_queries += num_queries
         round_count += 1
 
     best_splits = zip(
@@ -284,9 +285,10 @@ def solve_mab(data: np.ndarray, labels: np.ndarray, num_queries: List[int]) -> T
     best_reduction = estimates[best_split]
 
     # Only return the split if it would indeed lower the impurity
-    # if best_reduction < 0:
-    #     return best_feature, best_value, best_reduction
-    if verify_reduction(
-        data=data, labels=labels, feature=best_feature, value=best_value
-    ):
-        return best_feature, best_value, best_reduction
+    if best_reduction < 0:
+        return best_feature, best_value, best_reduction, total_queries
+    # Uncomment when debugging
+    # if verify_reduction(
+    #    data=data, labels=labels, feature=best_feature, value=best_value
+    #):
+    #    return best_feature, best_value, best_reduction

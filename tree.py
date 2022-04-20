@@ -42,10 +42,10 @@ class Tree(TreeClassifier):
 
         self.depth = self.get_depth()
         self.max_depth = max_depth
-        self.using_split_cache = False
+        self.using_split_cache = True  # for debugging purposes using our binary toy tree
 
         # vars for runtime analysis
-        self.num_nodes = 1
+        self.num_splits = 0
         self.num_queries = 0
 
     def get_depth(self) -> int:
@@ -80,13 +80,15 @@ class Tree(TreeClassifier):
                 if leaf.depth == self.max_depth:
                     continue
 
+                # num_queries for the leaf will be updated only if we're not caching
                 reduction = leaf.calculate_best_split()
                 if reduction:
                     reduction *= len(self.labels)
 
-                # add queries if best split is not already computed and we're using cache
+                # add number of queries we made if the best split is NOT already computed
+                # and we're NOT using cached values
                 if not (self.using_split_cache and leaf.best_reduction_computed):
-                    self.num_queries += leaf.num_queries[0]
+                    self.num_queries += leaf.num_queries
 
                 if reduction is not None and reduction < best_leaf_reduction:
                     best_leaf = leaf
@@ -98,7 +100,7 @@ class Tree(TreeClassifier):
                 and best_leaf_reduction < self.min_impurity_decrease
             ):
                 best_leaf.split()
-                self.num_nodes += 2
+                self.num_splits += 1
                 split_leaf = self.leaves.pop(best_leaf_idx)
                 split_leaf.prediction_probs = None  # this node is no longer a leaf
                 self.leaves.append(split_leaf.left)

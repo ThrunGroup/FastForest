@@ -31,7 +31,7 @@ class Node:
         self.split_feature = None
         self.split_value = None
 
-        self.num_queries = [0]  # make into list to pass by reference
+        self.num_queries = 0 
         self.best_reduction_computed = False
         self.split_reduction = None
         self.prediction_probs = None
@@ -47,9 +47,9 @@ class Node:
             )  # If we already calculate it, return self.split_reduction right away
 
         self.best_reduction_computed = True
-        results = solve_mab(self.data, self.labels, self.num_queries)
+        results = solve_mab(self.data, self.labels)
         if results is not None:
-            self.split_feature, self.split_value, self.split_reduction = results
+            self.split_feature, self.split_value, self.split_reduction, self.num_queries = results
             return self.split_reduction
 
     def split(self) -> None:
