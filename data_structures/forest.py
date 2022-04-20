@@ -1,4 +1,5 @@
 import numpy as np
+import random
 from typing import Tuple
 
 from data_structures.tree import Tree
@@ -17,6 +18,7 @@ class Forest(TreeClassifier):
         labels: np.ndarray,
         n_estimators: int = 100,
         max_depth: int = None,
+        bootstrap: bool = True
     ) -> None:
         self.data = data
         self.num_features = len(data[0])
@@ -48,6 +50,7 @@ class Forest(TreeClassifier):
         self.class_weight = None
         self.ccp_alpha = 0.0
         self.max_samples = None
+        self.bootstrap = bootstrap
 
         # Need this to do remapping when features are shuffled
         self.tree_feature_idcs = {}
@@ -73,11 +76,21 @@ class Forest(TreeClassifier):
                 print("Fitting tree", i)
 
             self.tree_feature_idcs[i] = feature_idcs
+
+            # Bootstrap
+            if self.bootstrap:
+                N = len(self.labels)
+                idcs = np.random.choice(
+                    N, size=N
+                )
+                new_data = self.data[idcs, :]
+                new_labels = self.labels[idcs]
+            # Make a tree with dataset sampled by bootstrapping rows and subsampling columns(features)
             tree = Tree(
-                data=self.data[
+                data=new_data[
                     :, feature_idcs
                 ],  # Randomly choose a subset of the available features
-                labels=self.labels,
+                labels=new_labels,
                 max_depth=self.max_depth,
                 classes=self.classes,
             )
