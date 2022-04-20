@@ -2,19 +2,14 @@ import pandas as pd
 import numpy as np
 import os
 
-from IPython.display import display
-from test_ff import ground_truth_forest
-from sklearn.tree import (
-    DecisionTreeClassifier,
-    plot_tree,
-    export_text,
-)
 
-filepath = os.path.join("dataset", "heart_2020_cleaned.csv")
-df = pd.read_csv(filepath)
-
-
-def swap_columns(df, col1, col2):
+def swap_columns(df: pd.DataFrame, col1: str, col2: str) -> pd.DataFrame:
+    """
+    :param df: dataframe whose columns we want to swap
+    :param col1: name of column1 of df
+    :param col2: name of column2 of df
+    :return: dataframe we get after swapping col1 and col2 of df
+    """
     col_list = list(df.columns)
     x, y = col_list.index(col1), col_list.index(col2)
     col_list[y], col_list[x] = col_list[x], col_list[y]
@@ -24,24 +19,23 @@ def swap_columns(df, col1, col2):
 
 def preprocess_heart(df: pd.DataFrame) -> pd.DataFrame:
     """
-    df is a dataframe from heart_2020_cleaned.csv
+    :param df: df is a dataframe from heart_2020_cleaned.csv
+    :return: returns a preprocessed data of df
     """
     last_column = df.columns[-1]
     df = swap_columns(
         df, "Race", last_column
-    )  # Race is the only categorical feature, so put it in the last column
+    )  # Race is the only categorical feature that can not be ordered, so put it in the last column
     columns = df.columns
 
-    # For categorical features that could be ordered, convert them to integers
-    for i in range(
-            len(df.columns) - 1
-    ):  # Iterate over the columns except a label and a categorical feature column
+    # For categorical features that can be ordered, convert them to integers
+    for i in range(len(df.columns) - 1):
         column = columns[i]
-        if df[column][0] == float:
+        if df[column][0] == float:  # Pass the numerical features
             continue
         column_series = df[column]
         cf = np.unique(column_series)  # cf is column feature
-        column_to_int = dict(zip(cf, range(len(cf))))
+        column_to_int = dict(zip(cf, range(len(cf))))  # label encoding
         df[columns[i]] = df[columns[i]].map(lambda x: column_to_int[x])
 
     # For "race" feature, encode it using OneHotEncoder
@@ -56,11 +50,21 @@ def preprocess_heart(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-df = preprocess_heart(df)
+def main() -> None:
+    """
+    Preprocess heart disease data and store it as csv file. Download heart_2020_cleansed.csv from
+    https://www.kaggle.com/datasets/kamilpytlak/personal-key-indicators-of-heart-disease
+    """
+    filepath = os.path.join("dataset", "heart_2020_cleaned.csv")
+    assert os.path.exists(
+        filepath
+    ), "Download data from the link in the comment of line 55 and save it as heart_2020_cleaned.csv in dataset file"
+    df = pd.read_csv(filepath)
+    df = preprocess_heart(df)
+    os.makedirs("dataset", exist_ok=True)
+    filepath = os.path.join("dataset", "new_heart_2020_cleaned.csv")
+    df.to_csv(filepath, index=False)
 
-if not os.path.exists("dataset"):
-    os.makedirs("dataset")
-filepath = os.path.join("dataset", "new_heart_2020_cleaned.csv")
-df.to_csv(filepath)
 
-
+if __name__ == "__main__":
+    main()
