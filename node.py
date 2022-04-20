@@ -1,7 +1,7 @@
 from __future__ import annotations
 import numpy as np
 from mab_functions import solve_mab
-from utils import type_check, counts_on_labels
+from utils import type_check, counts_of_labels
 type_check()
 
 
@@ -23,7 +23,7 @@ class Node:
         self.right = None
 
         # NOTE: Not assume labels are all integers from 0 to num_classes-1
-        self.counts = counts_on_labels(
+        self.counts = counts_of_labels(
             self.tree.classes, labels
         )  # self.tree classes contains all classes of original data
 
@@ -46,7 +46,6 @@ class Node:
                 self.split_reduction
             )  # If we already calculate it, return self.split_reduction right away
 
-        self.best_reduction_computed = True
         results = solve_mab(self.data, self.labels)
         if results is not None:
             self.split_feature, self.split_value, self.split_reduction, self.num_queries = results

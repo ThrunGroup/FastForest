@@ -8,7 +8,7 @@ from params import CONF_MULTIPLIER, TOLERANCE
 
 from criteria import get_gini, get_entropy, get_variance
 
-from utils import type_check, count_occurrence, class_to_idx, counts_on_labels
+from utils import type_check, count_occurrence, class_to_idx, counts_of_labels
 
 type_check()
 
@@ -106,7 +106,6 @@ def sample_targets(
     return: impurity_reduction and its variance of accesses
     """
     # TODO(@motiwari): Samples all bin edges for a given feature, should only sample those under consideration.
-    num_queries = 0
     feature_idcs, bin_edge_idcs = arms
     f2bin_dict = defaultdict(
         list
@@ -129,7 +128,7 @@ def sample_targets(
         )  # Default: with replacement (replace=True)
     samples = data[sample_idcs]
     sample_labels = labels[sample_idcs]
-    num_queries += len(sample_idcs)
+    num_queries = len(sample_idcs)
 
     for f_idx, f in enumerate(f2bin_dict):
         h = histograms[f]
@@ -151,7 +150,7 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
     #  or use something like label_idx,
     #  label in np.unique(labels) to avoid assuming that the labels are 0, ... K-1
     class_dict: dict = class_to_idx(np.unique(labels))
-    counts: np.ndarray = counts_on_labels(
+    counts: np.ndarray = counts_of_labels(
         class_dict, labels
     )  # counts[i] is the number of points that have the label class_dict[i]
     p = counts / len(labels)
@@ -251,6 +250,7 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, 
             len(candidates) <= 1
         ):  # cadndiates could be empty after all candidates are exactly computed
             # Break here because we have found our best candidate
+            total_queries += num_queries
             break
 
         accesses = (

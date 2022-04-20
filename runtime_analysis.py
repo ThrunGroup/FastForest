@@ -11,17 +11,28 @@ from forest import Forest
 from utils import class_to_idx
 
 
-def test_binary_forest_time() -> None:
-    num_trials = 50
-    avg_queries = []
+def test_binary_forest_time(verbose=True) -> None:
+    """
+    Sequentially creates toy binary trees that get larger and computes the
+    normalized complexity (i.e. queries per node) of the trees as they get larger (by base^exponent)
+    of the original dataset size "starting_size"
+    :param verbose: if True, the function prints num_splits and num_queries
+    :return: None but plots the normalized complexity
+    """
+    # modify these params to test datasets scaled differently
+    base = 10
+    max_exponent = 5
     starting_size = 100
-    scale = 10
-    for i in range(3):
-        queries = 0
-        print("=> starting trees with datapoints", starting_size * pow(scale, i))
+    num_trials = 50
+
+    avg_norm_queries = []
+    for i in range(max_exponent):
+        norm_queries = 0
+        total_queries = 0
+        total_splits = 0
         for trial in range(num_trials):
             # create the dataset
-            X = create_data(starting_size * pow(scale, i))
+            X = create_data(starting_size * pow(base, i))
             data = X[:, :-1]
             labels = X[:, -1]
             classes_arr = np.unique(labels)
@@ -30,29 +41,29 @@ def test_binary_forest_time() -> None:
             # create tree and fit
             t = Tree(data=data, labels=labels, max_depth=5, classes=classes)
             t.fit()
-            queries += (t.num_queries / t.num_splits)
-        avg_queries.append(queries/num_trials)
 
-    base = [starting_size * pow(scale, i) for i in range(len(avg_queries))]
-    plt.plot(base, avg_queries, color='r', label='MAB')
-    #plt.plot(base, base, color='g', label='sklearn')
+            # cache relevant values
+            total_queries += t.num_queries
+            total_splits += t.num_splits
+            norm_queries += (t.num_queries / t.num_splits)
 
-    plt.xlabel("total datapoint numbers")
-    plt.ylabel("queries")
-    plt.title("queries per node of sklearn and MAB")
-    plt.legend()
-    plt.savefig('queries_per_node.png')
+        avg_norm_queries.append(norm_queries / num_trials)
+        if verbose:
+            print("=> built trees with datapoints", starting_size * pow(base, i))
+            print("=> --total queries:", total_queries/num_trials)
+            print("=> --total splits:", total_splits/num_trials)
+            print("\n")
+
+    base = [starting_size * pow(base, i) for i in range(len(avg_norm_queries))]
+    plt.plot(base, avg_norm_queries, color='r', label='normalized queries')
+    plt.xlabel("Number of Datapoints")
+    plt.ylabel("Number of Queries")
+    plt.savefig('norm_queries.png')
 
 
 def main():
     print("Testing toy forest runtime")
     test_binary_forest_time()
-
-    """
-    print("\n" * 4)
-    print("Testing forest digit dataset agreement:")
-    test_forest_digits()
-    """
 
 
 if __name__ == "__main__":

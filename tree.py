@@ -42,9 +42,7 @@ class Tree(TreeClassifier):
 
         self.depth = self.get_depth()
         self.max_depth = max_depth
-        self.using_split_cache = True  # for debugging purposes using our binary toy tree
 
-        # vars for runtime analysis
         self.num_splits = 0
         self.num_queries = 0
 
@@ -86,8 +84,8 @@ class Tree(TreeClassifier):
                     reduction *= len(self.labels)
 
                 # add number of queries we made if the best split is NOT already computed
-                # and we're NOT using cached values
-                if not (self.using_split_cache and leaf.best_reduction_computed):
+                if not leaf.best_reduction_computed:
+                    leaf.best_reduction_computed = True
                     self.num_queries += leaf.num_queries
 
                 if reduction is not None and reduction < best_leaf_reduction:
@@ -109,8 +107,6 @@ class Tree(TreeClassifier):
                 sufficient_impurity_decrease = False
 
             self.depth = self.get_depth()
-
-        print("Fitting finished")
 
     def predict(self, datapoint: np.ndarray) -> Tuple[int, np.ndarray]:
         """
