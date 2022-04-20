@@ -31,6 +31,8 @@ class Histogram:
         self.bin_edges = np.linspace(
             min_bin, max_bin, num_bins
         )  # These are not at even numbers, just evenly spaced
+
+        # Note: labels can be any type like string or list
         self.left = np.zeros((num_bins, len(classes)), dtype=np.int32)
         self.right = np.zeros((num_bins, len(classes)), dtype=np.int32)
 
