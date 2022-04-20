@@ -153,7 +153,7 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
     class_dict: dict = class_to_idx(np.unique(labels))
     counts: np.ndarray = counts_on_labels(
         class_dict, labels
-    )  # counts[i] contains the counts of class_dict[i](which is a class) in "label"
+    )  # counts[i] is the number of points that have the label class_dict[i]
     p = counts / len(labels)
     root_impurity = 1 - np.dot(p, p)
 

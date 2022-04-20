@@ -28,7 +28,7 @@ def class_to_idx(classes: np.ndarray,) -> dict:
     return dict(zip(classes, range(len(classes))))
 
 
-def counts_on_labels(class_dict: dict, labels: np.ndarray) -> np.ndarray:
+def counts_of_labels(class_dict: dict, labels: np.ndarray) -> np.ndarray:
     """
     Helper function for generating counts array.
     Counts is a numpy array that stores counts of the classes in labels.
