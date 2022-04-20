@@ -1,6 +1,3 @@
-import numpy as np
-
-
 def type_check() -> None:
     """
     Helper function for type checking.
@@ -12,7 +9,6 @@ def type_check() -> None:
 
     if TYPE_CHECKING:
         from tree import Tree
-
 
 def count_occurrence(class_: np.ndarray, labels: np.ndarray) -> int:
     """

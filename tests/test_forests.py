@@ -1,4 +1,5 @@
 import os
+
 import numpy as np
 import sklearn.datasets
 import unittest
@@ -45,7 +46,7 @@ class ForestTests(unittest.TestCase):
 
         print(acc/len(data))
         self.assertTrue(
-            (acc / len(data)) > 0.89
+            (acc / len(data)) > 0.87
         )
 
 
