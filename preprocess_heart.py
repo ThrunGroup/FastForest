@@ -5,6 +5,8 @@ import os
 
 def swap_columns(df: pd.DataFrame, col1: str, col2: str) -> pd.DataFrame:
     """
+    Swap two columns of dataframe given the name of two columns
+
     :param df: dataframe whose columns we want to swap
     :param col1: name of column1 of df
     :param col2: name of column2 of df
@@ -19,6 +21,7 @@ def swap_columns(df: pd.DataFrame, col1: str, col2: str) -> pd.DataFrame:
 
 def preprocess_heart(df: pd.DataFrame) -> pd.DataFrame:
     """
+
     :param df: df is a dataframe from heart_2020_cleaned.csv
     :return: returns a preprocessed data of df
     """
@@ -31,12 +34,11 @@ def preprocess_heart(df: pd.DataFrame) -> pd.DataFrame:
     # For categorical features that can be ordered, convert them to integers
     for i in range(len(df.columns) - 1):
         column = columns[i]
-        if df[column][0] == float:  # Pass the numerical features
-            continue
-        column_series = df[column]
-        cf = np.unique(column_series)  # cf is column feature
-        column_to_int = dict(zip(cf, range(len(cf))))  # label encoding
-        df[columns[i]] = df[columns[i]].map(lambda x: column_to_int[x])
+        if df[column][0] != float:  # Pass the numerical features
+            column_series = df[column]
+            cf = np.unique(column_series)  # cf is column feature
+            column_to_int = dict(zip(cf, range(len(cf))))  # label encoding
+            df[columns[i]] = df[columns[i]].map(lambda x: column_to_int[x])
 
     # For "race" feature, encode it using OneHotEncoder
     one_hot_race = pd.get_dummies(df["Race"])
@@ -46,13 +48,12 @@ def preprocess_heart(df: pd.DataFrame) -> pd.DataFrame:
     # old_columns: label, feature1, feature2, ... --> new_columns: feature1, feature2, ...., label
     old_columns = df.columns
     new_columns = list(old_columns[1:]) + [old_columns[0]]
-    df = df[new_columns]
-    return df
+    return df[new_columns]
 
 
 def main() -> None:
     """
-    Preprocess heart disease data and store it as csv file. Download heart_2020_cleansed.csv from
+    Preprocess heart disease data and store it as csv file. Download heart_2020_cleaned.csv from
     https://www.kaggle.com/datasets/kamilpytlak/personal-key-indicators-of-heart-disease
     """
     filepath = os.path.join("dataset", "heart_2020_cleaned.csv")
