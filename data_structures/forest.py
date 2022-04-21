@@ -85,6 +85,9 @@ class Forest(TreeClassifier):
                 )
                 new_data = self.data[idcs, :]
                 new_labels = self.labels[idcs]
+            else:
+                new_data = self.data
+                new_labels = self.labels
             # Make a tree with dataset sampled by bootstrapping rows and subsampling columns(features)
             tree = Tree(
                 data=new_data[
