@@ -161,4 +161,4 @@ def experiment_cf(t: int, seed: int, p_value: float = 0.95, verbose: bool = Fals
 
 
 if __name__ == "__main__":
-    experiment_cf(10, 10, 0.05, True)
+    experiment_cf(30, 10, 0.05, True)
