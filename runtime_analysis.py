@@ -25,12 +25,12 @@ def test_binary_forest_time(verbose=True) -> None:
     starting_size = 100
     num_trials = 50
     max_depth = 10
-
     avg_norm_queries = []
     for i in range(max_exponent):
         norm_queries = 0
         total_queries = 0
         total_splits = 0
+
         for trial in range(num_trials):
             # create the dataset
             X = create_data(starting_size * pow(sizes, i))
@@ -51,11 +51,11 @@ def test_binary_forest_time(verbose=True) -> None:
             print("=> built trees with datapoints", starting_size * pow(sizes, i))
             print("=> --total queries:", total_queries/num_trials)
             print("=> --total splits:", total_splits/num_trials)
+            print("=> --max depth:", max_depth)
             print("\n")
 
     base = [starting_size * pow(sizes, i) for i in range(len(avg_norm_queries))]
     plt.plot(base, avg_norm_queries, color='r', label='normalized queries')
-
     plt.xlabel("Number of Datapoints")
     plt.ylabel("Number of Queries")
     

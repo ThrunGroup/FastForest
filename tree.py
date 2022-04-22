@@ -11,16 +11,22 @@ class Tree(TreeClassifier):
     are used in splitting the nodes)
     """
 
-    def __init__(
-        self, data: np.ndarray, labels: np.ndarray, max_depth: int, classes: dict
-    ) -> None:
+    def __init__(self, data: np.ndarray, labels: np.ndarray, max_depth: int) -> None:
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
-        self.classes = classes  # a dict from class name to index
-        self.idx_to_class = {value: key for key, value in classes.items()}
+        self.n_classes = len(np.unique(labels))
+        # np.unique returns the labels in sorted order
+        assert (
+            np.unique(labels) == np.arange(self.n_classes)
+        ).all(), "Labels are not 0, 1, ... K-1"
 
         self.node = Node(
-            tree=self, parent=None, data=self.data, labels=self.labels, depth=0,
+            tree=self,
+            parent=None,
+            data=self.data,
+            labels=self.labels,
+            depth=0,
+            num_classes=self.n_classes,
         )  # Root node contains all the data
 
         # These are copied from the link below. We won't need all of them.
@@ -78,7 +84,6 @@ class Tree(TreeClassifier):
                 if leaf.depth == self.max_depth:
                     continue
 
-                # num_queries for the leaf will be updated only if we're not caching
                 reduction = leaf.calculate_best_split()
                 if reduction:
                     reduction *= len(self.labels)
@@ -98,7 +103,6 @@ class Tree(TreeClassifier):
                 and best_leaf_reduction < self.min_impurity_decrease
             ):
                 best_leaf.split()
-                self.num_splits += 1
                 split_leaf = self.leaves.pop(best_leaf_idx)
                 split_leaf.prediction_probs = None  # this node is no longer a leaf
                 self.leaves.append(split_leaf.left)
@@ -130,11 +134,8 @@ class Tree(TreeClassifier):
         # otherwise, make prediction and cache it
         probs = node.counts / np.sum(node.counts)
         node.prediction_probs = probs
-        label_pred = self.idx_to_class[
-            probs.argmax()
-        ]  # Find ith key of dictionary
         assert np.allclose(probs.sum(), 1), "Probabilities don't sum to 1"
-        return label_pred, probs
+        return probs.argmax(), probs
 
     def tree_print(self) -> None:
         """
