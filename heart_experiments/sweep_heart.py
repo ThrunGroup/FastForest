@@ -1,6 +1,6 @@
 import wandb
 from heart_experiments.fit_heart import fit
-
+from constants import SKLEARN, FASTFOREST,HEART
 
 if __name__ == '__main__':
     # Tutorial of hyperparams sweep using wandb: shorturl.at/vwAFS
@@ -11,12 +11,12 @@ if __name__ == '__main__':
         'dataset': {
             # select heart_disease dataset
             'distribution': 'categorical',
-            'values': ['HEART']
+            'values': [HEART]
         },
         'algorithm': {
             # select sklearn algorithm
             'distribution': 'categorical',
-            'values': ['SKLEARN']
+            'values': [SKLEARN]
         },
         'n_estimators': {
             # randomly select real number x in [min, max] and return int(x)

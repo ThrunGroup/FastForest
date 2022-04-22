@@ -11,13 +11,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import balanced_accuracy_score
 from imblearn.under_sampling import RandomUnderSampler
-
 from typing import (
     Tuple,
     Iterable
 )
 
+from constants import FASTFOREST, SKLEARN, HEART
 from forest import Forest
+
 
 
 def check_dimension(X: np.ndarray, Y: np.ndarray) -> bool:
@@ -149,7 +150,7 @@ def fit(
     np.random.seed(config.seed)
     random.seed(config.seed)
 
-    if config.dataset == "HEART":
+    if config.dataset == HEART:
         filepath = os.path.join("../dataset", "new_heart_2020_cleaned.csv")
     else:
         raise NotImplementedError("Invalid choice of dataset")
@@ -160,7 +161,7 @@ def fit(
     X_train, X_val, X_test, Y_train, Y_val, Y_test = \
         split_data(X, Y, [0.6, 0.2, 0.2], config["sub_size"], config["seed"], config["is_balanced"])
 
-    if config.algorithm == "SKLEARN":
+    if config.algorithm == SKLEARN:
         forest = RandomForestClassifier(
             n_estimators=config.n_estimators,
             max_depth=config.max_depth,
@@ -169,7 +170,7 @@ def fit(
         forest.fit(X_train, Y_train)
         val_acc = balanced_accuracy_score(Y_val, forest.predict(X_val))
         test_acc = balanced_accuracy_score(Y_test, forest.predict(X_test))
-    elif config.algorithm == "FASTFOREST":
+    elif config.algorithm == FASTFOREST:
         forest = Forest(
             X_train,
             Y_train,
