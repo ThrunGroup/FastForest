@@ -10,6 +10,8 @@ from csv import DictWriter
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import balanced_accuracy_score
+from imblearn.under_sampling import RandomUnderSampler
+
 from typing import (
     Tuple,
     Iterable
@@ -35,8 +37,8 @@ def get_subset(
     """
     Get a subset of dataset X and Y.
 
-    :param X: an array which has 2 dimensions
-    :param Y: an array which has 1 dimension
+    :param X: an input dataset
+    :param Y: a target dataset
     :param subset_size: subset_size (# of rows) of X and Y
     :param seed: random seed when taking a subset of X and Y 
     :return: the subset of X and Y
@@ -55,6 +57,7 @@ def split_data(
         ratio: Iterable,
         subset_size: int = -1,
         seed: int = 1,
+        is_balanced: bool = False
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     Take a subset of dataset and split it into train, validation, and test set
@@ -64,8 +67,13 @@ def split_data(
     :param ratio: the ratio of splitting dataset into train, validation, and test set
     :param subset_size: subset_size (# of rows) of X and Y we want to consider
     :param seed: random seed
+    :param is_balanced: whether to return balanced data
     :return: tuple of X_train, X_val, X_test, Y_train, Y_val, Y_test
     """
+    if is_balanced:
+        rus = RandomUnderSampler(random_state=seed)
+        X, Y = rus.fit_sample(X, Y)
+
     ratio = np.array(ratio)
     assert len(ratio) == 3, "invalid split ratio of dataset"
     ratio /= np.sum(ratio)
@@ -128,6 +136,7 @@ def fit(
     :param use_wandb: whether to use wandb api or not
     :param use_sweep: whether to use the sweep method of wandb api or not
     """
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     if use_wandb:
         wandb.init()
         # If called by wandb.agent, as below,
@@ -141,7 +150,7 @@ def fit(
     random.seed(config.seed)
 
     if config.dataset == "HEART":
-        filepath = os.path.join("dataset", "new_heart_2020_cleaned.csv")
+        filepath = os.path.join("../dataset", "new_heart_2020_cleaned.csv")
     else:
         raise NotImplementedError("Invalid choice of dataset")
     if not os.path.exists(filepath):
@@ -149,7 +158,7 @@ def fit(
 
     X, Y = load_data(filepath)
     X_train, X_val, X_test, Y_train, Y_val, Y_test = \
-        split_data(X, Y, [0.6, 0.2, 0.2], config["sub_size"], config["seed"])
+        split_data(X, Y, [0.6, 0.2, 0.2], config["sub_size"], config["seed"], config["is_balanced"])
 
     if config.algorithm == "SKLEARN":
         forest = RandomForestClassifier(
@@ -191,11 +200,12 @@ def fit(
             "max_depth": config.max_depth,
             "n_estimators": config.n_estimators,
             "verbose": config.verbose,
+            "is_balanced": config.is_balanced
         }
     )
-    log_filename = os.path.join("hyperparams_sweep", "sweep_log.csv")
+    log_filename = os.path.join("../hyperparams_sweep", "sweep_log.csv")
     if not os.path.exists(log_filename):
-        os.makedirs("hyperparams_sweep", exist_ok=True)
+        os.makedirs("../hyperparams_sweep", exist_ok=True)
         df = pd.DataFrame(columns=log_dict.keys())
         df.to_csv(log_filename, index=False)
     append_dict_as_row(log_filename, log_dict, log_dict.keys())

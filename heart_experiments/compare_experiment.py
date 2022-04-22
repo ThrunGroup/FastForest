@@ -5,7 +5,6 @@ import random
 import scipy.stats as st
 
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
 from sklearn.base import clone
 from sklearn.metrics import balanced_accuracy_score, precision_score
 
@@ -19,7 +18,8 @@ def find_best_hyper() -> pd.Series:
 
     :return: return the best hyperparameters
     """
-    log_filepath = os.path.join("hyperparams_sweep", "sweep_log.csv")
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    log_filepath = os.path.join("../hyperparams_sweep", "sweep_log.csv")
     assert os.path.exists(
         log_filepath
     ), "Can't find the log result of hyperparameters sweeps. Do hyperparameter sweeps!"
@@ -37,13 +37,14 @@ def experiment_single() -> None:
     config = find_best_hyper()
 
     # Setup dataset
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     filepath = os.path.join("dataset", "new_heart_2020_cleaned.csv")
     assert os.path.exists(
         filepath
     ), "Heart disease dataset isn't available. Run preprocess_heart.py"
     X, Y = load_data(filepath)
     X_train, X_val, X_test, Y_train, Y_val, Y_test = \
-        split_data(X, Y, [0.6, 0.2, 0.2], config["sub_size"], config["seed"])
+        split_data(X, Y, [0.6, 0.2, 0.2], config["sub_size"], config["seed"], config["is_balanced"])
 
     forest = Forest(
         X_train,
@@ -81,13 +82,14 @@ def experiment_cf(t: int, seed: int, p_value: float = 0.95, verbose: bool = Fals
     config["n_estimators"] = 10
 
     # Setup dataset
-    filepath = os.path.join("dataset", "new_heart_2020_cleaned.csv")
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    filepath = os.path.join("../dataset", "new_heart_2020_cleaned.csv")
     assert os.path.exists(
         filepath
     ), "Heart disease dataset isn't available. Run preprocess_heart.py"
     X, Y = load_data(filepath)
     X_train, X_val, X_test, Y_train, Y_val, Y_test = \
-        split_data(X, Y, [0.6, 0.2, 0.2], config["sub_size"], config["seed"])
+        split_data(X, Y, [0.6, 0.2, 0.2], config["sub_size"], config["seed"], config["is_balanced"])
 
     f_forest = Forest(
         X_train,

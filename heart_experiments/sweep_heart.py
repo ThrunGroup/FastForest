@@ -1,6 +1,5 @@
 import wandb
-import math
-from fit_heart import fit
+from heart_experiments.fit_heart import fit
 
 
 if __name__ == '__main__':
@@ -48,6 +47,11 @@ if __name__ == '__main__':
         },
         'bootstrap': {
             # whether to use bootstrap is constant
+            'distribution': 'constant',
+            'value': True
+        },
+        'is_balanced': {
+            # subset_size is constant
             'distribution': 'constant',
             'value': True
         }
