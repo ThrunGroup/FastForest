@@ -7,7 +7,7 @@ import scipy.stats as st
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.base import clone
-from sklearn.metrics import balanced_accuracy_score
+from sklearn.metrics import balanced_accuracy_score, precision_score
 
 from fit_heart import split_data, load_data
 from forest import Forest
@@ -115,39 +115,48 @@ def experiment_cf(t: int, seed: int, p_value: float = 0.95, verbose: bool = Fals
 
         ff_acc[i] = balanced_accuracy_score(Y_test, f_forest.predict_batch(X_test)[0])
         sk_acc[i] = balanced_accuracy_score(Y_test, sk_forest.predict(X_test))
-        print(np.unique(sk_forest.predict(X_test)))
-        print(f_forest.predict_batch(X_test)[0])
+        ff_precision = precision_score(Y_test, f_forest.predict_batch(X_test)[0], average=None)
+        sk_precision = precision_score(Y_test, sk_forest.predict(X_test), average=None)
+
+        if verbose:
+            print(f"The precision of fastforest is {ff_precision}")
+            print(f"The precision of sklearn is {sk_precision}")
 
         # Reset models
         f_forest.trees = []
         f_forest.tree_feature_idcs = {}
         sk_forest = clone(sk_forest)  # return unfitted estimator
 
+    if verbose:
+        print(f"The balanced accuracy of fastforest is {ff_acc}")
+        print(f"The balanced accuracy of sklearn is {sk_acc}")
+
     ff_mean = np.mean(ff_acc)
     sk_mean = np.mean(sk_acc)
     ff_se = np.std(ff_acc) / (t ** (1 / 2))  # ff_se = standard error of fastforest accuracy
     sk_se = np.std(sk_acc) / (t ** (1 / 2))  # sk_se = standard error of sklearn accuracy
 
-    print(f"The mean accuracy of fastforest is {ff_mean}, and its standard error is {ff_se}.")
-    print(f"The mean accuracy of sklearn is {sk_mean}, and its standard error is {sk_se}.")
-    print(ff_acc)
-    print(sk_acc)
+    print(f"The mean balanced accuracy of fastforest is {ff_mean}, and its standard error is {ff_se}.")
+    print(f"The mean balanced accuracy of sklearn is {sk_mean}, and its standard error is {sk_se}.")
+
+
+    confidence_level = 1 - p_value
     if t>=30:
-        z_score = st.norm.ppf(p_value)
+        z_score = st.norm.ppf(1 - 1/2 * p_value)
     else:
-        z_score = st.t.ppf(p_value, t - 1)
+        z_score = st.t.ppf(confidence_level, t - 1)
     ff_interval = (ff_mean - z_score * ff_se, ff_mean + z_score * ff_se)
     sk_interval = (sk_mean - z_score * sk_se, sk_mean + z_score * sk_se)
 
     overlap = 2 * (z_score * ff_se + z_score * sk_se) < (ff_mean - sk_mean) # Check whether their
     # confidence interval is overlapped
     print("-" * 30)
-    print(f"The confidence interval of fast forest is {ff_interval} at {p_value * 100}% confidence level.")
-    print(f"The confidence interval of sklearn is {sk_interval} at {p_value * 100}% confidence level.")
+    print(f"The confidence interval of fast forest is {ff_interval} at {confidence_level * 100}% confidence level.")
+    print(f"The confidence interval of sklearn is {sk_interval} at {confidence_level * 100}% confidence level.")
 
     print(f"It's {overlap} that the two confidence_intervals are overlapped.")
     return overlap
 
 
 if __name__ == "__main__":
-    experiment_cf(10, 10, 0.95, True)
+    experiment_cf(10, 10, 0.05, True)

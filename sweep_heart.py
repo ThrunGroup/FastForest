@@ -22,14 +22,14 @@ if __name__ == '__main__':
         'n_estimators': {
             # randomly select real number x in [min, max] and return int(x)
             'distribution': 'int_uniform',
-            'min': 30,
-            'max': 80
+            'min': 20,
+            'max': 100
         },
         'max_depth': {
             # randomly select real number x in [min, max] and return int(x)
             'distribution': 'int_uniform',
-            'min': 4,
-            'max': 15
+            'min': 10,
+            'max': 25
         },
         'seed': {
             # seed is constant
@@ -44,7 +44,7 @@ if __name__ == '__main__':
         'sub_size': {
             # subset_size is constant
             'distribution': 'constant',
-            'value': 5000
+            'value': 3000
         },
         'bootstrap': {
             # whether to use bootstrap is constant
