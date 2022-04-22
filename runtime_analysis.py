@@ -20,10 +20,11 @@ def test_binary_forest_time(verbose=True) -> None:
     :return: None but plots the normalized complexity
     """
     # modify these params to test datasets scaled differently
-    base = 10
-    max_exponent = 5
+    sizes = 10
+    max_exponent = 3
     starting_size = 100
     num_trials = 50
+    max_depth = 10
 
     avg_norm_queries = []
     for i in range(max_exponent):
@@ -32,32 +33,33 @@ def test_binary_forest_time(verbose=True) -> None:
         total_splits = 0
         for trial in range(num_trials):
             # create the dataset
-            X = create_data(starting_size * pow(base, i))
+            X = create_data(starting_size * pow(sizes, i))
             data = X[:, :-1]
             labels = X[:, -1]
             classes_arr = np.unique(labels)
             classes = class_to_idx(classes_arr)
 
-            # create tree and fit
-            t = Tree(data=data, labels=labels, max_depth=5, classes=classes)
+            t = Tree(data=data, labels=labels, max_depth=max_depth, classes=classes)
             t.fit()
 
-            # cache relevant values
             total_queries += t.num_queries
             total_splits += t.num_splits
             norm_queries += (t.num_queries / t.num_splits)
 
         avg_norm_queries.append(norm_queries / num_trials)
         if verbose:
-            print("=> built trees with datapoints", starting_size * pow(base, i))
+            print("=> built trees with datapoints", starting_size * pow(sizes, i))
             print("=> --total queries:", total_queries/num_trials)
             print("=> --total splits:", total_splits/num_trials)
             print("\n")
 
-    base = [starting_size * pow(base, i) for i in range(len(avg_norm_queries))]
+    base = [starting_size * pow(sizes, i) for i in range(len(avg_norm_queries))]
     plt.plot(base, avg_norm_queries, color='r', label='normalized queries')
+
     plt.xlabel("Number of Datapoints")
     plt.ylabel("Number of Queries")
+    
+    print("saving figure")
     plt.savefig('norm_queries.png')
 
 

@@ -245,12 +245,12 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, 
             # TODO(@motiwari): Can't use nanmin here -- why?
             cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
             candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
+            total_queries += num_queries
 
         if (
             len(candidates) <= 1
         ):  # cadndiates could be empty after all candidates are exactly computed
             # Break here because we have found our best candidate
-            total_queries += num_queries
             break
 
         accesses = (

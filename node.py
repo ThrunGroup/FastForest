@@ -22,7 +22,7 @@ class Node:
         self.left = None
         self.right = None
 
-        # NOTE: Not assume labels are all integers from 0 to num_classes-1
+        # don't assume labels are all integers from 0 to num_classes-1
         self.counts = counts_of_labels(
             self.tree.classes, labels
         )  # self.tree classes contains all classes of original data
