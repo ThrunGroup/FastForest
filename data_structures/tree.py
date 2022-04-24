@@ -12,10 +12,18 @@ class Tree(TreeClassifier):
     """
 
     def __init__(
-        self, data: np.ndarray, labels: np.ndarray, max_depth: int, classes: dict
+        self,
+        data: np.ndarray,
+        labels: np.ndarray,
+        max_depth: int,
+        classes: dict,
+        min_samples_split: int = 2,
+        min_impurity_decrase: float = -1e-6,
+        max_leaf_nodes: int = 0,
     ) -> None:
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
+        self.n_data = len(labels)
         self.classes = classes  # dict from class name to class index
         self.idx_to_class = {value: key for key, value in classes.items()}
 
@@ -29,18 +37,18 @@ class Tree(TreeClassifier):
 
         # These are copied from the link below. We won't need all of them.
         # https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
-        self.leaves = [self.node]
+        self.leaves = []
         self.criterion = "GINI"
         self.splitter = "best"
         self.max_depth = 1
-        self.min_samples_split = 2
+        self.min_samples_split = min_samples_split
         self.min_samples_leaf = 1
         self.min_weight_fraction = 0.0
         self.max_features = None
         self.random_state = None
-        self.max_leaf_nodes = None
+        self.max_leaf_nodes = max_leaf_nodes
         # Make this a small negative number to avoid infinite loop when all leaves are at max_depth
-        self.min_impurity_decrease = -1e-6
+        self.min_impurity_decrease = min_impurity_decrase
         self.class_weight = None
         self.ccp_alpha = 0.0
         self.depth = 1
@@ -54,6 +62,18 @@ class Tree(TreeClassifier):
         max_depth = -1
         return max([leaf.depth for leaf in self.leaves])
 
+    def is_terminate(self, node: Node) -> bool:
+        """
+        Check whether the node satisfies the termination condition of splitting.
+
+        :param node: a node which is considered
+        :return: whether to terminate splitting a node
+        """
+        node.is_check_terminate = True
+        return (self.max_depth <= node.depth or
+                self.min_samples_split >= node.n_data or
+                self.min_impurity_decrease <= node.calculate_best_split() * node.n_data/self.n_data)
+
     def fit(self, verbose=True) -> None:
         """
         Fit the tree by recursively splitting nodes until the termination condition is reached.
@@ -62,45 +82,55 @@ class Tree(TreeClassifier):
 
         :return: None
         """
-        sufficient_impurity_decrease = True
-        while sufficient_impurity_decrease:
-            best_leaf = None
-            best_leaf_idx = None
-            best_leaf_reduction = float("inf")
+        if self.max_leaf_nodes: # Best-first tree fitting
+            self.leaves.append(self.node) # Append root node to self.leaves
+            while len(self.leaves) < self.max_leaf_nodes:
+                all_terminate = True
+                best_leaf = None
+                best_leaf_idx = None
+                best_leaf_reduction = float("inf")
 
-            # Iterate over leaves and decide which to split
-            for leaf_idx, leaf in enumerate(self.leaves):
-
-                # Do not split leaves which are already at max_depth
-                if leaf.depth == self.max_depth:
-                    continue
-
-                reduction = leaf.calculate_best_split()
-                if (
-                    reduction is not None
-                ):  # TODO(@motiwari): Do we need this? Or is this already performed at the leaf?
-                    reduction *= len(self.labels)
-                    if reduction < best_leaf_reduction:
-                        best_leaf = leaf
-                        best_leaf_idx = leaf_idx
-                        best_leaf_reduction = reduction
-
-            if (
-                best_leaf_reduction is not None
-                and best_leaf_reduction < self.min_impurity_decrease
-            ):
+                # Iterate over leaves and decide which to split
+                for leaf_idx, leaf in enumerate(self.leaves):
+                    reduction = leaf.calculate_best_split() * leaf.n_data / self.n_data # Weighted impurity reduction
+                    if not leaf.is_check_terminate:
+                        leaf.is_terminate = self.is_terminate(leaf)
+                    if not leaf.is_terminate:
+                        if reduction <= best_leaf_reduction:
+                            best_leaf = leaf
+                            best_leaf_idx = leaf_idx
+                            best_leaf_reduction = reduction
+                if best_leaf is None: # All the nodes satisfy the termination condition
+                    break
                 best_leaf.split()
                 split_leaf = self.leaves.pop(best_leaf_idx)
                 split_leaf.prediction_probs = None  # this node is no longer a leaf
                 self.leaves.append(split_leaf.left)
                 self.leaves.append(split_leaf.right)
-            else:
-                sufficient_impurity_decrease = False
+                self.depth = self.get_depth()
 
-            self.depth = self.get_depth()
+        else: # Depth-first tree fitting
+            self.recursive_split(self.node)
 
         if verbose:
             print("Fitting finished")
+
+    def recursive_split(self, node: Node) -> None:
+        """
+        Recursively split nodes till the termination condition is satisfied
+
+        :param node: A root node to be split recursively
+        """
+        node.is_terminate = self.is_terminate(node)
+        if node.is_terminate:
+            self.leaves.append(node)
+            return
+        else:
+            node.calculate_best_split()
+            node.split()
+            self.recursive_split(node.left)
+            self.recursive_split(node.right)
+
 
     def predict(self, datapoint: np.ndarray) -> Tuple[int, np.ndarray]:
         """
