@@ -279,7 +279,8 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
     # Only return the split if it would indeed lower the impurity
     # if best_reduction < 0:
     #     return best_feature, best_value, best_reduction
-    if verify_reduction(
-        data=data, labels=labels, feature=best_feature, value=best_value
-    ):
-        return best_feature, best_value, best_reduction
+    # if verify_reduction(
+    #     data=data, labels=labels, feature=best_feature, value=best_value
+    # ):
+    return best_feature, best_value, best_reduction # Jay: I think it's cleaner to deal with the case when
+    # best_reduction = 0

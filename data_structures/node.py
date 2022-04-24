@@ -24,6 +24,7 @@ class Node:
         self.parent = parent  # To allow walking back upwards
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels
+        self.n_data = len(labels)
         self.depth = depth
         self.left = None
         self.right = None
@@ -42,6 +43,9 @@ class Node:
         self.split_reduction = None
         self.prediction_probs = None
         self.predicted_label = None
+        self.is_calculate_best = False
+        self.is_terminate = False
+        self.is_check_terminate = False
 
     def calculate_best_split(self) -> None:
         """
@@ -85,7 +89,7 @@ class Node:
         # Verify that splitting would actually help
         if self.split_reduction is not None:
             assert (
-                self.split_reduction < 0
+                self.split_reduction <= 0
             ), "Error: splitting this node would increase impurity. Should never be here"
 
             # NOTE: Asymmetry with <= and >
