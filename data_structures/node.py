@@ -43,7 +43,6 @@ class Node:
         self.split_reduction = None
         self.prediction_probs = None
         self.predicted_label = None
-        self.is_calculate_best = False
         self.is_terminate = False
         self.is_check_terminate = False
 

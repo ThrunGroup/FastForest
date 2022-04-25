@@ -20,7 +20,7 @@ class Forest(TreeClassifier):
         max_depth: int = None,
         bootstrap: bool = True
         min_samples_split: int = 2,
-        min_impurity_decrase: float = -1e-6,
+        min_impurity_decrase: float = 0,
         max_leaf_nodes: int = 0,
     ) -> None:
         self.data = data

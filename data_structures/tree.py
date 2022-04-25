@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Tuple
+from typing import Tuple, List
 
 from data_structures.node import Node
 from data_structures.tree_classifier import TreeClassifier
@@ -20,6 +20,7 @@ class Tree(TreeClassifier):
         min_samples_split: int = 2,
         min_impurity_decrase: float = -1e-6,
         max_leaf_nodes: int = 0,
+        features_list: List[np.ndarray] = None,
     ) -> None:
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
@@ -53,6 +54,11 @@ class Tree(TreeClassifier):
         self.ccp_alpha = 0.0
         self.depth = 1
         self.max_depth = max_depth
+
+        if not features_list:
+            self.features_list = [np.unique(data[:, i]) for i in range(len(data[0]))]
+        else:
+            self.features_list = features_list
 
     def get_depth(self) -> int:
         """

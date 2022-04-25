@@ -179,7 +179,9 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 
 
 # TODO (@motiwari): This doesn't appear to be actually returning a tuple?
-def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
+def solve_mab(
+    data: np.ndarray, labels: np.ndarray, features_list: List[np.ndarray]
+) -> Tuple[int, float, float]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
     that feature should be split at.
@@ -192,6 +194,7 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
 
     :param data: Feature set
     :param labels: Labels of datapoints
+    :param features_list: A list of of unique feature values.
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
     # Right now, we assume the number of bin edges is constant across features
@@ -203,8 +206,8 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
 
     candidates = np.array(list(itertools.product(range(F), range(B))))
     estimates = np.empty((F, B))
-    lcbs = np.empty((F, B))
-    ucbs = np.empty((F, B))
+    lcbs = np.zeros((F, B))
+    ucbs = np.zeros((F, B))
     num_samples = np.zeros((F, B))
     exact_mask = np.zeros((F, B))
     cb_delta = np.zeros((F, B))
@@ -216,21 +219,53 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
     for f_idx in range(F):
         # Set the minimum and maximum of bins as the minimum of maximum of data of a feature
         # Can optimize by calculating min and max at the same time?
-        min_bin, max_bin = np.min(data[:, f_idx]), np.max(data[:, f_idx])
+        min_bin, max_bin = 0, 0
+        num_bin = min(len(features_list[f_idx]), N, B)
+        unique_data = []
+        if num_bin == B:
+            bin_type = "linear"
+            min_bin, max_bin = np.min(data[:, f_idx]), np.max(data[:, f_idx])
+        elif num_bin == N:
+            bin_type = "identity"
+        else:
+            bin_type = "discrete"
+            unique_data = np.unique(data)
+            num_bin = len(unique_data)
         histograms.append(
             Histogram(
-                f_idx, classes=classes, num_bins=B, min_bin=min_bin, max_bin=max_bin
+                f_idx,
+                features_list[f_idx],
+                unique_data,
+                classes=classes,
+                num_bins=num_bin,
+                min_bin=min_bin,
+                max_bin=max_bin,
+                bin_type=bin_type,
             )
         )
+        not_considered_idcs += list(itertools.product([f_idx], range(num_bin, B)))
+        considered_idcs += list(itertools.product([f_idx], range(num_bin)))
+
+    considered_idcs = np.array(considered_idcs)
+    not_considered_idcs = np.array(not_considered_idcs)
+    if len(not_considered_idcs):
+        not_considered_access = (not_considered_idcs[:, 0], not_considered_idcs[:, 1])
+        exact_mask[not_considered_access] = 1
+        (
+            lcbs[not_considered_access],
+            ucbs[not_considered_access],
+            estimates[not_considered_access],
+        ) = [float("inf") for i in range(3)]
+        candidates = considered_idcs
 
     while len(candidates) > 0:
         # If we have already pulled the arms more times than the number of datapoints in the original dataset,
         # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
         exact_accesses = np.where((num_samples + batch_size >= N) & (exact_mask == 0))
-        if len(exact_accesses[0]) > 0:
+        if len(exact_accesses[0]) > 0: #Jay: batch_size --> N here
             estimates[exact_accesses], _vars = sample_targets(
-                data, labels, exact_accesses, histograms, batch_size
+                data, labels, exact_accesses, histograms, N
             )
             # The confidence intervals now only contain a point, since the return has been computed exactly
             lcbs[exact_accesses] = ucbs[exact_accesses] = estimates[exact_accesses]
@@ -282,5 +317,9 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
     # if verify_reduction(
     #     data=data, labels=labels, feature=best_feature, value=best_value
     # ):
-    return best_feature, best_value, best_reduction # Jay: I think it's cleaner to deal with the case when
+    return (
+        best_feature,
+        best_value,
+        best_reduction,
+    )  # Jay: I think it's cleaner to deal with the case when
     # best_reduction = 0

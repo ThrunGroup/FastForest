@@ -12,6 +12,8 @@ class Histogram:
     def __init__(
         self,
         feature_idx: int,
+        feature_array: np.ndarray,
+        data: np.ndarray,
         classes: Tuple[Any] = (
             0,
             1,
@@ -19,18 +21,25 @@ class Histogram:
         num_bins: int = 11,
         min_bin: float = 0.0,
         max_bin: float = 1.0,
+        bin_type: str = "linear"
     ):
         self.feature_idx = feature_idx
+        self.feature_array = feature_array  # An array of unique feature values
+        self.data = data
         self.classes = classes
         self.num_bins = num_bins
         self.min_bin = min_bin
         self.max_bin = max_bin
+        self.bin_type = bin_type
 
-        # TODO: Don't hardcode these edges, maybe use max and min feature values?
-        # this creates middle_bins + 2 virtual bins to include tails
-        self.bin_edges = np.linspace(
-            min_bin, max_bin, num_bins
-        )  # These are not at even numbers, just evenly spaced
+        if self.bin_type == "linear":
+            self.bin_edges = self.linear_bin()
+        elif self.bin_type == "discrete":
+            self.bin_edges = self.discrete_bin()
+        elif self.bin_type == "identity":
+            self.bin_edges = self.identity_bin()
+        else:
+            raise NotImplementedError("Invalid type of bin")
 
         # Note: labels can be any type like string or list
         self.left = np.zeros((num_bins, len(classes)), dtype=np.int32)
@@ -73,3 +82,17 @@ class Histogram:
             # left, right[x, y] gives # of data on the left and right of xth bin of yth class
             self.right[:insert_idx, y_idx] += 1
             self.left[insert_idx:, y_idx] += 1
+
+    def linear_bin(self):
+        return np.linspace(self.min_bin, self.max_bin, self.num_bins)
+
+    def discrete_bin(self):
+        width = int(len(self.feature_array) / self.num_bins)
+        return np.array([self.feature_array[width * i] for i in range(self.num_bins)])
+
+    def identity_bin(self):
+        return np.sort(self.data) # Copied array
+
+
+
+
