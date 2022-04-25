@@ -19,6 +19,9 @@ class Forest(TreeClassifier):
         n_estimators: int = 100,
         max_depth: int = None,
         bootstrap: bool = True
+        min_samples_split: int = 2,
+        min_impurity_decrase: float = -1e-6,
+        max_leaf_nodes: int = 0,
     ) -> None:
         self.data = data
         self.num_features = len(data[0])
@@ -35,12 +38,12 @@ class Forest(TreeClassifier):
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
         self.criterion = "gini"
         self.max_depth = max_depth
-        self.min_samples_split = 2
+        self.min_samples_split = min_samples_split
         self.min_samples_leaf = 1
         self.min_weight_fraction_leaf = 0.0
         self.max_features = "auto"
-        self.max_leaf_nodes = None
-        self.min_impurity_decrease = 0.0
+        self.max_leaf_nodes = max_leaf_nodes
+        self.min_impurity_decrease = min_impurity_decrase
         self.bootstrap = True
         self.oob_score = False
         self.n_jobs = None
@@ -51,6 +54,7 @@ class Forest(TreeClassifier):
         self.ccp_alpha = 0.0
         self.max_samples = None
         self.bootstrap = bootstrap
+        self.feature_list = [np.unique(data[:, i]) for i in range(len(data[0]))]
 
         # Need this to do remapping when features are shuffled
         self.tree_feature_idcs = {}
@@ -79,9 +83,7 @@ class Forest(TreeClassifier):
 
             if self.bootstrap:
                 N = len(self.labels)
-                idcs = np.random.choice(
-                    N, size=N
-                )
+                idcs = np.random.choice(N, size=N)
                 new_data = self.data[idcs, :]
                 new_labels = self.labels[idcs]
             else:
@@ -94,6 +96,10 @@ class Forest(TreeClassifier):
                 labels=new_labels,
                 max_depth=self.max_depth,
                 classes=self.classes,
+                min_samples_split=self.min_samples_split,
+                min_impurity_decrase=self.min_impurity_decrease,
+                max_leaf_nodes=self.max_leaf_nodes,
+                features_list=self.feature_list,
             )
             tree.fit()
             self.trees.append(tree)

@@ -212,6 +212,7 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
     # Create a list of histogram objects, one per feature
     histograms = []
     classes: Tuple = tuple(np.unique(labels))  # Not assume labels are 0 to i here
+    considered_idcs, not_considered_idcs = [], []
     for f_idx in range(F):
         # Set the minimum and maximum of bins as the minimum of maximum of data of a feature
         # Can optimize by calculating min and max at the same time?
@@ -239,7 +240,6 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
             # TODO(@motiwari): Can't use nanmin here -- why?
             cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
             candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
-
         if (
             len(candidates) <= 1
         ):  # cadndiates could be empty after all candidates are exactly computed
