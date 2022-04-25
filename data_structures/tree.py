@@ -76,9 +76,12 @@ class Tree(TreeClassifier):
         :return: whether to terminate splitting a node
         """
         node.is_check_terminate = True
-        return (self.max_depth <= node.depth or
-                self.min_samples_split >= node.n_data or
-                self.min_impurity_decrease <= node.calculate_best_split() * node.n_data/self.n_data)
+        return (
+            self.max_depth <= node.depth
+            or self.min_samples_split >= node.n_data
+            or self.min_impurity_decrease
+            <= node.calculate_best_split() * node.n_data / self.n_data
+        )
 
     def fit(self, verbose=True) -> None:
         """
@@ -88,8 +91,8 @@ class Tree(TreeClassifier):
 
         :return: None
         """
-        if self.max_leaf_nodes: # Best-first tree fitting
-            self.leaves.append(self.node) # Append root node to self.leaves
+        if self.max_leaf_nodes:  # Best-first tree fitting
+            self.leaves.append(self.node)  # Append root node to self.leaves
             while len(self.leaves) < self.max_leaf_nodes:
                 all_terminate = True
                 best_leaf = None
@@ -98,7 +101,9 @@ class Tree(TreeClassifier):
 
                 # Iterate over leaves and decide which to split
                 for leaf_idx, leaf in enumerate(self.leaves):
-                    reduction = leaf.calculate_best_split() * leaf.n_data / self.n_data # Weighted impurity reduction
+                    reduction = (
+                        leaf.calculate_best_split() * leaf.n_data / self.n_data
+                    )  # Weighted impurity reduction
                     if not leaf.is_check_terminate:
                         leaf.is_terminate = self.is_terminate(leaf)
                     if not leaf.is_terminate:
@@ -106,7 +111,7 @@ class Tree(TreeClassifier):
                             best_leaf = leaf
                             best_leaf_idx = leaf_idx
                             best_leaf_reduction = reduction
-                if best_leaf is None: # All the nodes satisfy the termination condition
+                if best_leaf is None:  # All the nodes satisfy the termination condition
                     break
                 best_leaf.split()
                 split_leaf = self.leaves.pop(best_leaf_idx)
@@ -115,7 +120,7 @@ class Tree(TreeClassifier):
                 self.leaves.append(split_leaf.right)
                 self.depth = self.get_depth()
 
-        else: # Depth-first tree fitting
+        else:  # Depth-first tree fitting
             self.recursive_split(self.node)
 
         if verbose:
@@ -136,7 +141,6 @@ class Tree(TreeClassifier):
             node.split()
             self.recursive_split(node.left)
             self.recursive_split(node.right)
-
 
     def predict(self, datapoint: np.ndarray) -> Tuple[int, np.ndarray]:
         """

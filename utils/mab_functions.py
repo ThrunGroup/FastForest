@@ -197,7 +197,6 @@ def solve_mab(
     :param features_list: A list of of unique feature values.
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
-    # Right now, we assume the number of bin edges is constant across features
     F = len(data[0])
     B = 11  # TODO: Fix this hard-coding
     N = len(data)
@@ -263,7 +262,7 @@ def solve_mab(
         # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
         exact_accesses = np.where((num_samples + batch_size >= N) & (exact_mask == 0))
-        if len(exact_accesses[0]) > 0: #Jay: batch_size --> N here
+        if len(exact_accesses[0]) > 0:  # Jay: batch_size --> N here
             estimates[exact_accesses], _vars = sample_targets(
                 data, labels, exact_accesses, histograms, N
             )

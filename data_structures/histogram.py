@@ -21,7 +21,7 @@ class Histogram:
         num_bins: int = 11,
         min_bin: float = 0.0,
         max_bin: float = 1.0,
-        bin_type: str = "linear"
+        bin_type: str = "linear",
     ):
         self.feature_idx = feature_idx
         self.feature_array = feature_array  # An array of unique feature values
@@ -91,8 +91,4 @@ class Histogram:
         return np.array([self.feature_array[width * i] for i in range(self.num_bins)])
 
     def identity_bin(self):
-        return np.sort(self.data) # Copied array
-
-
-
-
+        return np.sort(self.data)  # Copied array
