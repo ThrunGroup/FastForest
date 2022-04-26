@@ -199,7 +199,7 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 
 # TODO (@motiwari): This doesn't appear to be actually returning a tuple?
 def solve_mab(
-        data: np.ndarray, labels: np.ndarray, features_list: List[np.ndarray], bin_type: str = ""
+        data: np.ndarray, labels: np.ndarray, discrete_bins_list: List[np.ndarray], bin_type: str = ""
 ) -> Tuple[int, float, float]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
@@ -213,7 +213,7 @@ def solve_mab(
 
     :param data: Feature set
     :param labels: Labels of datapoints
-    :param features_list: A list of of unique feature values
+    :param discrete_bins_list: A list of discrete bins
     :param bin_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
@@ -241,13 +241,13 @@ def solve_mab(
         min_bin, max_bin = 0, 0
         unique_data = []
         if not bin_type:
-            bin_type = choose_bin_type(len(features_list[f_idx]), N, B)
+            bin_type = choose_bin_type(len(discrete_bins_list[f_idx]), N, B)
 
         if bin_type == "linear":
             min_bin, max_bin = np.min(data[:, f_idx]), np.max(data[:, f_idx])
             num_bin = B
         elif bin_type == "discrete":
-            num_bin = len(features_list[f_idx])
+            num_bin = len(discrete_bins_list[f_idx])
         elif bin_type == "identity":
             unique_data = np.unique(data)
             num_bin = len(unique_data)
@@ -258,7 +258,7 @@ def solve_mab(
         histograms.append(
             Histogram(
                 f_idx,
-                features_list[f_idx],
+                discrete_bins_list[f_idx],
                 unique_data,
                 classes=classes,
                 num_bins=num_bin,

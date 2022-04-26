@@ -20,7 +20,7 @@ class Tree(TreeClassifier):
         min_samples_split: int = 2,
         min_impurity_decrase: float = -1e-6,
         max_leaf_nodes: int = 0,
-        features_list: List[np.ndarray] = None,
+        features_list: List[np.ndarray] = [],
         bin_type: str = "linear"
     ) -> None:
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
@@ -53,7 +53,7 @@ class Tree(TreeClassifier):
         self.depth = 1
         self.max_depth = max_depth
 
-        if not features_list:
+        if not len(features_list):
             self.features_list = [np.unique(data[:, i]) for i in range(len(data[0]))]
         else:
             self.features_list = features_list
