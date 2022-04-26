@@ -21,20 +21,18 @@ class Tree(TreeClassifier):
         min_impurity_decrase: float = -1e-6,
         max_leaf_nodes: int = 0,
         features_list: List[np.ndarray] = None,
+        bin_type: str = "linear"
     ) -> None:
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
         self.n_data = len(labels)
         self.classes = classes  # dict from class name to class index
         self.idx_to_class = {value: key for key, value in classes.items()}
+        self.bin_type = bin_type
 
         self.node = Node(
-            tree=self,
-            parent=None,
-            data=self.data,  # Root node contains all the data
-            labels=self.labels,
-            depth=0,
-        )
+            tree=self, parent=None, data=self.data, labels=self.labels, depth=0, bin_type=self.bin_type
+        )  # Root node contains all the data
 
         # These are copied from the link below. We won't need all of them.
         # https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
@@ -72,8 +70,8 @@ class Tree(TreeClassifier):
         """
         Check whether the node satisfies the termination condition of splitting.
 
-        :param node: a node which is considered
-        :return: whether to terminate splitting a node
+        :param node: A node which is considered
+        :return: Whether to terminate splitting a node
         """
         node.is_check_terminate = True
         return (

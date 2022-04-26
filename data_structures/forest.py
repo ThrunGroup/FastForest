@@ -22,6 +22,7 @@ class Forest(TreeClassifier):
         min_samples_split: int = 2,
         min_impurity_decrase: float = 0,
         max_leaf_nodes: int = 0,
+        bin_type = "linear"
     ) -> None:
         self.data = data
         self.num_features = len(data[0])
@@ -55,6 +56,7 @@ class Forest(TreeClassifier):
         self.max_samples = None
         self.bootstrap = bootstrap
         self.feature_list = [np.unique(data[:, i]) for i in range(len(data[0]))]
+        self.bin_type = bin_type
 
         # Need this to do remapping when features are shuffled
         self.tree_feature_idcs = {}
@@ -100,6 +102,7 @@ class Forest(TreeClassifier):
                 min_impurity_decrase=self.min_impurity_decrease,
                 max_leaf_nodes=self.max_leaf_nodes,
                 features_list=self.feature_list,
+                bin_type = self.bin_type
             )
             tree.fit()
             self.trees.append(tree)

@@ -12,6 +12,24 @@ from utils.utils import type_check, class_to_idx, counts_of_labels
 type_check()
 
 
+def choose_bin_type(F: int, N: int, B: int) -> str:
+    """
+    Return a type of bin we use depending on # of unique feature values, data, and bins.
+
+    :param F: # of unique feature values
+    :param N: # of data
+    :param B: # of bins
+    :return: Return one among three bin types--linear, discrete, and identity
+    """
+    min_num = min(F, N, B)
+    if min_num == B:
+        return "linear"
+    elif min_num == F:
+        return "discrete"
+    else:
+        return "identity"
+
+
 def get_impurity_fn(impurity_measure: str) -> Callable:
     if impurity_measure == "GINI":
         get_impurity: Callable = get_gini
@@ -27,10 +45,10 @@ def get_impurity_fn(impurity_measure: str) -> Callable:
 
 
 def get_impurity_reductions(
-    histogram: Histogram,
-    _bin_edge_idcs: List[int],
-    ret_vars: bool = False,
-    impurity_measure: str = "GINI",
+        histogram: Histogram,
+        _bin_edge_idcs: List[int],
+        ret_vars: bool = False,
+        impurity_measure: str = "GINI",
 ) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
     """
     Given a histogram of counts for each bin, compute the impurity reductions if we were to split a node on any of the
@@ -45,7 +63,7 @@ def get_impurity_reductions(
     h = histogram
     b = len(_bin_edge_idcs)
     assert (
-        b <= h.num_bins
+            b <= h.num_bins
     ), "len(bin_edges) whose impurity reductions we want to calculate is greater than len(total_bin_edges)"
     impurities_left = np.zeros(b)
     impurities_right = np.zeros(b)
@@ -89,17 +107,19 @@ def get_impurity_reductions(
 
 
 def sample_targets(
-    data: np.ndarray,
-    labels: np.ndarray,
-    arms: Tuple[np.ndarray, np.ndarray],
-    histograms: List[object],
-    batch_size: int,
+        data: np.ndarray,
+        labels: np.ndarray,
+        arms: Tuple[np.ndarray, np.ndarray],
+        histograms: List[object],
+        batch_size: int,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
     their feature values into the (potentially non-empty) histograms and recompute the changes in impurity
     for each potential bin split
-    :param X: original dataset
+
+    :param data: input data array with 2 dimensions
+    :param labels: target data array with 1 dimension
     :param arms: arms we want to consider
     :param histograms: list of the histograms for ALL feature indices
     :param batch_size: the number of samples we're going to choose
@@ -141,7 +161,6 @@ def sample_targets(
 
 
 def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bool:
-
     # TODO: Fix this. Use a dictionary to store original labels -> label index
     #  or use something like label_idx,
     #  label in np.unique(labels) to avoid assuming that the labels are 0, ... K-1
@@ -171,7 +190,7 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
     p_R = R_counts / np.sum(R_counts)
 
     split_impurity = (1 - np.dot(p_L, p_L)) * np.sum(L_counts) + (
-        1 - np.dot(p_R, p_R)
+            1 - np.dot(p_R, p_R)
     ) * np.sum(R_counts)
     split_impurity /= len(labels)
 
@@ -180,7 +199,7 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 
 # TODO (@motiwari): This doesn't appear to be actually returning a tuple?
 def solve_mab(
-    data: np.ndarray, labels: np.ndarray, features_list: List[np.ndarray]
+        data: np.ndarray, labels: np.ndarray, features_list: List[np.ndarray], bin_type: str = ""
 ) -> Tuple[int, float, float]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
@@ -194,7 +213,8 @@ def solve_mab(
 
     :param data: Feature set
     :param labels: Labels of datapoints
-    :param features_list: A list of of unique feature values.
+    :param features_list: A list of of unique feature values
+    :param bin_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
     F = len(data[0])
@@ -219,17 +239,22 @@ def solve_mab(
         # Set the minimum and maximum of bins as the minimum of maximum of data of a feature
         # Can optimize by calculating min and max at the same time?
         min_bin, max_bin = 0, 0
-        num_bin = min(len(features_list[f_idx]), N, B)
         unique_data = []
-        if num_bin == B:
-            bin_type = "linear"
+        if not bin_type:
+            bin_type = choose_bin_type(len(features_list[f_idx]), N, B)
+
+        if bin_type == "linear":
             min_bin, max_bin = np.min(data[:, f_idx]), np.max(data[:, f_idx])
-        elif num_bin == N:
-            bin_type = "identity"
-        else:
-            bin_type = "discrete"
+            num_bin = B
+        elif bin_type == "discrete":
+            num_bin = len(features_list[f_idx])
+        elif bin_type == "identity":
             unique_data = np.unique(data)
             num_bin = len(unique_data)
+        else:
+            NotImplementedError("Invalid choice of bin_type")
+
+
         histograms.append(
             Histogram(
                 f_idx,
@@ -275,7 +300,7 @@ def solve_mab(
             cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
             candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
         if (
-            len(candidates) <= 1
+                len(candidates) <= 1
         ):  # cadndiates could be empty after all candidates are exactly computed
             # Break here because we have found our best candidate
             break

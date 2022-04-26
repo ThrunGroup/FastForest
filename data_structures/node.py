@@ -19,12 +19,14 @@ class Node:
         data: np.ndarray,
         labels: np.ndarray,
         depth: int,
+        bin_type: str = ""
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels
         self.n_data = len(labels)
+        self.bin_type = bin_type
         self.depth = depth
         self.left = None
         self.right = None
