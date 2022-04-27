@@ -8,7 +8,7 @@ from params import CONF_MULTIPLIER, TOLERANCE
 
 from criteria import get_gini, get_entropy, get_variance
 
-from utils import type_check
+from utils import type_check, count_occurrence, class_to_idx, counts_on_labels
 
 type_check()
 
@@ -72,8 +72,7 @@ def get_impurity_reductions(
         )
 
     impurity_curr, V_impurity_curr = get_impurity(
-        h.left[0, :] + h.right[0, :],
-        ret_var=True,
+        h.left[0, :] + h.right[0, :], ret_var=True,
     )
     impurity_curr = float(impurity_curr)
     V_impurity_curr = float(V_impurity_curr)
@@ -146,23 +145,16 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
     # TODO: Fix this. Use a dictionary to store original labels -> label index
     #  or use something like label_idx,
     #  label in np.unique(labels) to avoid assuming that the labels are 0, ... K-1
-    num_classes = (
-        int(np.max(labels)) + 1
-    )  # Some labels can be missing as it's a subset of whole dataset. But it's
-    # still okay as classes that don't appear in this subset don't affect impurity
-    counts = np.empty(num_classes)  # Redundant calculation. It should be optimized
-    classes = np.unique(labels)
-
-    for class_ in classes:  # Assume labels are all integers
-        counts[int(class_)] = len(np.where(labels == class_)[0])
+    class_dict: dict = class_to_idx(np.unique(labels))
+    counts: np.ndarray = counts_on_labels(
+        class_dict, labels
+    )  # counts[i] contains the counts of class_dict[i](which is a class) in "label"
     p = counts / len(labels)
     root_impurity = 1 - np.dot(p, p)
 
     left_idcs = np.where(data[:, feature] <= value)
     left_labels = labels[left_idcs]
-    L_counts = np.zeros(num_classes)
-    for class_ in classes:
-        L_counts[int(class_)] = len(np.where(left_labels == class_)[0])
+    L_counts: np.ndarray = counts_on_labels(class_dict, left_labels)
 
     # This is already a pure node
     if len(left_idcs[0]) == 0:
@@ -171,9 +163,7 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 
     right_idcs = np.where(data[:, feature] > value)
     right_labels = labels[right_idcs]
-    R_counts = np.zeros(num_classes)
-    for class_ in classes:
-        R_counts[int(class_)] = len(np.where(right_labels == class_)[0])
+    R_counts: np.ndarray = counts_on_labels(class_dict, right_labels)
 
     # This is already a pure node
     if len(right_idcs[0]) == 0:
@@ -185,8 +175,7 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
     ) * np.sum(R_counts)
     split_impurity /= len(labels)
 
-    print("Split impurity:", split_impurity, "Root impurity:", root_impurity)
-    return TOLERANCE > root_impurity - split_impurity
+    return TOLERANCE < root_impurity - split_impurity
 
 
 # TODO (@motiwari): This doesn't appear to be actually returning a tuple?
@@ -288,9 +277,9 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
     best_reduction = estimates[best_split]
 
     # Only return the split if it would indeed lower the impurity
-    if best_reduction < 0:
-        return best_feature, best_value, best_reduction
-    # if verify_reduction(
-    #     data=data, labels=labels, feature=best_feature, value=best_value
-    # ):
+    # if best_reduction < 0:
     #     return best_feature, best_value, best_reduction
+    if verify_reduction(
+        data=data, labels=labels, feature=best_feature, value=best_value
+    ):
+        return best_feature, best_value, best_reduction
