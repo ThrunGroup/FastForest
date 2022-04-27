@@ -36,19 +36,23 @@ class Node:
         self.split_on = None
         self.split_feature = None
         self.split_value = None
+
+        # values to cache
+        self.is_best_reduction = False
         self.split_reduction = None
-        self.is_calculate_best = False
+        self.prediction_probs = None
 
     def calculate_best_split(self):
         """
         Speculatively calculate the best split
         :return: None, but assign
         """
-        if self.is_calculate_best:
+        if self.is_best_reduction:
             return (
                 self.split_reduction
             )  # If we already calculate it, return self.split_reduction right away
-        self.is_calculate_best = True
+
+        self.is_best_reduction = True
         results = solve_mab(self.data, self.labels)
         if results is not None:
             self.split_feature, self.split_value, self.split_reduction = results
@@ -96,7 +100,6 @@ class Node:
                 self.depth + 1,
                 self.num_classes,
             )
-
             self.split_on = self.split_feature
 
     def n_print(self) -> None:
