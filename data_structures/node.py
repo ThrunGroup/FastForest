@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import numpy as np
-from utils.mab_functions import solve_mab
 
+from utils.mab_functions import solve_mab
 from utils.utils import type_check, counts_on_labels
+from data_structures.tree import Tree
 
 type_check()
 

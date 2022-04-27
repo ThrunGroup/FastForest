@@ -4,9 +4,9 @@ import argparse
 import os
 import numpy as np
 import sklearn.datasets
+from sklearn.ensemble import RandomForestClassifier
 
 from data_structures.forest import Forest
-from sklearn.ensemble import RandomForestClassifier
 from utils.constants import IRIS, DIGITS, FASTFOREST, SKLEARN
 
 

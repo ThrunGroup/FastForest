@@ -2,13 +2,12 @@ import numpy as np
 import itertools
 
 from typing import List, Tuple, Callable, Union
-from data_structures.histogram import Histogram
 from collections import defaultdict
-from constants import CONF_MULTIPLIER, TOLERANCE
 
+from data_structures.histogram import Histogram
+from utils.constants import CONF_MULTIPLIER, TOLERANCE
 from utils.criteria import get_gini, get_entropy, get_variance
-
-from utils import type_check, class_to_idx, counts_on_labels
+from utils.utils import type_check, class_to_idx, counts_on_labels
 
 type_check()
 

@@ -1,9 +1,8 @@
 import numpy as np
 from typing import Tuple
 
-from tree import Tree
-from tree_classifier import TreeClassifier
-
+from data_structures.tree import Tree
+from data_structures.tree_classifier import TreeClassifier
 from utils.utils import class_to_idx
 
 
@@ -29,6 +28,7 @@ class Forest(TreeClassifier):
             np.unique(labels)
         )  # a dictionary that maps class name to class index
         self.n_classes = len(self.classes)
+
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
         self.criterion = "gini"

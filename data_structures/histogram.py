@@ -1,6 +1,6 @@
 import numpy as np
 import bisect
-from typing import List, Any, Tuple
+from typing import Any, Tuple
 
 
 class Histogram:

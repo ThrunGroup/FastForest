@@ -2,7 +2,7 @@ import numpy as np
 from typing import Tuple
 
 from data_structures.node import Node
-from tree_classifier import TreeClassifier
+from data_structures.tree_classifier import TreeClassifier
 
 
 class Tree(TreeClassifier):

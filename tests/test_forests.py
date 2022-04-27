@@ -2,10 +2,11 @@ import sklearn.datasets
 import unittest
 import numpy as np
 
-from tests import ground_truth
-from tests import data_generator
+import ground_truth
+import data_generator
 from data_structures.forest import Forest
 from data_structures.tree import Tree
+import utils
 
 
 class ForestTests(unittest.TestCase):
@@ -47,12 +48,12 @@ class ForestTests(unittest.TestCase):
         data = self.toy[:, :-1]
         labels = self.toy[:, -1]
         classes_arr = np.unique(labels)
-        classes = class_to_idx(classes_arr)
+        classes = utils.class_to_idx(classes_arr)
         print("=> Ground truth:\n")
         ground_truth.ground_truth_tree(data, labels, show=show)
 
         print("\n\n=> MAB:\n")
-        print("Best arm from solve_mab is: ", solve_mab(data, labels))
+        print("Best arm from solve_mab is: ", utils.solve_mab(data, labels))
 
         print("\n\n=> Tree fitting:")
         t = Tree(data, labels, max_depth=3, classes=classes)
@@ -63,7 +64,7 @@ class ForestTests(unittest.TestCase):
         iris = sklearn.datasets.load_iris()
         data, labels = iris.data, iris.target
         classes_arr = np.unique(labels)
-        classes = class_to_idx(classes_arr)
+        classes = utils.class_to_idx(classes_arr)
         ground_truth.ground_truth_tree(
             data=data, labels=labels, max_depth=5, show=False
         )
