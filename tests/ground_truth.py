@@ -44,6 +44,7 @@ def ground_truth_forest(
     """
     Given a dataset, create the ground truth tree using sklearn.
     If n_estimators = 1, fits only the first ree
+
     :param data: data to fit
     :param labels: labels of the data
     :param max_depth: max depth of an individual tree
@@ -57,13 +58,3 @@ def ground_truth_forest(
     RF.fit(data, labels)
     acc = np.sum(RF.predict(data) == labels) / len(data)
     print("Ground truth random forest Train Accuracy:", acc)
-
-
-def reduce_to_2class(
-    data: np.ndarray, labels: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray]:
-    two_class_idcs = np.where((labels == 2) | (labels == 1))
-    two_class_data = data[two_class_idcs]
-    two_class_labels = labels[two_class_idcs]
-    two_class_labels[np.where(two_class_labels == 2)] = 0
-    return two_class_data, two_class_labels

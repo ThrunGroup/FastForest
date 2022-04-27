@@ -48,14 +48,12 @@ class Node:
         :return: None, but assign
         """
         if self.is_best_reduction:
-            return (
-                self.split_reduction
-            )  # If we already calculate it, return self.split_reduction right away
+            return self.split_reduction  # If we already calculated it, return it
 
-        self.is_best_reduction = True
         results = solve_mab(self.data, self.labels)
         if results is not None:
             self.split_feature, self.split_value, self.split_reduction = results
+            self.is_best_reduction = True
             return self.split_reduction
 
     def split(self) -> None:
