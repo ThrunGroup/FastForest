@@ -2,13 +2,13 @@ import numpy as np
 import itertools
 
 from typing import List, Tuple, Callable, Union
-from histogram import Histogram
+from data_structures.histogram import Histogram
 from collections import defaultdict
-from params import CONF_MULTIPLIER, TOLERANCE
+from constants import CONF_MULTIPLIER, TOLERANCE
 
-from criteria import get_gini, get_entropy, get_variance
+from utils.criteria import get_gini, get_entropy, get_variance
 
-from utils import type_check, count_occurrence, class_to_idx, counts_on_labels
+from utils import type_check, class_to_idx, counts_on_labels
 
 type_check()
 
@@ -72,7 +72,8 @@ def get_impurity_reductions(
         )
 
     impurity_curr, V_impurity_curr = get_impurity(
-        h.left[0, :] + h.right[0, :], ret_var=True,
+        h.left[0, :] + h.right[0, :],
+        ret_var=True,
     )
     impurity_curr = float(impurity_curr)
     V_impurity_curr = float(V_impurity_curr)

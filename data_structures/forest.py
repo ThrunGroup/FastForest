@@ -4,7 +4,7 @@ from typing import Tuple
 from tree import Tree
 from tree_classifier import TreeClassifier
 
-from utils import class_to_idx
+from utils.utils import class_to_idx
 
 
 class Forest(TreeClassifier):

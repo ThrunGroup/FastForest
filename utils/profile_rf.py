@@ -5,9 +5,9 @@ import os
 import numpy as np
 import sklearn.datasets
 
-from forest import Forest
+from data_structures.forest import Forest
 from sklearn.ensemble import RandomForestClassifier
-from constants import IRIS, DIGITS, FASTFOREST, SKLEARN
+from utils.constants import IRIS, DIGITS, FASTFOREST, SKLEARN
 
 
 def main() -> None:

@@ -11,7 +11,7 @@ def type_check() -> None:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
-        from tree import Tree
+        pass
 
 
 def count_occurrence(class_: np.ndarray, labels: np.ndarray) -> int:
@@ -21,7 +21,9 @@ def count_occurrence(class_: np.ndarray, labels: np.ndarray) -> int:
     return len(np.where(labels == class_)[0])
 
 
-def class_to_idx(classes: np.ndarray,) -> dict:
+def class_to_idx(
+    classes: np.ndarray,
+) -> dict:
     """
     Helpful for function for generating dictionary that maps class names to class index
     """

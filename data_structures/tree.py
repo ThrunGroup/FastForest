@@ -1,7 +1,7 @@
 import numpy as np
 from typing import Tuple
 
-from node import Node
+from data_structures.node import Node
 from tree_classifier import TreeClassifier
 
 

@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-from typing import Tuple
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import (
     DecisionTreeClassifier,
