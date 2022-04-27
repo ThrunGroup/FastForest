@@ -12,7 +12,7 @@ class Histogram:
     def __init__(
         self,
         feature_idx: int,
-        feature_array: np.ndarray,
+        feature_values: np.ndarray,
         data: np.ndarray,
         classes: Tuple[Any] = (
             0,
@@ -24,7 +24,7 @@ class Histogram:
         bin_type: str = "linear",
     ):
         self.feature_idx = feature_idx
-        self.feature_array = feature_array  # An array of unique feature values
+        self.feature_values = feature_values  # An array of unique feature values
         self.data = data
         self.classes = classes
         self.num_bins = num_bins
@@ -42,8 +42,8 @@ class Histogram:
             raise NotImplementedError("Invalid type of bin")
 
         # Note: labels can be any type like string or list
-        self.left = np.zeros((num_bins, len(classes)), dtype=np.int32)
-        self.right = np.zeros((num_bins, len(classes)), dtype=np.int32)
+        self.left = np.zeros((self.num_bins, len(classes)), dtype=np.int32)
+        self.right = np.zeros((self.num_bins, len(classes)), dtype=np.int32)
 
     @staticmethod
     def get_bin(val: float, bin_edges: np.ndarray) -> int:
@@ -83,12 +83,35 @@ class Histogram:
             self.right[:insert_idx, y_idx] += 1
             self.left[insert_idx:, y_idx] += 1
 
-    def linear_bin(self):
+    def linear_bin(self) -> np.ndarray:
+        """
+
+        :return: Return an array of bins with linear spacing
+        """
         return np.linspace(self.min_bin, self.max_bin, self.num_bins)
 
-    def discrete_bin(self):
-        width = int(len(self.feature_array) / self.num_bins)
-        return np.array([self.feature_array[width * i] for i in range(self.num_bins)])
+    def discrete_bin(self) -> np.ndarray:
+        """
+        It returns a subset of self.feature_values with constant width. It can be either similar or different
+        to linear bin depending on the distribution of self.feature_values.
+        Ex) self.data = [0, 1, 2, 3, 3, 3, 3, 100]
+            self.feature_values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 100]
+            self.num_bins = 5
+            self.linear_bin() = [0, 25, 50, 75, 100]
+            self.discrete_bin() = [0, 1, 2, 3, 100]
 
-    def identity_bin(self):
-        return np.sort(self.data)  # Copied array
+        :return: Return a subset of self.feature_values
+        """
+        width = int(len(self.feature_values) / self.num_bins)
+        return np.array([self.feature_values[width * i] for i in range(self.num_bins)])
+
+    def identity_bin(self) -> np.ndarray:
+        """
+        Ex) self.data = [0, 1, 2, 3, 3, 3, 3, 100]
+            self.identity_bin() = [0, 1, 2, 3, 100]
+
+        :return: Return an unique sorted values of self.data
+        """
+        identity_bin = np.unique(self.data) # Copied array
+        self.num_bins = len(identity_bin)
+        return identity_bin

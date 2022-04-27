@@ -18,10 +18,10 @@ class Tree(TreeClassifier):
         max_depth: int,
         classes: dict,
         min_samples_split: int = 2,
-        min_impurity_decrase: float = -1e-6,
+        min_impurity_decrease: float = -1e-6,
         max_leaf_nodes: int = 0,
         features_list: List[np.ndarray] = [],
-        bin_type: str = "linear"
+        bin_type: str = "linear",
     ) -> None:
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
@@ -31,7 +31,12 @@ class Tree(TreeClassifier):
         self.bin_type = bin_type
 
         self.node = Node(
-            tree=self, parent=None, data=self.data, labels=self.labels, depth=0, bin_type=self.bin_type
+            tree=self,
+            parent=None,
+            data=self.data,
+            labels=self.labels,
+            depth=0,
+            bin_type=self.bin_type,
         )  # Root node contains all the data
 
         # These are copied from the link below. We won't need all of them.
@@ -47,13 +52,13 @@ class Tree(TreeClassifier):
         self.random_state = None
         self.max_leaf_nodes = max_leaf_nodes
         # Make this a small negative number to avoid infinite loop when all leaves are at max_depth
-        self.min_impurity_decrease = min_impurity_decrase
+        self.min_impurity_decrease = min_impurity_decrease
         self.class_weight = None
         self.ccp_alpha = 0.0
         self.depth = 1
         self.max_depth = max_depth
 
-        if not len(features_list):
+        if len(features_list) == 0:
             self.features_list = [np.unique(data[:, i]) for i in range(len(data[0]))]
         else:
             self.features_list = features_list
@@ -66,19 +71,19 @@ class Tree(TreeClassifier):
         max_depth = -1
         return max([leaf.depth for leaf in self.leaves])
 
-    def is_terminate(self, node: Node) -> bool:
+    def check_splittable(self, node: Node) -> bool:
         """
         Check whether the node satisfies the termination condition of splitting.
 
         :param node: A node which is considered
-        :return: Whether to terminate splitting a node
+        :return: Whether it's possible to split a node
         """
-        node.is_check_terminate = True
+        node.is_check_splittable = True
         return (
-            self.max_depth <= node.depth
-            or self.min_samples_split >= node.n_data
-            or self.min_impurity_decrease
-            <= node.calculate_best_split() * node.n_data / self.n_data
+            self.max_depth > node.depth
+            and self.min_samples_split < node.n_data
+            and self.min_impurity_decrease >
+            node.calculate_best_split() * node.n_data / self.n_data
         )
 
     def fit(self, verbose=True) -> None:
@@ -89,7 +94,7 @@ class Tree(TreeClassifier):
 
         :return: None
         """
-        if self.max_leaf_nodes:  # Best-first tree fitting
+        if self.max_leaf_nodes > 0:  # Best-first tree fitting
             self.leaves.append(self.node)  # Append root node to self.leaves
             while len(self.leaves) < self.max_leaf_nodes:
                 all_terminate = True
@@ -102,9 +107,9 @@ class Tree(TreeClassifier):
                     reduction = (
                         leaf.calculate_best_split() * leaf.n_data / self.n_data
                     )  # Weighted impurity reduction
-                    if not leaf.is_check_terminate:
-                        leaf.is_terminate = self.is_terminate(leaf)
-                    if not leaf.is_terminate:
+                    if not leaf.is_check_splittable:
+                        leaf.is_splittable = self.check_splittable(leaf)
+                    if leaf.is_splittable:
                         if reduction <= best_leaf_reduction:
                             best_leaf = leaf
                             best_leaf_idx = leaf_idx
@@ -130,10 +135,9 @@ class Tree(TreeClassifier):
 
         :param node: A root node to be split recursively
         """
-        node.is_terminate = self.is_terminate(node)
-        if node.is_terminate:
+        node.is_splittable = self.check_splittable(node)
+        if not node.is_splittable:
             self.leaves.append(node)
-            return
         else:
             node.calculate_best_split()
             node.split()

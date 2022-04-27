@@ -14,11 +14,11 @@ type_check()
 
 def choose_bin_type(F: int, N: int, B: int) -> str:
     """
-    Return a type of bin we use depending on # of unique feature values, data, and bins.
+    Return a type of bin we use depending on the number of unique feature values, data, and bins.
 
-    :param F: # of unique feature values
-    :param N: # of data
-    :param B: # of bins
+    :param F: Number of unique feature values
+    :param N: Number of data
+    :param B: Number of bins
     :return: Return one among three bin types--linear, discrete, and identity
     """
     min_num = min(F, N, B)
@@ -26,8 +26,7 @@ def choose_bin_type(F: int, N: int, B: int) -> str:
         return "linear"
     elif min_num == F:
         return "discrete"
-    else:
-        return "identity"
+    return "identity"
 
 
 def get_impurity_fn(impurity_measure: str) -> Callable:
@@ -45,10 +44,10 @@ def get_impurity_fn(impurity_measure: str) -> Callable:
 
 
 def get_impurity_reductions(
-        histogram: Histogram,
-        _bin_edge_idcs: List[int],
-        ret_vars: bool = False,
-        impurity_measure: str = "GINI",
+    histogram: Histogram,
+    _bin_edge_idcs: List[int],
+    ret_vars: bool = False,
+    impurity_measure: str = "GINI",
 ) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
     """
     Given a histogram of counts for each bin, compute the impurity reductions if we were to split a node on any of the
@@ -63,7 +62,7 @@ def get_impurity_reductions(
     h = histogram
     b = len(_bin_edge_idcs)
     assert (
-            b <= h.num_bins
+        b <= h.num_bins
     ), "len(bin_edges) whose impurity reductions we want to calculate is greater than len(total_bin_edges)"
     impurities_left = np.zeros(b)
     impurities_right = np.zeros(b)
@@ -107,11 +106,11 @@ def get_impurity_reductions(
 
 
 def sample_targets(
-        data: np.ndarray,
-        labels: np.ndarray,
-        arms: Tuple[np.ndarray, np.ndarray],
-        histograms: List[object],
-        batch_size: int,
+    data: np.ndarray,
+    labels: np.ndarray,
+    arms: Tuple[np.ndarray, np.ndarray],
+    histograms: List[object],
+    batch_size: int,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
@@ -190,7 +189,7 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
     p_R = R_counts / np.sum(R_counts)
 
     split_impurity = (1 - np.dot(p_L, p_L)) * np.sum(L_counts) + (
-            1 - np.dot(p_R, p_R)
+        1 - np.dot(p_R, p_R)
     ) * np.sum(R_counts)
     split_impurity /= len(labels)
 
@@ -199,7 +198,10 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 
 # TODO (@motiwari): This doesn't appear to be actually returning a tuple?
 def solve_mab(
-        data: np.ndarray, labels: np.ndarray, discrete_bins_list: List[np.ndarray], bin_type: str = ""
+    data: np.ndarray,
+    labels: np.ndarray,
+    discrete_bins_list: List[np.ndarray],
+    bin_type: str = "",
 ) -> Tuple[int, float, float]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
@@ -225,8 +227,8 @@ def solve_mab(
 
     candidates = np.array(list(itertools.product(range(F), range(B))))
     estimates = np.empty((F, B))
-    lcbs = np.zeros((F, B))
-    ucbs = np.zeros((F, B))
+    lcbs = np.empty((F, B))
+    ucbs = np.empty((F, B))
     num_samples = np.zeros((F, B))
     exact_mask = np.zeros((F, B))
     cb_delta = np.zeros((F, B))
@@ -239,47 +241,40 @@ def solve_mab(
         # Set the minimum and maximum of bins as the minimum of maximum of data of a feature
         # Can optimize by calculating min and max at the same time?
         min_bin, max_bin = 0, 0
-        unique_data = []
-        if not bin_type:
+        f_data = data[:, f_idx]
+        num_bins = min(B, len(discrete_bins_list[f_idx]), len(f_data))
+        if bin_type == "":
             bin_type = choose_bin_type(len(discrete_bins_list[f_idx]), N, B)
 
         if bin_type == "linear":
-            min_bin, max_bin = np.min(data[:, f_idx]), np.max(data[:, f_idx])
-            num_bin = B
-        elif bin_type == "discrete":
-            num_bin = len(discrete_bins_list[f_idx])
-        elif bin_type == "identity":
-            unique_data = np.unique(data)
-            num_bin = len(unique_data)
-        else:
+            min_bin, max_bin = np.min(f_data), np.max(f_data)
+
+        if bin_type not in ("linear", "discrete", "identity"):
             NotImplementedError("Invalid choice of bin_type")
 
-
-        histograms.append(
-            Histogram(
+        histogram = Histogram(
                 f_idx,
                 discrete_bins_list[f_idx],
-                unique_data,
+                f_data,
                 classes=classes,
-                num_bins=num_bin,
+                num_bins=num_bins,
                 min_bin=min_bin,
                 max_bin=max_bin,
                 bin_type=bin_type,
             )
-        )
-        not_considered_idcs += list(itertools.product([f_idx], range(num_bin, B)))
-        considered_idcs += list(itertools.product([f_idx], range(num_bin)))
+        histograms.append(histogram)
+
+        # Filtering extraneous bins
+        not_considered_idcs += list(itertools.product([f_idx], range(histogram.num_bins, B)))
+        considered_idcs += list(itertools.product([f_idx], range(histogram.num_bins)))
 
     considered_idcs = np.array(considered_idcs)
     not_considered_idcs = np.array(not_considered_idcs)
-    if len(not_considered_idcs):
+    if len(not_considered_idcs) > 0:
         not_considered_access = (not_considered_idcs[:, 0], not_considered_idcs[:, 1])
         exact_mask[not_considered_access] = 1
-        (
-            lcbs[not_considered_access],
-            ucbs[not_considered_access],
-            estimates[not_considered_access],
-        ) = [float("inf") for i in range(3)]
+        lcbs[not_considered_access] = ucbs[not_considered_access] = estimates[not_considered_access] \
+            = float("inf")
         candidates = considered_idcs
 
     while len(candidates) > 0:
@@ -300,7 +295,7 @@ def solve_mab(
             cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
             candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
         if (
-                len(candidates) <= 1
+            len(candidates) <= 1
         ):  # cadndiates could be empty after all candidates are exactly computed
             # Break here because we have found our best candidate
             break
@@ -345,5 +340,4 @@ def solve_mab(
         best_feature,
         best_value,
         best_reduction,
-    )  # Jay: I think it's cleaner to deal with the case when
-    # best_reduction = 0
+    )
