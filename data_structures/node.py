@@ -14,16 +14,12 @@ type_check()
 class Node:
     def __init__(
         self,
-        tree,  # Delay the type-checking of Tree to instantiation to avoid a circular import
+        tree: Tree,  # Delay the type-checking of Tree to instantiation to avoid a circular import
         parent: Node,
         data: np.ndarray,
         labels: np.ndarray,
         depth: int,
     ) -> None:
-        from data_structures.tree import Tree
-
-        assert type(tree) == Tree, "Did not pass a Tree object"
-
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?

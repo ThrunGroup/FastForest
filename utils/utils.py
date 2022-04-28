@@ -11,7 +11,7 @@ def type_check() -> None:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
-        pass
+        from tree import Tree
 
 
 def count_occurrence(class_: np.ndarray, labels: np.ndarray) -> int:
