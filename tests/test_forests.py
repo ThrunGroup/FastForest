@@ -76,6 +76,4 @@ class ForestTests(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    print("HERE3")
-
     unittest.main()
