@@ -131,12 +131,11 @@ def experiment_cf(
         print(f"The balanced accuracy of sklearn is {sk_acc}")
     ff_mean = np.mean(ff_acc)
     sk_mean = np.mean(sk_acc)
-    ff_se = np.std(ff_acc) / (
-        t ** (1 / 2)
-    )  # ff_se = standard error of fastforest accuracy
-    sk_se = np.std(sk_acc) / (
-        t ** (1 / 2)
-    )  # sk_se = standard error of sklearn accuracy
+
+    # ff_se = standard error of fastforest accuracy
+    ff_se = np.std(ff_acc) / (t ** (1 / 2))
+    # sk_se = standard error of sklearn accuracy
+    sk_se = np.std(sk_acc) / (t ** (1 / 2))
 
     print(
         f"The mean balanced accuracy of fastforest is {ff_mean}, and its standard error is {ff_se}."
