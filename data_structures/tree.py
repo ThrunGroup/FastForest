@@ -16,16 +16,16 @@ class Tree(TreeClassifier):
     ) -> None:
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
-        self.classes = classes  # a dict from class name to index
+        self.classes = classes  # dict from class name to class index
         self.idx_to_class = {value: key for key, value in classes.items()}
 
         self.node = Node(
             tree=self,
             parent=None,
-            data=self.data,
+            data=self.data,  # Root node contains all the data
             labels=self.labels,
             depth=0,
-        )  # Root node contains all the data
+        )
 
         # These are copied from the link below. We won't need all of them.
         # https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
@@ -43,8 +43,7 @@ class Tree(TreeClassifier):
         self.min_impurity_decrease = -1e-6
         self.class_weight = None
         self.ccp_alpha = 0.0
-
-        self.depth = self.get_depth()
+        self.depth = 1
         self.max_depth = max_depth
 
     def get_depth(self) -> int:
@@ -53,12 +52,9 @@ class Tree(TreeClassifier):
         :return: an integer representing the maximum depth of any node (root = 0)
         """
         max_depth = -1
-        for leaf in self.leaves:
-            if leaf.depth > max_depth:
-                max_depth = leaf.depth
-        return max_depth
+        return max([leaf.depth for leaf in self.leaves])
 
-    def fit(self) -> None:
+    def fit(self, verbose=True) -> None:
         """
         Fit the tree by recursively splitting nodes until the termination condition is reached.
         The termination condition can be a number of splits, a required reduction in impurity, or a max depth.
@@ -80,12 +76,14 @@ class Tree(TreeClassifier):
                     continue
 
                 reduction = leaf.calculate_best_split()
-                if reduction:
+                if (
+                    reduction is not None
+                ):  # TODO(@motiwari): Do we need this? Or is this already performed at the leaf?
                     reduction *= len(self.labels)
-                if reduction is not None and reduction < best_leaf_reduction:
-                    best_leaf = leaf
-                    best_leaf_idx = leaf_idx
-                    best_leaf_reduction = reduction
+                    if reduction < best_leaf_reduction:
+                        best_leaf = leaf
+                        best_leaf_idx = leaf_idx
+                        best_leaf_reduction = reduction
 
             if (
                 best_leaf_reduction is not None
@@ -101,7 +99,8 @@ class Tree(TreeClassifier):
 
             self.depth = self.get_depth()
 
-        print("Fitting finished")
+        if verbose:
+            print("Fitting finished")
 
     def predict(self, datapoint: np.ndarray) -> Tuple[int, np.ndarray]:
         """
@@ -112,22 +111,23 @@ class Tree(TreeClassifier):
         """
         node = self.node
         while node.left:
-            feature_value = datapoint[node.split_on]
-            if feature_value <= node.split_value:
-                node = node.left
-            else:
-                node = node.right
+            feature_value = datapoint[node.split_feature]
+            node = node.left if feature_value <= node.split_value else node.right
         assert node.right is None, "Tree is malformed"
 
+        # The prediction probability has been cached
         if node.prediction_probs is not None:
-            return node.prediction_probs.argmax(), node.prediction_probs
+            return node.predicted_label, node.prediction_probs
 
         # otherwise, make prediction and cache it
-        probs = node.counts / np.sum(node.counts)
-        node.prediction_probs = probs
-        label_pred = self.idx_to_class[probs.argmax()]  # Find ith key of dictionary
-        assert np.allclose(probs.sum(), 1), "Probabilities don't sum to 1"
-        return label_pred, probs
+        node.prediction_probs = node.counts / np.sum(node.counts)
+        node.predicted_label = self.idx_to_class[
+            node.prediction_probs.argmax()
+        ]  # Find ith key of dictionary
+        assert np.allclose(
+            node.prediction_probs.sum(), 1
+        ), "Probabilities don't sum to 1"
+        return node.predicted_label, node.prediction_probs
 
     def tree_print(self) -> None:
         """

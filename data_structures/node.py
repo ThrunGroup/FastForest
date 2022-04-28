@@ -6,7 +6,7 @@ import numpy as np
 
 
 from utils.mab_functions import solve_mab
-from utils.utils import type_check, counts_on_labels
+from utils.utils import type_check, counts_of_labels
 
 type_check()
 
@@ -14,7 +14,7 @@ type_check()
 class Node:
     def __init__(
         self,
-        tree: Tree,  # Delay the type-checking of Tree to instantiation to avoid a circular import
+        tree: Tree,
         parent: Node,
         data: np.ndarray,
         labels: np.ndarray,
@@ -28,40 +28,55 @@ class Node:
         self.left = None
         self.right = None
 
-        # NOTE: Not assume labels are all integers from 0 to num_classes-1
-        self.counts = counts_on_labels(
-            self.tree.classes, labels
-        )  # self.tree classes contains all classes of original data
+        # NOTE: Do not assume labels are all integers from 0 to num_classes-1
+        self.counts = counts_of_labels(self.tree.classes, labels)
 
-        self.split_on = None
+        # We need a separate variable for already_split, because self.split_feature can be truthy
+        # even if the split hasn't been performed
+        self.already_split = False
         self.split_feature = None
         self.split_value = None
 
         # values to cache
-        self.is_best_reduction = False
+        self.best_reduction_computed = False
         self.split_reduction = None
         self.prediction_probs = None
+        self.predicted_label = None
 
-    def calculate_best_split(self):
+    def calculate_best_split(self) -> None:
         """
         Speculatively calculate the best split
+
         :return: None, but assign
         """
-        if self.is_best_reduction:
+        if self.best_reduction_computed:
             return self.split_reduction  # If we already calculated it, return it
 
         results = solve_mab(self.data, self.labels)
+        # Even if results is None, we should cache the fact that we know that
+        self.best_reduction_computed = True
         if results is not None:
             self.split_feature, self.split_value, self.split_reduction = results
-            self.is_best_reduction = True
             return self.split_reduction
+
+    def create_child_node(self, idcs: np.ndarray) -> Node:
+        child_data = self.data[idcs]
+        child_labels = self.labels[idcs]
+        return Node(
+            self.tree,
+            self,
+            child_data,
+            child_labels,
+            self.depth + 1,
+        )
 
     def split(self) -> None:
         """
         Splits the node into two children nodes.
+
         :return: None
         """
-        if self.split_on is not None:
+        if self.already_split:
             raise Exception("Error: this node is already split")
 
         if self.split_feature is None:
@@ -73,30 +88,16 @@ class Node:
                 self.split_reduction < 0
             ), "Error: splitting this node would increase impurity. Should never be here"
 
-            # Creat left and right children with appropriate datasets
             # NOTE: Asymmetry with <= and >
             left_idcs = np.where(self.data[:, self.split_feature] <= self.split_value)
-            left_data = self.data[left_idcs]
-            left_labels = self.labels[left_idcs]
-            self.left = Node(
-                self.tree,
-                self,
-                left_data,
-                left_labels,
-                self.depth + 1,
-            )
+            self.left = self.create_child_node(left_idcs)
 
             right_idcs = np.where(self.data[:, self.split_feature] > self.split_value)
-            right_data = self.data[right_idcs]
-            right_labels = self.labels[right_idcs]
-            self.right = Node(
-                self.tree,
-                self,
-                right_data,
-                right_labels,
-                self.depth + 1,
-            )
-            self.split_on = self.split_feature
+            self.right = self.create_child_node(right_idcs)
+
+            # Reset cached prediction values
+            self.prediction_probs = None
+            self.predicted_label = None
 
     def n_print(self) -> None:
         """
@@ -111,7 +112,7 @@ class Node:
             print(
                 ("|   " * self.depth)
                 + "|--- feature_"
-                + str(self.split_on)
+                + str(self.already_split)
                 + " <= "
                 + str(self.split_value)
             )
@@ -119,7 +120,7 @@ class Node:
             print(
                 ("|   " * self.depth)
                 + "|--- feature_"
-                + str(self.split_on)
+                + str(self.already_split)
                 + " > "
                 + str(self.split_value)
             )

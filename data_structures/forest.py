@@ -52,7 +52,7 @@ class Forest(TreeClassifier):
         # Need this to do remapping when features are shuffled
         self.tree_feature_idcs = {}
 
-    def fit(self) -> None:
+    def fit(self, verbose=True) -> None:
         """
         Fit the random forest classifier by training trees, where each tree is trained with only a subset of the
         available features
@@ -69,7 +69,9 @@ class Forest(TreeClassifier):
             else:
                 raise Exception("Bad feature subsampling method")
 
-            print("Fitting tree", i)
+            if verbose:
+                print("Fitting tree", i)
+
             self.tree_feature_idcs[i] = feature_idcs
             tree = Tree(
                 data=self.data[

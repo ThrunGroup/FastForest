@@ -7,7 +7,7 @@ from collections import defaultdict
 from data_structures.histogram import Histogram
 from utils.constants import CONF_MULTIPLIER, TOLERANCE
 from utils.criteria import get_gini, get_entropy, get_variance
-from utils.utils import type_check, class_to_idx, counts_on_labels
+from utils.utils import type_check, class_to_idx, counts_of_labels
 
 type_check()
 
@@ -146,7 +146,7 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
     #  or use something like label_idx,
     #  label in np.unique(labels) to avoid assuming that the labels are 0, ... K-1
     class_dict: dict = class_to_idx(np.unique(labels))
-    counts: np.ndarray = counts_on_labels(
+    counts: np.ndarray = counts_of_labels(
         class_dict, labels
     )  # counts[i] contains the counts of class_dict[i](which is a class) in "label"
     p = counts / len(labels)
@@ -154,7 +154,7 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 
     left_idcs = np.where(data[:, feature] <= value)
     left_labels = labels[left_idcs]
-    L_counts: np.ndarray = counts_on_labels(class_dict, left_labels)
+    L_counts: np.ndarray = counts_of_labels(class_dict, left_labels)
 
     # This is already a pure node
     if len(left_idcs[0]) == 0:
@@ -163,7 +163,7 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 
     right_idcs = np.where(data[:, feature] > value)
     right_labels = labels[right_idcs]
-    R_counts: np.ndarray = counts_on_labels(class_dict, right_labels)
+    R_counts: np.ndarray = counts_of_labels(class_dict, right_labels)
 
     # This is already a pure node
     if len(right_idcs[0]) == 0:
