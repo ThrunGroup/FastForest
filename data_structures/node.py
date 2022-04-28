@@ -1,10 +1,12 @@
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)  # For typechecking parent: Node, this is somehow important
 
 import numpy as np
 
+
 from utils.mab_functions import solve_mab
 from utils.utils import type_check, counts_on_labels
-from data_structures.tree import Tree
 
 type_check()
 
@@ -12,12 +14,16 @@ type_check()
 class Node:
     def __init__(
         self,
-        tree: Tree,
+        tree,  # Delay the type-checking of Tree to instantiation to avoid a circular import
         parent: Node,
         data: np.ndarray,
         labels: np.ndarray,
         depth: int,
     ) -> None:
+        from data_structures.tree import Tree
+
+        assert type(tree) == Tree, "Did not pass a Tree object"
+
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
