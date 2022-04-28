@@ -12,7 +12,7 @@ class Histogram:
     def __init__(
         self,
         feature_idx: int,
-        feature_values: np.ndarray,
+        unique_fvals: np.ndarray,
         data: np.ndarray,
         classes: Tuple[Any] = (
             0,
@@ -24,7 +24,7 @@ class Histogram:
         bin_type: str = "linear",
     ):
         self.feature_idx = feature_idx
-        self.feature_values = feature_values  # An array of unique feature values
+        self.unique_fvals = unique_fvals  # An array of unique feature values
         self.data = data
         self.classes = classes
         self.num_bins = num_bins
@@ -102,8 +102,8 @@ class Histogram:
 
         :return: Return a subset of self.feature_values
         """
-        width = int(len(self.feature_values) / self.num_bins)
-        return np.array([self.feature_values[width * i] for i in range(self.num_bins)])
+        width = int(len(self.unique_fvals) / self.num_bins)
+        return np.array([self.unique_fvals[width * i] for i in range(self.num_bins)])
 
     def identity_bin(self) -> np.ndarray:
         """
@@ -112,6 +112,6 @@ class Histogram:
 
         :return: Return an unique sorted values of self.data
         """
-        identity_bin = np.unique(self.data) # Copied array
+        identity_bin = np.unique(self.data)  # Copied array
         self.num_bins = len(identity_bin)
         return identity_bin

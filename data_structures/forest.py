@@ -55,7 +55,7 @@ class Forest(TreeClassifier):
         self.ccp_alpha = 0.0
         self.max_samples = None
         self.bootstrap = bootstrap
-        self.unique_fvals = [np.unique(data[:, i]) for i in range(len(data[0]))]
+        self.unique_fvals_list = [np.unique(data[:, i]) for i in range(len(data[0]))]
         self.bin_type = bin_type
 
         # Need this to do remapping when features are shuffled
@@ -101,7 +101,7 @@ class Forest(TreeClassifier):
                 min_samples_split=self.min_samples_split,
                 min_impurity_decrease=self.min_impurity_decrease,
                 max_leaf_nodes=self.max_leaf_nodes,
-                features_list=self.unique_fvals,
+                unique_fvals_list=self.unique_fvals_list,
                 bin_type=self.bin_type,
             )
             tree.fit()

@@ -4,7 +4,6 @@ from __future__ import (
 
 import numpy as np
 
-
 from utils.mab_functions import solve_mab
 from utils.utils import type_check, counts_of_labels
 
@@ -19,7 +18,7 @@ class Node:
         data: np.ndarray,
         labels: np.ndarray,
         depth: int,
-        bin_type: str = ""
+        bin_type: str = "",
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
@@ -67,13 +66,7 @@ class Node:
     def create_child_node(self, idcs: np.ndarray) -> Node:
         child_data = self.data[idcs]
         child_labels = self.labels[idcs]
-        return Node(
-            self.tree,
-            self,
-            child_data,
-            child_labels,
-            self.depth + 1,
-        )
+        return Node(self.tree, self, child_data, child_labels, self.depth + 1,)
 
     def split(self) -> None:
         """

@@ -20,7 +20,7 @@ class Tree(TreeClassifier):
         min_samples_split: int = 2,
         min_impurity_decrease: float = -1e-6,
         max_leaf_nodes: int = 0,
-        features_list: List[np.ndarray] = [],
+        unique_fvals_list: List[np.ndarray] = [],
         bin_type: str = "linear",
     ) -> None:
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
@@ -58,10 +58,12 @@ class Tree(TreeClassifier):
         self.depth = 1
         self.max_depth = max_depth
 
-        if len(features_list) == 0:
-            self.features_list = [np.unique(data[:, i]) for i in range(len(data[0]))]
+        if len(unique_fvals_list) == 0:
+            self.unique_fvals_list = [
+                np.unique(data[:, i]) for i in range(len(data[0]))
+            ]
         else:
-            self.features_list = features_list
+            self.unique_fvals_list = unique_fvals_list
 
     def get_depth(self) -> int:
         """
@@ -82,8 +84,8 @@ class Tree(TreeClassifier):
         return (
             self.max_depth > node.depth
             and self.min_samples_split < node.n_data
-            and self.min_impurity_decrease >
-            node.calculate_best_split() * node.n_data / self.n_data
+            and self.min_impurity_decrease
+            > node.calculate_best_split() * node.n_data / self.n_data
         )
 
     def fit(self, verbose=True) -> None:
