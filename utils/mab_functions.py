@@ -120,15 +120,12 @@ def sample_targets(
     cb_deltas = np.array([], dtype=float)
     N = len(data)
 
-    if N <= batch_size:
-        sample_idcs = np.arange(N)
-    else:
-        sample_idcs = np.random.choice(
-            N, size=batch_size
-        )  # Default: with replacement (replace=True)
+    sample_idcs = (
+        np.arange(N) if N <= batch_size else np.random.choice(N, size=batch_size)
+    )  # Default: with replacement (replace=True)
+    num_queries = len(sample_idcs)  # May be less than batch_size due to truncation
     samples = data[sample_idcs]
     sample_labels = labels[sample_idcs]
-    num_queries = len(sample_idcs)  # May be less than batch_size due to truncation
 
     for f_idx, f in enumerate(f2bin_dict):
         h = histograms[f]
@@ -145,7 +142,6 @@ def sample_targets(
 
 
 def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bool:
-
     # TODO: Fix this. Use a dictionary to store original labels -> label index
     #  or use something like label_idx,
     #  label in np.unique(labels) to avoid assuming that the labels are 0, ... K-1

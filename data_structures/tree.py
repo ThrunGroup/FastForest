@@ -46,9 +46,6 @@ class Tree(TreeClassifier):
         self.ccp_alpha = 0.0
         self.depth = 1
         self.max_depth = max_depth
-        self.using_split_cache = (
-            True  # for debugging purposes using our binary toy tree
-        )
 
         self.num_splits = 0
         self.num_queries = 0
