@@ -45,6 +45,12 @@ class Tree(TreeClassifier):
         self.ccp_alpha = 0.0
         self.depth = 1
         self.max_depth = max_depth
+        self.using_split_cache = (
+            True  # for debugging purposes using our binary toy tree
+        )
+
+        self.num_splits = 0
+        self.num_queries = 0
 
     def get_depth(self) -> int:
         """
@@ -75,21 +81,31 @@ class Tree(TreeClassifier):
                 if leaf.depth == self.max_depth:
                     continue
 
+                # num_queries for the leaf will be updated only if we're not caching
                 reduction = leaf.calculate_best_split()
+                # if not leaf.is_best_reduction:  # don't add queries if best split is already computed
+                self.num_queries += leaf.num_queries[0]
                 if (
                     reduction is not None
                 ):  # TODO(@motiwari): Do we need this? Or is this already performed at the leaf?
                     reduction *= len(self.labels)
-                    if reduction < best_leaf_reduction:
-                        best_leaf = leaf
-                        best_leaf_idx = leaf_idx
-                        best_leaf_reduction = reduction
+
+                # add number of queries we made if the best split is NOT already computed
+                if not leaf.best_reduction_computed:
+                    leaf.best_reduction_computed = True
+                    self.num_queries += leaf.num_queries
+
+                if reduction is not None and reduction < best_leaf_reduction:
+                    best_leaf = leaf
+                    best_leaf_idx = leaf_idx
+                    best_leaf_reduction = reduction
 
             if (
                 best_leaf_reduction is not None
                 and best_leaf_reduction < self.min_impurity_decrease
             ):
                 best_leaf.split()
+                self.num_splits += 1
                 split_leaf = self.leaves.pop(best_leaf_idx)
                 split_leaf.prediction_probs = None  # this node is no longer a leaf
                 self.leaves.append(split_leaf.left)

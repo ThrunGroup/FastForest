@@ -4,7 +4,6 @@ from __future__ import (
 
 import numpy as np
 
-
 from utils.mab_functions import solve_mab
 from utils.utils import type_check, counts_of_labels
 
@@ -39,6 +38,8 @@ class Node:
 
         # values to cache
         self.best_reduction_computed = False
+        self.num_queries = 0
+        self.best_reduction_computed = False
         self.split_reduction = None
         self.prediction_probs = None
         self.predicted_label = None
@@ -55,8 +56,14 @@ class Node:
         results = solve_mab(self.data, self.labels)
         # Even if results is None, we should cache the fact that we know that
         self.best_reduction_computed = True
+
         if results is not None:
-            self.split_feature, self.split_value, self.split_reduction = results
+            (
+                self.split_feature,
+                self.split_value,
+                self.split_reduction,
+                self.num_queries,
+            ) = results
             return self.split_reduction
 
     def create_child_node(self, idcs: np.ndarray) -> Node:
