@@ -18,16 +18,13 @@ def find_best_hyper() -> pd.Series:
 
     :return: return the best hyperparameters
     """
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    log_filepath = os.path.join("../hyperparams_sweep", "sweep_log.csv")
+    log_filepath = os.path.join("hyperparams_sweep", "sweep_log.csv")
     assert os.path.exists(
         log_filepath
     ), "Can't find the log result of hyperparameters sweeps. Do hyperparameter sweeps!"
     hyper_log = pd.read_csv(log_filepath)
     best_idx = np.argmax(hyper_log["val_acc"].to_numpy())
-    config = hyper_log.iloc[best_idx]
-
-    return config
+    return hyper_log.iloc[best_idx]
 
 
 def experiment_single() -> None:
@@ -36,8 +33,6 @@ def experiment_single() -> None:
     """
     config = find_best_hyper()
 
-    # Setup dataset
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     filepath = os.path.join("dataset", "new_heart_2020_cleaned.csv")
     assert os.path.exists(
         filepath
@@ -60,10 +55,10 @@ def experiment_single() -> None:
 
     algorithm = config["algorithm"]
     print(f"{algorithm}'s random forest Validation Accuracy:", config["val_acc"])
-    print(f"{algorithm}'s random forest test Accuracy:", config["test_acc"])
+    print(f"{algorithm}'s random forest Test Accuracy:", config["test_acc"])
 
     print("Fastforest's random forest Validation Accuracy:", val_acc)
-    print("Fastforest's random forest test Accuracy:", test_acc)
+    print("Fastforest's random forest Test Accuracy:", test_acc)
 
 
 def experiment_cf(t: int, seed: int, p_value: float = 0.95, verbose: bool = False) -> bool:
@@ -82,8 +77,7 @@ def experiment_cf(t: int, seed: int, p_value: float = 0.95, verbose: bool = Fals
     config["n_estimators"] = 10
 
     # Setup dataset
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    filepath = os.path.join("../dataset", "new_heart_2020_cleaned.csv")
+    filepath = os.path.join("dataset", "new_heart_2020_cleaned.csv")
     assert os.path.exists(
         filepath
     ), "Heart disease dataset isn't available. Run preprocess_heart.py"
@@ -104,8 +98,8 @@ def experiment_cf(t: int, seed: int, p_value: float = 0.95, verbose: bool = Fals
         bootstrap=config["bootstrap"],
     )
 
-    ff_acc = np.zeros(t)
-    sk_acc = np.zeros(t)
+    ff_acc = np.empty(t)
+    sk_acc = np.empty(t)
 
     np.random.seed(seed)
     random.seed(seed)
@@ -132,7 +126,6 @@ def experiment_cf(t: int, seed: int, p_value: float = 0.95, verbose: bool = Fals
     if verbose:
         print(f"The balanced accuracy of fastforest is {ff_acc}")
         print(f"The balanced accuracy of sklearn is {sk_acc}")
-
     ff_mean = np.mean(ff_acc)
     sk_mean = np.mean(sk_acc)
     ff_se = np.std(ff_acc) / (t ** (1 / 2))  # ff_se = standard error of fastforest accuracy

@@ -11,14 +11,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import balanced_accuracy_score
 from imblearn.under_sampling import RandomUnderSampler
-from typing import (
-    Tuple,
-    Iterable
-)
+from typing import Tuple, Iterable
 
 from constants import FASTFOREST, SKLEARN, HEART
 from forest import Forest
-
 
 
 def check_dimension(X: np.ndarray, Y: np.ndarray) -> bool:
@@ -33,7 +29,7 @@ def check_dimension(X: np.ndarray, Y: np.ndarray) -> bool:
 
 
 def get_subset(
-        X: np.ndarray, Y: np.ndarray, subset_size: int, seed: int
+    X: np.ndarray, Y: np.ndarray, subset_size: int, seed: int
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Get a subset of dataset X and Y.
@@ -53,12 +49,12 @@ def get_subset(
 
 
 def split_data(
-        X: np.ndarray,
-        Y: np.ndarray,
-        ratio: Iterable,
-        subset_size: int = -1,
-        seed: int = 1,
-        is_balanced: bool = False
+    X: np.ndarray,
+    Y: np.ndarray,
+    ratio: Iterable,
+    subset_size: int = -1,
+    seed: int = 1,
+    is_balanced: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     Take a subset of dataset and split it into train, validation, and test set
@@ -93,7 +89,6 @@ def split_data(
 
 def load_data(filepath: str) -> Tuple[np.ndarray, np.ndarray]:
     """
-
     :param filepath: filepath of csv file
     :return: Input data and target data
     """
@@ -104,7 +99,7 @@ def load_data(filepath: str) -> Tuple[np.ndarray, np.ndarray]:
 
 
 def append_dict_as_row(
-        file_name: str, dict_of_elem: dict, field_names: Iterable
+    file_name: str, dict_of_elem: dict, field_names: Iterable
 ) -> None:
     """
     Taken from https://thispointer.com/python-how-to-append-a-new-row-to-an-existing-csv-file/
@@ -127,7 +122,7 @@ def append_dict_as_row(
 
 
 def fit(
-        config: argparse.Namespace = None, use_wandb: bool = True, use_sweep: bool = True
+    config: argparse.Namespace = None, use_wandb: bool = True, use_sweep: bool = True
 ) -> None:
     """
     Fit a random forest with config.algorithm to config.dataset with different hyperparameters specified in
@@ -135,9 +130,8 @@ def fit(
 
     :param config: contains values needed to construct random forest and train it.
     :param use_wandb: whether to use wandb api or not
-    :param use_sweep: whether to use the sweep method of wandb api or not
+    :param use_sweep: whether to use the sweep method of wandb api
     """
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     if use_wandb:
         wandb.init()
         # If called by wandb.agent, as below,
@@ -151,15 +145,16 @@ def fit(
     random.seed(config.seed)
 
     if config.dataset == HEART:
-        filepath = os.path.join("../dataset", "new_heart_2020_cleaned.csv")
+        filepath = os.path.join("dataset", "new_heart_2020_cleaned.csv")
     else:
         raise NotImplementedError("Invalid choice of dataset")
     if not os.path.exists(filepath):
         preprocess_heart.main()
 
     X, Y = load_data(filepath)
-    X_train, X_val, X_test, Y_train, Y_val, Y_test = \
-        split_data(X, Y, [0.6, 0.2, 0.2], config["sub_size"], config["seed"], config["is_balanced"])
+    X_train, X_val, X_test, Y_train, Y_val, Y_test = split_data(
+        X, Y, [0.6, 0.2, 0.2], config["sub_size"], config["seed"], config["is_balanced"]
+    )
 
     if config.algorithm == SKLEARN:
         forest = RandomForestClassifier(
@@ -185,7 +180,9 @@ def fit(
         raise NotImplementedError("Invalid choice of RF algorithm")
 
     if config.verbose:
-        print(f"{config.algorithm}'s random forest balanced validation Accuracy:", val_acc)
+        print(
+            f"{config.algorithm}'s random forest balanced validation Accuracy:", val_acc
+        )
         print(f"{config.algorithm}'s random forest balanced test Accuracy:", test_acc)
 
     log_dict = {"val_acc": val_acc, "test_acc": test_acc}
@@ -201,12 +198,12 @@ def fit(
             "max_depth": config.max_depth,
             "n_estimators": config.n_estimators,
             "verbose": config.verbose,
-            "is_balanced": config.is_balanced
+            "is_balanced": config.is_balanced,
         }
     )
-    log_filename = os.path.join("../hyperparams_sweep", "sweep_log.csv")
+    log_filename = os.path.join("hyperparams_sweep", "sweep_log.csv")
     if not os.path.exists(log_filename):
-        os.makedirs("../hyperparams_sweep", exist_ok=True)
+        os.makedirs("hyperparams_sweep", exist_ok=True)
         df = pd.DataFrame(columns=log_dict.keys())
         df.to_csv(log_filename, index=False)
     append_dict_as_row(log_filename, log_dict, log_dict.keys())

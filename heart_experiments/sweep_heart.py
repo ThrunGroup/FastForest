@@ -31,27 +31,22 @@ if __name__ == '__main__':
             'max': 25
         },
         'seed': {
-            # seed is constant
             'distribution': 'constant',
             'value': 1
         },
         'verbose': {
-            # verbose is constant
             'distribution': 'constant',
             'value': True
         },
         'sub_size': {
-            # subset_size is constant
             'distribution': 'constant',
             'value': 3000
         },
         'bootstrap': {
-            # whether to use bootstrap is constant
             'distribution': 'constant',
             'value': True
         },
         'is_balanced': {
-            # subset_size is constant
             'distribution': 'constant',
             'value': True
         }

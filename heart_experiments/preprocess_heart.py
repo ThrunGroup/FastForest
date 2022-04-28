@@ -21,7 +21,6 @@ def swap_columns(df: pd.DataFrame, col1: str, col2: str) -> pd.DataFrame:
 
 def preprocess_heart(df: pd.DataFrame) -> pd.DataFrame:
     """
-
     :param df: df is a dataframe from heart_2020_cleaned.csv
     :return: returns a preprocessed data of df
     """
@@ -56,18 +55,16 @@ def main() -> None:
     Preprocess heart disease data and store it as csv file. Download heart_2020_cleaned.csv from
     https://www.kaggle.com/datasets/kamilpytlak/personal-key-indicators-of-heart-disease
     """
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    os.makedirs("../dataset", exist_ok=True)
-    filepath = os.path.join("../dataset", "heart_2020_cleaned.csv")
+    os.makedirs("dataset", exist_ok=True)
+    filepath = os.path.join("dataset", "heart_2020_cleaned.csv")
     assert os.path.exists(
         filepath
     ), "Download data from the link in the comment of line 55 and save it as heart_2020_cleaned.csv in dataset file"
     df = pd.read_csv(filepath)
     df = preprocess_heart(df)
-    filepath = os.path.join("../dataset", "new_heart_2020_cleaned.csv")
+    filepath = os.path.join("dataset", "new_heart_2020_cleaned.csv")
     df.to_csv(filepath, index=False)
 
 
 if __name__ == "__main__":
-    # set current directory as a working directory
     main()
