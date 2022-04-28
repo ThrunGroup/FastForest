@@ -45,10 +45,10 @@ class Node:
         self.split_reduction = None
         self.prediction_probs = None
         self.predicted_label = None
-        self.is_terminate = False
-        self.is_check_terminate = False
+        self.is_splittable = True
+        self.is_check_splittable = False
 
-    def calculate_best_split(self) -> None:
+    def calculate_best_split(self) -> float:
         """
         Speculatively calculate the best split
 
