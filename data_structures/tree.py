@@ -25,6 +25,7 @@ class Tree(TreeClassifier):
             data=self.data,  # Root node contains all the data
             labels=self.labels,
             depth=0,
+            proportion=1.0,
         )
 
         # These are copied from the link below. We won't need all of them.

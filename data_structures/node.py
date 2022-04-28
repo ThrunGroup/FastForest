@@ -18,12 +18,14 @@ class Node:
         data: np.ndarray,
         labels: np.ndarray,
         depth: int,
+        proportion: float,
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels
         self.depth = depth
+        self.proportion = proportion
         self.left = None
         self.right = None
 
@@ -63,9 +65,7 @@ class Node:
                 self.split_reduction,
                 self.num_queries,
             ) = results
-            self.split_reduction *= len(
-                self.labels
-            )  # Normalize by number of datapoints
+            self.split_reduction *= self.proportion  # Normalize by number of datapoints
             return self.split_reduction
 
     def create_child_node(self, idcs: np.ndarray) -> Node:
@@ -77,6 +77,7 @@ class Node:
             child_data,
             child_labels,
             self.depth + 1,
+            self.proportion * (len(child_labels) / len(self.labels)),
         )
 
     def split(self) -> None:
