@@ -77,7 +77,6 @@ class Forest(TreeClassifier):
 
             self.tree_feature_idcs[i] = feature_idcs
 
-            # Bootstrap
             if self.bootstrap:
                 N = len(self.labels)
                 idcs = np.random.choice(
