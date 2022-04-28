@@ -1,10 +1,9 @@
 import numpy as np
 from typing import Tuple
 
-from tree import Tree
-from tree_classifier import TreeClassifier
-
-from utils import class_to_idx
+from data_structures.tree import Tree
+from data_structures.tree_classifier import TreeClassifier
+from utils.utils import class_to_idx
 
 
 class Forest(TreeClassifier):
@@ -29,6 +28,7 @@ class Forest(TreeClassifier):
             np.unique(labels)
         )  # a dictionary that maps class name to class index
         self.n_classes = len(self.classes)
+
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
         self.criterion = "gini"
@@ -52,7 +52,7 @@ class Forest(TreeClassifier):
         # Need this to do remapping when features are shuffled
         self.tree_feature_idcs = {}
 
-    def fit(self) -> None:
+    def fit(self, verbose=True) -> None:
         """
         Fit the random forest classifier by training trees, where each tree is trained with only a subset of the
         available features
@@ -69,7 +69,9 @@ class Forest(TreeClassifier):
             else:
                 raise Exception("Bad feature subsampling method")
 
-            print("Fitting tree", i)
+            if verbose:
+                print("Fitting tree", i)
+
             self.tree_feature_idcs[i] = feature_idcs
             tree = Tree(
                 data=self.data[
