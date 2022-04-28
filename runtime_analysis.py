@@ -6,28 +6,27 @@ from data_structures.tree import Tree
 from utils.utils import class_to_idx
 
 
-def analyze_runtime(verbose=True, take_log=False) -> None:
+def analyze_runtime(verbose=True, take_log=True) -> None:
     """
     Sequentially creates toy binary trees that get larger and computes the
     normalized complexity (i.e. queries per node) of the trees as they get larger (by base^exponent)
     of the original dataset size "starting_size"
 
     :param verbose: if True, the function prints num_splits and num_queries
+    :param take_log: whether to take the logarithm of the dataset sizes
     :return: None but plots the normalized complexity
     """
     # modify these params to test datasets scaled differently
     base = 10
-    max_exponent = 5
+    max_exponent = 3
     starting_size = 100
-    num_trials = 50
+    num_trials = 1
     max_depth = 10
     np.random.seed(0)
-    avg_norm_queries = []
+
+    avg_num_queries = np.array((max_exponent, num_trials))
 
     for i in range(max_exponent):
-        norm_queries = 0
-        total_queries = 0
-        total_splits = 0
         for trial in range(num_trials):
             X = create_data(starting_size * pow(base, i))
             data = X[:, :-1]
@@ -38,27 +37,35 @@ def analyze_runtime(verbose=True, take_log=False) -> None:
             t = Tree(data=data, labels=labels, max_depth=max_depth, classes=classes)
             t.fit()
 
-            total_queries += t.num_queries
-            total_splits += t.num_splits
-            norm_queries += t.num_queries / t.num_splits
+            avg_num_queries[i, trial] = t.num_queries / t.num_splits
 
-        avg_norm_queries.append(norm_queries / num_trials)
-        if verbose:
-            print("=> built trees with datapoints", starting_size * pow(base, i))
-            print("=> --total queries:", total_queries / num_trials)
-            print("=> --total splits:", total_splits / num_trials)
-            print("\n")
+            if verbose:
+                print(
+                    "=> built trees with N:",
+                    starting_size * pow(base, i),
+                    "trial:",
+                    trial,
+                )
+                print("\n")
 
-    sizes = [starting_size * pow(base, i) for i in range(len(avg_norm_queries))]
+    sizes = [starting_size * pow(base, i) for i in range(max_exponent)]
     if take_log:
         plt.plot(
-            np.log10(sizes), avg_norm_queries, color="r", label="normalized queries"
+            np.log10(sizes),
+            np.mean(avg_num_queries, axis=1),
+            color="r",
+            label="normalized queries",
         )
         plt.xlabel("log$N$")
         plt.ylabel("Average number of datapoints used per split")
         plt.savefig("log_queries.png")
     else:
-        plt.plot(sizes, avg_norm_queries, color="r", label="normalized queries")
+        plt.plot(
+            sizes,
+            np.mean(avg_num_queries, axis=1),
+            color="r",
+            label="normalized queries",
+        )
         plt.xlabel("$N$")
         plt.ylabel("Average number of datapoints used per split")
         plt.savefig("queries.png")
