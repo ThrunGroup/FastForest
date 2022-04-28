@@ -1,12 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from tests.data_generator import create_data
+from utils.data_generator import create_data
 from data_structures.tree import Tree
 from utils.utils import class_to_idx
 
 
-def analyze_runtime(verbose=True, take_log=True) -> None:
+def analyze_runtime(verbose=True, take_log=True, show=True) -> None:
     """
     Sequentially creates toy binary trees that get larger and computes the
     normalized complexity (i.e. queries per node) of the trees as they get larger (by base^exponent)
@@ -14,17 +14,18 @@ def analyze_runtime(verbose=True, take_log=True) -> None:
 
     :param verbose: if True, the function prints num_splits and num_queries
     :param take_log: whether to take the logarithm of the dataset sizes
+    :param take_log: whether to plot the results (True) or save the figure (False)
     :return: None but plots the normalized complexity
     """
     # modify these params to test datasets scaled differently
     base = 10
-    max_exponent = 3
+    max_exponent = 5
     starting_size = 100
-    num_trials = 1
-    max_depth = 10
+    num_trials = 10
+    max_depth = 1
     np.random.seed(0)
 
-    avg_num_queries = np.array((max_exponent, num_trials))
+    avg_num_queries = np.empty((max_exponent, num_trials))
 
     for i in range(max_exponent):
         for trial in range(num_trials):
@@ -36,7 +37,6 @@ def analyze_runtime(verbose=True, take_log=True) -> None:
 
             t = Tree(data=data, labels=labels, max_depth=max_depth, classes=classes)
             t.fit()
-
             avg_num_queries[i, trial] = t.num_queries / t.num_splits
 
             if verbose:
@@ -58,7 +58,8 @@ def analyze_runtime(verbose=True, take_log=True) -> None:
         )
         plt.xlabel("log$N$")
         plt.ylabel("Average number of datapoints used per split")
-        plt.savefig("log_queries.png")
+        plt.show() if show else plt.savefig("log_queries.png")
+
     else:
         plt.plot(
             sizes,
@@ -68,7 +69,7 @@ def analyze_runtime(verbose=True, take_log=True) -> None:
         )
         plt.xlabel("$N$")
         plt.ylabel("Average number of datapoints used per split")
-        plt.savefig("queries.png")
+        plt.show() if show else plt.savefig("queries.png")
 
 
 def main():
