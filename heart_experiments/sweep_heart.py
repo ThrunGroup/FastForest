@@ -1,6 +1,6 @@
 import wandb
 from heart_experiments.fit_heart import fit
-from constants import SKLEARN, FASTFOREST,HEART
+from utils.constants import SKLEARN, FASTFOREST, HEART
 
 if __name__ == '__main__':
     # Tutorial of hyperparams sweep using wandb: shorturl.at/vwAFS

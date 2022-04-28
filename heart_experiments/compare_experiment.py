@@ -9,7 +9,7 @@ from sklearn.base import clone
 from sklearn.metrics import balanced_accuracy_score, precision_score
 
 from heart_experiments.fit_heart import split_data, load_data
-from forest import Forest
+from data_structures.forest import Forest
 
 
 def find_best_hyper() -> pd.Series:

@@ -13,8 +13,8 @@ from sklearn.metrics import balanced_accuracy_score
 from imblearn.under_sampling import RandomUnderSampler
 from typing import Tuple, Iterable
 
-from constants import FASTFOREST, SKLEARN, HEART
-from forest import Forest
+from utils.constants import FASTFOREST, SKLEARN, HEART
+from data_structures.forest import Forest
 
 
 def check_dimension(X: np.ndarray, Y: np.ndarray) -> bool:
