@@ -128,7 +128,7 @@ def sample_targets(
         )  # Default: with replacement (replace=True)
     samples = data[sample_idcs]
     sample_labels = labels[sample_idcs]
-    num_queries = len(sample_idcs)
+    num_queries = len(sample_idcs)  # May be less than batch_size due to truncation
 
     for f_idx, f in enumerate(f2bin_dict):
         h = histograms[f]
@@ -284,11 +284,12 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, 
     best_value = histograms[best_feature].bin_edges[best_split[1]]
     best_reduction = estimates[best_split]
 
-    # Only return the split if it would indeed lower the impurity
-    if best_reduction < 0:
-        return best_feature, best_value, best_reduction, total_queries
     # Uncomment when debugging
     # if verify_reduction(
     #    data=data, labels=labels, feature=best_feature, value=best_value
     # ):
     #    return best_feature, best_value, best_reduction
+
+    # Only return the split if it would indeed lower the impurity
+    if best_reduction < 0:
+        return best_feature, best_value, best_reduction, total_queries

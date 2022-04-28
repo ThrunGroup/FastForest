@@ -39,7 +39,6 @@ class Node:
         # values to cache
         self.best_reduction_computed = False
         self.num_queries = 0
-        self.best_reduction_computed = False
         self.split_reduction = None
         self.prediction_probs = None
         self.predicted_label = None
@@ -64,6 +63,9 @@ class Node:
                 self.split_reduction,
                 self.num_queries,
             ) = results
+            self.split_reduction *= len(
+                self.labels
+            )  # Normalize by number of datapoints
             return self.split_reduction
 
     def create_child_node(self, idcs: np.ndarray) -> Node:

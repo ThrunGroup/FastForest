@@ -1,21 +1,17 @@
 import numpy as np
-import sys
 import matplotlib.pyplot as plt
-import math
 
-from typing import Tuple
-from data_generator import create_data
-from mab_functions import solve_mab
-from tree import Tree
-from forest import Forest
-from utils import class_to_idx
+from tests.data_generator import create_data
+from data_structures.tree import Tree
+from utils.utils import class_to_idx
 
 
-def test_binary_forest_time(verbose=True) -> None:
+def analyze_runtime(verbose=True, take_log=False) -> None:
     """
     Sequentially creates toy binary trees that get larger and computes the
     normalized complexity (i.e. queries per node) of the trees as they get larger (by base^exponent)
     of the original dataset size "starting_size"
+
     :param verbose: if True, the function prints num_splits and num_queries
     :return: None but plots the normalized complexity
     """
@@ -25,14 +21,14 @@ def test_binary_forest_time(verbose=True) -> None:
     starting_size = 100
     num_trials = 50
     max_depth = 10
-
+    np.random.seed(0)
     avg_norm_queries = []
+
     for i in range(max_exponent):
         norm_queries = 0
         total_queries = 0
         total_splits = 0
         for trial in range(num_trials):
-            # create the dataset
             X = create_data(starting_size * pow(base, i))
             data = X[:, :-1]
             labels = X[:, -1]
@@ -44,28 +40,33 @@ def test_binary_forest_time(verbose=True) -> None:
 
             total_queries += t.num_queries
             total_splits += t.num_splits
-            norm_queries += (t.num_queries / t.num_splits)
+            norm_queries += t.num_queries / t.num_splits
 
         avg_norm_queries.append(norm_queries / num_trials)
         if verbose:
             print("=> built trees with datapoints", starting_size * pow(base, i))
-            print("=> --total queries:", total_queries/num_trials)
-            print("=> --total splits:", total_splits/num_trials)
+            print("=> --total queries:", total_queries / num_trials)
+            print("=> --total splits:", total_splits / num_trials)
             print("\n")
 
     sizes = [starting_size * pow(base, i) for i in range(len(avg_norm_queries))]
-    plt.plot(sizes, avg_norm_queries, color='r', label='normalized queries')
-    plt.xlabel("Number of Datapoints")
-    plt.ylabel("Number of Queries")
-    plt.savefig('norm_queries.png')
+    if take_log:
+        plt.plot(
+            np.log10(sizes), avg_norm_queries, color="r", label="normalized queries"
+        )
+        plt.xlabel("log$N$")
+        plt.ylabel("Average number of datapoints used per split")
+        plt.savefig("log_queries.png")
+    else:
+        plt.plot(sizes, avg_norm_queries, color="r", label="normalized queries")
+        plt.xlabel("$N$")
+        plt.ylabel("Average number of datapoints used per split")
+        plt.savefig("queries.png")
 
 
 def main():
-    print("Testing toy forest runtime")
-    test_binary_forest_time()
+    analyze_runtime()
 
 
 if __name__ == "__main__":
-    np.set_printoptions(threshold=sys.maxsize)
-    np.random.seed(0)
     main()

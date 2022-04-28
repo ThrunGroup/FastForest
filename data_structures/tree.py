@@ -81,18 +81,14 @@ class Tree(TreeClassifier):
                 if leaf.depth == self.max_depth:
                     continue
 
-                # num_queries for the leaf will be updated only if we're not caching
+                # num_queries for the leaf should be updated only if we're not caching
+                # Need to get this before call to .calculate_best_split() below
+                split_already_computed = leaf.best_reduction_computed
                 reduction = leaf.calculate_best_split()
-                # if not leaf.is_best_reduction:  # don't add queries if best split is already computed
-                self.num_queries += leaf.num_queries[0]
-                if (
-                    reduction is not None
-                ):  # TODO(@motiwari): Do we need this? Or is this already performed at the leaf?
-                    reduction *= len(self.labels)
 
+                # don't add queries if best split is already computed
                 # add number of queries we made if the best split is NOT already computed
-                if not leaf.best_reduction_computed:
-                    leaf.best_reduction_computed = True
+                if not split_already_computed:
                     self.num_queries += leaf.num_queries
 
                 if reduction is not None and reduction < best_leaf_reduction:
@@ -107,7 +103,11 @@ class Tree(TreeClassifier):
                 best_leaf.split()
                 self.num_splits += 1
                 split_leaf = self.leaves.pop(best_leaf_idx)
-                split_leaf.prediction_probs = None  # this node is no longer a leaf
+
+                # this node is no longer a leaf
+                split_leaf.prediction_probs = None
+                split_leaf.predicted_label = None
+
                 self.leaves.append(split_leaf.left)
                 self.leaves.append(split_leaf.right)
             else:
