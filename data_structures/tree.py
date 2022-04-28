@@ -25,6 +25,7 @@ class Tree(TreeClassifier):
             data=self.data,  # Root node contains all the data
             labels=self.labels,
             depth=0,
+            proportion=1.0,
         )
 
         # These are copied from the link below. We won't need all of them.
@@ -45,6 +46,9 @@ class Tree(TreeClassifier):
         self.ccp_alpha = 0.0
         self.depth = 1
         self.max_depth = max_depth
+
+        self.num_splits = 0
+        self.num_queries = 0
 
     def get_depth(self) -> int:
         """
@@ -75,23 +79,33 @@ class Tree(TreeClassifier):
                 if leaf.depth == self.max_depth:
                     continue
 
+                # num_queries for the leaf should be updated only if we're not caching
+                # Need to get this before call to .calculate_best_split() below
+                split_already_computed = leaf.best_reduction_computed
                 reduction = leaf.calculate_best_split()
-                if (
-                    reduction is not None
-                ):  # TODO(@motiwari): Do we need this? Or is this already performed at the leaf?
-                    reduction *= len(self.labels)
-                    if reduction < best_leaf_reduction:
-                        best_leaf = leaf
-                        best_leaf_idx = leaf_idx
-                        best_leaf_reduction = reduction
+
+                # don't add queries if best split is already computed
+                # add number of queries we made if the best split is NOT already computed
+                if not split_already_computed:
+                    self.num_queries += leaf.num_queries
+
+                if reduction is not None and reduction < best_leaf_reduction:
+                    best_leaf = leaf
+                    best_leaf_idx = leaf_idx
+                    best_leaf_reduction = reduction
 
             if (
                 best_leaf_reduction is not None
                 and best_leaf_reduction < self.min_impurity_decrease
             ):
                 best_leaf.split()
+                self.num_splits += 1
                 split_leaf = self.leaves.pop(best_leaf_idx)
-                split_leaf.prediction_probs = None  # this node is no longer a leaf
+
+                # this node is no longer a leaf
+                split_leaf.prediction_probs = None
+                split_leaf.predicted_label = None
+
                 self.leaves.append(split_leaf.left)
                 self.leaves.append(split_leaf.right)
             else:

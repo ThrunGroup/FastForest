@@ -4,7 +4,6 @@ from __future__ import (
 
 import numpy as np
 
-
 from utils.mab_functions import solve_mab
 from utils.utils import type_check, counts_of_labels
 
@@ -19,12 +18,14 @@ class Node:
         data: np.ndarray,
         labels: np.ndarray,
         depth: int,
+        proportion: float,
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels
         self.depth = depth
+        self.proportion = proportion
         self.left = None
         self.right = None
 
@@ -39,6 +40,7 @@ class Node:
 
         # values to cache
         self.best_reduction_computed = False
+        self.num_queries = 0
         self.split_reduction = None
         self.prediction_probs = None
         self.predicted_label = None
@@ -55,8 +57,15 @@ class Node:
         results = solve_mab(self.data, self.labels)
         # Even if results is None, we should cache the fact that we know that
         self.best_reduction_computed = True
+
         if results is not None:
-            self.split_feature, self.split_value, self.split_reduction = results
+            (
+                self.split_feature,
+                self.split_value,
+                self.split_reduction,
+                self.num_queries,
+            ) = results
+            self.split_reduction *= self.proportion  # Normalize by number of datapoints
             return self.split_reduction
 
     def create_child_node(self, idcs: np.ndarray) -> Node:
@@ -68,6 +77,7 @@ class Node:
             child_data,
             child_labels,
             self.depth + 1,
+            self.proportion * (len(child_labels) / len(self.labels)),
         )
 
     def split(self) -> None:
