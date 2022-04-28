@@ -1,8 +1,10 @@
 import numpy as np
-from typing import Tuple, List
+from typing import Tuple, Dict, DefaultDict
 
+from collections import defaultdict
 from data_structures.node import Node
 from data_structures.tree_classifier import TreeClassifier
+from utils.utils import data_to_discrete
 
 
 class Tree(TreeClassifier):
@@ -20,7 +22,7 @@ class Tree(TreeClassifier):
         min_samples_split: int = 2,
         min_impurity_decrease: float = -1e-6,
         max_leaf_nodes: int = 0,
-        unique_fvals_list: List[np.ndarray] = [],
+        discrete_features: DefaultDict = defaultdict(list),
         bin_type: str = "linear",
     ) -> None:
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
@@ -29,6 +31,12 @@ class Tree(TreeClassifier):
         self.classes = classes  # dict from class name to class index
         self.idx_to_class = {value: key for key, value in classes.items()}
         self.bin_type = bin_type
+
+        # Create defaultdict of discrete features
+        if len(discrete_features) == 0:
+            self.discrete_features: DefaultDict = data_to_discrete(data, n=10)  # Hardcode this
+        else:
+            self.discrete_features: DefaultDict = discrete_features
 
         self.node = Node(
             tree=self,
@@ -57,13 +65,6 @@ class Tree(TreeClassifier):
         self.ccp_alpha = 0.0
         self.depth = 1
         self.max_depth = max_depth
-
-        if len(unique_fvals_list) == 0:
-            self.unique_fvals_list = [
-                np.unique(data[:, i]) for i in range(len(data[0]))
-            ]
-        else:
-            self.unique_fvals_list = unique_fvals_list
 
     def get_depth(self) -> int:
         """

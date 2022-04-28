@@ -1,7 +1,7 @@
 import numpy as np
 import itertools
 
-from typing import List, Tuple, Callable, Union
+from typing import List, Tuple, Callable, Union, DefaultDict
 from collections import defaultdict
 
 from data_structures.histogram import Histogram
@@ -12,21 +12,21 @@ from utils.utils import type_check, class_to_idx, counts_of_labels
 type_check()
 
 
-def choose_bin_type(F: int, N: int, B: int) -> str:
+def choose_bin_type(D: int, N: int, B: int) -> str:
     """
     Return a type of bin we use depending on the number of unique feature values, data, and bins.
 
-    :param F: Number of unique feature values
+    :param D: Number of discrete feature vlaues
     :param N: Number of data
     :param B: Number of bins
     :return: Return one among three bin types--linear, discrete, and identity
     """
-    min_num = min(F, N, B)
-    if min_num == B:
-        return "linear"
-    elif min_num == F:
+    min_num = min(D, N, B)
+    if min_num == D:
         return "discrete"
-    return "identity"
+    elif min_num == N:
+        return "identity"
+    return "linear"
 
 
 def get_impurity_fn(impurity_measure: str) -> Callable:
@@ -88,8 +88,7 @@ def get_impurity_reductions(
         )
 
     impurity_curr, V_impurity_curr = get_impurity(
-        h.left[0, :] + h.right[0, :],
-        ret_var=True,
+        h.left[0, :] + h.right[0, :], ret_var=True,
     )
     impurity_curr = float(impurity_curr)
     V_impurity_curr = float(V_impurity_curr)
@@ -200,8 +199,8 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 def solve_mab(
     data: np.ndarray,
     labels: np.ndarray,
-    discrete_bins_list: List[np.ndarray],
-    bin_type: str = "",
+    discrete_bins_dict: DefaultDict,
+    fixed_bin_type: str = "",
 ) -> Tuple[int, float, float]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
@@ -215,8 +214,8 @@ def solve_mab(
 
     :param data: Feature set
     :param labels: Labels of datapoints
-    :param discrete_bins_list: A list of discrete bins
-    :param bin_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
+    :param discrete_bins_dict: A dictionary of discrete bins
+    :param fixed_bin_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
     F = len(data[0])
@@ -242,30 +241,43 @@ def solve_mab(
         # Can optimize by calculating min and max at the same time?
         min_bin, max_bin = 0, 0
         f_data = data[:, f_idx]
-        num_bins = min(B, len(discrete_bins_list[f_idx]), len(f_data))
-        if bin_type == "":
-            bin_type = choose_bin_type(len(discrete_bins_list[f_idx]), N, B)
+        if len(discrete_bins_dict[f_idx]) == 0:
+            D = float('inf')  # "f_idx"th feature isn't discrete
+        else:
+            D = len(discrete_bins_dict[f_idx])
 
-        if bin_type == "linear":
+        if fixed_bin_type == "":
+            bin_type = choose_bin_type(D, N, B)
+        else:
+            bin_type = fixed_bin_type
+
+        if bin_type == "discrete":
+            num_bins = D
+            assert len(discrete_bins_dict[f_idx]) > 0, "discrete_bins_dict[f_idx] is empty"
+        elif bin_type == "identity":
+            num_bins = N
+        elif bin_type == "linear":
             min_bin, max_bin = np.min(f_data), np.max(f_data)
-
-        if bin_type not in ("linear", "discrete", "identity"):
+            num_bins = B
+        else:
             NotImplementedError("Invalid choice of bin_type")
 
         histogram = Histogram(
-                f_idx,
-                discrete_bins_list[f_idx],
-                f_data,
-                classes=classes,
-                num_bins=num_bins,
-                min_bin=min_bin,
-                max_bin=max_bin,
-                bin_type=bin_type,
-            )
+            f_idx,
+            discrete_bins_dict[f_idx],
+            f_data,
+            classes=classes,
+            num_bins=num_bins,
+            min_bin=min_bin,
+            max_bin=max_bin,
+            bin_type=bin_type,
+        )
         histograms.append(histogram)
 
         # Filtering extraneous bins
-        not_considered_idcs += list(itertools.product([f_idx], range(histogram.num_bins, B)))
+        not_considered_idcs += list(
+            itertools.product([f_idx], range(histogram.num_bins, B))
+        )
         considered_idcs += list(itertools.product([f_idx], range(histogram.num_bins)))
 
     considered_idcs = np.array(considered_idcs)
@@ -273,8 +285,9 @@ def solve_mab(
     if len(not_considered_idcs) > 0:
         not_considered_access = (not_considered_idcs[:, 0], not_considered_idcs[:, 1])
         exact_mask[not_considered_access] = 1
-        lcbs[not_considered_access] = ucbs[not_considered_access] = estimates[not_considered_access] \
-            = float("inf")
+        lcbs[not_considered_access] = ucbs[not_considered_access] = estimates[
+            not_considered_access
+        ] = float("inf")
         candidates = considered_idcs
 
     while len(candidates) > 0:

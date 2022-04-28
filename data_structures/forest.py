@@ -1,10 +1,10 @@
 import numpy as np
 import random
-from typing import Tuple
+from typing import Tuple, DefaultDict
 
 from data_structures.tree import Tree
 from data_structures.tree_classifier import TreeClassifier
-from utils.utils import class_to_idx
+from utils.utils import class_to_idx, data_to_discrete
 
 
 class Forest(TreeClassifier):
@@ -55,11 +55,13 @@ class Forest(TreeClassifier):
         self.ccp_alpha = 0.0
         self.max_samples = None
         self.bootstrap = bootstrap
-        self.unique_fvals_list = [np.unique(data[:, i]) for i in range(len(data[0]))]
         self.bin_type = bin_type
 
         # Need this to do remapping when features are shuffled
         self.tree_feature_idcs = {}
+
+        # Make defaultdict of discrete feature values
+        self.discrete_features: DefaultDict = data_to_discrete(data, n=10)  # Hardcode this
 
     def fit(self, verbose=True) -> None:
         """
@@ -101,7 +103,7 @@ class Forest(TreeClassifier):
                 min_samples_split=self.min_samples_split,
                 min_impurity_decrease=self.min_impurity_decrease,
                 max_leaf_nodes=self.max_leaf_nodes,
-                unique_fvals_list=self.unique_fvals_list,
+                discrete_features=self.discrete_features,
                 bin_type=self.bin_type,
             )
             tree.fit()

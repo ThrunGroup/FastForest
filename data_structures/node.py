@@ -4,6 +4,7 @@ from __future__ import (
 
 import numpy as np
 
+from typing import Dict
 from utils.mab_functions import solve_mab
 from utils.utils import type_check, counts_of_labels
 
@@ -56,7 +57,7 @@ class Node:
         if self.best_reduction_computed:
             return self.split_reduction  # If we already calculated it, return it
 
-        results = solve_mab(self.data, self.labels)
+        results = solve_mab(self.data, self.labels, self.tree.discrete_features)
         # Even if results is None, we should cache the fact that we know that
         self.best_reduction_computed = True
         if results is not None:
