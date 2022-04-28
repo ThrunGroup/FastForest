@@ -61,7 +61,9 @@ class Forest(TreeClassifier):
         self.tree_feature_idcs = {}
 
         # Make defaultdict of discrete feature values
-        self.discrete_features: DefaultDict = data_to_discrete(data, n=10)  # Hardcode this
+        self.discrete_features: DefaultDict = data_to_discrete(
+            data, n=10
+        )  # TODO: Fix this hard-coding
 
     def fit(self, verbose=True) -> None:
         """

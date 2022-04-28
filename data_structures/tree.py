@@ -34,7 +34,9 @@ class Tree(TreeClassifier):
 
         # Create defaultdict of discrete features
         if len(discrete_features) == 0:
-            self.discrete_features: DefaultDict = data_to_discrete(data, n=10)  # Hardcode this
+            self.discrete_features: DefaultDict = data_to_discrete(
+                data, n=10
+            ) # TODO: Fix this hard-coding
         else:
             self.discrete_features: DefaultDict = discrete_features
 

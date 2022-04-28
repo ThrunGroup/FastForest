@@ -242,7 +242,7 @@ def solve_mab(
         min_bin, max_bin = 0, 0
         f_data = data[:, f_idx]
         if len(discrete_bins_dict[f_idx]) == 0:
-            D = float('inf')  # "f_idx"th feature isn't discrete
+            D = float("inf")  # "f_idx"th feature isn't discrete
         else:
             D = len(discrete_bins_dict[f_idx])
 
@@ -253,7 +253,9 @@ def solve_mab(
 
         if bin_type == "discrete":
             num_bins = D
-            assert len(discrete_bins_dict[f_idx]) > 0, "discrete_bins_dict[f_idx] is empty"
+            assert (
+                len(discrete_bins_dict[f_idx]) > 0
+            ), "discrete_bins_dict[f_idx] is empty"
         elif bin_type == "identity":
             num_bins = N
         elif bin_type == "linear":
