@@ -84,12 +84,15 @@ class Tree(TreeClassifier):
         :return: Whether it's possible to split a node
         """
         node.is_check_splittable = True
-        return (
-            self.max_depth > node.depth
-            and self.min_samples_split < node.n_data
-            and self.min_impurity_decrease
-            > node.calculate_best_split() * node.n_data / self.n_data
-        )
+        if node.calculate_best_split() is not None:
+            return (
+                self.max_depth > node.depth
+                and self.min_samples_split < node.n_data
+                and self.min_impurity_decrease
+                > node.calculate_best_split() * node.n_data / self.n_data
+            )
+        else:
+            return False
 
     def fit(self, verbose=True) -> None:
         """
@@ -109,9 +112,10 @@ class Tree(TreeClassifier):
 
                 # Iterate over leaves and decide which to split
                 for leaf_idx, leaf in enumerate(self.leaves):
-                    reduction = (
-                        leaf.calculate_best_split() * leaf.n_data / self.n_data
-                    )  # Weighted impurity reduction
+                    if leaf.calculate_best_split() is not None:
+                        reduction = (
+                            leaf.calculate_best_split() * leaf.n_data / self.n_data
+                        )  # Weighted impurity reduction
                     if not leaf.is_check_splittable:
                         leaf.is_splittable = self.check_splittable(leaf)
                     if leaf.is_splittable:

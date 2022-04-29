@@ -346,13 +346,8 @@ def solve_mab(
     best_reduction = estimates[best_split]
 
     # Only return the split if it would indeed lower the impurity
-    # if best_reduction < 0:
-    #     return best_feature, best_value, best_reduction
+    if best_reduction < 0:
+        return best_feature, best_value, best_reduction
     # if verify_reduction(
     #     data=data, labels=labels, feature=best_feature, value=best_value
     # ):
-    return (
-        best_feature,
-        best_value,
-        best_reduction,
-    )

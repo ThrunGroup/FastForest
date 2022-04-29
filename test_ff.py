@@ -1,5 +1,6 @@
-import sklearn
+import sys
 import numpy as np
+from sklearn import datasets
 
 from data_structures.tree import Tree
 from utils.utils import class_to_idx
@@ -11,7 +12,7 @@ def test_tree_iris2(verbose: bool = False) -> None:
 
     :param verbose: Whether to print how the trees are constructed in details.
     """
-    iris = sklearn.datasets.load_iris()
+    iris = datasets.load_iris()
     data, labels = iris.data, iris.target
     classes_arr = np.unique(labels)
     classes = class_to_idx(classes_arr)
