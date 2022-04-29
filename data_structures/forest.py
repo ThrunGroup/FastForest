@@ -1,10 +1,10 @@
 import numpy as np
 import random
-from typing import Tuple, DefaultDict
+from typing import Tuple
 
 from data_structures.tree import Tree
 from data_structures.tree_classifier import TreeClassifier
-from utils.utils import class_to_idx, data_to_discrete
+from utils.utils import class_to_idx
 
 
 class Forest(TreeClassifier):
@@ -18,11 +18,7 @@ class Forest(TreeClassifier):
         labels: np.ndarray,
         n_estimators: int = 100,
         max_depth: int = None,
-        bootstrap: bool = True,
-        min_samples_split: int = 2,
-        min_impurity_decrase: float = 0,
-        max_leaf_nodes: int = 0,
-        bin_type="linear",
+        bootstrap: bool = True
     ) -> None:
         self.data = data
         self.num_features = len(data[0])
@@ -39,12 +35,12 @@ class Forest(TreeClassifier):
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
         self.criterion = "gini"
         self.max_depth = max_depth
-        self.min_samples_split = min_samples_split
+        self.min_samples_split = 2
         self.min_samples_leaf = 1
         self.min_weight_fraction_leaf = 0.0
         self.max_features = "auto"
-        self.max_leaf_nodes = max_leaf_nodes
-        self.min_impurity_decrease = min_impurity_decrase
+        self.max_leaf_nodes = None
+        self.min_impurity_decrease = 0.0
         self.bootstrap = True
         self.oob_score = False
         self.n_jobs = None
@@ -55,15 +51,9 @@ class Forest(TreeClassifier):
         self.ccp_alpha = 0.0
         self.max_samples = None
         self.bootstrap = bootstrap
-        self.bin_type = bin_type
 
         # Need this to do remapping when features are shuffled
         self.tree_feature_idcs = {}
-
-        # Make defaultdict of discrete feature values
-        self.discrete_features: DefaultDict = data_to_discrete(
-            data, n=10
-        )  # TODO: Fix this hard-coding
 
     def fit(self, verbose=True) -> None:
         """
@@ -89,7 +79,9 @@ class Forest(TreeClassifier):
 
             if self.bootstrap:
                 N = len(self.labels)
-                idcs = np.random.choice(N, size=N, replace=True)
+                idcs = np.random.choice(
+                    N, size=N
+                )
                 new_data = self.data[idcs, :]
                 new_labels = self.labels[idcs]
             else:
@@ -102,11 +94,6 @@ class Forest(TreeClassifier):
                 labels=new_labels,
                 max_depth=self.max_depth,
                 classes=self.classes,
-                min_samples_split=self.min_samples_split,
-                min_impurity_decrease=self.min_impurity_decrease,
-                max_leaf_nodes=self.max_leaf_nodes,
-                discrete_features=self.discrete_features,
-                bin_type=self.bin_type,
             )
             tree.fit()
             self.trees.append(tree)
