@@ -1,7 +1,7 @@
 import numpy as np
 import itertools
 
-from typing import List, Tuple, Callable, Union
+from typing import List, Tuple, Callable, Union, DefaultDict
 from collections import defaultdict
 
 from data_structures.histogram import Histogram
@@ -10,6 +10,23 @@ from utils.criteria import get_gini, get_entropy, get_variance
 from utils.utils import type_check, class_to_idx, counts_of_labels
 
 type_check()
+
+
+def choose_bin_type(D: int, N: int, B: int) -> str:
+    """
+    Return a type of bin we use depending on the number of unique feature values, data, and bins.
+
+    :param D: Number of discrete feature vlaues
+    :param N: Number of data
+    :param B: Number of bins
+    :return: Return one among three bin types--linear, discrete, and identity
+    """
+    min_num = min(D, N, B)
+    if min_num == D:
+        return "discrete"
+    elif min_num == N:
+        return "identity"
+    return "linear"
 
 
 def get_impurity_fn(impurity_measure: str) -> Callable:
@@ -71,8 +88,7 @@ def get_impurity_reductions(
         )
 
     impurity_curr, V_impurity_curr = get_impurity(
-        h.left[0, :] + h.right[0, :],
-        ret_var=True,
+        h.left[0, :] + h.right[0, :], ret_var=True,
     )
     impurity_curr = float(impurity_curr)
     V_impurity_curr = float(V_impurity_curr)
@@ -99,7 +115,9 @@ def sample_targets(
     Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
     their feature values into the (potentially non-empty) histograms and recompute the changes in impurity
     for each potential bin split
-    :param X: original dataset
+
+    :param data: input data array with 2 dimensions
+    :param labels: target data array with 1 dimension
     :param arms: arms we want to consider
     :param histograms: list of the histograms for ALL feature indices
     :param batch_size: the number of samples we're going to choose
@@ -141,7 +159,6 @@ def sample_targets(
 
 
 def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bool:
-
     # TODO: Fix this. Use a dictionary to store original labels -> label index
     #  or use something like label_idx,
     #  label in np.unique(labels) to avoid assuming that the labels are 0, ... K-1
@@ -179,7 +196,12 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 
 
 # TODO (@motiwari): This doesn't appear to be actually returning a tuple?
-def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
+def solve_mab(
+    data: np.ndarray,
+    labels: np.ndarray,
+    discrete_bins_dict: DefaultDict,
+    fixed_bin_type: str = "",
+) -> Tuple[int, float, float]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
     that feature should be split at.
@@ -192,9 +214,10 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
 
     :param data: Feature set
     :param labels: Labels of datapoints
+    :param discrete_bins_dict: A dictionary of discrete bins
+    :param fixed_bin_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
-    # Right now, we assume the number of bin edges is constant across features
     F = len(data[0])
     B = 11  # TODO: Fix this hard-coding
     N = len(data)
@@ -212,24 +235,71 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
     # Create a list of histogram objects, one per feature
     histograms = []
     classes: Tuple = tuple(np.unique(labels))  # Not assume labels are 0 to i here
+    considered_idcs, not_considered_idcs = [], []
     for f_idx in range(F):
         # Set the minimum and maximum of bins as the minimum of maximum of data of a feature
         # Can optimize by calculating min and max at the same time?
-        min_bin, max_bin = np.min(data[:, f_idx]), np.max(data[:, f_idx])
-        histograms.append(
-            Histogram(
-                f_idx, classes=classes, num_bins=B, min_bin=min_bin, max_bin=max_bin
-            )
+        min_bin, max_bin = 0, 0
+        f_data = data[:, f_idx]
+        if len(discrete_bins_dict[f_idx]) == 0:
+            D = float("inf")  # "f_idx"th feature isn't discrete
+        else:
+            D = len(discrete_bins_dict[f_idx])
+
+        if fixed_bin_type == "":
+            bin_type = choose_bin_type(D, N, B)
+        else:
+            bin_type = fixed_bin_type
+
+        if bin_type == "discrete":
+            num_bins = D
+            assert (
+                len(discrete_bins_dict[f_idx]) > 0
+            ), "discrete_bins_dict[f_idx] is empty"
+        elif bin_type == "identity":
+            num_bins = N
+        elif bin_type == "linear":
+            min_bin, max_bin = np.min(f_data), np.max(f_data)
+            num_bins = B
+        else:
+            NotImplementedError("Invalid choice of bin_type")
+
+        histogram = Histogram(
+            f_idx,
+            discrete_bins_dict[f_idx],
+            f_data,
+            classes=classes,
+            num_bins=num_bins,
+            min_bin=min_bin,
+            max_bin=max_bin,
+            bin_type=bin_type,
         )
+        histograms.append(histogram)
+
+        # Filtering extraneous bins
+        not_considered_idcs += list(
+            itertools.product([f_idx], range(histogram.num_bins, B))
+        )
+        considered_idcs += list(itertools.product([f_idx], range(histogram.num_bins)))
+
+    considered_idcs = np.array(considered_idcs)
+    not_considered_idcs = np.array(not_considered_idcs)
+    if len(not_considered_idcs) > 0:
+        not_considered_access = (not_considered_idcs[:, 0], not_considered_idcs[:, 1])
+        exact_mask[not_considered_access] = 1
+        lcbs[not_considered_access] = ucbs[not_considered_access] = estimates[
+            not_considered_access
+        ] = float("inf")
+        candidates = considered_idcs
 
     while len(candidates) > 0:
         # If we have already pulled the arms more times than the number of datapoints in the original dataset,
         # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
         exact_accesses = np.where((num_samples + batch_size >= N) & (exact_mask == 0))
-        if len(exact_accesses[0]) > 0:
+        if len(exact_accesses[0]) > 0:  # Jay: batch_size --> N here
             estimates[exact_accesses], _vars = sample_targets(
-                data, labels, exact_accesses, histograms, batch_size
+                data, labels, exact_accesses, histograms, N
             )
             # The confidence intervals now only contain a point, since the return has been computed exactly
             lcbs[exact_accesses] = ucbs[exact_accesses] = estimates[exact_accesses]
@@ -239,7 +309,6 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
             # TODO(@motiwari): Can't use nanmin here -- why?
             cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
             candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
-
         if (
             len(candidates) <= 1
         ):  # cadndiates could be empty after all candidates are exactly computed
@@ -277,9 +346,8 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float]:
     best_reduction = estimates[best_split]
 
     # Only return the split if it would indeed lower the impurity
-    # if best_reduction < 0:
-    #     return best_feature, best_value, best_reduction
-    if verify_reduction(
-        data=data, labels=labels, feature=best_feature, value=best_value
-    ):
+    if best_reduction < 0:
         return best_feature, best_value, best_reduction
+    # if verify_reduction(
+    #     data=data, labels=labels, feature=best_feature, value=best_value
+    # ):

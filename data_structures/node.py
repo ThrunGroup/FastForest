@@ -4,7 +4,7 @@ from __future__ import (
 
 import numpy as np
 
-
+from typing import Dict
 from utils.mab_functions import solve_mab
 from utils.utils import type_check, counts_of_labels
 
@@ -19,11 +19,14 @@ class Node:
         data: np.ndarray,
         labels: np.ndarray,
         depth: int,
+        bin_type: str = "",
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels
+        self.n_data = len(labels)
+        self.bin_type = bin_type
         self.depth = depth
         self.left = None
         self.right = None
@@ -42,8 +45,10 @@ class Node:
         self.split_reduction = None
         self.prediction_probs = None
         self.predicted_label = None
+        self.is_splittable = True
+        self.is_check_splittable = False
 
-    def calculate_best_split(self) -> None:
+    def calculate_best_split(self) -> float:
         """
         Speculatively calculate the best split
 
@@ -52,7 +57,7 @@ class Node:
         if self.best_reduction_computed:
             return self.split_reduction  # If we already calculated it, return it
 
-        results = solve_mab(self.data, self.labels)
+        results = solve_mab(self.data, self.labels, self.tree.discrete_features)
         # Even if results is None, we should cache the fact that we know that
         self.best_reduction_computed = True
         if results is not None:
@@ -62,13 +67,7 @@ class Node:
     def create_child_node(self, idcs: np.ndarray) -> Node:
         child_data = self.data[idcs]
         child_labels = self.labels[idcs]
-        return Node(
-            self.tree,
-            self,
-            child_data,
-            child_labels,
-            self.depth + 1,
-        )
+        return Node(self.tree, self, child_data, child_labels, self.depth + 1,)
 
     def split(self) -> None:
         """
@@ -85,7 +84,7 @@ class Node:
         # Verify that splitting would actually help
         if self.split_reduction is not None:
             assert (
-                self.split_reduction < 0
+                self.split_reduction <= 0
             ), "Error: splitting this node would increase impurity. Should never be here"
 
             # NOTE: Asymmetry with <= and >
