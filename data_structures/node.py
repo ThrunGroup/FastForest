@@ -1,7 +1,7 @@
 from __future__ import (
     annotations,
 )  # For typechecking parent: Node, this is somehow important
-
+from typing import Union
 import numpy as np
 
 from typing import Dict
@@ -51,11 +51,11 @@ class Node:
         self.is_splittable = True
         self.is_check_splittable = False
 
-    def calculate_best_split(self) -> float:
+    def calculate_best_split(self) -> Union[float, int]:
         """
         Speculatively calculate the best split
 
-        :return: None, but assign
+        :return: Weighted impurity reduction of the node's best split
         """
         if self.best_reduction_computed:
             return self.split_reduction  # If we already calculated it, return it

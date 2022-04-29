@@ -85,7 +85,6 @@ class Histogram:
 
     def linear_bin(self) -> np.ndarray:
         """
-
         :return: Return an array of bins with linear spacing
         """
         return np.linspace(self.min_bin, self.max_bin, self.num_bins)
@@ -100,7 +99,7 @@ class Histogram:
             self.linear_bin() = [0, 25, 50, 75, 100]
             self.discrete_bin() = [0, 1, 2, 3, 100]
 
-        :return: Return a subset of self.feature_values
+        :return: Return a subset array of self.feature_values
         """
         width = int(len(self.unique_fvals) / self.num_bins)
         return np.array([self.unique_fvals[width * i] for i in range(self.num_bins)])
@@ -110,7 +109,7 @@ class Histogram:
         Ex) self.data = [0, 1, 2, 3, 3, 3, 3, 100]
             self.identity_bin() = [0, 1, 2, 3, 100]
 
-        :return: Return an unique sorted values of self.data
+        :return: Return an unique sorted values array of self.data
         """
         identity_bin = np.unique(self.data)  # Copied array
         self.num_bins = len(identity_bin)

@@ -1,6 +1,7 @@
 import sklearn.datasets
 import unittest
 import numpy as np
+from collections import defaultdict
 
 from utils import data_generator
 import ground_truth
@@ -40,11 +41,11 @@ class ForestTests(unittest.TestCase):
         print("=> Ground truth:\n")
         ground_truth.ground_truth_tree(data, labels, show=show)
 
-        unique_fvals_list = [np.unique(data[:, i]) for i in range(len(data[0]))]
+        empty_discrete_dict = defaultdict(list)
         print("\n\n=> MAB:\n")
         print(
             "Best arm from solve_mab is: ",
-            utils.mab_functions.solve_mab(data, labels, unique_fvals_list),
+            utils.mab_functions.solve_mab(data, labels, empty_discrete_dict),
         )
 
         print("\n\n=> Tree fitting:")

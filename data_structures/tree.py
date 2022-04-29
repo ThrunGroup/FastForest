@@ -116,6 +116,7 @@ class Tree(TreeClassifier):
 
                 # Iterate over leaves and decide which to split
                 for leaf_idx, leaf in enumerate(self.leaves):
+
                     # num_queries for the leaf should be updated only if we're not caching
                     # Need to get this before call to .calculate_best_split() below
                     split_already_computed = leaf.best_reduction_computed
