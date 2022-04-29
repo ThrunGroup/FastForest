@@ -2,7 +2,7 @@ import sklearn.datasets
 import unittest
 import numpy as np
 
-import data_generator
+from utils import data_generator
 import ground_truth
 from data_structures.forest import Forest
 from data_structures.tree import Tree

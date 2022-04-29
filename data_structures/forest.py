@@ -54,6 +54,7 @@ class Forest(TreeClassifier):
         self.class_weight = None
         self.ccp_alpha = 0.0
         self.max_samples = None
+        self.num_queries = 0
         self.bootstrap = bootstrap
         self.bin_type = bin_type
 
@@ -109,6 +110,7 @@ class Forest(TreeClassifier):
                 bin_type=self.bin_type,
             )
             tree.fit()
+            self.num_queries += tree.num_queries
             self.trees.append(tree)
 
     def predict(self, datapoint: np.ndarray) -> Tuple[int, np.ndarray]:

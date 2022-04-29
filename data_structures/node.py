@@ -20,6 +20,7 @@ class Node:
         labels: np.ndarray,
         depth: int,
         bin_type: str = "",
+        proportion: float,
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
@@ -28,6 +29,7 @@ class Node:
         self.n_data = len(labels)
         self.bin_type = bin_type
         self.depth = depth
+        self.proportion = proportion
         self.left = None
         self.right = None
 
@@ -42,6 +44,7 @@ class Node:
 
         # values to cache
         self.best_reduction_computed = False
+        self.num_queries = 0
         self.split_reduction = None
         self.prediction_probs = None
         self.predicted_label = None
@@ -60,14 +63,28 @@ class Node:
         results = solve_mab(self.data, self.labels, self.tree.discrete_features)
         # Even if results is None, we should cache the fact that we know that
         self.best_reduction_computed = True
+
         if results is not None:
-            self.split_feature, self.split_value, self.split_reduction = results
+            (
+                self.split_feature,
+                self.split_value,
+                self.split_reduction,
+                self.num_queries,
+            ) = results
+            self.split_reduction *= self.proportion  # Normalize by number of datapoints
             return self.split_reduction
 
     def create_child_node(self, idcs: np.ndarray) -> Node:
         child_data = self.data[idcs]
         child_labels = self.labels[idcs]
-        return Node(self.tree, self, child_data, child_labels, self.depth + 1,)
+        return Node(
+            self.tree,
+            self,
+            child_data,
+            child_labels,
+            self.depth + 1,
+            self.proportion * (len(child_labels) / len(self.labels)),
+        )
 
     def split(self) -> None:
         """
@@ -84,7 +101,7 @@ class Node:
         # Verify that splitting would actually help
         if self.split_reduction is not None:
             assert (
-                self.split_reduction <= 0
+                self.split_reduction < 0
             ), "Error: splitting this node would increase impurity. Should never be here"
 
             # NOTE: Asymmetry with <= and >
