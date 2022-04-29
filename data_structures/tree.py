@@ -135,7 +135,7 @@ class Tree(TreeClassifier):
                             best_leaf_idx = leaf_idx
                             best_leaf_reduction = reduction
 
-                if best_leaf is None:  # All the nodes satisfy the termination condition
+                if best_leaf is None:  # All the nodes don't satisfy the splittable condition
                     break
                 best_leaf.split()
                 self.num_splits += 1
@@ -162,9 +162,11 @@ class Tree(TreeClassifier):
         :param node: A root node to be split recursively
         """
         node.is_splittable = self.check_splittable(node)
+        self.num_queries += node.num_queries
         if not node.is_splittable:
             self.leaves.append(node)
         else:
+            self.num_splits += 1
             node.calculate_best_split()
             node.split()
             self.recursive_split(node.left)

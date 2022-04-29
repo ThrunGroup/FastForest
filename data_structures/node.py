@@ -20,7 +20,7 @@ class Node:
         labels: np.ndarray,
         depth: int,
         bin_type: str = "",
-        proportion: float,
+        proportion: float = 1.0,
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
