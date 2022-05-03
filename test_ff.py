@@ -28,7 +28,7 @@ def test_tree_iris2(verbose: bool = False) -> None:
             max_leaf_nodes=max_leaf_nodes,
             bin_type=bin_type,
         )
-        t.fit()
+        t.fit(verbose=False)
         if verbose:
             t.tree_print()
         acc = np.sum(t.predict_batch(data)[0] == labels)

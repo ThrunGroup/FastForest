@@ -1,10 +1,9 @@
 from __future__ import (
     annotations,
 )  # For typechecking parent: Node, this is somehow important
-from typing import Union
+from typing import Dict, Union
 import numpy as np
 
-from typing import Dict
 from utils.mab_functions import solve_mab
 from utils.utils import type_check, counts_of_labels
 

@@ -97,7 +97,7 @@ class Histogram:
             self.feature_values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 100]
             self.num_bins = 5
             self.linear_bin() = [0, 25, 50, 75, 100]
-            self.discrete_bin() = [0, 1, 2, 3, 100]
+            self.discrete_bin() = [0, 2, 4, 6, 8]
 
         :return: Return a subset array of self.feature_values
         """

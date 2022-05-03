@@ -82,7 +82,7 @@ class Tree(TreeClassifier):
 
     def check_splittable(self, node: Node) -> bool:
         """
-        Check whether the node satisfies the termination condition of splitting.
+        Check whether the node satisfies the splittable condition of splitting.
 
         :param node: A node which is considered
         :return: Whether it's possible to split a node
@@ -109,7 +109,6 @@ class Tree(TreeClassifier):
         if self.max_leaf_nodes > 0:  # Best-first tree fitting
             self.leaves.append(self.node)  # Append root node to self.leaves
             while len(self.leaves) < self.max_leaf_nodes:
-                all_terminate = True
                 best_leaf = None
                 best_leaf_idx = None
                 best_leaf_reduction = float("inf")
