@@ -1,13 +1,12 @@
 import numpy as np
-import random
 from typing import Tuple
 
-from data_structures.tree import Tree
 from data_structures.tree_classifier import TreeClassifier
+from data_structures.classifier import Classifier
 from utils.utils import class_to_idx
 
 
-class Forest(TreeClassifier):
+class ForestClassifier(Classifier):
     """
     Class for vanilla random forest model, which averages each tree's predictions
     """
@@ -18,7 +17,7 @@ class Forest(TreeClassifier):
         labels: np.ndarray,
         n_estimators: int = 100,
         max_depth: int = None,
-        bootstrap: bool = True
+        bootstrap: bool = True,
     ) -> None:
         self.data = data
         self.num_features = len(data[0])
@@ -80,15 +79,13 @@ class Forest(TreeClassifier):
 
             if self.bootstrap:
                 N = len(self.labels)
-                idcs = np.random.choice(
-                    N, size=N
-                )
+                idcs = np.random.choice(N, size=N)
                 new_data = self.data[idcs, :]
                 new_labels = self.labels[idcs]
             else:
                 new_data = self.data
                 new_labels = self.labels
-            tree = Tree(
+            tree = TreeClassifier(
                 data=new_data[
                     :, feature_idcs
                 ],  # Randomly choose a subset of the available features

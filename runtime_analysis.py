@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from utils.data_generator import create_data
-from data_structures.tree import Tree
+from data_structures.tree_classifier import TreeClassifier
 from utils.utils import class_to_idx
 
 
