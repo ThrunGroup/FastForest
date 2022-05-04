@@ -108,12 +108,12 @@ class Node:
             # Reset cached prediction values
             self.prediction_probs = None
             self.predicted_label = None
+            self.already = True
 
     def n_print(self) -> None:
         """
         Print the node's children depth-first
         Me: split x < 5:
-
         """
         assert (self.left and self.right) or (
             self.left is None and self.right is None
@@ -122,7 +122,7 @@ class Node:
             print(
                 ("|   " * self.depth)
                 + "|--- feature_"
-                + str(self.already_split)
+                + str(self.split_feature)
                 + " <= "
                 + str(self.split_value)
             )
@@ -130,7 +130,7 @@ class Node:
             print(
                 ("|   " * self.depth)
                 + "|--- feature_"
-                + str(self.already_split)
+                + str(self.split_feature)
                 + " > "
                 + str(self.split_value)
             )

@@ -231,8 +231,9 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, 
         exact_accesses = np.where((num_samples + batch_size >= N) & (exact_mask == 0))
         if len(exact_accesses[0]) > 0:
             estimates[exact_accesses], _vars, num_queries = sample_targets(
-                data, labels, exact_accesses, histograms, batch_size
+                data, labels, exact_accesses, histograms, N
             )
+
             # The confidence intervals now only contain a point, since the return has been computed exactly
             lcbs[exact_accesses] = ucbs[exact_accesses] = estimates[exact_accesses]
             exact_mask[exact_accesses] = 1
