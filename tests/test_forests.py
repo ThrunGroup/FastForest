@@ -25,6 +25,7 @@ class ForestTests(unittest.TestCase):
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
+        print((acc / len(data)))
         self.assertTrue((acc / len(data)) >= 0.98)
 
     def test_forest_digits(self) -> None:
@@ -39,6 +40,7 @@ class ForestTests(unittest.TestCase):
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
+        print((acc / len(data)))
         self.assertTrue((acc / len(data)) > 0.87)
 
     def test_tree_toy(self, show: bool = False) -> None:

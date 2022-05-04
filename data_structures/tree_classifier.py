@@ -12,12 +12,18 @@ class TreeClassifier(Classifier):
     """
 
     def __init__(
-        self, data: np.ndarray, labels: np.ndarray, max_depth: int, classes: dict
+        self,
+        data: np.ndarray,
+        labels: np.ndarray,
+        max_depth: int,
+        classes: dict,
+        budget: int = None,
     ) -> None:
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
         self.classes = classes  # dict from class name to class index
         self.idx_to_class = {value: key for key, value in classes.items()}
+        self.remaining_budget = budget
 
         self.node = Node(
             tree=self,
@@ -55,7 +61,6 @@ class TreeClassifier(Classifier):
         Get the maximum depth of this tree.
         :return: an integer representing the maximum depth of any node (root = 0)
         """
-        max_depth = -1
         return max([leaf.depth for leaf in self.leaves])
 
     def fit(self, verbose=True) -> None:
@@ -73,8 +78,10 @@ class TreeClassifier(Classifier):
             best_leaf_reduction = float("inf")
 
             # Iterate over leaves and decide which to split
-            for leaf_idx, leaf in enumerate(self.leaves):
+            # TODO: Perhaps we should be randomly choosing which leaf to split with finite budget, so that each leaf
+            #  can be assessed on equal footing. Or engineer budget such that a full tree can be made?
 
+            for leaf_idx, leaf in enumerate(self.leaves):
                 # Do not split leaves which are already at max_depth
                 if leaf.depth == self.max_depth:
                     continue
@@ -82,12 +89,18 @@ class TreeClassifier(Classifier):
                 # num_queries for the leaf should be updated only if we're not caching
                 # Need to get this before call to .calculate_best_split() below
                 split_already_computed = leaf.best_reduction_computed
-                reduction = leaf.calculate_best_split()
+                if not self.remaining_budget or self.remaining_budget > 0:
+                    # Runs solve_mab if not previously computed, which incurs cost!
+                    reduction = leaf.calculate_best_split()
+                else:
+                    break
 
                 # don't add queries if best split is already computed
                 # add number of queries we made if the best split is NOT already computed
                 if not split_already_computed:
                     self.num_queries += leaf.num_queries
+                    if self.remaining_budget:
+                        self.remaining_budget -= leaf.num_queries
 
                 if reduction is not None and reduction < best_leaf_reduction:
                     best_leaf = leaf
