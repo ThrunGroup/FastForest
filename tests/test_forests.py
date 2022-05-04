@@ -43,6 +43,9 @@ class ForestTests(unittest.TestCase):
 
         empty_discrete_dict = defaultdict(list)
         print("\n\n=> MAB:\n")
+
+        # Empty discrete bins dictionary is being passed so we don't treat any features as discrete when
+        # solving MAB
         print(
             "Best arm from solve_mab is: ",
             utils.mab_functions.solve_mab(data, labels, empty_discrete_dict),

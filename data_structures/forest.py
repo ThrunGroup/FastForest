@@ -20,7 +20,7 @@ class Forest(TreeClassifier):
         max_depth: int = None,
         bootstrap: bool = True,
         min_samples_split: int = 2,
-        min_impurity_decrase: float = 0,
+        min_impurity_decrease: float = 0,
         max_leaf_nodes: int = 0,
         bin_type="linear",
     ) -> None:
@@ -44,7 +44,7 @@ class Forest(TreeClassifier):
         self.min_weight_fraction_leaf = 0.0
         self.max_features = "auto"
         self.max_leaf_nodes = max_leaf_nodes
-        self.min_impurity_decrease = min_impurity_decrase
+        self.min_impurity_decrease = min_impurity_decrease
         self.bootstrap = True
         self.oob_score = False
         self.n_jobs = None
@@ -61,7 +61,6 @@ class Forest(TreeClassifier):
         # Need this to do remapping when features are shuffled
         self.tree_feature_idcs = {}
 
-        # Make defaultdict of discrete feature values
         self.discrete_features: DefaultDict = data_to_discrete(
             data, n=10
         )  # TODO: Fix this hard-coding

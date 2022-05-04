@@ -47,8 +47,7 @@ class Node:
         self.split_reduction = None
         self.prediction_probs = None
         self.predicted_label = None
-        self.is_splittable = True
-        self.is_check_splittable = False
+        self.is_splittable = None
 
     def calculate_best_split(self) -> Union[float, int]:
         """

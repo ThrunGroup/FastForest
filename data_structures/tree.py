@@ -31,19 +31,16 @@ class Tree(TreeClassifier):
         self.classes = classes  # dict from class name to class index
         self.idx_to_class = {value: key for key, value in classes.items()}
         self.bin_type = bin_type
-
-        # Create defaultdict of discrete features
-        if len(discrete_features) == 0:
-            self.discrete_features: DefaultDict = data_to_discrete(
-                data, n=10
-            ) # TODO: Fix this hard-coding
-        else:
-            self.discrete_features: DefaultDict = discrete_features
+        self.discrete_features = (
+            discrete_features
+            if len(discrete_features) > 0
+            else data_to_discrete(data, n=10)
+        )
 
         self.node = Node(
             tree=self,
             parent=None,
-            data=self.data, # Root node contains all the data
+            data=self.data,  # Root node contains all the data
             labels=self.labels,
             depth=0,
             proportion=1.0,
@@ -87,7 +84,6 @@ class Tree(TreeClassifier):
         :param node: A node which is considered
         :return: Whether it's possible to split a node
         """
-        node.is_check_splittable = True
         if node.calculate_best_split() is not None:
             return (
                 self.max_depth > node.depth
@@ -126,7 +122,7 @@ class Tree(TreeClassifier):
                     if not split_already_computed:
                         self.num_queries += leaf.num_queries
 
-                    if not leaf.is_check_splittable:
+                    if leaf.is_splittable is None:
                         leaf.is_splittable = self.check_splittable(leaf)
 
                     if leaf.is_splittable:
@@ -135,7 +131,9 @@ class Tree(TreeClassifier):
                             best_leaf_idx = leaf_idx
                             best_leaf_reduction = reduction
 
-                if best_leaf is None:  # All the nodes don't satisfy the splittable condition
+                if (
+                    best_leaf is None
+                ):  # None of the nodes are splittable
                     break
                 best_leaf.split()
                 self.num_splits += 1

@@ -67,16 +67,17 @@ def data_to_discrete(data: np.ndarray, n: int) -> DefaultDict:
                          [0.6 2],
                          [0.7 1],
                          [0.8 3]])
-        data_to_discrete(data, n=3) returns a dictionary {1: [1,2,3]}. 1 is a feature index and
+        data_to_discrete(data, n=3) returns a dictionary {1: np.array([1,2,3])}. 1 is a feature index and
         [1,2,3] is discrete feature values of feature index 1.
 
     :param data: An input data array with 2 dimension
+    :param n: An integer number which is a criteria for deciding whether some features are discrete or not
     :return: A dictionary mapping from discrete feature index to the list of its unique feature
     values
     """
     discrete_dict = defaultdict(list)
-    fvals_list = [np.unique(data[:, i]) for i in range(len(data[0]))]
-    for idx in range(len(fvals_list)):
-        if len(fvals_list[idx]) <= n:
-            discrete_dict[idx] = fvals_list[idx]
+    for feature_idx in range(len(data[0])):
+        unique_fvals = np.unique(data[:, feature_idx])
+        if len(unique_fvals) <= n: # If not, "feature_idx"th feature is not discrete
+            discrete_dict[feature_idx] = unique_fvals
     return discrete_dict

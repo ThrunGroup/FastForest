@@ -53,6 +53,5 @@ def main():
 
 
 if __name__ == "__main__":
-    np.set_printoptions(threshold=sys.maxsize)
     np.random.seed(0)
     main()
