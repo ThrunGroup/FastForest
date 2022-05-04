@@ -76,7 +76,6 @@ class ForestTests(unittest.TestCase):
     #     self.assertTrue((acc / len(data)) > 0.99)
 
     def test_zero_budget_tree_iris(self) -> None:
-        print("Running budget test")
         iris = sklearn.datasets.load_iris()
         data, labels = iris.data, iris.target
         classes_arr = np.unique(labels)
@@ -89,6 +88,26 @@ class ForestTests(unittest.TestCase):
         acc = np.sum(t.predict_batch(data)[0] == labels)
         print("MAB solution Tree Train Accuracyfff:", acc / len(data))
         self.assertTrue((acc / len(data)) < 0.34)
+
+    def test_increasing_budget_tree_iris(self) -> None:
+        iris = sklearn.datasets.load_iris()
+        data, labels = iris.data, iris.target
+        classes_arr = np.unique(labels)
+        classes = utils.utils.class_to_idx(classes_arr)
+
+        t1 = TreeClassifier(
+            data=data, labels=labels, max_depth=5, classes=classes, budget=50
+        )
+        t1.fit()
+        acc1 = np.sum(t1.predict_batch(data)[0] == labels)
+
+        t2 = TreeClassifier(
+            data=data, labels=labels, max_depth=5, classes=classes, budget=1000
+        )
+        t2.fit()
+        acc2 = np.sum(t2.predict_batch(data)[0] == labels)
+        print(acc1, acc2)
+        self.assertTrue(acc1 < acc2)
 
 
 if __name__ == "__main__":
