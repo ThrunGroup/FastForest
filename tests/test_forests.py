@@ -25,7 +25,6 @@ class ForestTests(unittest.TestCase):
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
-        print((acc / len(data)))
         self.assertTrue((acc / len(data)) >= 0.98)
 
     def test_forest_digits(self) -> None:
@@ -40,7 +39,6 @@ class ForestTests(unittest.TestCase):
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
-        print((acc / len(data)))
         self.assertTrue((acc / len(data)) > 0.87)
 
     def test_tree_toy(self, show: bool = False) -> None:
@@ -71,6 +69,20 @@ class ForestTests(unittest.TestCase):
             data=data, labels=labels, max_depth=5, show=False
         )
         t = TreeClassifier(data=data, labels=labels, max_depth=5, classes=classes)
+        t.fit()
+        t.tree_print()
+        acc = np.sum(t.predict_batch(data)[0] == labels)
+        print("MAB solution Tree Train Accuracy:", acc / len(data))
+
+    def test_budget_tree_iris(self) -> None:
+        print("Running budget test")
+        iris = sklearn.datasets.load_iris()
+        data, labels = iris.data, iris.target
+        classes_arr = np.unique(labels)
+        classes = utils.utils.class_to_idx(classes_arr)
+        t = TreeClassifier(
+            data=data, labels=labels, max_depth=5, classes=classes, budget=200
+        )
         t.fit()
         t.tree_print()
         acc = np.sum(t.predict_batch(data)[0] == labels)
