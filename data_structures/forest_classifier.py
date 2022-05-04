@@ -67,7 +67,7 @@ class ForestClassifier(Classifier):
         """
         self.trees = []
         for i in range(self.n_estimators):
-            if self.remaining_budget and self.remaining_budget <= 0:
+            if self.remaining_budget is not None and self.remaining_budget <= 0:
                 break
 
             if self.feature_subsampling == "SQRT":
@@ -105,7 +105,7 @@ class ForestClassifier(Classifier):
 
             # Bookkeeping
             self.num_queries += tree.num_queries
-            if self.remaining_budget:
+            if self.remaining_budget is not None:
                 self.remaining_budget -= tree.num_queries
                 assert self.remaining_budget > -BUFFER, "Error: went over budget"
 

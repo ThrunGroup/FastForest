@@ -224,7 +224,7 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, 
         )
 
     total_queries = 0
-    while len(candidates) > 0:
+    while len(candidates) > 1:
         # If we have already pulled the arms more times than the number of datapoints in the original dataset,
         # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
@@ -268,14 +268,10 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, 
         total_queries += num_queries
         round_count += 1
 
-    best_splits = zip(
+    # possible to get first elem of zip object without converting to list?
+    best_split = zip(
         np.where(lcbs == np.nanmin(lcbs))[0], np.where(lcbs == np.nanmin(lcbs))[1]
-    )
-    best_splits = list(
-        best_splits
-    )  # possible to get first elem of zip object without converting to list?
-    best_split = best_splits[0]
-
+    ).__next__()  # Get first element
     best_feature = best_split[0]
     best_value = histograms[best_feature].bin_edges[best_split[1]]
     best_reduction = estimates[best_split]

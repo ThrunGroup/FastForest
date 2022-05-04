@@ -89,7 +89,7 @@ class TreeClassifier(Classifier):
                 # num_queries for the leaf should be updated only if we're not caching
                 # Need to get this before call to .calculate_best_split() below
                 split_already_computed = leaf.best_reduction_computed
-                if not self.remaining_budget or self.remaining_budget > 0:
+                if self.remaining_budget is None or self.remaining_budget > 0:
                     # Runs solve_mab if not previously computed, which incurs cost!
                     reduction = leaf.calculate_best_split()
                 else:
@@ -99,7 +99,7 @@ class TreeClassifier(Classifier):
                 # add number of queries we made if the best split is NOT already computed
                 if not split_already_computed:
                     self.num_queries += leaf.num_queries
-                    if self.remaining_budget:
+                    if self.remaining_budget is not None:
                         self.remaining_budget -= leaf.num_queries
 
                 if reduction is not None and reduction < best_leaf_reduction:
