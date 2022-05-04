@@ -179,7 +179,9 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 
 
 # TODO (@motiwari): This doesn't appear to be actually returning a tuple?
-def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, int]:
+def solve_mab(
+    data: np.ndarray, labels: np.ndarray, min_impurity_reduction: float = 0
+) -> Tuple[int, float, float, int]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
     that feature should be split at.
@@ -244,16 +246,15 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, 
             candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
             total_queries += num_queries
 
-        if (
-            len(candidates) <= 1
-        ):  # cadndiates could be empty after all candidates are exactly computed
-            # Break here because we have found our best candidate
+        # Last candidates were exatly computed
+        if len(candidates) <= 1:
             break
 
+        # Massage arm indices for use by numpy slicing
         accesses = (
             candidates[:, 0],
             candidates[:, 1],
-        )  # Massage arm indices for use by numpy slicing
+        )
         # NOTE: cb_delta contains a value for EVERY arm, even non-candidates, so need [accesses]
         estimates[accesses], cb_delta[accesses], num_queries = sample_targets(
             data, labels, accesses, histograms, batch_size
@@ -269,7 +270,6 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, 
         total_queries += num_queries
         round_count += 1
 
-    # possible to get first elem of zip object without converting to list?
     best_split = zip(
         np.where(lcbs == np.nanmin(lcbs))[0], np.where(lcbs == np.nanmin(lcbs))[1]
     ).__next__()  # Get first element
@@ -284,5 +284,7 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, 
     #    return best_feature, best_value, best_reduction
 
     # Only return the split if it would indeed lower the impurity
-    if best_reduction < 0:
+    if best_reduction < min_impurity_reduction:
         return best_feature, best_value, best_reduction, total_queries
+    else:
+        return total_queries

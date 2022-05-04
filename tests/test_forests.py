@@ -16,7 +16,6 @@ class ForestTests(unittest.TestCase):
     def test_forest_iris(self) -> None:
         iris = sklearn.datasets.load_iris()
         data, labels = iris.data, iris.target
-        num_classes = len(np.unique(labels))
         f = ForestClassifier(
             data=data,
             labels=labels,

@@ -52,13 +52,13 @@ class Node:
         :return: None, but assign
         """
         if self.best_reduction_computed:
-            return self.split_reduction  # If we already calculated it, return it
+            return self.split_reduction
 
         results = solve_mab(self.data, self.labels)
         # Even if results is None, we should cache the fact that we know that
         self.best_reduction_computed = True
 
-        if results is not None:
+        if type(results) == tuple:  # Found a solution
             (
                 self.split_feature,
                 self.split_value,
@@ -67,6 +67,8 @@ class Node:
             ) = results
             self.split_reduction *= self.proportion  # Normalize by number of datapoints
             return self.split_reduction
+        else:
+            self.num_queries = results
 
     def create_child_node(self, idcs: np.ndarray) -> Node:
         child_data = self.data[idcs]
