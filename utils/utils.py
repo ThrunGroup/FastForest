@@ -1,6 +1,9 @@
 import numpy as np
+import itertools
 from collections import defaultdict
-from typing import DefaultDict
+from typing import DefaultDict, Tuple, List
+
+from data_structures.histogram import Histogram
 
 
 def type_check() -> None:
@@ -81,3 +84,89 @@ def data_to_discrete(data: np.ndarray, n: int) -> DefaultDict:
         if len(unique_fvals) <= n: # If not, "feature_idx"th feature is not discrete
             discrete_dict[feature_idx] = unique_fvals
     return discrete_dict
+
+
+def choose_bin_type(D: int, N: int, B: int) -> str:
+    """
+    Return a type of bin we use depending on the number of unique feature values, data, and bins.
+
+    :param D: Number of discrete feature vlaues
+    :param N: Number of data
+    :param B: Number of bins
+    :return: Return one among three bin types--linear, discrete, and identity
+    """
+    min_num = min(D, N, B)
+    if min_num == D:
+        return "discrete"
+    elif min_num == N:
+        return "identity"
+    return "linear"
+
+
+def make_histogram(
+    data: np.ndarray,
+    labels: np.ndarray,
+    discrete_bins_dict: DefaultDict,
+    fixed_bin_type: str = "",
+    num_bins: int = 11,
+) -> Tuple[List[Histogram], List, List]:
+    """
+    Choose a bin type and number of bins, and make a histogram. Add it to histograms list. Also, filter
+    extraneous bins by creating lists of considered indices and not considered indices.
+
+    :param data: A 2d-array of input data
+    :param labels: An 1d-array of target dat
+    :param discrete_bins_dict: A DefaultDict mapping feature index to unique feature values
+    :param fixed_bin_type: Fixed type of bin which should be one of "linear", "discrete", and "identity"
+    :param num_bins: Number of bins
+    :return: A list of histograms, a list of indices not considered, and a list of indices considered
+    """
+    N = len(data)
+    B = num_bins
+    histograms = []
+    not_considered_idcs, considered_idcs = [], []
+    classes = tuple(np.unique(labels))
+    for f_idx in range(len(data[0])):
+        min_bin, max_bin = 0, 0
+        f_data = data[:, f_idx]
+        if len(discrete_bins_dict[f_idx]) == 0:
+            D = float("inf")  # "f_idx"th feature isn't discrete
+        else:
+            D = len(discrete_bins_dict[f_idx])
+
+        if fixed_bin_type == "":
+            bin_type = choose_bin_type(D, N, B)
+        else:
+            bin_type = fixed_bin_type
+
+        if bin_type == "discrete":
+            num_bins = D
+            assert (
+                len(discrete_bins_dict[f_idx]) > 0
+            ), "discrete_bins_dict[f_idx] is empty"
+        elif bin_type == "identity":
+            num_bins = N
+        elif bin_type == "linear":
+            min_bin, max_bin = np.min(f_data), np.max(f_data)
+            num_bins = B
+        else:
+            NotImplementedError("Invalid choice of bin_type")
+
+        histogram = Histogram(
+            f_idx,
+            discrete_bins_dict[f_idx],
+            f_data,
+            classes=classes,
+            num_bins=num_bins,
+            min_bin=min_bin,
+            max_bin=max_bin,
+            bin_type=bin_type,
+        )
+        histograms.append(histogram)
+
+        # Filtering extraneous bins
+        not_considered_idcs += list(
+            itertools.product([f_idx], range(histogram.num_bins, B))
+        )
+        considered_idcs += list(itertools.product([f_idx], range(histogram.num_bins)))
+    return histograms, not_considered_idcs, considered_idcs
