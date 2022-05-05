@@ -19,6 +19,7 @@ class Node:
         labels: np.ndarray,
         depth: int,
         proportion: float,
+        verbose: bool = True,
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
@@ -28,6 +29,7 @@ class Node:
         self.proportion = proportion
         self.left = None
         self.right = None
+        self.verbose = verbose
 
         # NOTE: Do not assume labels are all integers from 0 to num_classes-1
         self.counts = counts_of_labels(self.tree.classes, labels)
@@ -66,8 +68,13 @@ class Node:
                 self.num_queries,
             ) = results
             self.split_reduction *= self.proportion  # Normalize by number of datapoints
+            if self.verbose:
+                print("Calculated split with", self.num_queries, "queries")
             return self.split_reduction
         else:
+            self.num_queries = results
+            if self.verbose:
+                print("Calculated split with", self.num_queries, "queries")
             self.num_queries = results
 
     def create_child_node(self, idcs: np.ndarray) -> Node:
@@ -142,4 +149,12 @@ class Node:
             class_pred = self.tree.idx_to_class[
                 class_idx_pred
             ]  # print class name not class index
-            print(("|   " * self.depth) + "|--- " + "class: " + str(class_pred))
+            print(
+                ("|   " * self.depth)
+                + "|--- "
+                + "class: "
+                + str(class_pred)
+                + " (num_samples: "
+                + str(len(self.data))
+                + ")"
+            )

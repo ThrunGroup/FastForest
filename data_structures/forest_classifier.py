@@ -20,6 +20,7 @@ class ForestClassifier(Classifier):
         max_depth: int = None,
         bootstrap: bool = True,
         budget: int = None,
+        verbose: bool = True,
     ) -> None:
         self.data = data
         self.num_features = len(data[0])
@@ -32,6 +33,7 @@ class ForestClassifier(Classifier):
         )  # a dictionary that maps class name to class index
         self.n_classes = len(self.classes)
         self.remaining_budget = budget
+        self.verbose = verbose
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
@@ -77,7 +79,7 @@ class ForestClassifier(Classifier):
             else:
                 raise Exception("Bad feature subsampling method")
 
-            if verbose:
+            if self.verbose:
                 print("Fitting tree", i)
 
             self.tree_feature_idcs[i] = feature_idcs
@@ -99,6 +101,7 @@ class ForestClassifier(Classifier):
                 max_depth=self.max_depth,
                 classes=self.classes,
                 budget=self.remaining_budget,
+                verbose=self.verbose,
             )
             tree.fit()
             self.trees.append(tree)

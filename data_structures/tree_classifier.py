@@ -18,6 +18,7 @@ class TreeClassifier(Classifier):
         max_depth: int,
         classes: dict,
         budget: int = None,
+        verbose: bool = True,
     ) -> None:
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
@@ -32,6 +33,7 @@ class TreeClassifier(Classifier):
             labels=self.labels,
             depth=0,
             proportion=1.0,
+            verbose=verbose,
         )
 
         # These are copied from the link below. We won't need all of them.
@@ -52,6 +54,7 @@ class TreeClassifier(Classifier):
         self.ccp_alpha = 0.0
         self.depth = 1
         self.max_depth = max_depth
+        self.verbose = verbose
 
         self.num_splits = 0
         self.num_queries = 0
@@ -63,7 +66,7 @@ class TreeClassifier(Classifier):
         """
         return max([leaf.depth for leaf in self.leaves])
 
-    def fit(self, verbose=True) -> None:
+    def fit(self) -> None:
         """
         Fit the tree by recursively splitting nodes until the termination condition is reached.
         The termination condition can be a number of splits, a required reduction in impurity, or a max depth.
@@ -126,7 +129,7 @@ class TreeClassifier(Classifier):
 
             self.depth = self.get_depth()
 
-        if verbose:
+        if self.verbose:
             print("Fitting finished")
 
     def predict(self, datapoint: np.ndarray) -> Tuple[int, np.ndarray]:

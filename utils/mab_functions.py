@@ -178,7 +178,6 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
     return TOLERANCE < root_impurity - split_impurity
 
 
-# TODO (@motiwari): This doesn't appear to be actually returning a tuple?
 def solve_mab(
     data: np.ndarray, labels: np.ndarray, min_impurity_reduction: float = 0
 ) -> Tuple[int, float, float, int]:
@@ -246,7 +245,7 @@ def solve_mab(
             candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
             total_queries += num_queries
 
-        # Last candidates were exatly computed
+        # Last candidates were exactly computed
         if len(candidates) <= 1:
             break
 
