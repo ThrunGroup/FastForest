@@ -103,7 +103,7 @@ def choose_bin_type(D: int, N: int, B: int) -> str:
     return "linear"
 
 
-def make_histogram(
+def make_histograms(
     data: np.ndarray,
     labels: np.ndarray,
     discrete_bins_dict: DefaultDict,

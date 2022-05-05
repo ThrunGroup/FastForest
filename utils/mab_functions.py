@@ -7,7 +7,7 @@ from collections import defaultdict
 from data_structures.histogram import Histogram
 from utils.constants import CONF_MULTIPLIER, TOLERANCE
 from utils.criteria import get_gini, get_entropy, get_variance
-from utils.utils import type_check, class_to_idx, counts_of_labels, choose_bin_type, make_histogram
+from utils.utils import type_check, class_to_idx, counts_of_labels, make_histogram
 
 type_check()
 
@@ -219,7 +219,7 @@ def solve_mab(
 
     # Make a list of histograms, a list of indices that we don't consider as potential arms, and a list of indices
     # that we consider as potential arms.
-    histograms, not_considered_idcs, considered_idcs = make_histogram(
+    histograms, not_considered_idcs, considered_idcs = make_histograms(
         data, labels, discrete_bins_dict, fixed_bin_type, B
     )
 
