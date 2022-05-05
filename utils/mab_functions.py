@@ -7,7 +7,7 @@ from collections import defaultdict
 from data_structures.histogram import Histogram
 from utils.constants import CONF_MULTIPLIER, TOLERANCE
 from utils.criteria import get_gini, get_entropy, get_variance
-from utils.utils import type_check, class_to_idx, counts_of_labels, make_histogram
+from utils.utils import type_check, class_to_idx, counts_of_labels, make_histograms
 
 type_check()
 
