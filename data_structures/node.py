@@ -1,7 +1,7 @@
 from __future__ import (
     annotations,
 )  # For typechecking parent: Node, this is somehow important
-
+from typing import Dict, Union
 import numpy as np
 
 from utils.mab_functions import solve_mab
@@ -18,12 +18,15 @@ class Node:
         data: np.ndarray,
         labels: np.ndarray,
         depth: int,
-        proportion: float,
+        bin_type: str = "",
+        proportion: float = 1.0,
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels
+        self.n_data = len(labels)
+        self.bin_type = bin_type
         self.depth = depth
         self.proportion = proportion
         self.left = None
@@ -44,17 +47,18 @@ class Node:
         self.split_reduction = None
         self.prediction_probs = None
         self.predicted_label = None
+        self.is_splittable = None
 
-    def calculate_best_split(self) -> None:
+    def calculate_best_split(self) -> Union[float, int]:
         """
         Speculatively calculate the best split
 
-        :return: None, but assign
+        :return: Weighted impurity reduction of the node's best split
         """
         if self.best_reduction_computed:
             return self.split_reduction  # If we already calculated it, return it
 
-        results = solve_mab(self.data, self.labels)
+        results = solve_mab(self.data, self.labels, self.tree.discrete_features)
         # Even if results is None, we should cache the fact that we know that
         self.best_reduction_computed = True
 

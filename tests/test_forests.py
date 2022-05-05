@@ -1,6 +1,7 @@
 import sklearn.datasets
 import unittest
 import numpy as np
+from collections import defaultdict
 
 from utils import data_generator
 import ground_truth
@@ -17,12 +18,7 @@ class ForestTests(unittest.TestCase):
         iris = sklearn.datasets.load_iris()
         data, labels = iris.data, iris.target
         num_classes = len(np.unique(labels))
-        f = Forest(
-            data=data,
-            labels=labels,
-            n_estimators=20,
-            max_depth=5,
-        )
+        f = Forest(data=data, labels=labels, n_estimators=20, max_depth=5,)
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
         self.assertTrue((acc / len(data)) >= 0.98)
@@ -31,12 +27,7 @@ class ForestTests(unittest.TestCase):
         digits = sklearn.datasets.load_digits()
         data, labels = digits.data, digits.target
         num_classes = len(np.unique(labels))
-        f = Forest(
-            data=data,
-            labels=labels,
-            n_estimators=10,
-            max_depth=5,
-        )
+        f = Forest(data=data, labels=labels, n_estimators=10, max_depth=5,)
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
         self.assertTrue((acc / len(data)) > 0.87)
@@ -50,9 +41,14 @@ class ForestTests(unittest.TestCase):
         print("=> Ground truth:\n")
         ground_truth.ground_truth_tree(data, labels, show=show)
 
+        empty_discrete_dict = defaultdict(list)
         print("\n\n=> MAB:\n")
+
+        # Empty discrete bins dictionary is being passed so we don't treat any features as discrete when
+        # solving MAB
         print(
-            "Best arm from solve_mab is: ", utils.mab_functions.solve_mab(data, labels)
+            "Best arm from solve_mab is: ",
+            utils.mab_functions.solve_mab(data, labels, empty_discrete_dict),
         )
 
         print("\n\n=> Tree fitting:")

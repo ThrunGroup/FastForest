@@ -1,13 +1,13 @@
 import numpy as np
 import itertools
 
-from typing import List, Tuple, Callable, Union
+from typing import List, Tuple, Callable, Union, DefaultDict
 from collections import defaultdict
 
 from data_structures.histogram import Histogram
 from utils.constants import CONF_MULTIPLIER, TOLERANCE
 from utils.criteria import get_gini, get_entropy, get_variance
-from utils.utils import type_check, class_to_idx, counts_of_labels
+from utils.utils import type_check, class_to_idx, counts_of_labels, make_histograms
 
 type_check()
 
@@ -71,8 +71,7 @@ def get_impurity_reductions(
         )
 
     impurity_curr, V_impurity_curr = get_impurity(
-        h.left[0, :] + h.right[0, :],
-        ret_var=True,
+        h.left[0, :] + h.right[0, :], ret_var=True,
     )
     impurity_curr = float(impurity_curr)
     V_impurity_curr = float(V_impurity_curr)
@@ -99,11 +98,13 @@ def sample_targets(
     Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
     their feature values into the (potentially non-empty) histograms and recompute the changes in impurity
     for each potential bin split
-    :param X: original dataset
+
+    :param data: input data array with 2 dimensions
+    :param labels: target data array with 1 dimension
     :param arms: arms we want to consider
     :param histograms: list of the histograms for ALL feature indices
     :param batch_size: the number of samples we're going to choose
-    return: impurity_reduction and its variance of accesses
+    :return: impurity_reduction and its variance of accesses
     """
     # TODO(@motiwari): Samples all bin edges for a given feature, should only sample those under consideration.
     feature_idcs, bin_edge_idcs = arms
@@ -179,7 +180,12 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 
 
 # TODO (@motiwari): This doesn't appear to be actually returning a tuple?
-def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, int]:
+def solve_mab(
+    data: np.ndarray,
+    labels: np.ndarray,
+    discrete_bins_dict: DefaultDict,
+    fixed_bin_type: str = "",
+) -> Tuple[int, float, float, int]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
     that feature should be split at.
@@ -192,10 +198,11 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, 
 
     :param data: Feature set
     :param labels: Labels of datapoints
+    :param discrete_bins_dict: A dictionary of discrete bins
+    :param fixed_bin_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
     :param num_queries: mutable variable to update the number of datapoints queried
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
-    # Right now, we assume the number of bin edges is constant across features
     F = len(data[0])
     B = 11  # TODO: Fix this hard-coding
     N = len(data)
@@ -210,18 +217,21 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, 
     exact_mask = np.zeros((F, B))
     cb_delta = np.zeros((F, B))
 
-    # Create a list of histogram objects, one per feature
-    histograms = []
-    classes: Tuple = tuple(np.unique(labels))  # Not assume labels are 0 to i here
-    for f_idx in range(F):
-        # Set the minimum and maximum of bins as the minimum of maximum of data of a feature
-        # Can optimize by calculating min and max at the same time?
-        min_bin, max_bin = np.min(data[:, f_idx]), np.max(data[:, f_idx])
-        histograms.append(
-            Histogram(
-                f_idx, classes=classes, num_bins=B, min_bin=min_bin, max_bin=max_bin
-            )
-        )
+    # Make a list of histograms, a list of indices that we don't consider as potential arms, and a list of indices
+    # that we consider as potential arms.
+    histograms, not_considered_idcs, considered_idcs = make_histograms(
+        data, labels, discrete_bins_dict, fixed_bin_type, B
+    )
+
+    considered_idcs = np.array(considered_idcs)
+    not_considered_idcs = np.array(not_considered_idcs)
+    if len(not_considered_idcs) > 0:
+        not_considered_access = (not_considered_idcs[:, 0], not_considered_idcs[:, 1])
+        exact_mask[not_considered_access] = 1
+        lcbs[not_considered_access] = ucbs[not_considered_access] = estimates[
+            not_considered_access
+        ] = float("inf")
+        candidates = considered_idcs
 
     total_queries = 0
     while len(candidates) > 1:
@@ -229,9 +239,9 @@ def solve_mab(data: np.ndarray, labels: np.ndarray) -> Tuple[int, float, float, 
         # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
         exact_accesses = np.where((num_samples + batch_size >= N) & (exact_mask == 0))
-        if len(exact_accesses[0]) > 0:
+        if len(exact_accesses[0]) > 0:  # Jay: batch_size --> N here
             estimates[exact_accesses], _vars, num_queries = sample_targets(
-                data, labels, exact_accesses, histograms, batch_size
+                data, labels, exact_accesses, histograms, N
             )
             # The confidence intervals now only contain a point, since the return has been computed exactly
             lcbs[exact_accesses] = ucbs[exact_accesses] = estimates[exact_accesses]
