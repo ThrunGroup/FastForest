@@ -137,7 +137,6 @@ def run_exp(args: argparse.Namespace, logfile: str) -> None:
         iris = sklearn.datasets.load_iris()
         data, labels = iris.data, iris.target
         classes_arr = np.unique(labels)
-        classes = utils.utils.class_to_idx(classes_arr)
 
         FC = ForestClassifier(data=data, labels=labels, max_depth=5, budget=50)
         FC.fit()

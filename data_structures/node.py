@@ -117,7 +117,7 @@ class Node:
             # Reset cached prediction values
             self.prediction_probs = None
             self.predicted_label = None
-            self.already = True
+            self.already_split = True
 
     def n_print(self) -> None:
         """
