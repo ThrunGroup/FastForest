@@ -187,7 +187,7 @@ class TreeClassifier(Classifier):
 
         # Depth-first tree fitting
         elif self.splitter == "depth":
-            print(
+            raise Exception(
                 "Budget tracking in recursive splitting is not yet supported. Are you sure you know what you're doing?"
             )
             self.recursive_split(self.node)
