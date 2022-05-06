@@ -1,11 +1,11 @@
-from data_structures import classifier, tree_base
+from data_structures import regressor, tree_base
 from typing import DefaultDict
 from collections import defaultdict
 
 import numpy as np
 
 
-class TreeClassifier(tree_base, classifier):
+class TreeClassifier(tree_base, regressor):
     """
     Tree object. Contains a node attribute, the root, as well as fitting parameters that are global to the tree (i.e.,
     are used in splitting the nodes)
@@ -16,7 +16,6 @@ class TreeClassifier(tree_base, classifier):
         data: np.ndarray,
         labels: np.ndarray,
         max_depth: int,
-        classes: dict,
         min_samples_split: int = 2,
         min_impurity_decrease: float = -1e-6,
         max_leaf_nodes: int = 0,
@@ -34,5 +33,3 @@ class TreeClassifier(tree_base, classifier):
             bin_type=bin_type,
             is_classification=True,
         )
-        self.classes = classes  # dict from class name to class index
-        self.idx_to_class = {value: key for key, value in classes.items()}

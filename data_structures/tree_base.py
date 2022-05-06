@@ -1,16 +1,17 @@
 import numpy as np
 from typing import Tuple, Dict, DefaultDict
+from abc import ABC
+
 
 from collections import defaultdict
 from data_structures.node import Node
-from data_structures.tree_classifier import TreeClassifier
 from utils.utils import data_to_discrete
 
 
-class Tree(TreeClassifier):
+class TreeBase(ABC):
     """
-    Tree object. Contains a node attribute, the root, as well as fitting parameters that are global to the tree (i.e.,
-    are used in splitting the nodes)
+    TreeBase class. Contains a node attribute, the root, as well as fitting parameters that are global to the tree (i.e.,
+    are used in splitting the nodes). TreeClassifier and TreeRegressor will inherit TreeBase class.
     """
 
     def __init__(
@@ -18,24 +19,23 @@ class Tree(TreeClassifier):
         data: np.ndarray,
         labels: np.ndarray,
         max_depth: int,
-        classes: dict,
         min_samples_split: int = 2,
         min_impurity_decrease: float = -1e-6,
         max_leaf_nodes: int = 0,
         discrete_features: DefaultDict = defaultdict(list),
         bin_type: str = "linear",
+        is_classification: bool = True
     ) -> None:
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
         self.n_data = len(labels)
-        self.classes = classes  # dict from class name to class index
-        self.idx_to_class = {value: key for key, value in classes.items()}
         self.bin_type = bin_type
         self.discrete_features = (
             discrete_features
             if len(discrete_features) > 0
             else data_to_discrete(data, n=10)
         )
+        self.is_classification = is_classification
 
         self.node = Node(
             tree=self,
@@ -45,6 +45,7 @@ class Tree(TreeClassifier):
             depth=0,
             proportion=1.0,
             bin_type=self.bin_type,
+            is_classification=self.is_classification
         )
 
         # These are copied from the link below. We won't need all of them.
