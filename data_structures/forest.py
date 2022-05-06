@@ -1,5 +1,4 @@
 import numpy as np
-import random
 from typing import Tuple, DefaultDict
 
 from data_structures.tree_classifier import TreeClassifier
