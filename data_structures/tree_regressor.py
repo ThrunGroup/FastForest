@@ -1,11 +1,12 @@
-from data_structures import regressor, tree_base
+from data_structures.regressor import Regressor
+from data_structures.tree_base import TreeBase
 from typing import DefaultDict
 from collections import defaultdict
 
 import numpy as np
 
 
-class TreeClassifier(tree_base, regressor):
+class TreeClassifier(TreeBase, Regressor):
     """
     Tree object. Contains a node attribute, the root, as well as fitting parameters that are global to the tree (i.e.,
     are used in splitting the nodes)

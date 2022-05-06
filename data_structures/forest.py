@@ -2,12 +2,12 @@ import numpy as np
 import random
 from typing import Tuple, DefaultDict
 
-from data_structures.tree import Tree
 from data_structures.tree_classifier import TreeClassifier
+from data_structures.classifier import Classifier
 from utils.utils import class_to_idx, data_to_discrete
 
 
-class Forest(TreeClassifier):
+class Forest(Classifier):
     """
     Class for vanilla random forest model, which averages each tree's predictions
     """
@@ -95,7 +95,7 @@ class Forest(TreeClassifier):
             else:
                 new_data = self.data
                 new_labels = self.labels
-            tree = Tree(
+            tree = TreeClassifier(
                 data=new_data[
                     :, feature_idcs
                 ],  # Randomly choose a subset of the available features

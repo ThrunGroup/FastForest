@@ -81,9 +81,13 @@ def get_impurity_reductions(
         )
 
     if is_classification:
-        impurity_curr, V_impurity_curr = get_impurity(h.left[0, :] + h.right[0, :], ret_var=True)
+        impurity_curr, V_impurity_curr = get_impurity(
+            h.left[0, :] + h.right[0, :], ret_var=True
+        )
     else:
-        impurity_curr, V_impurity_curr = get_impurity(h.left_pile[0] + h.right_pile[0], ret_var=True)
+        impurity_curr, V_impurity_curr = get_impurity(
+            h.left_pile[0] + h.right_pile[0], ret_var=True
+        )
     impurity_curr = float(impurity_curr)
     V_impurity_curr = float(V_impurity_curr)
     # TODO(@motiwari): Might not need to subtract off impurity_curr
@@ -99,18 +103,20 @@ def get_impurity_reductions(
 
 
 def sample_targets(
+    is_classification: bool,
     data: np.ndarray,
     labels: np.ndarray,
     arms: Tuple[np.ndarray, np.ndarray],
     histograms: List[object],
     batch_size: int,
-    impurity_measure: str = ""
+    impurity_measure: str = "",
 ) -> Tuple[np.ndarray, np.ndarray, int]:
     """
     Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
     their feature values into the (potentially non-empty) histograms and recompute the changes in impurity
     for each potential bin split
 
+    :param is_classification: Whether is a classification problem(True) or regression problem(False)
     :param data: input data array with 2 dimensions
     :param labels: target data array with 1 dimension
     :param arms: arms we want to consider
@@ -145,7 +151,7 @@ def sample_targets(
         h = histograms[f]
         h.add(samples, sample_labels)  # This is where the labels are used
         # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
-        i_r, cb_d = get_impurity_reductions(h, f2bin_dict[f], ret_vars=True)
+        i_r, cb_d = get_impurity_reductions(is_classification, h, f2bin_dict[f], ret_vars=True)
         impurity_reductions = np.concatenate([impurity_reductions, i_r])
         cb_deltas = np.concatenate(
             [cb_deltas, np.sqrt(cb_d)]
@@ -263,7 +269,13 @@ def solve_mab(
         exact_accesses = np.where((num_samples + batch_size >= N) & (exact_mask == 0))
         if len(exact_accesses[0]) > 0:  # Jay: batch_size --> N here
             estimates[exact_accesses], _vars, num_queries = sample_targets(
-                data, labels, exact_accesses, histograms, N, impurity_measure=impurity_measure
+                is_classification,
+                data,
+                labels,
+                exact_accesses,
+                histograms,
+                N,
+                impurity_measure=impurity_measure
             )
             # The confidence intervals now only contain a point, since the return has been computed exactly
             lcbs[exact_accesses] = ucbs[exact_accesses] = estimates[exact_accesses]
@@ -287,7 +299,13 @@ def solve_mab(
         )  # Massage arm indices for use by numpy slicing
         # NOTE: cb_delta contains a value for EVERY arm, even non-candidates, so need [accesses]
         estimates[accesses], cb_delta[accesses], num_queries = sample_targets(
-            data, labels, accesses, histograms, batch_size, impurity_measure=impurity_measure
+            is_classification,
+            data,
+            labels,
+            accesses,
+            histograms,
+            batch_size,
+            impurity_measure=impurity_measure
         )
         num_samples[accesses] += batch_size
         lcbs[accesses] = estimates[accesses] - CONF_MULTIPLIER * cb_delta[accesses]

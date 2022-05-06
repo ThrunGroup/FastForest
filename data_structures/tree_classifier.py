@@ -1,11 +1,12 @@
-from data_structures import classifier, tree_base
+from data_structures.classifier import Classifier
+from data_structures.tree_base import  TreeBase
 from typing import DefaultDict
 from collections import defaultdict
 
 import numpy as np
 
 
-class TreeClassifier(tree_base, classifier):
+class TreeClassifier(TreeBase, Classifier):
     """
     Tree object. Contains a node attribute, the root, as well as fitting parameters that are global to the tree (i.e.,
     are used in splitting the nodes)
@@ -23,6 +24,8 @@ class TreeClassifier(tree_base, classifier):
         discrete_features: DefaultDict = defaultdict(list),
         bin_type: str = "linear",
     ):
+        self.classes = classes  # dict from class name to class index
+        self.idx_to_class = {value: key for key, value in classes.items()}
         super().__init__(
             data,
             labels,
@@ -34,5 +37,3 @@ class TreeClassifier(tree_base, classifier):
             bin_type=bin_type,
             is_classification=True,
         )
-        self.classes = classes  # dict from class name to class index
-        self.idx_to_class = {value: key for key, value in classes.items()}

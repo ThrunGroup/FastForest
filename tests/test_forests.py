@@ -6,7 +6,7 @@ from collections import defaultdict
 from utils import data_generator
 import ground_truth
 from data_structures.forest import Forest
-from data_structures.tree import Tree
+from data_structures.tree_classifier import TreeClassifier
 import utils.utils
 
 
@@ -52,7 +52,7 @@ class ForestTests(unittest.TestCase):
         )
 
         print("\n\n=> Tree fitting:")
-        t = Tree(data, labels, max_depth=3, classes=classes)
+        t = TreeClassifier(data, labels, max_depth=3, classes=classes)
         t.fit()
         t.tree_print()
 
@@ -64,7 +64,7 @@ class ForestTests(unittest.TestCase):
         ground_truth.ground_truth_tree(
             data=data, labels=labels, max_depth=5, show=False
         )
-        t = Tree(data=data, labels=labels, max_depth=5, classes=classes)
+        t = TreeClassifier(data=data, labels=labels, max_depth=5, classes=classes)
         t.fit()
         t.tree_print()
         acc = np.sum(t.predict_batch(data)[0] == labels)

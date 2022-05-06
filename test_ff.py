@@ -2,7 +2,7 @@ import sys
 import numpy as np
 from sklearn import datasets
 
-from data_structures.tree import Tree
+from data_structures.tree_classifier import TreeClassifier
 from utils.utils import class_to_idx
 
 
@@ -20,7 +20,7 @@ def test_tree_iris2(verbose: bool = False) -> None:
     def test_tree(max_leaf_nodes, bin_type, print_str):
         print("-" * 30)
         print(f"Fitting {print_str} tree")
-        t = Tree(
+        t = TreeClassifier(
             data=data,
             labels=labels,
             max_depth=5,
@@ -42,10 +42,6 @@ def test_tree_iris2(verbose: bool = False) -> None:
 
     # Linear bin tree
     test_tree(0, "linear", "Linear bin splitting")
-
-    # Discrete bin tree
-    test_tree(0, "discrete", "Discrete bin splitting")
-
 
 def main():
     print("Fitting tree iris dataset with different hyperparameters:\n")
