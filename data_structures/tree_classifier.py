@@ -1,5 +1,5 @@
 from data_structures.classifier import Classifier
-from data_structures.tree_base import  TreeBase
+from data_structures.tree_base import TreeBase
 from typing import DefaultDict
 from collections import defaultdict
 

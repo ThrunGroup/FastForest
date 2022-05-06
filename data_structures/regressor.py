@@ -7,6 +7,7 @@ class Regressor(ABC):
     def predict_batch(self, data: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """
         Batch version of predict(). Allows for passing many datapoints at once
+
         :param data: Data to regress
         :return: Array of predicted regression values
         """

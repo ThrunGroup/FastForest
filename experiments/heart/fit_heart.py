@@ -14,7 +14,7 @@ from imblearn.under_sampling import RandomUnderSampler
 from typing import Tuple, Iterable
 
 from utils.constants import FASTFOREST, SKLEARN, HEART
-from data_structures.forest import Forest
+from data_structures.forest_classifier import Forest
 
 
 def check_dimension(X: np.ndarray, Y: np.ndarray) -> bool:
@@ -37,7 +37,7 @@ def get_subset(
     :param X: an input dataset
     :param Y: a target dataset
     :param subset_size: subset_size (# of rows) of X and Y
-    :param seed: random seed when taking a subset of X and Y 
+    :param seed: random seed when taking a subset of X and Y
     :return: the subset of X and Y
     """
     assert len(Y) >= subset_size, "Invalid subset_size of dataframe"

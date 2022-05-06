@@ -1,7 +1,7 @@
 import numpy as np
 import itertools
 
-from typing import List, Tuple, Callable, Union, DefaultDict
+from typing import List, Tuple, Callable, Union
 from collections import defaultdict
 
 from data_structures.histogram import Histogram
@@ -207,7 +207,6 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
     return TOLERANCE < root_impurity - split_impurity
 
 
-# TODO (@motiwari): This doesn't appear to be actually returning a tuple?
 def solve_mab(
     data: np.ndarray,
     labels: np.ndarray,
@@ -215,6 +214,7 @@ def solve_mab(
     fixed_bin_type: str = "",
     is_classification: bool = True,
     impurity_measure: str = "",
+    min_impurity_reduction: float = 0,
 ) -> Tuple[int, float, float, int]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
@@ -286,6 +286,7 @@ def solve_mab(
                 N,
                 impurity_measure=impurity_measure,
             )
+
             # The confidence intervals now only contain a point, since the return has been computed exactly
             lcbs[exact_accesses] = ucbs[exact_accesses] = estimates[exact_accesses]
             exact_mask[exact_accesses] = 1
@@ -296,16 +297,15 @@ def solve_mab(
             candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
             total_queries += num_queries
 
-        if (
-            len(candidates) <= 1
-        ):  # cadndiates could be empty after all candidates are exactly computed
-            # Break here because we have found our best candidate
+        # Last candidates were exactly computed
+        if len(candidates) <= 1:
             break
 
+        # Massage arm indices for use by numpy slicing
         accesses = (
             candidates[:, 0],
             candidates[:, 1],
-        )  # Massage arm indices for use by numpy slicing
+        )
         # NOTE: cb_delta contains a value for EVERY arm, even non-candidates, so need [accesses]
         estimates[accesses], cb_delta[accesses], num_queries = sample_targets(
             is_classification,
@@ -326,14 +326,10 @@ def solve_mab(
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
         total_queries += num_queries
         round_count += 1
-    best_splits = zip(
-        np.where(lcbs == np.nanmin(lcbs))[0], np.where(lcbs == np.nanmin(lcbs))[1]
-    )
-    best_splits = list(
-        best_splits
-    )  # possible to get first elem of zip object without converting to list?
-    best_split = best_splits[0]
 
+    best_split = zip(
+        np.where(lcbs == np.nanmin(lcbs))[0], np.where(lcbs == np.nanmin(lcbs))[1]
+    ).__next__()  # Get first element
     best_feature = best_split[0]
     best_value = histograms[best_feature].bin_edges[best_split[1]]
     best_reduction = estimates[best_split]
@@ -345,5 +341,7 @@ def solve_mab(
     #    return best_feature, best_value, best_reduction
 
     # Only return the split if it would indeed lower the impurity
-    if best_reduction < 0:
+    if best_reduction < min_impurity_reduction:
         return best_feature, best_value, best_reduction, total_queries
+    else:
+        return total_queries

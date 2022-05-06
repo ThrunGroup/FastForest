@@ -6,7 +6,7 @@ import numpy as np
 import sklearn.datasets
 from sklearn.ensemble import RandomForestClassifier
 
-from data_structures.forest import Forest
+from data_structures.forest_classifier import ForestClassifier
 from utils.constants import IRIS, DIGITS, FASTFOREST, SKLEARN
 
 
