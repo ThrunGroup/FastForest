@@ -8,8 +8,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.base import clone
 from sklearn.metrics import balanced_accuracy_score, precision_score
 
-from heart_experiments.fit_heart import split_data, load_data
-from data_structures.forest import Forest
+from experiments.heart.fit_heart import split_data, load_data
+from data_structures.forest_classifier import ForestClassifier
 
 
 def find_best_hyper() -> pd.Series:

@@ -2,12 +2,14 @@ import numpy as np
 import random
 from typing import Tuple, DefaultDict
 
-from data_structures.tree import Tree
 from data_structures.tree_classifier import TreeClassifier
-from utils.utils import class_to_idx, data_to_discrete
+from data_structures.classifier import Classifier
+from utils.utils import class_to_idx
+from utils.constants import BUFFER
+from utils.utils import data_to_discrete
 
 
-class Forest(TreeClassifier):
+class ForestClassifier(Classifier):
     """
     Class for vanilla random forest model, which averages each tree's predictions
     """
@@ -19,6 +21,8 @@ class Forest(TreeClassifier):
         n_estimators: int = 100,
         max_depth: int = None,
         bootstrap: bool = True,
+        budget: int = None,
+        verbose: bool = True,
         min_samples_split: int = 2,
         min_impurity_decrease: float = 0,
         max_leaf_nodes: int = 0,
@@ -34,6 +38,8 @@ class Forest(TreeClassifier):
             np.unique(labels)
         )  # a dictionary that maps class name to class index
         self.n_classes = len(self.classes)
+        self.remaining_budget = budget
+        self.verbose = verbose
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
@@ -73,8 +79,10 @@ class Forest(TreeClassifier):
         :return: None
         """
         self.trees = []
-
         for i in range(self.n_estimators):
+            if self.remaining_budget is not None and self.remaining_budget <= 0:
+                break
+
             if self.feature_subsampling == "SQRT":
                 feature_idcs = np.random.choice(
                     self.num_features, size=int(np.ceil(np.sqrt(self.num_features)))
@@ -82,7 +90,7 @@ class Forest(TreeClassifier):
             else:
                 raise Exception("Bad feature subsampling method")
 
-            if verbose:
+            if self.verbose:
                 print("Fitting tree", i)
 
             self.tree_feature_idcs[i] = feature_idcs
@@ -95,13 +103,16 @@ class Forest(TreeClassifier):
             else:
                 new_data = self.data
                 new_labels = self.labels
-            tree = Tree(
+
+            tree = TreeClassifier(
                 data=new_data[
                     :, feature_idcs
                 ],  # Randomly choose a subset of the available features
                 labels=new_labels,
                 max_depth=self.max_depth,
                 classes=self.classes,
+                budget=self.remaining_budget,
+                verbose=self.verbose,
                 min_samples_split=self.min_samples_split,
                 min_impurity_decrease=self.min_impurity_decrease,
                 max_leaf_nodes=self.max_leaf_nodes,
@@ -109,8 +120,13 @@ class Forest(TreeClassifier):
                 bin_type=self.bin_type,
             )
             tree.fit()
-            self.num_queries += tree.num_queries
             self.trees.append(tree)
+
+            # Bookkeeping
+            self.num_queries += tree.num_queries
+            if self.remaining_budget is not None:
+                self.remaining_budget -= tree.num_queries
+                assert self.remaining_budget > -BUFFER, "Error: went over budget"
 
     def predict(self, datapoint: np.ndarray) -> Tuple[int, np.ndarray]:
         """

@@ -18,8 +18,9 @@ class Node:
         data: np.ndarray,
         labels: np.ndarray,
         depth: int,
+        proportion: float,
+        verbose: bool = True,
         bin_type: str = "",
-        proportion: float = 1.0,
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
@@ -31,6 +32,7 @@ class Node:
         self.proportion = proportion
         self.left = None
         self.right = None
+        self.verbose = verbose
 
         # NOTE: Do not assume labels are all integers from 0 to num_classes-1
         self.counts = counts_of_labels(self.tree.classes, labels)
@@ -56,13 +58,13 @@ class Node:
         :return: Weighted impurity reduction of the node's best split
         """
         if self.best_reduction_computed:
-            return self.split_reduction  # If we already calculated it, return it
+            return self.split_reduction
 
         results = solve_mab(self.data, self.labels, self.tree.discrete_features)
         # Even if results is None, we should cache the fact that we know that
         self.best_reduction_computed = True
 
-        if results is not None:
+        if type(results) == tuple:  # Found a solution
             (
                 self.split_feature,
                 self.split_value,
@@ -70,7 +72,14 @@ class Node:
                 self.num_queries,
             ) = results
             self.split_reduction *= self.proportion  # Normalize by number of datapoints
+            if self.verbose:
+                print("Calculated split with", self.num_queries, "queries")
             return self.split_reduction
+        else:
+            self.num_queries = results
+            if self.verbose:
+                print("Calculated split with", self.num_queries, "queries")
+            self.num_queries = results
 
     def create_child_node(self, idcs: np.ndarray) -> Node:
         child_data = self.data[idcs]
@@ -112,12 +121,12 @@ class Node:
             # Reset cached prediction values
             self.prediction_probs = None
             self.predicted_label = None
+            self.already_split = True
 
     def n_print(self) -> None:
         """
         Print the node's children depth-first
         Me: split x < 5:
-
         """
         assert (self.left and self.right) or (
             self.left is None and self.right is None
@@ -126,7 +135,7 @@ class Node:
             print(
                 ("|   " * self.depth)
                 + "|--- feature_"
-                + str(self.already_split)
+                + str(self.split_feature)
                 + " <= "
                 + str(self.split_value)
             )
@@ -134,7 +143,7 @@ class Node:
             print(
                 ("|   " * self.depth)
                 + "|--- feature_"
-                + str(self.already_split)
+                + str(self.split_feature)
                 + " > "
                 + str(self.split_value)
             )
@@ -144,4 +153,12 @@ class Node:
             class_pred = self.tree.idx_to_class[
                 class_idx_pred
             ]  # print class name not class index
-            print(("|   " * self.depth) + "|--- " + "class: " + str(class_pred))
+            print(
+                ("|   " * self.depth)
+                + "|--- "
+                + "class: "
+                + str(class_pred)
+                + " (num_samples: "
+                + str(len(self.data))
+                + ")"
+            )
