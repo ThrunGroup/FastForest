@@ -3,8 +3,6 @@ from typing import Tuple, DefaultDict
 
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.classifier import Classifier
-
-
 from utils.constants import BUFFER
 from utils.utils import class_to_idx, data_to_discrete
 

@@ -22,7 +22,7 @@ class Histogram:
         num_bins: int = 11,
         min_bin: float = 0.0,
         max_bin: float = 1.0,
-        bin_type: str = "linear"
+        bin_type: str = "linear",
     ):
         self.feature_idx = feature_idx
         self.unique_fvals = unique_fvals
@@ -48,8 +48,8 @@ class Histogram:
             self.left = np.zeros((self.num_bins, len(classes)), dtype=np.int32)
             self.right = np.zeros((self.num_bins, len(classes)), dtype=np.int32)
         else:
-            # self.left_pile[i] is the list of all target values that is on the left of ith bin
-            # self.right_pile[i] is the list of all target values that is on the right of ith bin
+            # self.left_pile[i] is the list of all target values that are on the left of ith bin
+            # self.right_pile[i] is the list of all target values that are on the right of ith bin
             self.left_pile = [[] for i in range(self.num_bins)]
             self.right_pile = [[] for i in range(self.num_bins)]
 
@@ -90,7 +90,7 @@ class Histogram:
                 y = Y[idx]
                 y_idx = self.classes.index(y)
                 insert_idx = self.get_bin(val=f, bin_edges=self.bin_edges)
-                # left, right[x, y] gives # of data on the left and right of xth bin of yth class
+                # left, right[x, y] gives number of points on the left and right of xth bin of yth class
                 self.right[:insert_idx, y_idx] += 1
                 self.left[insert_idx:, y_idx] += 1
 
@@ -102,7 +102,6 @@ class Histogram:
                     self.right_pile[right_idx].append(y)
                 for left_idx in range(insert_idx, self.num_bins):
                     self.left_pile[left_idx].append(y)
-
 
     def linear_bin(self) -> np.ndarray:
         """
