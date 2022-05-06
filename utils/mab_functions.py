@@ -158,7 +158,9 @@ def sample_targets(
         h = histograms[f]
         h.add(samples, sample_labels)  # This is where the labels are used
         # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
-        i_r, cb_d = get_impurity_reductions(is_classification, h, f2bin_dict[f], ret_vars=True)
+        i_r, cb_d = get_impurity_reductions(
+            is_classification, h, f2bin_dict[f], ret_vars=True
+        )
         impurity_reductions = np.concatenate([impurity_reductions, i_r])
         cb_deltas = np.concatenate(
             [cb_deltas, np.sqrt(cb_d)]
@@ -229,7 +231,7 @@ def solve_mab(
     :param discrete_bins_dict: A dictionary of discrete bins
     :param fixed_bin_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
     :param num_queries: mutable variable to update the number of datapoints queried
-    :param is_classification: Whether the problem is classification
+    :param is_classification:  Whether is a classification problem(True) or regression problem(False)
     :param impurity_measure: A name of impurity_measure
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
@@ -282,7 +284,7 @@ def solve_mab(
                 exact_accesses,
                 histograms,
                 N,
-                impurity_measure=impurity_measure
+                impurity_measure=impurity_measure,
             )
             # The confidence intervals now only contain a point, since the return has been computed exactly
             lcbs[exact_accesses] = ucbs[exact_accesses] = estimates[exact_accesses]
@@ -312,7 +314,7 @@ def solve_mab(
             accesses,
             histograms,
             batch_size,
-            impurity_measure=impurity_measure
+            impurity_measure=impurity_measure,
         )
         num_samples[accesses] += batch_size
         lcbs[accesses] = estimates[accesses] - CONF_MULTIPLIER * cb_delta[accesses]

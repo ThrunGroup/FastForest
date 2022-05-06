@@ -13,19 +13,21 @@ def test_tree_diabetes(verbose: bool = False):
     DT = DecisionTreeRegressor(max_depth=6)
     DT.fit(data, labels)
     print("---Ground_Truth_Tree---")
-    print(export_text(DT))
     if verbose:
+        print(export_text(DT))
         plot_tree(DT)
         plt.show()
     mse = np.sum(np.square(DT.predict(data) - labels)) / len(data)
-    print(f"Loss is {mse}")
+    print(f"MSE is {mse}")
 
     print("---FastTree---")
     tree = TreeRegressor(data, labels, max_depth=6)
     tree.fit()
-    tree.tree_print()
+    if verbose:
+        tree.tree_print()
     mse = np.sum(np.square(tree.predict_batch(data) - labels)) / len(data)
-    print(f"Loss is {mse}")
+    print(f"MSE is {mse}")
+
 
 if __name__ == "__main__":
     test_tree_diabetes()

@@ -176,10 +176,11 @@ class TreeBase(ABC):
 
     def predict(self, datapoint: np.ndarray) -> Union[Tuple[int, np.ndarray], float]:
         """
-        Calculate the predicted probabilities that the given datapoint belongs to each classifier
+        Classifier: calculate the predicted probabilities that the given datapoint belongs to each classifier
+        Regressor: calculate the mean of all labels(targets)
 
         :param datapoint: datapoint to fit
-        :return: the probabilities of the datapoint being each class label
+        :return: the probabilities of the datapoint being each class label or the mean value of labels
         """
         node = self.node
         while node.left:

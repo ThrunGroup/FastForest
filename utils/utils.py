@@ -115,7 +115,7 @@ def make_histograms(
     Choose a bin type and number of bins, and make a histogram. Add it to histograms list. Also, filter
     extraneous bins by creating lists of considered indices and not considered indices.
 
-    :param is_classification: Whether the problem is classification(True) or regression(False)
+    :param is_classification:  Whether is a classification problem(True) or a regression problem(False)
     :param data: A 2d-array of input data
     :param labels: An 1d-array of target dat
     :param discrete_bins_dict: A DefaultDict mapping feature index to unique feature values

@@ -108,7 +108,7 @@ def get_mse(
 
     :param targets_pile: An array of all target values in the node
     :param ret_var: Whether to return the variance of the estimate
-    :return: the mse(variance) of the node, as well as its estimated confidence_bound if ret_bound
+    :return: the mse(variance) of the node, as well as its estimated variance if ret_var
     """
     assert len(np.array(targets_pile).shape) == 1, "Invalid pile of target values"
     n = len(targets_pile)

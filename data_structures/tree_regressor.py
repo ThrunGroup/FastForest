@@ -8,8 +8,8 @@ import numpy as np
 
 class TreeRegressor(TreeBase, Regressor):
     """
-    Tree object. Contains a node attribute, the root, as well as fitting parameters that are global to the tree (i.e.,
-    are used in splitting the nodes)
+    Regression tree object. Contains a node attribute, the root, as well as fitting parameters that are global
+    to the tree.
     """
 
     def __init__(

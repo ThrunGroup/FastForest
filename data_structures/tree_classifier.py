@@ -8,8 +8,8 @@ import numpy as np
 
 class TreeClassifier(TreeBase, Classifier):
     """
-    Tree object. Contains a node attribute, the root, as well as fitting parameters that are global to the tree (i.e.,
-    are used in splitting the nodes)
+    TreeClassifier object. Contains a node attribute, the root, as well as fitting parameters that are global
+    to the tree (i.e., are used in splitting the nodes)
     """
 
     def __init__(
