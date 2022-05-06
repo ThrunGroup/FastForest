@@ -1,6 +1,7 @@
 import sklearn.datasets
 import unittest
 import numpy as np
+from collections import defaultdict
 
 from utils import data_generator
 import ground_truth
@@ -48,9 +49,14 @@ class ForestTests(unittest.TestCase):
         print("=> Ground truth:\n")
         ground_truth.ground_truth_tree(data, labels, show=show)
 
+        empty_discrete_dict = defaultdict(list)
         print("\n\n=> MAB:\n")
+
+        # Empty discrete bins dictionary is being passed so we don't treat any features as discrete when
+        # solving MAB
         print(
-            "Best arm from solve_mab is: ", utils.mab_functions.solve_mab(data, labels)
+            "Best arm from solve_mab is: ",
+            utils.mab_functions.solve_mab(data, labels, empty_discrete_dict),
         )
 
         print("\n\n=> Tree fitting:")
