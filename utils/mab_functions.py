@@ -6,7 +6,7 @@ from collections import defaultdict
 
 from data_structures.histogram import Histogram
 from utils.constants import CONF_MULTIPLIER, TOLERANCE
-from utils.criteria import get_gini, get_entropy, get_variance
+from utils.criteria import get_gini, get_entropy, get_variance, get_mse
 from utils.utils import type_check, class_to_idx, counts_of_labels, make_histograms
 
 type_check()
@@ -19,6 +19,8 @@ def get_impurity_fn(impurity_measure: str) -> Callable:
         get_impurity: Callable = get_entropy
     elif impurity_measure == "VARIANCE":
         get_impurity: Callable = get_variance
+    elif impurity_measure == "MSE":
+        get_impurity: Callable = get_mse
     else:
         Exception(
             "Did not assign any measure for impurity calculation in get_impurity_reduction function"
@@ -27,10 +29,11 @@ def get_impurity_fn(impurity_measure: str) -> Callable:
 
 
 def get_impurity_reductions(
+    is_classification: bool,
     histogram: Histogram,
     _bin_edge_idcs: List[int],
     ret_vars: bool = False,
-    impurity_measure: str = "GINI",
+    impurity_measure: str = "",
 ) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
     """
     Given a histogram of counts for each bin, compute the impurity reductions if we were to split a node on any of the
@@ -38,8 +41,11 @@ def get_impurity_reductions(
 
     Impurity is measured either by Gini index or entropy
 
-    Return impurity reduction when splitting node by bins in _bin_edge_idcs
+    :param is_classification: Whether the problem is a classification problem(True) or a regression problem(False)
+    :returns: Impurity reduction when splitting node by bins in _bin_edge_idcs
     """
+    if impurity_measure == "":
+        impurity_measure = "GINI" if is_classification else "MSE"
     get_impurity = get_impurity_fn(impurity_measure)
 
     h = histogram
@@ -55,8 +61,12 @@ def get_impurity_reductions(
     n = np.sum(h.left[0, :]) + np.sum(h.right[0, :])
     for i in range(b):
         b_idx = _bin_edge_idcs[i]
-        IL, V_IL = get_impurity(h.left[b_idx, :], ret_var=True)
-        IR, V_IR = get_impurity(h.right[b_idx, :], ret_var=True)
+        if is_classification:
+            IL, V_IL = get_impurity(h.left[b_idx, :], ret_var=True)
+            IR, V_IR = get_impurity(h.right[b_idx, :], ret_var=True)
+        else:
+            IL, V_IL = get_impurity(h.left_pile[b_idx], ret_var=True)
+            IR, V_IR = get_impurity(h.right_pile[b_idx], ret_var=True)
 
         # Impurity is weighted by population of each node during a split
         left_weight = np.sum(h.left[b_idx, :]) / n
@@ -70,9 +80,10 @@ def get_impurity_reductions(
             float((right_weight ** 2) * V_IR),
         )
 
-    impurity_curr, V_impurity_curr = get_impurity(
-        h.left[0, :] + h.right[0, :], ret_var=True,
-    )
+    if is_classification:
+        impurity_curr, V_impurity_curr = get_impurity(h.left[0, :] + h.right[0, :], ret_var=True)
+    else:
+        impurity_curr, V_impurity_curr = get_impurity(h.left_pile[0] + h.right_pile[0], ret_var=True)
     impurity_curr = float(impurity_curr)
     V_impurity_curr = float(V_impurity_curr)
     # TODO(@motiwari): Might not need to subtract off impurity_curr
@@ -93,6 +104,7 @@ def sample_targets(
     arms: Tuple[np.ndarray, np.ndarray],
     histograms: List[object],
     batch_size: int,
+    impurity_measure: str = ""
 ) -> Tuple[np.ndarray, np.ndarray, int]:
     """
     Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
@@ -104,6 +116,7 @@ def sample_targets(
     :param arms: arms we want to consider
     :param histograms: list of the histograms for ALL feature indices
     :param batch_size: the number of samples we're going to choose
+    :param impurity_measure: A name of impurity measure
     :return: impurity_reduction and its variance of accesses
     """
     # TODO(@motiwari): Samples all bin edges for a given feature, should only sample those under consideration.
@@ -185,6 +198,8 @@ def solve_mab(
     labels: np.ndarray,
     discrete_bins_dict: DefaultDict,
     fixed_bin_type: str = "",
+    is_classification: bool = True,
+    impurity_measure: str = "",
 ) -> Tuple[int, float, float, int]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
@@ -201,6 +216,8 @@ def solve_mab(
     :param discrete_bins_dict: A dictionary of discrete bins
     :param fixed_bin_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
     :param num_queries: mutable variable to update the number of datapoints queried
+    :param is_classification: Whether the problem is classification
+    :param impurity_measure: A name of impurity_measure
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
     F = len(data[0])
@@ -220,7 +237,12 @@ def solve_mab(
     # Make a list of histograms, a list of indices that we don't consider as potential arms, and a list of indices
     # that we consider as potential arms.
     histograms, not_considered_idcs, considered_idcs = make_histograms(
-        data, labels, discrete_bins_dict, fixed_bin_type, B
+        is_classification,
+        data,
+        labels,
+        discrete_bins_dict,
+        fixed_bin_type=fixed_bin_type,
+        num_bins=B,
     )
 
     considered_idcs = np.array(considered_idcs)
@@ -241,7 +263,7 @@ def solve_mab(
         exact_accesses = np.where((num_samples + batch_size >= N) & (exact_mask == 0))
         if len(exact_accesses[0]) > 0:  # Jay: batch_size --> N here
             estimates[exact_accesses], _vars, num_queries = sample_targets(
-                data, labels, exact_accesses, histograms, N
+                data, labels, exact_accesses, histograms, N, impurity_measure=impurity_measure
             )
             # The confidence intervals now only contain a point, since the return has been computed exactly
             lcbs[exact_accesses] = ucbs[exact_accesses] = estimates[exact_accesses]
@@ -265,7 +287,7 @@ def solve_mab(
         )  # Massage arm indices for use by numpy slicing
         # NOTE: cb_delta contains a value for EVERY arm, even non-candidates, so need [accesses]
         estimates[accesses], cb_delta[accesses], num_queries = sample_targets(
-            data, labels, accesses, histograms, batch_size
+            data, labels, accesses, histograms, batch_size, impurity_measure=impurity_measure
         )
         num_samples[accesses] += batch_size
         lcbs[accesses] = estimates[accesses] - CONF_MULTIPLIER * cb_delta[accesses]
