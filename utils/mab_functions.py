@@ -1,7 +1,7 @@
 import numpy as np
 import itertools
 
-from typing import List, Tuple, Callable, Union
+from typing import List, Tuple, Callable, Union, DefaultDict
 from collections import defaultdict
 
 from data_structures.histogram import Histogram

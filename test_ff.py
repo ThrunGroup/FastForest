@@ -1,4 +1,3 @@
-import sys
 import numpy as np
 from sklearn import datasets
 
@@ -42,6 +41,7 @@ def test_tree_iris2(verbose: bool = False) -> None:
 
     # Linear bin tree
     test_tree(0, "linear", "Linear bin splitting")
+
 
 def main():
     print("Fitting tree iris dataset with different hyperparameters:\n")

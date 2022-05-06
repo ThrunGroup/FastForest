@@ -1,8 +1,10 @@
-from sklearn.tree import DecisionTreeRegressor, plot_tree, export_text
-from sklearn.datasets import load_diabetes
 import matplotlib.pyplot as plt
 import numpy as np
 
+from sklearn.tree import DecisionTreeRegressor, plot_tree, export_text
+from sklearn.datasets import load_diabetes
+
+import ground_truth
 from data_structures.tree_regressor import TreeRegressor
 
 
