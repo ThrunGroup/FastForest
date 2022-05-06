@@ -60,7 +60,7 @@ class ForestClassifier(Classifier):
         # Need this to do remapping when features are shuffled
         self.tree_feature_idcs = {}
 
-    def fit(self, verbose=True) -> None:
+    def fit(self) -> None:
         """
         Fit the random forest classifier by training trees, where each tree is trained with only a subset of the
         available features
