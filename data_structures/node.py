@@ -18,8 +18,9 @@ class Node:
         data: np.ndarray,
         labels: np.ndarray,
         depth: int,
-        bin_type: str = "",
         proportion: float = 1.0,
+        bin_type: str = "",
+        is_classification: bool = True,
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
@@ -29,11 +30,13 @@ class Node:
         self.bin_type = bin_type
         self.depth = depth
         self.proportion = proportion
+        self.is_classification = is_classification
         self.left = None
         self.right = None
 
         # NOTE: Do not assume labels are all integers from 0 to num_classes-1
-        self.counts = counts_of_labels(self.tree.classes, labels)
+        if is_classification:
+            self.counts = counts_of_labels(self.tree.classes, labels)
 
         # We need a separate variable for already_split, because self.split_feature can be truthy
         # even if the split hasn't been performed
@@ -45,9 +48,12 @@ class Node:
         self.best_reduction_computed = False
         self.num_queries = 0
         self.split_reduction = None
-        self.prediction_probs = None
-        self.predicted_label = None
         self.is_splittable = None
+        if self.is_classification:
+            self.prediction_probs = None
+            self.predicted_label = None
+        else:
+            self.predicted_value = None
 
     def calculate_best_split(self) -> Union[float, int]:
         """
@@ -58,7 +64,13 @@ class Node:
         if self.best_reduction_computed:
             return self.split_reduction  # If we already calculated it, return it
 
-        results = solve_mab(self.data, self.labels, self.tree.discrete_features)
+        results = solve_mab(
+            self.data,
+            self.labels,
+            self.tree.discrete_features,
+            fixed_bin_type=self.bin_type,
+            is_classification=self.is_classification,
+        )
         # Even if results is None, we should cache the fact that we know that
         self.best_reduction_computed = True
 
@@ -82,6 +94,8 @@ class Node:
             child_labels,
             self.depth + 1,
             self.proportion * (len(child_labels) / len(self.labels)),
+            bin_type=self.bin_type,
+            is_classification=self.is_classification,
         )
 
     def split(self) -> None:
@@ -112,6 +126,7 @@ class Node:
             # Reset cached prediction values
             self.prediction_probs = None
             self.predicted_label = None
+            self.predicted_value = None
 
     def n_print(self) -> None:
         """
@@ -140,8 +155,11 @@ class Node:
             )
             self.right.n_print()
         else:
-            class_idx_pred = np.argmax(self.counts)
-            class_pred = self.tree.idx_to_class[
-                class_idx_pred
-            ]  # print class name not class index
-            print(("|   " * self.depth) + "|--- " + "class: " + str(class_pred))
+            if self.is_classification:
+                class_idx_pred = np.argmax(self.counts)
+                class_pred = self.tree.idx_to_class[
+                    class_idx_pred
+                ]  # print class name not class index
+                print(("|   " * self.depth) + "|--- " + "class: " + str(class_pred))
+            else:
+                print(("|   " * self.depth) + "|--- " + "value: ", float(np.mean(self.labels)))
