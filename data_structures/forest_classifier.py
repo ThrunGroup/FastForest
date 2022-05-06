@@ -6,6 +6,7 @@ from data_structures.tree_classifier import TreeClassifier
 from data_structures.classifier import Classifier
 from utils.utils import class_to_idx
 from utils.constants import BUFFER
+from utils.utils import data_to_discrete
 
 
 class ForestClassifier(Classifier):

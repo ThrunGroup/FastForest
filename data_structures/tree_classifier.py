@@ -1,8 +1,11 @@
 import numpy as np
-from typing import Tuple
+from typing import Tuple, Dict, DefaultDict
+from collections import defaultdict
+
 
 from data_structures.node import Node
 from data_structures.classifier import Classifier
+from utils.utils import data_to_discrete
 
 
 class TreeClassifier(Classifier):
@@ -17,13 +20,26 @@ class TreeClassifier(Classifier):
         labels: np.ndarray,
         max_depth: int,
         classes: dict,
+        splitter: str = "best",
+        min_samples_split: int = 2,
+        min_impurity_decrease: float = -1e-6,
+        max_leaf_nodes: int = 0,
+        discrete_features: DefaultDict = defaultdict(list),
+        bin_type: str = "linear",
         budget: int = None,
         verbose: bool = True,
     ) -> None:
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
+        self.n_data = len(labels)
         self.classes = classes  # dict from class name to class index
         self.idx_to_class = {value: key for key, value in classes.items()}
+        self.bin_type = bin_type
+        self.discrete_features = (
+            discrete_features
+            if len(discrete_features) > 0
+            else data_to_discrete(data, n=10)
+        )
         self.remaining_budget = budget
 
         self.node = Node(
@@ -33,23 +49,24 @@ class TreeClassifier(Classifier):
             labels=self.labels,
             depth=0,
             proportion=1.0,
+            bin_type=self.bin_type,
             verbose=verbose,
         )
 
         # These are copied from the link below. We won't need all of them.
         # https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionClassifier.html
-        self.leaves = [self.node]
+        self.leaves = []
         self.criterion = "GINI"
         self.splitter = "best"
         self.max_depth = 1
-        self.min_samples_split = 2
+        self.min_samples_split = min_samples_split
         self.min_samples_leaf = 1
         self.min_weight_fraction = 0.0
         self.max_features = None
         self.random_state = None
         self.max_leaf_nodes = None
         # Make this a small negative number to avoid infinite loop when all leaves are at max_depth
-        self.min_impurity_decrease = -1e-6
+        self.min_impurity_decrease = min_impurity_decrease
         self.class_weight = None
         self.ccp_alpha = 0.0
         self.depth = 1
@@ -66,6 +83,25 @@ class TreeClassifier(Classifier):
         """
         return max([leaf.depth for leaf in self.leaves])
 
+    def check_splittable(self, node: Node) -> bool:
+        """
+        Check whether the node satisfies the splittable condition of splitting.
+        Note: incurs a call to node.calculate_best_split()
+
+        :param node: A node which is considered
+        :return: Whether it's possible to split a node
+        """
+        # TODO: Return False if node is a pure node
+        if node.calculate_best_split() is not None:
+            return (
+                self.max_depth > node.depth
+                and self.min_samples_split < node.n_data
+                and self.min_impurity_decrease
+                > node.calculate_best_split() * node.n_data / self.n_data
+            )
+        else:
+            return False
+
     def fit(self) -> None:
         """
         Fit the tree by recursively splitting nodes until the termination condition is reached.
@@ -74,63 +110,108 @@ class TreeClassifier(Classifier):
 
         :return: None
         """
-        sufficient_impurity_decrease = True
-        while sufficient_impurity_decrease:
-            best_leaf = None
-            best_leaf_idx = None
-            best_leaf_reduction = float("inf")
+        # Best-first tree fitting
+        if self.splitter == "best":
+            self.leaves.append(self.node)
+            sufficient_impurity_decrease = True
+            while sufficient_impurity_decrease:
+                if self.max_leaf_nodes is not None:
+                    if len(self.leaves) == self.max_leaf_nodes:
+                        break
+                    else:
+                        raise Exception(
+                            "Somehow created too many leaves. Should never be here."
+                        )
 
-            # Iterate over leaves and decide which to split
-            # TODO: Perhaps we should be randomly choosing which leaf to split with finite budget, so that each leaf
-            #  can be assessed on equal footing. Or engineer budget such that a full tree can be made?
+                sufficient_impurity_decrease = True
+                best_leaf = None
+                best_leaf_idx = None
+                best_leaf_reduction = float("inf")
 
-            for leaf_idx, leaf in enumerate(self.leaves):
-                # Do not split leaves which are already at max_depth
-                if leaf.depth == self.max_depth:
-                    continue
+                # Iterate over leaves and decide which to split
+                # TODO: Perhaps we should be randomly choosing which leaf to split with finite budget, so that each leaf
+                #  can be assessed on equal footing. Or engineer budget such that a full tree can be made?
 
-                # num_queries for the leaf should be updated only if we're not caching
-                # Need to get this before call to .calculate_best_split() below
-                split_already_computed = leaf.best_reduction_computed
-                if self.remaining_budget is None or self.remaining_budget > 0:
-                    # Runs solve_mab if not previously computed, which incurs cost!
-                    reduction = leaf.calculate_best_split()
+                for leaf_idx, leaf in enumerate(self.leaves):
+                    # Do not split leaves which are already at max_depth
+                    if leaf.depth == self.max_depth:
+                        continue
+
+                    # num_queries for the leaf should be updated only if we're not caching
+                    # Need to get this before call to .calculate_best_split() below
+                    split_already_computed = leaf.best_reduction_computed
+                    if self.remaining_budget is None or self.remaining_budget > 0:
+                        # Runs solve_mab if not previously computed, which incurs cost!
+                        reduction = leaf.calculate_best_split()
+                    else:
+                        break
+
+                    # don't add queries if best split is already computed
+                    # add number of queries we made if the best split is NOT already computed
+                    if not split_already_computed:
+                        self.num_queries += leaf.num_queries
+                        if self.remaining_budget is not None:
+                            self.remaining_budget -= leaf.num_queries
+
+                    if leaf.is_splittable is None:
+                        # Uses cached value of calculate_best_split
+                        leaf.is_splittable = self.check_splittable(leaf)
+
+                    if (
+                        reduction is not None
+                        and reduction < best_leaf_reduction
+                        and leaf.is_splittable
+                    ):
+                        best_leaf = leaf
+                        best_leaf_idx = leaf_idx
+                        best_leaf_reduction = reduction
+
+                if (
+                    best_leaf_reduction is not None
+                    and best_leaf_reduction < self.min_impurity_decrease
+                ):
+                    best_leaf.split()
+                    self.num_splits += 1
+                    split_leaf = self.leaves.pop(best_leaf_idx)
+
+                    # this node is no longer a leaf
+                    split_leaf.prediction_probs = None
+                    split_leaf.predicted_label = None
+
+                    self.leaves.append(split_leaf.left)
+                    self.leaves.append(split_leaf.right)
                 else:
-                    break
+                    sufficient_impurity_decrease = False
 
-                # don't add queries if best split is already computed
-                # add number of queries we made if the best split is NOT already computed
-                if not split_already_computed:
-                    self.num_queries += leaf.num_queries
-                    if self.remaining_budget is not None:
-                        self.remaining_budget -= leaf.num_queries
+                self.depth = self.get_depth()
 
-                if reduction is not None and reduction < best_leaf_reduction:
-                    best_leaf = leaf
-                    best_leaf_idx = leaf_idx
-                    best_leaf_reduction = reduction
-
-            if (
-                best_leaf_reduction is not None
-                and best_leaf_reduction < self.min_impurity_decrease
-            ):
-                best_leaf.split()
-                self.num_splits += 1
-                split_leaf = self.leaves.pop(best_leaf_idx)
-
-                # this node is no longer a leaf
-                split_leaf.prediction_probs = None
-                split_leaf.predicted_label = None
-
-                self.leaves.append(split_leaf.left)
-                self.leaves.append(split_leaf.right)
-            else:
-                sufficient_impurity_decrease = False
-
-            self.depth = self.get_depth()
+        # Depth-first tree fitting
+        elif self.splitter == "depth":
+            print(
+                "Budget tracking in recursive splitting is not yet supported. Are you sure you know what you're doing?"
+            )
+            self.recursive_split(self.node)
+        else:
+            raise Exception("Invalid splitter choice")
 
         if self.verbose:
             print("Fitting finished")
+
+    def recursive_split(self, node: Node) -> None:
+        """
+        Recursively split nodes till the termination condition is satisfied
+        :param node: A root node to be split recursively
+        """
+        node.is_splittable = self.check_splittable(node)
+        self.num_queries += node.num_queries
+        if not node.is_splittable:
+            self.leaves.append(node)
+        else:
+            self.num_splits += 1
+            node.calculate_best_split()
+            node.split()
+            self.recursive_split(node.left)
+            self.recursive_split(node.right)
 
     def predict(self, datapoint: np.ndarray) -> Tuple[int, np.ndarray]:
         """

@@ -18,9 +18,9 @@ class Node:
         data: np.ndarray,
         labels: np.ndarray,
         depth: int,
+        proportion: float,
         verbose: bool = True,
         bin_type: str = "",
-        proportion: float,
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
