@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Tuple, Dict, DefaultDict
+from typing import Tuple, Union, DefaultDict
 from abc import ABC
 
 
@@ -141,8 +141,11 @@ class TreeBase(ABC):
                 split_leaf = self.leaves.pop(best_leaf_idx)
 
                 # this node is no longer a leaf
-                split_leaf.prediction_probs = None
-                split_leaf.predicted_label = None
+                if self.is_classification:
+                    split_leaf.prediction_probs = None
+                    split_leaf.predicted_label = None
+                else:
+                    split_leaf.predicted_value = None
 
                 self.leaves.append(split_leaf.left)
                 self.leaves.append(split_leaf.right)
@@ -171,7 +174,7 @@ class TreeBase(ABC):
             self.recursive_split(node.left)
             self.recursive_split(node.right)
 
-    def predict(self, datapoint: np.ndarray) -> Tuple[int, np.ndarray]:
+    def predict(self, datapoint: np.ndarray) -> Union[Tuple[int, np.ndarray], float]:
         """
         Calculate the predicted probabilities that the given datapoint belongs to each classifier
 
@@ -184,19 +187,25 @@ class TreeBase(ABC):
             node = node.left if feature_value <= node.split_value else node.right
         assert node.right is None, "Tree is malformed"
 
-        # The prediction probability has been cached
-        if node.prediction_probs is not None:
-            return node.predicted_label, node.prediction_probs
+        if self.is_classification:
+            # The prediction probability has been cached
+            if node.prediction_probs is not None:
+                return node.predicted_label, node.prediction_probs
 
-        # otherwise, make prediction and cache it
-        node.prediction_probs = node.counts / np.sum(node.counts)
-        node.predicted_label = self.idx_to_class[
-            node.prediction_probs.argmax()
-        ]  # Find ith key of dictionary
-        assert np.allclose(
-            node.prediction_probs.sum(), 1
-        ), "Probabilities don't sum to 1"
-        return node.predicted_label, node.prediction_probs
+            # otherwise, make prediction and cache it
+            node.prediction_probs = node.counts / np.sum(node.counts)
+            node.predicted_label = self.idx_to_class[
+                node.prediction_probs.argmax()
+            ]  # Find ith key of dictionary
+            assert np.allclose(
+                node.prediction_probs.sum(), 1
+            ), "Probabilities don't sum to 1"
+            return node.predicted_label, node.prediction_probs
+        else:
+            if node.predicted_value is not None:
+                return node.predicted_value
+            node.predicted_value = np.mean(node.labels)
+            return float(node.predicted_value)
 
     def tree_print(self) -> None:
         """

@@ -58,7 +58,10 @@ def get_impurity_reductions(
     V_impurities_left = np.zeros(b)
     V_impurities_right = np.zeros(b)
 
-    n = np.sum(h.left[0, :]) + np.sum(h.right[0, :])
+    if is_classification:
+        n = np.sum(h.left[0, :]) + np.sum(h.right[0, :])
+    else:
+        n = len(h.left_pile[0]) + len(h.right_pile[0])
     for i in range(b):
         b_idx = _bin_edge_idcs[i]
         if is_classification:
@@ -69,8 +72,12 @@ def get_impurity_reductions(
             IR, V_IR = get_impurity(h.right_pile[b_idx], ret_var=True)
 
         # Impurity is weighted by population of each node during a split
-        left_weight = np.sum(h.left[b_idx, :]) / n
-        right_weight = np.sum(h.right[b_idx, :]) / n
+        if is_classification:
+            left_weight = np.sum(h.left[b_idx, :]) / n
+            right_weight = np.sum(h.right[b_idx, :]) / n
+        else:
+            left_weight = len(h.left_pile[b_idx]) / n
+            right_weight = len(h.right_pile[b_idx]) / n
         impurities_left[i], V_impurities_left[i] = (
             float(left_weight * IL),
             float((left_weight ** 2) * V_IL),
@@ -267,7 +274,7 @@ def solve_mab(
         # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
         exact_accesses = np.where((num_samples + batch_size >= N) & (exact_mask == 0))
-        if len(exact_accesses[0]) > 0:  # Jay: batch_size --> N here
+        if len(exact_accesses[0]) > 0:
             estimates[exact_accesses], _vars, num_queries = sample_targets(
                 is_classification,
                 data,
@@ -317,7 +324,6 @@ def solve_mab(
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
         total_queries += num_queries
         round_count += 1
-
     best_splits = zip(
         np.where(lcbs == np.nanmin(lcbs))[0], np.where(lcbs == np.nanmin(lcbs))[1]
     )

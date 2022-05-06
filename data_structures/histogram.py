@@ -50,8 +50,8 @@ class Histogram:
         else:
             # self.left_pile[i] is the list of all target values that is on the left of ith bin
             # self.right_pile[i] is the list of all target values that is on the right of ith bin
-            self.left_pile = [[]] * self.num_bins
-            self.right_pile = [[]] * self.num_bins
+            self.left_pile = [[] for i in range(self.num_bins)]
+            self.right_pile = [[] for i in range(self.num_bins)]
 
     @staticmethod
     def get_bin(val: float, bin_edges: np.ndarray) -> int:
@@ -95,14 +95,14 @@ class Histogram:
                 self.left[insert_idx:, y_idx] += 1
 
         else:  # Use loop when adding target values for all bins. Have to think about its optimization
-            feature_values = self.f_data
             for idx, f in enumerate(feature_values):
                 y = Y[idx]
                 insert_idx = self.get_bin(val=f, bin_edges=self.bin_edges)
-                for left_idx in range(insert_idx):
-                    self.right_pile[left_idx].append(y)
-                for right_idx in range(insert_idx, self.num_bins):
-                    self.left_pile[right_idx].append(y)
+                for right_idx in range(insert_idx):
+                    self.right_pile[right_idx].append(y)
+                for left_idx in range(insert_idx, self.num_bins):
+                    self.left_pile[left_idx].append(y)
+
 
     def linear_bin(self) -> np.ndarray:
         """

@@ -141,7 +141,7 @@ class Node:
             print(
                 ("|   " * self.depth)
                 + "|--- feature_"
-                + str(self.already_split)
+                + str(self.split_feature)
                 + " <= "
                 + str(self.split_value)
             )
@@ -149,7 +149,7 @@ class Node:
             print(
                 ("|   " * self.depth)
                 + "|--- feature_"
-                + str(self.already_split)
+                + str(self.split_feature)
                 + " > "
                 + str(self.split_value)
             )

@@ -110,7 +110,7 @@ def get_mse(
     :param ret_var: Whether to return the variance of the estimate
     :return: the mse(variance) of the node, as well as its estimated confidence_bound if ret_bound
     """
-    assert len(targets_pile.shape) == 1, "Invalid pile of target values"
+    assert len(np.array(targets_pile).shape) == 1, "Invalid pile of target values"
     n = len(targets_pile)
     if n == 0:
         if ret_var:
@@ -119,8 +119,12 @@ def get_mse(
     mse = float(moment(targets_pile, 2)) # 2nd central moment is mse with mean as a predicted value
     fourth_moment = float(moment(targets_pile, 4))
     # This variance comes from the variance of sample variance, see https://en.wikipedia.org/wiki/Variance.
-    # Use mse(sample variance) as an estimation of population variance.
-    V_mse = (fourth_moment - (n - 3) * (mse ** 2) / (n - 1)) / n
+    # Use sample variance as an estimation of population variance.
+    pop_var = mse
+    if n < 3:
+        V_mse = float('inf')
+    else:
+        V_mse = (fourth_moment - (n - 3) * (pop_var ** 2) / (n - 1)) / n
     if ret_var:
         return mse, V_mse
     return mse

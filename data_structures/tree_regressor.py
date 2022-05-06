@@ -6,7 +6,7 @@ from collections import defaultdict
 import numpy as np
 
 
-class TreeClassifier(TreeBase, Regressor):
+class TreeRegressor(TreeBase, Regressor):
     """
     Tree object. Contains a node attribute, the root, as well as fitting parameters that are global to the tree (i.e.,
     are used in splitting the nodes)
@@ -18,7 +18,7 @@ class TreeClassifier(TreeBase, Regressor):
         labels: np.ndarray,
         max_depth: int,
         min_samples_split: int = 2,
-        min_impurity_decrease: float = -1e-6,
+        min_impurity_decrease: float = -1e-5,
         max_leaf_nodes: int = 0,
         discrete_features: DefaultDict = defaultdict(list),
         bin_type: str = "linear",
@@ -32,5 +32,5 @@ class TreeClassifier(TreeBase, Regressor):
             max_leaf_nodes,
             discrete_features,
             bin_type=bin_type,
-            is_classification=True,
+            is_classification=False,
         )
