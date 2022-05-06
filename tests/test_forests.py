@@ -29,7 +29,6 @@ class ForestTests(unittest.TestCase):
     def test_forest_digits(self) -> None:
         digits = sklearn.datasets.load_digits()
         data, labels = digits.data, digits.target
-        num_classes = len(np.unique(labels))
         f = ForestClassifier(
             data=data,
             labels=labels,
