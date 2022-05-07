@@ -6,7 +6,7 @@ from typing import Union
 
 from utils.mab_functions import solve_mab, solve_exactly
 from utils.utils import type_check, counts_of_labels
-from utils.constants import MAB, EXACT, GINI
+from utils.constants import MAB, EXACT, GINI, LINEAR
 
 type_check()
 
@@ -21,7 +21,7 @@ class Node:
         depth: int,
         proportion: float,
         is_classification: bool = True,
-        bin_type: str = "",
+        bin_type: str = LINEAR,
         criterion: str = GINI,
         solver: str = MAB,
         verbose: bool = True,
