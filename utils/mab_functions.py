@@ -5,7 +5,15 @@ from typing import List, Tuple, Callable, Union, DefaultDict
 from collections import defaultdict
 
 from data_structures.histogram import Histogram
-from utils.constants import CONF_MULTIPLIER, TOLERANCE, GINI, ENTROPY, VARIANCE, MSE
+from utils.constants import (
+    CONF_MULTIPLIER,
+    TOLERANCE,
+    GINI,
+    ENTROPY,
+    VARIANCE,
+    MSE,
+    LINEAR,
+)
 from utils.criteria import get_gini, get_entropy, get_variance, get_mse
 from utils.utils import type_check, class_to_idx, counts_of_labels, make_histograms
 
@@ -150,9 +158,9 @@ def solve_exactly(
     data: np.ndarray,
     labels: np.ndarray,
     discrete_bins_dict: DefaultDict,
-    fixed_bin_type: str = "",
+    fixed_bin_type: str = LINEAR,
     is_classification: bool = True,
-    impurity_measure: str = "",
+    impurity_measure: str = GINI,
     min_impurity_reduction: float = 0,
 ) -> Tuple[int, float, float, int]:
     """
@@ -236,7 +244,7 @@ def sample_targets(
     arms: Tuple[np.ndarray, np.ndarray],
     histograms: List[object],
     batch_size: int,
-    impurity_measure: str = "",
+    impurity_measure: str = GINI,
 ) -> Tuple[np.ndarray, np.ndarray, int]:
     """
     Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
@@ -294,9 +302,9 @@ def solve_mab(
     data: np.ndarray,
     labels: np.ndarray,
     discrete_bins_dict: DefaultDict,
-    fixed_bin_type: str = "",
+    fixed_bin_type: str = LINEAR,
     is_classification: bool = True,
-    impurity_measure: str = "",
+    impurity_measure: str = GINI,
     min_impurity_reduction: float = 0,
 ) -> Tuple[int, float, float, int]:
     """
