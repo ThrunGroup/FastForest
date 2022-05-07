@@ -1,120 +1,20 @@
 import numpy as np
 import itertools
 
-from typing import List, Tuple, Callable, Union, DefaultDict
+from typing import List, Tuple, DefaultDict
 from collections import defaultdict
 
-from data_structures.histogram import Histogram
+
 from utils.constants import (
     CONF_MULTIPLIER,
     TOLERANCE,
     GINI,
-    ENTROPY,
-    VARIANCE,
-    MSE,
     LINEAR,
 )
-from utils.criteria import get_gini, get_entropy, get_variance, get_mse
+from utils.criteria import get_impurity_fn, get_impurity_reductions
 from utils.utils import type_check, class_to_idx, counts_of_labels, make_histograms
 
 type_check()
-
-
-def get_impurity_fn(impurity_measure: str) -> Callable:
-    if impurity_measure == GINI:
-        get_impurity: Callable = get_gini
-    elif impurity_measure == ENTROPY:
-        get_impurity: Callable = get_entropy
-    elif impurity_measure == VARIANCE:
-        get_impurity: Callable = get_variance
-    elif impurity_measure == MSE:
-        get_impurity: Callable = get_mse
-    else:
-        Exception(
-            "Did not assign any measure for impurity calculation in get_impurity_reduction function"
-        )
-    return get_impurity
-
-
-def get_impurity_reductions(
-    is_classification: bool,
-    histogram: Histogram,
-    _bin_edge_idcs: List[int],
-    ret_vars: bool = False,
-    impurity_measure: str = "",
-) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
-    """
-    Given a histogram of counts for each bin, compute the impurity reductions if we were to split a node on any of the
-    histogram's bin edges.
-
-    Impurity is measured either by Gini index or entropy
-
-    :param is_classification: Whether the problem is a classification problem(True) or a regression problem(False)
-    :returns: Impurity reduction when splitting node by bins in _bin_edge_idcs
-    """
-    if impurity_measure == "":
-        impurity_measure = GINI if is_classification else MSE
-    get_impurity = get_impurity_fn(impurity_measure)
-
-    h = histogram
-    b = len(_bin_edge_idcs)
-    assert (
-        b <= h.num_bins
-    ), "len(bin_edges) whose impurity reductions we want to calculate is greater than len(total_bin_edges)"
-    impurities_left = np.zeros(b)
-    impurities_right = np.zeros(b)
-    V_impurities_left = np.zeros(b)
-    V_impurities_right = np.zeros(b)
-
-    if is_classification:
-        n = np.sum(h.left[0, :]) + np.sum(h.right[0, :])
-    else:
-        n = len(h.left_pile[0]) + len(h.right_pile[0])
-    for i in range(b):
-        b_idx = _bin_edge_idcs[i]
-        if is_classification:
-            IL, V_IL = get_impurity(h.left[b_idx, :], ret_var=True)
-            IR, V_IR = get_impurity(h.right[b_idx, :], ret_var=True)
-        else:
-            IL, V_IL = get_impurity(h.left_pile[b_idx], ret_var=True)
-            IR, V_IR = get_impurity(h.right_pile[b_idx], ret_var=True)
-
-        # Impurity is weighted by population of each node during a split
-        if is_classification:
-            left_weight = np.sum(h.left[b_idx, :]) / n
-            right_weight = np.sum(h.right[b_idx, :]) / n
-        else:
-            left_weight = len(h.left_pile[b_idx]) / n
-            right_weight = len(h.right_pile[b_idx]) / n
-        impurities_left[i], V_impurities_left[i] = (
-            float(left_weight * IL),
-            float((left_weight ** 2) * V_IL),
-        )
-        impurities_right[i], V_impurities_right[i] = (
-            float(right_weight * IR),
-            float((right_weight ** 2) * V_IR),
-        )
-
-    if is_classification:
-        impurity_curr, V_impurity_curr = get_impurity(
-            h.left[0, :] + h.right[0, :], ret_var=True
-        )
-    else:
-        impurity_curr, V_impurity_curr = get_impurity(
-            h.left_pile[0] + h.right_pile[0], ret_var=True
-        )
-    impurity_curr = float(impurity_curr)
-    V_impurity_curr = float(V_impurity_curr)
-    # TODO(@motiwari): Might not need to subtract off impurity_curr
-    #  since it doesn't affect reduction in a single feature?
-    # (once best feature is determined)
-    impurity_reductions = (impurities_left + impurities_right) - impurity_curr
-
-    if ret_vars:
-        # Note the last plus because Var(X-Y) = Var(X) + Var(Y) if X, Y are independent (this is an UNDERestimate)
-        impurity_vars = V_impurities_left + V_impurities_right + V_impurity_curr
-        return impurity_reductions, impurity_vars
-    return impurity_reductions  # Jay: we can change the type of impurity_reductions to Tuple[np.ndarray] whose each array has size 1
 
 
 def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bool:
