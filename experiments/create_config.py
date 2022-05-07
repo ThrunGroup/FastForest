@@ -74,6 +74,7 @@ def main() -> None:
     params = [{}]
     exps = itertools.product(tasks, algos, metric_names, metric_values, params)
     with open("auto_exp_config.py", "w+") as fout:
+        fout.write("from utils.constants import MAB, EXACT\n\n")
         fout.write("experiments = [\n")
         for e in exps:
             exp = exp_string(*e)

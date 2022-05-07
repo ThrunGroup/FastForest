@@ -9,21 +9,17 @@ by using the pool.apply_async calls instead of the explicit run_exp calls.
 
 import importlib
 import multiprocessing as mp
-import traceback
-import argparse
-import copy
-import sklearn.datasets
 import numpy as np
-
-from utils import data_generator
-from data_structures.forest_classifier import ForestClassifier
-from data_structures.tree_classifier import TreeClassifier
-import utils.utils
-from create_config import dict_to_str
-
-import os
+import traceback
+import copy
 import argparse
+import sklearn.datasets
+import os
 from typing import List
+
+from data_structures.forest_classifier import ForestClassifier
+from utils.constants import MAB, EXACT
+from create_config import dict_to_str
 
 
 def get_args() -> argparse.Namespace:
@@ -50,15 +46,14 @@ def get_args() -> argparse.Namespace:
     parser.add_argument(
         "-v",
         "--value",
-        help="Metric value. For performance metric P, the metric we should reach. For budget, the budget value",
+        help="Metric value. For performance metric, the metric we should reach. For budget, the budget value",
         default=1000,
         type=int,
     )
     parser.add_argument(
-        "-a",
-        "--algorithm",
-        help="Algorithm to use",
-        default="FastForest",
+        "-s",
+        "--solver",
+        help="Solver (algorithm) to use",
         type=str,
     )
     parser.add_argument(
@@ -69,6 +64,7 @@ def get_args() -> argparse.Namespace:
         type=dict,
     )
 
+    # Batch experiment configuration
     parser.add_argument(
         "-e",
         "--exp_config",
@@ -100,11 +96,11 @@ def remap_args(args: argparse.Namespace, exp: List):
     :param args: Namespace object whose args are to be modified
     :param exp: Experiment configuration (list of arguments)
     """
-    args.t = exp[0]
-    args.f = exp[1]
-    args.v = exp[2]
-    args.a = exp[3]
-    args.p = exp[4]
+    args.task = exp[0]
+    args.force = exp[1]
+    args.value = exp[2]
+    args.solver = exp[3]
+    args.parameters = exp[4]
     # Do not re-assign args.force or args.use_mp as that's passed at the batch level
     return args
 
@@ -119,45 +115,49 @@ def get_logfile_name(args: argparse.Namespace) -> str:
     return os.path.join(
         "logs",
         "t-"
-        + str(args.t)
-        + "-f-"
-        + str(args.f)
+        + str(args.task)
         + "-v-"
-        + str(args.v)
+        + str(args.value)
         + "-a-"
-        + str(args.a)
+        + str(args.solver)
         + "-p-"
-        + dict_to_str(args.p)
+        + dict_to_str(args.parameters)
         + ".txt",
     )
 
 
 def run_exp(args: argparse.Namespace, logfile: str) -> None:
-    if args.algorithm == "FastForest":
-        iris = sklearn.datasets.load_iris()
-        data, labels = iris.data, iris.target
-        classes_arr = np.unique(labels)
+    iris = sklearn.datasets.load_iris()
+    data, labels = iris.data, iris.target
 
-        FC = ForestClassifier(data=data, labels=labels, max_depth=5, budget=50)
-        FC.fit()
-        print("Forest number of queries:", FC.num_queries)
-        acc = np.sum(FC.predict_batch(data)[0] == labels)
-
-        with open(logfile, "w+") as fout:
-            fout.write(
-                "Fixed: "
-                + ("Budget " if args.fixed == "B" else "Metric ")
-                + str(acc)
-                + "\n"
-            )
-            fout.write(
-                "Measured: "
-                + ("Metric " if args.fixed == "B" else "Budget ")
-                + str(FC.num_queries)
-            )
-
+    if args.solver == MAB:
+        FC = ForestClassifier(
+            data=data, labels=labels, max_depth=5, budget=50, solver=MAB
+        )
+    elif args.solver == EXACT:
+        FC = ForestClassifier(
+            data=data, labels=labels, max_depth=5, budget=50, solver=EXACT
+        )
     else:
+        print(args.solver)
         raise Exception("Invalid algorithm specified")
+
+    FC.fit()
+    print("Forest number of queries:", FC.num_queries)
+    acc = np.sum(FC.predict_batch(data)[0] == labels)
+
+    with open(logfile, "w+") as fout:
+        fout.write(
+            "Fixed: "
+            + ("Budget " if args.fixed == "B" else "Metric ")
+            + str(acc)
+            + "\n"
+        )
+        fout.write(
+            "Measured: "
+            + ("Metric " if args.fixed == "B" else "Budget ")
+            + str(FC.num_queries)
+        )
 
 
 def main() -> None:

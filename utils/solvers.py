@@ -11,7 +11,7 @@ from utils.constants import (
     GINI,
     LINEAR,
 )
-from utils.criteria import get_impurity_fn, get_impurity_reductions
+from utils.criteria import get_impurity_reductions
 from utils.utils import type_check, class_to_idx, counts_of_labels, make_histograms
 
 type_check()
