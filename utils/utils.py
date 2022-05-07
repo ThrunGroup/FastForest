@@ -104,6 +104,7 @@ def choose_bin_type(D: int, N: int, B: int) -> str:
 
 
 def make_histograms(
+    is_classification: bool,
     data: np.ndarray,
     labels: np.ndarray,
     discrete_bins_dict: DefaultDict,
@@ -115,6 +116,7 @@ def make_histograms(
     Choose a bin type and number of bins, and make a histogram. Add it to histograms list. Also, filter
     extraneous bins by creating lists of considered indices and not considered indices.
 
+    :param is_classification:  Whether is a classification problem(True) or a regression problem(False)
     :param data: A 2d-array of input data
     :param labels: An 1d-array of target dat
     :param discrete_bins_dict: A DefaultDict mapping feature index to unique feature values
@@ -161,6 +163,7 @@ def make_histograms(
             NotImplementedError("Invalid choice of bin_type")
 
         histogram = Histogram(
+            is_classification,
             f_idx,
             discrete_bins_dict[f_idx],
             f_data,
@@ -168,7 +171,7 @@ def make_histograms(
             num_bins=num_bins,
             min_bin=min_bin,
             max_bin=max_bin,
-            bin_type=bin_type,
+            bin_type=bin_type
         )
         histograms.append(histogram)
 

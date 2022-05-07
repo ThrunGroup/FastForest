@@ -1,4 +1,5 @@
-from typing import Tuple, Union
+from typing import Tuple, Union, List
+import scipy
 import numpy as np
 
 
@@ -10,7 +11,7 @@ def get_gini(
     label. The Gini impurity is equal to 1 - sum_{i=1}^k (p_i^2)
 
     :param counts: 1d array of counts where ith element is the number of counts on the ith class(label).
-    :param ret_var: Whether to the variance of the estimate
+    :param ret_var: Whether to return the variance of the estimate
     :return: the Gini impurity of the node, as well as its estimated variance if ret_var
     """
     n = np.sum(counts)
@@ -38,7 +39,7 @@ def get_entropy(counts: np.ndarray, ret_var=False) -> Union[Tuple[float, float],
     label. The entropy impurity is equal to - sum{i=1}^k (p_i * log_2 p_i)
 
     :param counts: 1d array of counts where ith element is the number of counts on the ith class(label)
-    :param ret_var: Whether to the variance of the estimate
+    :param ret_var: Whether to return the variance of the estimate
     :return: the entropy impurity of the node, as well as its estimated variance if ret_var
     """
     n = np.sum(counts)
@@ -73,7 +74,7 @@ def get_variance(
     label.
 
     :param counts: 1d array of counts where ith element is the number of counts on the ith class(label)
-    :param ret_var: Whether to the variance of the estimate
+    :param ret_var: Whether to return the variance of the estimate
     :return: the variance of the node, as well as its estimated variance if ret_var
     """
     raise NotImplementedError("Not implemented until we do regression trees")
@@ -95,3 +96,37 @@ def get_variance(
         V_V_target = np.dot(dV_target_dp, V_p[:-1])
         return float(V_target), float(V_V_target)
     return float(V_target)
+
+
+def get_mse(
+    targets_pile: List, ret_var: bool = False,
+) -> Union[Tuple[float, float], float]:
+    """
+    Compute the MSE for a given node, where the node is represented by the pile of all target values. Also Compute the
+    confidence bound of our estimation by using Hoeffding's inequality for bounded values
+
+    :param targets_pile: An array of all target values in the node
+    :param ret_var: Whether to return the variance of the estimate
+    :return: the mse(variance) of the node, as well as its estimated variance if ret_var
+    """
+    assert len(np.array(targets_pile).shape) == 1, "Invalid pile of target values"
+    n = len(targets_pile)
+    if n == 0:
+        if ret_var:
+            return 0, 0
+        return 0
+    mse = float(
+        scipy.stats.moment(targets_pile, 2)
+    )  # 2nd central moment is mse with mean as a predicted value
+    fourth_moment = float(scipy.stats.moment(targets_pile, 4))
+    # This variance comes from the variance of sample variance,
+    # see https://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance.
+    # Use sample variance as an estimation of population variance.
+    pop_var = mse
+    if n < 3:
+        V_mse = float("inf")
+    else:
+        V_mse = (fourth_moment - (n - 3) * (pop_var ** 2) / (n - 1)) / n
+    if ret_var:
+        return mse, V_mse
+    return mse
