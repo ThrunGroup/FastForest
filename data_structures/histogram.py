@@ -94,7 +94,7 @@ class Histogram:
                 self.right[:insert_idx, y_idx] += 1
                 self.left[insert_idx:, y_idx] += 1
 
-        else:  # Use loop instead of numpy
+        else:
             for idx, f in enumerate(feature_values):
                 y = Y[idx]
                 insert_idx = self.get_bin(val=f, bin_edges=self.bin_edges)

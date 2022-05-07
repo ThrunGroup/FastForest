@@ -1,5 +1,5 @@
 from typing import Tuple, Union, List
-from scipy.stats import moment
+import scipy
 import numpy as np
 
 
@@ -99,8 +99,7 @@ def get_variance(
 
 
 def get_mse(
-    targets_pile: List,
-    ret_var: bool = False,
+    targets_pile: List, ret_var: bool = False,
 ) -> Union[Tuple[float, float], float]:
     """
     Compute the MSE for a given node, where the node is represented by the pile of all target values. Also Compute the
@@ -116,13 +115,16 @@ def get_mse(
         if ret_var:
             return 0, 0
         return 0
-    mse = float(moment(targets_pile, 2)) # 2nd central moment is mse with mean as a predicted value
-    fourth_moment = float(moment(targets_pile, 4))
-    # This variance comes from the variance of sample variance, see https://en.wikipedia.org/wiki/Variance.
+    mse = float(
+        scipy.stats.moment(targets_pile, 2)
+    )  # 2nd central moment is mse with mean as a predicted value
+    fourth_moment = float(scipy.stats.moment(targets_pile, 4))
+    # This variance comes from the variance of sample variance,
+    # see https://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance.
     # Use sample variance as an estimation of population variance.
     pop_var = mse
     if n < 3:
-        V_mse = float('inf')
+        V_mse = float("inf")
     else:
         V_mse = (fourth_moment - (n - 3) * (pop_var ** 2) / (n - 1)) / n
     if ret_var:
