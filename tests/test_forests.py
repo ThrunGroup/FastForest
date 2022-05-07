@@ -28,6 +28,21 @@ class ForestTests(unittest.TestCase):
         acc = np.sum(f.predict_batch(data)[0] == labels)
         self.assertTrue((acc / len(data)) >= 0.98)
 
+    def test_ERF_iris(self) -> None:
+        iris = sklearn.datasets.load_iris()
+        data, labels = iris.data, iris.target
+        f = ForestClassifier(
+            data=data,
+            labels=labels,
+            n_estimators=20,
+            max_depth=5,
+            bin_type="random",
+            erf_k="SQRT"
+        )
+        f.fit()
+        acc = np.sum(f.predict_batch(data)[0] == labels)
+        self.assertTrue((acc / len(data)) >= 0.97)
+
     def test_forest_digits(self) -> None:
         digits = sklearn.datasets.load_digits()
         data, labels = digits.data, digits.target
@@ -39,7 +54,21 @@ class ForestTests(unittest.TestCase):
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
-        self.assertTrue((acc / len(data)) > 0.87)
+        self.assertTrue((acc / len(data)) > 0.86)
+
+    def test_ERF_digits(self) -> None:
+        digits = sklearn.datasets.load_digits()
+        data, labels = digits.data, digits.target
+        f = ForestClassifier(
+            data=data,
+            labels=labels,
+            n_estimators=10,
+            max_depth=5,
+            bin_type="random"
+        )
+        f.fit()
+        acc = np.sum(f.predict_batch(data)[0] == labels)
+        self.assertTrue((acc / len(data)) > 0.86)
 
     def test_tree_toy(self, show: bool = False) -> None:
         toy = data_generator.create_data(10000)

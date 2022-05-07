@@ -212,6 +212,7 @@ def solve_mab(
     labels: np.ndarray,
     discrete_bins_dict: DefaultDict,
     fixed_bin_type: str = "",
+    erf_k: str = "",
     is_classification: bool = True,
     impurity_measure: str = "",
     min_impurity_reduction: float = 0,
@@ -230,6 +231,7 @@ def solve_mab(
     :param labels: Labels of datapoints
     :param discrete_bins_dict: A dictionary of discrete bins
     :param fixed_bin_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
+    :param erf_k: The type of subsampling to use for bin_edges. The default is sqrt(n).
     :param num_queries: mutable variable to update the number of datapoints queried
     :param is_classification:  Whether is a classification problem(True) or regression problem(False)
     :param impurity_measure: A name of impurity_measure
@@ -257,6 +259,7 @@ def solve_mab(
         labels,
         discrete_bins_dict,
         fixed_bin_type=fixed_bin_type,
+        erf_k=erf_k,
         num_bins=B,
     )
 

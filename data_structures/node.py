@@ -22,6 +22,7 @@ class Node:
         is_classification: bool = True,
         verbose: bool = True,
         bin_type: str = "",
+        erf_k: str = ""
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
@@ -29,6 +30,7 @@ class Node:
         self.labels = labels
         self.n_data = len(labels)
         self.bin_type = bin_type
+        self.erf_k = erf_k
         self.depth = depth
         self.proportion = proportion
         self.is_classification = is_classification
@@ -71,7 +73,8 @@ class Node:
             self.labels,
             self.tree.discrete_features,
             fixed_bin_type=self.bin_type,
-            is_classification=self.is_classification,
+            erf_k=self.erf_k,
+            is_classification=self.is_classification
         )
         # Even if results is None, we should cache the fact that we know that
         self.best_reduction_computed = True
