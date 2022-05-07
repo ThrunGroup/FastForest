@@ -37,7 +37,7 @@ class ForestTests(unittest.TestCase):
             n_estimators=20,
             max_depth=5,
             bin_type="random",
-            bin_subsampling="SQRT"
+            erf_k="SQRT"
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)

@@ -24,7 +24,7 @@ class TreeClassifier(TreeBase, Classifier):
         max_leaf_nodes: int = None,
         discrete_features: DefaultDict = defaultdict(list),
         bin_type: str = "linear",
-        bin_subsampling: str = "",
+        erf_k: str = "",
         verbose: bool = True,
     ):
         self.classes = classes  # dict from class name to class index
@@ -42,5 +42,5 @@ class TreeClassifier(TreeBase, Classifier):
             is_classification=True,
             budget=budget,
             verbose=verbose,
-            bin_subsampling=bin_subsampling
+            erf_k=erf_k
         )
