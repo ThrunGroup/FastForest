@@ -3,7 +3,7 @@ from typing import Tuple, DefaultDict
 
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.classifier import Classifier
-from utils.constants import BUFFER, MAB, LINEAR, GINI, SQRT
+from utils.constants import BUFFER, MAB, LINEAR, GINI, SQRT, BEST
 from utils.utils import class_to_idx, data_to_discrete
 
 
@@ -19,51 +19,56 @@ class ForestClassifier(Classifier):
         n_estimators: int = 100,
         max_depth: int = None,
         bootstrap: bool = True,
-        budget: int = None,
-        verbose: bool = True,
+        feature_subsampling: str = SQRT,
         min_samples_split: int = 2,
         min_impurity_decrease: float = 0,
         max_leaf_nodes: int = None,
         bin_type: str = LINEAR,
-        solver: str = MAB,
+        budget: int = None,
         criterion: str = GINI,
+        splitter: str = BEST,
+        solver: str = MAB,
+        verbose: bool = True,
     ) -> None:
         self.data = data
         self.num_features = len(data[0])
         self.labels = labels
         self.trees = []
         self.n_estimators = n_estimators
-        self.feature_subsampling = SQRT
+        self.max_depth = max_depth
+        self.bootstrap = bootstrap
+        self.feature_subsampling = feature_subsampling
+        self.min_samples_split = min_samples_split
+        self.min_impurity_decrease = min_impurity_decrease
+        self.max_leaf_nodes = max_leaf_nodes
+        self.bin_type = bin_type
+
         self.classes: dict = class_to_idx(
             np.unique(labels)
         )  # a dictionary that maps class name to class index
         self.n_classes = len(self.classes)
+
         self.remaining_budget = budget
-        self.verbose = verbose
+        self.num_queries = 0
+
+        self.criterion = criterion
         self.solver = solver
+        self.splitter = splitter
+        self.verbose = verbose
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
-        self.criterion = criterion
-        self.max_depth = max_depth
-        self.min_samples_split = min_samples_split
+
         self.min_samples_leaf = 1
         self.min_weight_fraction_leaf = 0.0
         self.max_features = None
-        self.max_leaf_nodes = max_leaf_nodes
-        self.min_impurity_decrease = min_impurity_decrease
-        self.bootstrap = True
         self.oob_score = False
         self.n_jobs = None
         self.random_state = None
-        self.verbose = 0
         self.warm_start = False
         self.class_weight = None
         self.ccp_alpha = 0.0
         self.max_samples = None
-        self.num_queries = 0
-        self.bootstrap = bootstrap
-        self.bin_type = bin_type
 
         # Need this to do remapping when features are shuffled
         self.tree_feature_idcs = {}

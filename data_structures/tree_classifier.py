@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from data_structures.classifier import Classifier
 from data_structures.tree_base import TreeBase
-from utils.constants import MAB, LINEAR
+from utils.constants import MAB, LINEAR, GINI, BEST
 
 
 class TreeClassifier(TreeBase, Classifier):
@@ -19,14 +19,16 @@ class TreeClassifier(TreeBase, Classifier):
         labels: np.ndarray,
         max_depth: int,
         classes: dict,
-        budget: int = None,
         min_samples_split: int = 2,
         min_impurity_decrease: float = -1e-6,
         max_leaf_nodes: int = None,
         discrete_features: DefaultDict = defaultdict(list),
         bin_type: str = LINEAR,
-        verbose: bool = True,
+        budget: int = None,
+        criterion: str = GINI,
+        splitter: str = BEST,
         solver: str = MAB,
+        verbose: bool = True,
     ):
         self.classes = classes  # dict from class name to class index
         self.idx_to_class = {value: key for key, value in classes.items()}
@@ -40,8 +42,10 @@ class TreeClassifier(TreeBase, Classifier):
             max_leaf_nodes=max_leaf_nodes,
             discrete_features=discrete_features,
             bin_type=bin_type,
-            is_classification=True,
             budget=budget,
-            verbose=verbose,
+            is_classification=True,
+            criterion=criterion,
+            splitter=splitter,
             solver=solver,
+            verbose=verbose,
         )

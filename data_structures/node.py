@@ -6,7 +6,7 @@ from typing import Union
 
 from utils.mab_functions import solve_mab, solve_exactly
 from utils.utils import type_check, counts_of_labels
-from utils.constants import MAB, EXACT
+from utils.constants import MAB, EXACT, GINI
 
 type_check()
 
@@ -21,9 +21,10 @@ class Node:
         depth: int,
         proportion: float,
         is_classification: bool = True,
-        verbose: bool = True,
         bin_type: str = "",
+        criterion: str = GINI,
         solver: str = MAB,
+        verbose: bool = True,
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
@@ -38,6 +39,7 @@ class Node:
         self.right = None
         self.verbose = verbose
         self.solver = solver
+        self.criterion = criterion
 
         # NOTE: Do not assume labels are all integers from 0 to num_classes-1
         if is_classification:
