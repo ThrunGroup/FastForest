@@ -21,6 +21,8 @@ DEPTH = "DEPTH"
 
 # Bin types
 LINEAR = "LINEAR"
+DISCRETE = "DISCRETE"
+IDENTITY = "IDENTITY"
 
 # Feature subsampling
 SQRT = "SQRT"

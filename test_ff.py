@@ -3,6 +3,7 @@ from sklearn import datasets
 
 from data_structures.tree_classifier import TreeClassifier
 from utils.utils import class_to_idx
+from utils.constants import LINEAR
 
 
 def test_tree_iris2(verbose: bool = False) -> None:
@@ -41,7 +42,7 @@ def test_tree_iris2(verbose: bool = False) -> None:
     test_tree(32, "", "Best-first splitting")
 
     # Linear bin tree
-    test_tree(None, "linear", "Linear bin splitting")
+    test_tree(None, LINEAR, "Linear bin splitting")
 
 
 def main():

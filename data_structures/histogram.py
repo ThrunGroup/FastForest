@@ -2,6 +2,8 @@ import numpy as np
 import bisect
 from typing import Any, Tuple
 
+from utils.constants import LINEAR, DISCRETE, IDENTITY
+
 
 class Histogram:
     """
@@ -22,7 +24,7 @@ class Histogram:
         num_bins: int = 11,
         min_bin: float = 0.0,
         max_bin: float = 1.0,
-        bin_type: str = "linear",
+        bin_type: str = LINEAR,
     ):
         self.feature_idx = feature_idx
         self.unique_fvals = unique_fvals
@@ -34,11 +36,11 @@ class Histogram:
         self.bin_type = bin_type
         self.is_classification = is_classification
 
-        if self.bin_type == "linear":
+        if self.bin_type == LINEAR:
             self.bin_edges = self.linear_bin()
-        elif self.bin_type == "discrete":
+        elif self.bin_type == DISCRETE:
             self.bin_edges = self.discrete_bin()
-        elif self.bin_type == "identity":
+        elif self.bin_type == IDENTITY:
             self.bin_edges = self.identity_bin()
         else:
             raise NotImplementedError("Invalid type of bin")
