@@ -52,7 +52,22 @@ class ForestTests(unittest.TestCase):
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
-        self.assertTrue((acc / len(data)) > 0.87)
+        self.assertTrue((acc / len(data)) > 0.86)
+
+    def test_ERF_digits(self) -> None:
+        digits = sklearn.datasets.load_digits()
+        data, labels = digits.data, digits.target
+        f = ForestClassifier(
+            data=data,
+            labels=labels,
+            n_estimators=10,
+            max_depth=5,
+            bin_type="random"
+        )
+        f.fit()
+        acc = np.sum(f.predict_batch(data)[0] == labels)
+        print(acc)
+        self.assertTrue((acc / len(data)) > 0.86)
 
     def test_tree_toy(self, show: bool = False) -> None:
         toy = data_generator.create_data(10000)
