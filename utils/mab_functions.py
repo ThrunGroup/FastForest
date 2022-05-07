@@ -259,7 +259,7 @@ def solve_mab(
         labels,
         discrete_bins_dict,
         fixed_bin_type=fixed_bin_type,
-        bin_subsampling=bin_subsampling
+        bin_subsampling=bin_subsampling,
         num_bins=B,
     )
 

@@ -26,6 +26,7 @@ class TreeBase(ABC):
         max_leaf_nodes: int = None,
         discrete_features: DefaultDict = defaultdict(list),
         bin_type: str = "linear",
+        bin_subsampling: str = "",
         budget: int = None,
         is_classification: bool = True,
         verbose: bool = True,
@@ -53,6 +54,7 @@ class TreeBase(ABC):
             depth=0,
             proportion=1.0,
             bin_type=self.bin_type,
+            bin_subsampling=bin_subsampling,
             is_classification=self.is_classification,
             verbose=verbose,
         )
