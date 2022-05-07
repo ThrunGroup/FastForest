@@ -1,4 +1,3 @@
-import sys
 import numpy as np
 from sklearn import datasets
 
@@ -25,6 +24,7 @@ def test_tree_iris2(verbose: bool = False) -> None:
             labels=labels,
             max_depth=5,
             classes=classes,
+            budget=None,
             max_leaf_nodes=max_leaf_nodes,
             bin_type=bin_type,
         )
@@ -35,16 +35,13 @@ def test_tree_iris2(verbose: bool = False) -> None:
         print("MAB solution Tree Train Accuracy:", acc / len(data))
 
     # Depth-first tree
-    test_tree(0, "", "Depth-first splitting")
+    test_tree(None, "", "Depth-first splitting")
 
     # Best-first tree
     test_tree(32, "", "Best-first splitting")
 
     # Linear bin tree
-    test_tree(0, "linear", "Linear bin splitting")
-
-    # Discrete bin tree
-    test_tree(0, "discrete", "Discrete bin splitting")
+    test_tree(None, "linear", "Linear bin splitting")
 
 
 def main():

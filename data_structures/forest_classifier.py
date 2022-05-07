@@ -1,12 +1,10 @@
 import numpy as np
-import random
 from typing import Tuple, DefaultDict
 
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.classifier import Classifier
-from utils.utils import class_to_idx
 from utils.constants import BUFFER
-from utils.utils import data_to_discrete
+from utils.utils import class_to_idx, data_to_discrete
 
 
 class ForestClassifier(Classifier):
@@ -25,7 +23,7 @@ class ForestClassifier(Classifier):
         verbose: bool = True,
         min_samples_split: int = 2,
         min_impurity_decrease: float = 0,
-        max_leaf_nodes: int = 0,
+        max_leaf_nodes: int = None,
         bin_type="linear",
     ) -> None:
         self.data = data

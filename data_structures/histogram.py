@@ -11,9 +11,10 @@ class Histogram:
 
     def __init__(
         self,
+        is_classification: bool,
         feature_idx: int,
         unique_fvals: np.ndarray,
-        data: np.ndarray,
+        f_data: np.ndarray,
         classes: Tuple[Any] = (
             0,
             1,
@@ -25,12 +26,13 @@ class Histogram:
     ):
         self.feature_idx = feature_idx
         self.unique_fvals = unique_fvals
-        self.data = data
+        self.f_data = f_data
         self.classes = classes
         self.num_bins = num_bins
         self.min_bin = min_bin
         self.max_bin = max_bin
         self.bin_type = bin_type
+        self.is_classification = is_classification
 
         if self.bin_type == "linear":
             self.bin_edges = self.linear_bin()
@@ -42,8 +44,14 @@ class Histogram:
             raise NotImplementedError("Invalid type of bin")
 
         # Note: labels can be any type like string or list
-        self.left = np.zeros((self.num_bins, len(classes)), dtype=np.int32)
-        self.right = np.zeros((self.num_bins, len(classes)), dtype=np.int32)
+        if self.is_classification:
+            self.left = np.zeros((self.num_bins, len(classes)), dtype=np.int32)
+            self.right = np.zeros((self.num_bins, len(classes)), dtype=np.int32)
+        else:
+            # self.left_pile[i] is the list of all target values that are on the left of ith bin
+            # self.right_pile[i] is the list of all target values that are on the right of ith bin
+            self.left_pile = [[] for i in range(self.num_bins)]
+            self.right_pile = [[] for i in range(self.num_bins)]
 
     @staticmethod
     def get_bin(val: float, bin_edges: np.ndarray) -> int:
@@ -66,22 +74,34 @@ class Histogram:
         :param X: dataset to be histogrammed (subset of original X, although could be the same size)
         :return: None, but modify the histogram to include the relevant feature values
         """
-        assert (
-            len(self.bin_edges)
-            == np.size(self.left, axis=0)
-            == np.size(self.right, axis=0)
-        ), "Error: histogram is malformed"
-
-        assert len(X) == len(Y), "Error: sample sizes and label sizes must be the same"
-
         feature_values = X[:, self.feature_idx]
-        for idx, f in enumerate(feature_values):
-            y = Y[idx]
-            y_idx = self.classes.index(y)
-            insert_idx = self.get_bin(val=f, bin_edges=self.bin_edges)
-            # left, right[x, y] gives # of data on the left and right of xth bin of yth class
-            self.right[:insert_idx, y_idx] += 1
-            self.left[insert_idx:, y_idx] += 1
+        if self.is_classification:
+            assert (
+                len(self.bin_edges)
+                == np.size(self.left, axis=0)
+                == np.size(self.right, axis=0)
+            ), "Error: histogram is malformed"
+
+            assert len(X) == len(
+                Y
+            ), "Error: sample sizes and label sizes must be the same"
+
+            for idx, f in enumerate(feature_values):
+                y = Y[idx]
+                y_idx = self.classes.index(y)
+                insert_idx = self.get_bin(val=f, bin_edges=self.bin_edges)
+                # left, right[x, y] gives number of points on the left and right of xth bin of yth class
+                self.right[:insert_idx, y_idx] += 1
+                self.left[insert_idx:, y_idx] += 1
+
+        else:
+            for idx, f in enumerate(feature_values):
+                y = Y[idx]
+                insert_idx = self.get_bin(val=f, bin_edges=self.bin_edges)
+                for right_idx in range(insert_idx):
+                    self.right_pile[right_idx].append(y)
+                for left_idx in range(insert_idx, self.num_bins):
+                    self.left_pile[left_idx].append(y)
 
     def linear_bin(self) -> np.ndarray:
         """
@@ -93,7 +113,7 @@ class Histogram:
         """
         Returns a subset of self.feature_values with constant width. It can be either similar or different
         to linear bin depending on the distribution of self.feature_values.
-        Ex) self.data = [0, 1, 2, 3, 3, 3, 3, 100]
+        Ex) self.f_data = [0, 1, 2, 3, 3, 3, 3, 100]
             self.feature_values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 100]
             self.num_bins = 5
             self.linear_bin() = [0, 25, 50, 75, 100]
@@ -106,11 +126,11 @@ class Histogram:
 
     def identity_bin(self) -> np.ndarray:
         """
-        Ex) self.data = [0, 1, 2, 3, 3, 3, 3, 100]
+        Ex) self.f_data = [0, 1, 2, 3, 3, 3, 3, 100]
             self.identity_bin() = [0, 1, 2, 3, 100]
 
-        :return: Return an unique sorted values array of self.data
+        :return: Return an unique sorted values array of self.f_data
         """
-        identity_bin = np.unique(self.data) 
+        identity_bin = np.unique(self.f_data)
         self.num_bins = len(identity_bin)
         return identity_bin

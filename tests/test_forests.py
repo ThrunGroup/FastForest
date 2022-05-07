@@ -3,8 +3,9 @@ import unittest
 import numpy as np
 from collections import defaultdict
 
-from utils import data_generator
+
 import ground_truth
+from utils import data_generator
 from data_structures.forest_classifier import ForestClassifier
 from data_structures.tree_classifier import TreeClassifier
 import utils.utils
