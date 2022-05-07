@@ -35,7 +35,13 @@ def analyze_runtime(verbose=True, take_log=True, show=True) -> None:
             classes_arr = np.unique(labels)
             classes = class_to_idx(classes_arr)
 
-            t = Tree(data=data, labels=labels, max_depth=max_depth, classes=classes, min_impurity_decrease=-1e-3)
+            t = TreeClassifier(
+                data=data,
+                labels=labels,
+                max_depth=max_depth,
+                classes=classes,
+                min_impurity_decrease=-1e-3,
+            )
             t.fit()
             avg_num_queries[i, trial] = t.num_queries / t.num_splits
 

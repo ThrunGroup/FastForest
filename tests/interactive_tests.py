@@ -5,6 +5,19 @@ from data_structures.tree_classifier import TreeClassifier
 import utils.utils
 
 
+def test_zero_budget_tree_iris() -> None:
+    iris = sklearn.datasets.load_iris()
+    data, labels = iris.data, iris.target
+    classes_arr = np.unique(labels)
+    classes = utils.utils.class_to_idx(classes_arr)
+    t = TreeClassifier(data=data, labels=labels, max_depth=5, classes=classes, budget=0)
+    t.fit()
+    t.tree_print()
+    acc = np.sum(t.predict_batch(data)[0] == labels)
+    print("MAB solution Tree Train Accuracy:", acc / len(data))
+    self.assertTrue((acc / len(data)) < 0.34)
+
+
 def test_increasing_budget_tree_iris() -> None:
     iris = sklearn.datasets.load_iris()
     data, labels = iris.data, iris.target
@@ -32,4 +45,5 @@ def test_increasing_budget_tree_iris() -> None:
 
 
 if __name__ == "__main__":
+    test_zero_budget_tree_iris()
     test_increasing_budget_tree_iris()
