@@ -23,7 +23,7 @@ class ForestClassifier(Classifier):
         verbose: bool = True,
         min_samples_split: int = 2,
         min_impurity_decrease: float = 0,
-        max_leaf_nodes: int = 0,
+        max_leaf_nodes: int = None,
         bin_type="linear",
     ) -> None:
         self.data = data

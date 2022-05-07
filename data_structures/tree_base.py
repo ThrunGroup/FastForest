@@ -19,11 +19,11 @@ class TreeBase(ABC):
         data: np.ndarray,
         labels: np.ndarray,
         max_depth: int,
-        classes: dict,
+        classes: dict = None,
         splitter: str = "best",
         min_samples_split: int = 2,
         min_impurity_decrease: float = -1e-6,
-        max_leaf_nodes: int = 0,
+        max_leaf_nodes: int = None,
         discrete_features: DefaultDict = defaultdict(list),
         bin_type: str = "linear",
         budget: int = None,
@@ -33,8 +33,9 @@ class TreeBase(ABC):
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
         self.n_data = len(labels)
-        self.classes = classes  # dict from class name to class index
-        self.idx_to_class = {value: key for key, value in classes.items()}
+        if is_classification:
+            self.classes = classes  # dict from class name to class index
+            self.idx_to_class = {value: key for key, value in classes.items()}
         self.bin_type = bin_type
         self.discrete_features = (
             discrete_features
@@ -121,9 +122,10 @@ class TreeBase(ABC):
                 if self.max_leaf_nodes is not None:
                     if len(self.leaves) == self.max_leaf_nodes:
                         break
-                    else:
+                    elif len(self.leaves) > self.max_leaf_nodes:
                         raise Exception(
                             "Somehow created too many leaves. Should never be here."
+                            + str(self.max_leaf_nodes)
                         )
 
                 sufficient_impurity_decrease = True
@@ -157,7 +159,7 @@ class TreeBase(ABC):
                             self.remaining_budget -= leaf.num_queries
 
                     if leaf.is_splittable is None:
-                        # Uses cached value of calculate_best_split
+                        # Uses cached value of calculate_best_split so no additional cost
                         leaf.is_splittable = self.check_splittable(leaf)
 
                     if (
