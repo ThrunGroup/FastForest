@@ -154,7 +154,7 @@ def make_histograms(
         elif bin_type == "random":  # this is for extremely random forests
             min_bin, max_bin = np.min(f_data), np.max(f_data)
             if bin_subsampling == "" or bin_subsampling == "SQRT":
-                num_bins = np.sqrt(np.shape(data)[0]).astype(int)   
+                num_bins = np.sqrt(np.shape(data)[0]).astype(int)
             else:
                 NotImplementedError("Invalid choice of bin_subsampling")
         else:
