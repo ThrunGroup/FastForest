@@ -187,7 +187,11 @@ def sample_targets(
         h.add(samples, sample_labels)  # This is where the labels are used
         # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
         i_r, cb_d = get_impurity_reductions(
-            is_classification, h, f2bin_dict[f], ret_vars=True
+            is_classification=is_classification,
+            histogram=h,
+            _bin_edge_idcs=f2bin_dict[f],
+            ret_vars=True,
+            impurity_measure=impurity_measure,
         )
         impurity_reductions = np.concatenate([impurity_reductions, i_r])
         cb_deltas = np.concatenate(
