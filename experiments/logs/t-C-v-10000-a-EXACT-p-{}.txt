@@ -1,2 +1,4 @@
-Fixed: Budget 100
-Measured: Metric 150
+Fixed: Budget 
+Fixed Value:98
+Measured: Metric 
+Measured value: 150

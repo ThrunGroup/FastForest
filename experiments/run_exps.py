@@ -150,12 +150,16 @@ def run_exp(args: argparse.Namespace, logfile: str) -> None:
         fout.write(
             "Fixed: "
             + ("Budget " if args.fixed == "B" else "Metric ")
+            + "\n"
+            + "Fixed Value:"
             + str(acc)
             + "\n"
         )
         fout.write(
             "Measured: "
             + ("Metric " if args.fixed == "B" else "Budget ")
+            + "\n"
+            + "Measured value: "
             + str(FC.num_queries)
         )
 
