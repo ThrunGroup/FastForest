@@ -125,4 +125,4 @@ class Histogram:
         :return: Return a sorted random subset array of self.feature_values
         """
         splits = np.random.uniform(self.min_bin, self.max_bin, size=self.num_bins)
-        return np.sort(splits, kind='mergesort')    # TODO: is sorting necessary?
+        return np.sort(splits, kind='mergesort')

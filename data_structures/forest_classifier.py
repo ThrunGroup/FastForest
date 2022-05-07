@@ -27,6 +27,7 @@ class ForestClassifier(Classifier):
         min_impurity_decrease: float = 0,
         max_leaf_nodes: int = 0,
         bin_type="linear",
+        bin_subsampling="SQRT"
     ) -> None:
         self.data = data
         self.num_features = len(data[0])
@@ -34,6 +35,7 @@ class ForestClassifier(Classifier):
         self.trees = []
         self.n_estimators = n_estimators
         self.feature_subsampling = "SQRT"
+        self.bin_subsampling = bin_subsampling
         self.classes: dict = class_to_idx(
             np.unique(labels)
         )  # a dictionary that maps class name to class index
@@ -118,6 +120,7 @@ class ForestClassifier(Classifier):
                 max_leaf_nodes=self.max_leaf_nodes,
                 discrete_features=self.discrete_features,
                 bin_type=self.bin_type,
+                bin_subsampling=self.bin_subsampling
             )
             tree.fit()
             self.trees.append(tree)

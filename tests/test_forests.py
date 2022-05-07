@@ -35,7 +35,8 @@ class ForestTests(unittest.TestCase):
             labels=labels,
             n_estimators=20,
             max_depth=5,
-            bin_type="random"
+            bin_type="random",
+            bin_subsampling="SQRT"
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
@@ -66,7 +67,6 @@ class ForestTests(unittest.TestCase):
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
-        print(acc)
         self.assertTrue((acc / len(data)) > 0.86)
 
     def test_tree_toy(self, show: bool = False) -> None:

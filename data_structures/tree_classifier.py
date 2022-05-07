@@ -26,6 +26,7 @@ class TreeClassifier(Classifier):
         max_leaf_nodes: int = 0,
         discrete_features: DefaultDict = defaultdict(list),
         bin_type: str = "linear",
+        bin_subsampling: str = "",
         budget: int = None,
         verbose: bool = True,
     ) -> None:
@@ -51,6 +52,7 @@ class TreeClassifier(Classifier):
             proportion=1.0,
             bin_type=self.bin_type,
             verbose=verbose,
+            bin_subsampling=bin_subsampling
         )
 
         # These are copied from the link below. We won't need all of them.

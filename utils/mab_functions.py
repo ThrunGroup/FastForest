@@ -185,6 +185,7 @@ def solve_mab(
     labels: np.ndarray,
     discrete_bins_dict: DefaultDict,
     fixed_bin_type: str = "",
+    bin_subsampling: str = "",
     min_impurity_reduction: float = 0,
 ) -> Tuple[int, float, float, int]:
     """
@@ -201,6 +202,7 @@ def solve_mab(
     :param labels: Labels of datapoints
     :param discrete_bins_dict: A dictionary of discrete bins
     :param fixed_bin_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
+    :param bin_subsampling: The type of subsampling to use for bin_edges. The default is sqrt(n).
     :param num_queries: mutable variable to update the number of datapoints queried
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
@@ -221,7 +223,7 @@ def solve_mab(
     # Make a list of histograms, a list of indices that we don't consider as potential arms, and a list of indices
     # that we consider as potential arms.
     histograms, not_considered_idcs, considered_idcs = make_histograms(
-        data, labels, discrete_bins_dict, fixed_bin_type, B
+        data, labels, discrete_bins_dict, fixed_bin_type, bin_subsampling, B
     )
 
     considered_idcs = np.array(considered_idcs)

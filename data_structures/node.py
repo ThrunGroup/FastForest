@@ -21,6 +21,7 @@ class Node:
         proportion: float,
         verbose: bool = True,
         bin_type: str = "",
+        bin_subsampling: str = ""
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
@@ -28,6 +29,7 @@ class Node:
         self.labels = labels
         self.n_data = len(labels)
         self.bin_type = bin_type
+        self.bin_subsampling = bin_subsampling
         self.depth = depth
         self.proportion = proportion
         self.left = None
@@ -60,7 +62,10 @@ class Node:
         if self.best_reduction_computed:
             return self.split_reduction
 
-        results = solve_mab(self.data, self.labels, self.tree.discrete_features, self.bin_type)
+        results = solve_mab(
+            self.data, self.labels, self.tree.discrete_features,
+            self.bin_type, self.bin_subsampling
+        )
         # Even if results is None, we should cache the fact that we know that
         self.best_reduction_computed = True
 

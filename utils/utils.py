@@ -108,6 +108,7 @@ def make_histograms(
     labels: np.ndarray,
     discrete_bins_dict: DefaultDict,
     fixed_bin_type: str = "",
+    bin_subsampling: str = "",
     num_bins: int = 11,
 ) -> Tuple[List[Histogram], List, List]:
     """
@@ -118,6 +119,7 @@ def make_histograms(
     :param labels: An 1d-array of target dat
     :param discrete_bins_dict: A DefaultDict mapping feature index to unique feature values
     :param fixed_bin_type: Fixed type of bin which should be one of "linear", "discrete", and "identity"
+    :param bin_subsampling: The type of subsampling to use for bin_edges. The default is sqrt(n).
     :param num_bins: Number of bins
     :return: A list of histograms, a list of indices not considered, and a list of indices considered
     """
@@ -151,7 +153,10 @@ def make_histograms(
             num_bins = B
         elif bin_type == "random":  # this is for extremely random forests
             min_bin, max_bin = np.min(f_data), np.max(f_data)
-            num_bins = np.sqrt(np.shape(data)[0]).astype(int)   # TODO: fix this hard-coding
+            if bin_subsampling == "" or bin_subsampling == "SQRT":
+                num_bins = np.sqrt(np.shape(data)[0]).astype(int)   
+            else:
+                NotImplementedError("Invalid choice of bin_subsampling")
         else:
             NotImplementedError("Invalid choice of bin_type")
 
