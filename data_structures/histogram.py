@@ -38,6 +38,8 @@ class Histogram:
             self.bin_edges = self.discrete_bin()
         elif self.bin_type == "identity":
             self.bin_edges = self.identity_bin()
+        elif self.bin_type == "random":
+            self.bin_edges = self.random_bin()
         else:
             raise NotImplementedError("Invalid type of bin")
 
@@ -114,3 +116,13 @@ class Histogram:
         identity_bin = np.unique(self.data) 
         self.num_bins = len(identity_bin)
         return identity_bin
+
+    def random_bin(self) -> np.ndarray:
+        """
+        Returns num_bins random selection of self.feature_values where min, max are
+        the min, max of f_data.
+
+        :return: Return a sorted random subset array of self.feature_values
+        """
+        splits = np.random.uniform(self.min_bin, self.max_bin, size=self.num_bins)
+        return np.sort(splits, kind='mergesort')    # TODO: is sorting necessary?

@@ -60,7 +60,7 @@ class Node:
         if self.best_reduction_computed:
             return self.split_reduction
 
-        results = solve_mab(self.data, self.labels, self.tree.discrete_features)
+        results = solve_mab(self.data, self.labels, self.tree.discrete_features, self.bin_type)
         # Even if results is None, we should cache the fact that we know that
         self.best_reduction_computed = True
 
