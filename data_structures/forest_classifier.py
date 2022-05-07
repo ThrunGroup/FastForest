@@ -14,8 +14,8 @@ class ForestClassifier(Classifier):
 
     def __init__(
         self,
-        data: np.ndarray,
-        labels: np.ndarray,
+        data: np.ndarray = None,
+        labels: np.ndarray = None,
         n_estimators: int = 100,
         max_depth: int = None,
         bootstrap: bool = True,
@@ -69,13 +69,32 @@ class ForestClassifier(Classifier):
             data, n=10
         )  # TODO: Fix this hard-coding
 
-    def fit(self, verbose=True) -> None:
+    def check_both_or_neither(
+        self, data: np.ndarray = None, labels: np.ndarray = None
+    ) -> bool:
+        if data is None:
+            if labels is not None:
+                raise Exception("Need to pass both data and labels to .fit()")
+        else:
+            if labels is None:
+                raise Exception("Need to pass both data and labels to .fit()")
+
+        # Either (data and labels) or (not data and not labels)
+        return True
+
+    def fit(self, data: np.ndarray = None, labels: np.ndarray = None) -> None:
         """
         Fit the random forest classifier by training trees, where each tree is trained with only a subset of the
         available features
 
         :return: None
         """
+
+        self.check_both_or_neither(data, labels)
+        if data is not None:
+            self.data = data
+            self.labels = labels
+
         self.trees = []
         for i in range(self.n_estimators):
             if self.remaining_budget is not None and self.remaining_budget <= 0:
