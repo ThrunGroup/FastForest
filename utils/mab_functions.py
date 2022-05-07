@@ -5,7 +5,7 @@ from typing import List, Tuple, Callable, Union, DefaultDict
 from collections import defaultdict
 
 from data_structures.histogram import Histogram
-from utils.constants import CONF_MULTIPLIER, TOLERANCE
+from utils.constants import CONF_MULTIPLIER, TOLERANCE, GINI, ENTROPY, VARIANCE, MSE
 from utils.criteria import get_gini, get_entropy, get_variance, get_mse
 from utils.utils import type_check, class_to_idx, counts_of_labels, make_histograms
 
@@ -13,13 +13,13 @@ type_check()
 
 
 def get_impurity_fn(impurity_measure: str) -> Callable:
-    if impurity_measure == "GINI":
+    if impurity_measure == GINI:
         get_impurity: Callable = get_gini
-    elif impurity_measure == "ENTROPY":
+    elif impurity_measure == ENTROPY:
         get_impurity: Callable = get_entropy
-    elif impurity_measure == "VARIANCE":
+    elif impurity_measure == VARIANCE:
         get_impurity: Callable = get_variance
-    elif impurity_measure == "MSE":
+    elif impurity_measure == MSE:
         get_impurity: Callable = get_mse
     else:
         Exception(
@@ -45,7 +45,7 @@ def get_impurity_reductions(
     :returns: Impurity reduction when splitting node by bins in _bin_edge_idcs
     """
     if impurity_measure == "":
-        impurity_measure = "GINI" if is_classification else "MSE"
+        impurity_measure = GINI if is_classification else MSE
     get_impurity = get_impurity_fn(impurity_measure)
 
     h = histogram

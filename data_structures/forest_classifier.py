@@ -26,6 +26,7 @@ class ForestClassifier(Classifier):
         max_leaf_nodes: int = None,
         bin_type: str = LINEAR,
         solver: str = MAB,
+        criterion: str = GINI,
     ) -> None:
         self.data = data
         self.num_features = len(data[0])
@@ -43,7 +44,7 @@ class ForestClassifier(Classifier):
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
-        self.criterion = GINI
+        self.criterion = criterion
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
         self.min_samples_leaf = 1

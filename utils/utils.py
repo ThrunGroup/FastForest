@@ -49,7 +49,6 @@ def counts_of_labels(class_dict: dict, labels: np.ndarray) -> np.ndarray:
     """
     Helper function for generating counts array.
 
-
     :param: class_dict: dict from class name to class index
     :param labels: labels of dataset
     :return: array of counts of each class label, indexed by class index

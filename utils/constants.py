@@ -14,6 +14,9 @@ EXACT = "EXACT"
 
 # Criteria
 GINI = "GINI"
+ENTROPY = "ENTROPY"
+VARIANCE = "VARIANCE"
+MSE = "MSE"
 
 # Splitters
 BEST = "BEST"
