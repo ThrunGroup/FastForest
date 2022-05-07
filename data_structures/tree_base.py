@@ -6,6 +6,7 @@ from typing import Union, Tuple, DefaultDict
 
 from data_structures.node import Node
 from utils.utils import data_to_discrete
+from utils.constants import MAB, LINEAR, BEST, DEPTH, GINI
 
 
 class TreeBase(ABC):
@@ -20,18 +21,19 @@ class TreeBase(ABC):
         labels: np.ndarray,
         max_depth: int,
         classes: dict = None,
-        splitter: str = "best",
+        splitter: str = BEST,
         min_samples_split: int = 2,
         min_impurity_decrease: float = -1e-6,
         max_leaf_nodes: int = None,
         discrete_features: DefaultDict = defaultdict(list),
-        bin_type: str = "linear",
+        bin_type: str = LINEAR,
         budget: int = None,
         is_classification: bool = True,
         verbose: bool = True,
+        solver: str = MAB,
     ) -> None:
-        self.data = data  # TODO(@motiwari): Is this a reference or a copy?
-        self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
+        self.data = data  # This is a REFERENCE
+        self.labels = labels  # This is a REFERENCE
         self.n_data = len(labels)
         if is_classification:
             self.classes = classes  # dict from class name to class index
@@ -44,6 +46,8 @@ class TreeBase(ABC):
         )
         self.is_classification = is_classification
         self.remaining_budget = budget
+        self.verbose = verbose
+        self.solver = solver
 
         self.node = Node(
             tree=self,
@@ -54,14 +58,15 @@ class TreeBase(ABC):
             proportion=1.0,
             bin_type=self.bin_type,
             is_classification=self.is_classification,
-            verbose=verbose,
+            verbose=self.verbose,
+            solver=self.solver,
         )
 
         # These are copied from the link below. We won't need all of them.
         # https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
         self.leaves = []
-        self.criterion = "GINI"
-        self.splitter = "best"
+        self.criterion = GINI
+        self.splitter = splitter
         self.max_depth = 1
         self.min_samples_split = min_samples_split
         self.min_samples_leaf = 1
@@ -115,7 +120,7 @@ class TreeBase(ABC):
         :return: None
         """
         # Best-first tree fitting
-        if self.splitter == "best":
+        if self.splitter == BEST:
             self.leaves.append(self.node)
             sufficient_impurity_decrease = True
             while sufficient_impurity_decrease:
@@ -191,7 +196,7 @@ class TreeBase(ABC):
                 self.depth = self.get_depth()
 
         # Depth-first tree fitting
-        elif self.splitter == "depth":
+        elif self.splitter == DEPTH:
             raise Exception(
                 "Budget tracking in recursive splitting is not yet supported. Are you sure you know what you're doing?"
             )

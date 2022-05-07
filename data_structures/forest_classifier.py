@@ -3,7 +3,7 @@ from typing import Tuple, DefaultDict
 
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.classifier import Classifier
-from utils.constants import BUFFER
+from utils.constants import BUFFER, MAB, LINEAR, GINI, SQRT
 from utils.utils import class_to_idx, data_to_discrete
 
 
@@ -24,29 +24,31 @@ class ForestClassifier(Classifier):
         min_samples_split: int = 2,
         min_impurity_decrease: float = 0,
         max_leaf_nodes: int = None,
-        bin_type="linear",
+        bin_type: str = LINEAR,
+        solver: str = MAB,
     ) -> None:
         self.data = data
         self.num_features = len(data[0])
         self.labels = labels
         self.trees = []
         self.n_estimators = n_estimators
-        self.feature_subsampling = "SQRT"
+        self.feature_subsampling = SQRT
         self.classes: dict = class_to_idx(
             np.unique(labels)
         )  # a dictionary that maps class name to class index
         self.n_classes = len(self.classes)
         self.remaining_budget = budget
         self.verbose = verbose
+        self.solver = solver
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
-        self.criterion = "gini"
+        self.criterion = GINI
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
         self.min_samples_leaf = 1
         self.min_weight_fraction_leaf = 0.0
-        self.max_features = "auto"
+        self.max_features = None
         self.max_leaf_nodes = max_leaf_nodes
         self.min_impurity_decrease = min_impurity_decrease
         self.bootstrap = True
@@ -100,7 +102,7 @@ class ForestClassifier(Classifier):
             if self.remaining_budget is not None and self.remaining_budget <= 0:
                 break
 
-            if self.feature_subsampling == "SQRT":
+            if self.feature_subsampling == SQRT:
                 feature_idcs = np.random.choice(
                     self.num_features, size=int(np.ceil(np.sqrt(self.num_features)))
                 )
@@ -135,6 +137,7 @@ class ForestClassifier(Classifier):
                 max_leaf_nodes=self.max_leaf_nodes,
                 discrete_features=self.discrete_features,
                 bin_type=self.bin_type,
+                solver=self.solver,
             )
             tree.fit()
             self.trees.append(tree)

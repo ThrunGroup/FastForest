@@ -1,9 +1,10 @@
-from data_structures.classifier import Classifier
-from data_structures.tree_base import TreeBase
+import numpy as np
 from typing import DefaultDict
 from collections import defaultdict
 
-import numpy as np
+from data_structures.classifier import Classifier
+from data_structures.tree_base import TreeBase
+from utils.constants import MAB, LINEAR
 
 
 class TreeClassifier(TreeBase, Classifier):
@@ -23,8 +24,9 @@ class TreeClassifier(TreeBase, Classifier):
         min_impurity_decrease: float = -1e-6,
         max_leaf_nodes: int = None,
         discrete_features: DefaultDict = defaultdict(list),
-        bin_type: str = "linear",
+        bin_type: str = LINEAR,
         verbose: bool = True,
+        solver: str = MAB,
     ):
         self.classes = classes  # dict from class name to class index
         self.idx_to_class = {value: key for key, value in classes.items()}
@@ -41,4 +43,5 @@ class TreeClassifier(TreeBase, Classifier):
             is_classification=True,
             budget=budget,
             verbose=verbose,
+            solver=solver,
         )

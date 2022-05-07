@@ -109,6 +109,126 @@ def get_impurity_reductions(
     return impurity_reductions  # Jay: we can change the type of impurity_reductions to Tuple[np.ndarray] whose each array has size 1
 
 
+def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bool:
+    # TODO: Fix this. Use a dictionary to store original labels -> label index
+    #  or use something like label_idx,
+    #  label in np.unique(labels) to avoid assuming that the labels are 0, ... K-1
+    class_dict: dict = class_to_idx(np.unique(labels))
+    counts: np.ndarray = counts_of_labels(
+        class_dict, labels
+    )  # counts[i] is the number of points that have the label class_dict[i]
+    p = counts / len(labels)
+    root_impurity = 1 - np.dot(p, p)
+
+    left_idcs = np.where(data[:, feature] <= value)
+    left_labels = labels[left_idcs]
+    L_counts: np.ndarray = counts_of_labels(class_dict, left_labels)
+
+    # This is already a pure node
+    if len(left_idcs[0]) == 0:
+        return False
+    p_L = L_counts / np.sum(L_counts)
+
+    right_idcs = np.where(data[:, feature] > value)
+    right_labels = labels[right_idcs]
+    R_counts: np.ndarray = counts_of_labels(class_dict, right_labels)
+
+    # This is already a pure node
+    if len(right_idcs[0]) == 0:
+        return False
+    p_R = R_counts / np.sum(R_counts)
+
+    split_impurity = (1 - np.dot(p_L, p_L)) * np.sum(L_counts) + (
+        1 - np.dot(p_R, p_R)
+    ) * np.sum(R_counts)
+    split_impurity /= len(labels)
+
+    return TOLERANCE < root_impurity - split_impurity
+
+
+def solve_exactly(
+    data: np.ndarray,
+    labels: np.ndarray,
+    discrete_bins_dict: DefaultDict,
+    fixed_bin_type: str = "",
+    is_classification: bool = True,
+    impurity_measure: str = "",
+    min_impurity_reduction: float = 0,
+) -> Tuple[int, float, float, int]:
+    """
+    Find the best feature to split on, as well as the value that feature should be split at, using the canonical (exact)
+    algorithm. We assume that we still discretize (which is not true in RF).
+
+    This method may be inefficient because we rely on the same sample_targets that the MAB solution uses. Nonetheless,
+    it gives an accurate measure of the total number of queries and is used for ease of implementation.
+
+    :param data: Feature set
+    :param labels: Labels of datapoints
+    :param discrete_bins_dict: A dictionary of discrete bins
+    :param fixed_bin_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
+    :param num_queries: mutable variable to update the number of datapoints queried
+    :param is_classification:  Whether is a classification problem(True) or regression problem(False)
+    :param impurity_measure: A name of impurity_measure
+    :param impurity_measure: Minimum impurity reduction beyond which to return a nonempty solution
+    :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
+    """
+    B = 11  # TODO: Fix this hard-coding
+    N = len(data)
+    F = len(data[0])
+    candidates = np.array(list(itertools.product(range(F), range(B))))
+    estimates = np.empty((F, B))
+
+    # Make a list of histograms, a list of indices that we don't consider as potential arms, and a list of indices
+    # that we consider as potential arms.
+    histograms, not_considered_idcs, considered_idcs = make_histograms(
+        is_classification,
+        data,
+        labels,
+        discrete_bins_dict,
+        fixed_bin_type=fixed_bin_type,
+        num_bins=B,
+    )
+
+    considered_idcs = np.array(considered_idcs)
+    not_considered_idcs = np.array(not_considered_idcs)
+    if len(not_considered_idcs) > 0:
+        not_considered_access = (not_considered_idcs[:, 0], not_considered_idcs[:, 1])
+        estimates[not_considered_access] = float("inf")
+        candidates = considered_idcs
+
+    # Massage arm indices for use by numpy slicing
+    accesses = (
+        candidates[:, 0],
+        candidates[:, 1],
+    )
+
+    estimates[accesses], _cb_delta, num_queries = sample_targets(
+        is_classification,
+        data,
+        labels,
+        accesses,
+        histograms,
+        N,
+        impurity_measure=impurity_measure,
+    )
+
+    total_queries = num_queries
+    # TODO(@motiwari): Can't use nanmin here -- why?
+    # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
+    best_split = zip(
+        np.where(estimates == np.nanmin(estimates))[0],
+        np.where(estimates == np.nanmin(estimates))[1],
+    ).__next__()  # Get first element
+    best_feature = best_split[0]
+    best_value = histograms[best_feature].bin_edges[best_split[1]]
+    best_reduction = estimates[best_split]
+
+    if best_reduction < min_impurity_reduction:
+        return best_feature, best_value, best_reduction, total_queries
+    else:
+        return total_queries
+
+
 def sample_targets(
     is_classification: bool,
     data: np.ndarray,
@@ -168,43 +288,6 @@ def sample_targets(
 
     # TODO(@motiwari): This seems dangerous, because access appears to be a linear index to the array
     return impurity_reductions, cb_deltas, num_queries
-
-
-def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bool:
-    # TODO: Fix this. Use a dictionary to store original labels -> label index
-    #  or use something like label_idx,
-    #  label in np.unique(labels) to avoid assuming that the labels are 0, ... K-1
-    class_dict: dict = class_to_idx(np.unique(labels))
-    counts: np.ndarray = counts_of_labels(
-        class_dict, labels
-    )  # counts[i] is the number of points that have the label class_dict[i]
-    p = counts / len(labels)
-    root_impurity = 1 - np.dot(p, p)
-
-    left_idcs = np.where(data[:, feature] <= value)
-    left_labels = labels[left_idcs]
-    L_counts: np.ndarray = counts_of_labels(class_dict, left_labels)
-
-    # This is already a pure node
-    if len(left_idcs[0]) == 0:
-        return False
-    p_L = L_counts / np.sum(L_counts)
-
-    right_idcs = np.where(data[:, feature] > value)
-    right_labels = labels[right_idcs]
-    R_counts: np.ndarray = counts_of_labels(class_dict, right_labels)
-
-    # This is already a pure node
-    if len(right_idcs[0]) == 0:
-        return False
-    p_R = R_counts / np.sum(R_counts)
-
-    split_impurity = (1 - np.dot(p_L, p_L)) * np.sum(L_counts) + (
-        1 - np.dot(p_R, p_R)
-    ) * np.sum(R_counts)
-    split_impurity /= len(labels)
-
-    return TOLERANCE < root_impurity - split_impurity
 
 
 def solve_mab(
