@@ -57,7 +57,7 @@ class ForestTests(unittest.TestCase):
         # solving MAB
         print(
             "Best arm from solve_mab is: ",
-            utils.mab_functions.solve_mab(data, labels, empty_discrete_dict),
+            utils.solvers.solve_mab(data, labels, empty_discrete_dict),
         )
 
         print("\n\n=> Tree fitting:")

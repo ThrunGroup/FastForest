@@ -4,7 +4,7 @@ from __future__ import (
 import numpy as np
 from typing import Union
 
-from utils.mab_functions import solve_mab, solve_exactly
+from utils.solvers import solve_mab, solve_exactly
 from utils.utils import type_check, counts_of_labels
 from utils.constants import MAB, EXACT, GINI, LINEAR
 
