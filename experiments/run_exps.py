@@ -151,7 +151,7 @@ def run_exp(args: argparse.Namespace, logfile: str) -> None:
             "Fixed: "
             + ("Budget " if args.fixed == "B" else "Metric ")
             + "\n"
-            + "Fixed Value:"
+            + "Fixed Value: "
             + str(acc)
             + "\n"
         )
