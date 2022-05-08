@@ -6,3 +6,26 @@ HEART = "HEART"
 CONF_MULTIPLIER = 3
 TOLERANCE = -1e-1
 BUFFER = 1000
+
+
+# Solvers
+MAB = "MAB"
+EXACT = "EXACT"
+
+# Criteria
+GINI = "GINI"
+ENTROPY = "ENTROPY"
+VARIANCE = "VARIANCE"
+MSE = "MSE"
+
+# Splitters
+BEST = "BEST"
+DEPTH = "DEPTH"
+
+# Bin types
+LINEAR = "LINEAR"
+DISCRETE = "DISCRETE"
+IDENTITY = "IDENTITY"
+
+# Feature subsampling
+SQRT = "SQRT"

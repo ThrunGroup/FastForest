@@ -1,9 +1,10 @@
-from data_structures.classifier import Classifier
-from data_structures.tree_base import TreeBase
+import numpy as np
 from typing import DefaultDict
 from collections import defaultdict
 
-import numpy as np
+from data_structures.classifier import Classifier
+from data_structures.tree_base import TreeBase
+from utils.constants import MAB, LINEAR, GINI, BEST
 
 
 class TreeClassifier(TreeBase, Classifier):
@@ -18,12 +19,15 @@ class TreeClassifier(TreeBase, Classifier):
         labels: np.ndarray,
         max_depth: int,
         classes: dict,
-        budget: int = None,
         min_samples_split: int = 2,
         min_impurity_decrease: float = -1e-6,
         max_leaf_nodes: int = None,
         discrete_features: DefaultDict = defaultdict(list),
-        bin_type: str = "linear",
+        bin_type: str = LINEAR,
+        budget: int = None,
+        criterion: str = GINI,
+        splitter: str = BEST,
+        solver: str = MAB,
         erf_k: str = "",
         verbose: bool = True,
     ):
@@ -39,8 +43,11 @@ class TreeClassifier(TreeBase, Classifier):
             max_leaf_nodes=max_leaf_nodes,
             discrete_features=discrete_features,
             bin_type=bin_type,
-            is_classification=True,
             budget=budget,
+            is_classification=True,
+            criterion=criterion,
+            splitter=splitter,
+            solver=solver,
             verbose=verbose,
-            erf_k=erf_k
+            erf_k=erf_k,
         )

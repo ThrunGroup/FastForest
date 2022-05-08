@@ -2,10 +2,11 @@ from __future__ import (
     annotations,
 )  # For typechecking parent: Node, this is somehow important
 import numpy as np
-from typing import DefaultDict, Union
+from typing import Union
 
-from utils.mab_functions import solve_mab
+from utils.solvers import solve_mab, solve_exactly
 from utils.utils import type_check, counts_of_labels
+from utils.constants import MAB, EXACT, GINI, LINEAR
 
 type_check()
 
@@ -20,9 +21,11 @@ class Node:
         depth: int,
         proportion: float,
         is_classification: bool = True,
+        bin_type: str = LINEAR,
+        criterion: str = GINI,
+        solver: str = MAB,
         verbose: bool = True,
-        bin_type: str = "",
-        erf_k: str = ""
+        erf_k: str = "",
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
@@ -37,6 +40,8 @@ class Node:
         self.left = None
         self.right = None
         self.verbose = verbose
+        self.solver = solver
+        self.criterion = criterion
 
         # NOTE: Do not assume labels are all integers from 0 to num_classes-1
         if is_classification:
@@ -68,14 +73,25 @@ class Node:
         if self.best_reduction_computed:
             return self.split_reduction
 
-        results = solve_mab(
-            self.data,
-            self.labels,
-            self.tree.discrete_features,
-            fixed_bin_type=self.bin_type,
-            erf_k=self.erf_k,
-            is_classification=self.is_classification
-        )
+        if self.solver == MAB:
+            results = solve_mab(
+                self.data,
+                self.labels,
+                self.tree.discrete_features,
+                fixed_bin_type=self.bin_type,
+                is_classification=self.is_classification,
+            )
+        elif self.solver == EXACT:
+            results = solve_exactly(
+                self.data,
+                self.labels,
+                self.tree.discrete_features,
+                fixed_bin_type=self.bin_type,
+                is_classification=self.is_classification,
+            )
+        else:
+            raise Exception("Invalid solver specified, must be MAB or EXACT")
+
         # Even if results is None, we should cache the fact that we know that
         self.best_reduction_computed = True
 
@@ -108,6 +124,7 @@ class Node:
             self.proportion * (len(child_labels) / len(self.labels)),
             bin_type=self.bin_type,
             is_classification=self.is_classification,
+            solver=self.solver,
         )
 
     def split(self) -> None:

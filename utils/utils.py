@@ -4,6 +4,7 @@ from collections import defaultdict
 from typing import DefaultDict, Tuple, List
 
 from data_structures.histogram import Histogram
+from utils.constants import LINEAR, DISCRETE, IDENTITY
 
 
 def type_check() -> None:
@@ -31,7 +32,9 @@ def count_occurrence(class_: np.ndarray, labels: np.ndarray) -> int:
     return len(np.where(labels == class_)[0])
 
 
-def class_to_idx(classes: np.ndarray,) -> dict:
+def class_to_idx(
+    classes: np.ndarray,
+) -> dict:
     """
     Helpful function for generating dictionary that maps class names to class index
     Helper function for function for generating dictionary that maps class names to class index
@@ -45,7 +48,6 @@ def class_to_idx(classes: np.ndarray,) -> dict:
 def counts_of_labels(class_dict: dict, labels: np.ndarray) -> np.ndarray:
     """
     Helper function for generating counts array.
-
 
     :param: class_dict: dict from class name to class index
     :param labels: labels of dataset
@@ -97,10 +99,10 @@ def choose_bin_type(D: int, N: int, B: int) -> str:
     """
     min_num = min(D, N, B)
     if min_num == D:
-        return "discrete"
+        return DISCRETE
     elif min_num == N:
-        return "identity"
-    return "linear"
+        return IDENTITY
+    return LINEAR
 
 
 def make_histograms(
@@ -143,14 +145,14 @@ def make_histograms(
         else:
             bin_type = fixed_bin_type
 
-        if bin_type == "discrete":
+        if bin_type == DISCRETE:
             num_bins = D
             assert (
                 len(discrete_bins_dict[f_idx]) > 0
             ), "discrete_bins_dict[f_idx] is empty"
-        elif bin_type == "identity":
+        elif bin_type == IDENTITY:
             num_bins = N
-        elif bin_type == "linear":
+        elif bin_type == LINEAR:
             min_bin, max_bin = np.min(f_data), np.max(f_data)
             num_bins = B
         elif bin_type == "random":  # this is for extremely random forests
@@ -171,7 +173,7 @@ def make_histograms(
             num_bins=num_bins,
             min_bin=min_bin,
             max_bin=max_bin,
-            bin_type=bin_type
+            bin_type=bin_type,
         )
         histograms.append(histogram)
 

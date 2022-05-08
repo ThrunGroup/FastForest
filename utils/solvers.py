@@ -1,112 +1,140 @@
 import numpy as np
 import itertools
 
-from typing import List, Tuple, Callable, Union, DefaultDict
+from typing import List, Tuple, DefaultDict
 from collections import defaultdict
 
-from data_structures.histogram import Histogram
-from utils.constants import CONF_MULTIPLIER, TOLERANCE
-from utils.criteria import get_gini, get_entropy, get_variance, get_mse
+
+from utils.constants import (
+    CONF_MULTIPLIER,
+    TOLERANCE,
+    GINI,
+    LINEAR,
+)
+from utils.criteria import get_impurity_reductions
 from utils.utils import type_check, class_to_idx, counts_of_labels, make_histograms
 
 type_check()
 
 
-def get_impurity_fn(impurity_measure: str) -> Callable:
-    if impurity_measure == "GINI":
-        get_impurity: Callable = get_gini
-    elif impurity_measure == "ENTROPY":
-        get_impurity: Callable = get_entropy
-    elif impurity_measure == "VARIANCE":
-        get_impurity: Callable = get_variance
-    elif impurity_measure == "MSE":
-        get_impurity: Callable = get_mse
-    else:
-        Exception(
-            "Did not assign any measure for impurity calculation in get_impurity_reduction function"
-        )
-    return get_impurity
+def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bool:
+    # TODO: Fix this. Use a dictionary to store original labels -> label index
+    #  or use something like label_idx,
+    #  label in np.unique(labels) to avoid assuming that the labels are 0, ... K-1
+    class_dict: dict = class_to_idx(np.unique(labels))
+    counts: np.ndarray = counts_of_labels(
+        class_dict, labels
+    )  # counts[i] is the number of points that have the label class_dict[i]
+    p = counts / len(labels)
+    root_impurity = 1 - np.dot(p, p)
+
+    left_idcs = np.where(data[:, feature] <= value)
+    left_labels = labels[left_idcs]
+    L_counts: np.ndarray = counts_of_labels(class_dict, left_labels)
+
+    # This is already a pure node
+    if len(left_idcs[0]) == 0:
+        return False
+    p_L = L_counts / np.sum(L_counts)
+
+    right_idcs = np.where(data[:, feature] > value)
+    right_labels = labels[right_idcs]
+    R_counts: np.ndarray = counts_of_labels(class_dict, right_labels)
+
+    # This is already a pure node
+    if len(right_idcs[0]) == 0:
+        return False
+    p_R = R_counts / np.sum(R_counts)
+
+    split_impurity = (1 - np.dot(p_L, p_L)) * np.sum(L_counts) + (
+        1 - np.dot(p_R, p_R)
+    ) * np.sum(R_counts)
+    split_impurity /= len(labels)
+
+    return TOLERANCE < root_impurity - split_impurity
 
 
-def get_impurity_reductions(
-    is_classification: bool,
-    histogram: Histogram,
-    _bin_edge_idcs: List[int],
-    ret_vars: bool = False,
-    impurity_measure: str = "",
-) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
+def solve_exactly(
+    data: np.ndarray,
+    labels: np.ndarray,
+    discrete_bins_dict: DefaultDict,
+    fixed_bin_type: str = LINEAR,
+    is_classification: bool = True,
+    impurity_measure: str = GINI,
+    min_impurity_reduction: float = 0,
+) -> Tuple[int, float, float, int]:
     """
-    Given a histogram of counts for each bin, compute the impurity reductions if we were to split a node on any of the
-    histogram's bin edges.
+    Find the best feature to split on, as well as the value that feature should be split at, using the canonical (exact)
+    algorithm. We assume that we still discretize (which is not true in RF).
 
-    Impurity is measured either by Gini index or entropy
+    This method may be inefficient because we rely on the same sample_targets that the MAB solution uses. Nonetheless,
+    it gives an accurate measure of the total number of queries and is used for ease of implementation.
 
-    :param is_classification: Whether the problem is a classification problem(True) or a regression problem(False)
-    :returns: Impurity reduction when splitting node by bins in _bin_edge_idcs
+    :param data: Feature set
+    :param labels: Labels of datapoints
+    :param discrete_bins_dict: A dictionary of discrete bins
+    :param fixed_bin_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
+    :param num_queries: mutable variable to update the number of datapoints queried
+    :param is_classification:  Whether is a classification problem(True) or regression problem(False)
+    :param impurity_measure: A name of impurity_measure
+    :param impurity_measure: Minimum impurity reduction beyond which to return a nonempty solution
+    :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
-    if impurity_measure == "":
-        impurity_measure = "GINI" if is_classification else "MSE"
-    get_impurity = get_impurity_fn(impurity_measure)
+    B = 11  # TODO: Fix this hard-coding
+    N = len(data)
+    F = len(data[0])
+    candidates = np.array(list(itertools.product(range(F), range(B))))
+    estimates = np.empty((F, B))
 
-    h = histogram
-    b = len(_bin_edge_idcs)
-    assert (
-        b <= h.num_bins
-    ), "len(bin_edges) whose impurity reductions we want to calculate is greater than len(total_bin_edges)"
-    impurities_left = np.zeros(b)
-    impurities_right = np.zeros(b)
-    V_impurities_left = np.zeros(b)
-    V_impurities_right = np.zeros(b)
+    # Make a list of histograms, a list of indices that we don't consider as potential arms, and a list of indices
+    # that we consider as potential arms.
+    histograms, not_considered_idcs, considered_idcs = make_histograms(
+        is_classification,
+        data,
+        labels,
+        discrete_bins_dict,
+        fixed_bin_type=fixed_bin_type,
+        num_bins=B,
+    )
 
-    if is_classification:
-        n = np.sum(h.left[0, :]) + np.sum(h.right[0, :])
+    considered_idcs = np.array(considered_idcs)
+    not_considered_idcs = np.array(not_considered_idcs)
+    if len(not_considered_idcs) > 0:
+        not_considered_access = (not_considered_idcs[:, 0], not_considered_idcs[:, 1])
+        estimates[not_considered_access] = float("inf")
+        candidates = considered_idcs
+
+    # Massage arm indices for use by numpy slicing
+    accesses = (
+        candidates[:, 0],
+        candidates[:, 1],
+    )
+
+    estimates[accesses], _cb_delta, num_queries = sample_targets(
+        is_classification,
+        data,
+        labels,
+        accesses,
+        histograms,
+        N,
+        impurity_measure=impurity_measure,
+    )
+
+    total_queries = num_queries
+    # TODO(@motiwari): Can't use nanmin here -- why?
+    # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
+    best_split = zip(
+        np.where(estimates == np.nanmin(estimates))[0],
+        np.where(estimates == np.nanmin(estimates))[1],
+    ).__next__()  # Get first element
+    best_feature = best_split[0]
+    best_value = histograms[best_feature].bin_edges[best_split[1]]
+    best_reduction = estimates[best_split]
+
+    if best_reduction < min_impurity_reduction:
+        return best_feature, best_value, best_reduction, total_queries
     else:
-        n = len(h.left_pile[0]) + len(h.right_pile[0])
-    for i in range(b):
-        b_idx = _bin_edge_idcs[i]
-        if is_classification:
-            IL, V_IL = get_impurity(h.left[b_idx, :], ret_var=True)
-            IR, V_IR = get_impurity(h.right[b_idx, :], ret_var=True)
-        else:
-            IL, V_IL = get_impurity(h.left_pile[b_idx], ret_var=True)
-            IR, V_IR = get_impurity(h.right_pile[b_idx], ret_var=True)
-
-        # Impurity is weighted by population of each node during a split
-        if is_classification:
-            left_weight = np.sum(h.left[b_idx, :]) / n
-            right_weight = np.sum(h.right[b_idx, :]) / n
-        else:
-            left_weight = len(h.left_pile[b_idx]) / n
-            right_weight = len(h.right_pile[b_idx]) / n
-        impurities_left[i], V_impurities_left[i] = (
-            float(left_weight * IL),
-            float((left_weight ** 2) * V_IL),
-        )
-        impurities_right[i], V_impurities_right[i] = (
-            float(right_weight * IR),
-            float((right_weight ** 2) * V_IR),
-        )
-
-    if is_classification:
-        impurity_curr, V_impurity_curr = get_impurity(
-            h.left[0, :] + h.right[0, :], ret_var=True
-        )
-    else:
-        impurity_curr, V_impurity_curr = get_impurity(
-            h.left_pile[0] + h.right_pile[0], ret_var=True
-        )
-    impurity_curr = float(impurity_curr)
-    V_impurity_curr = float(V_impurity_curr)
-    # TODO(@motiwari): Might not need to subtract off impurity_curr
-    #  since it doesn't affect reduction in a single feature?
-    # (once best feature is determined)
-    impurity_reductions = (impurities_left + impurities_right) - impurity_curr
-
-    if ret_vars:
-        # Note the last plus because Var(X-Y) = Var(X) + Var(Y) if X, Y are independent (this is an UNDERestimate)
-        impurity_vars = V_impurities_left + V_impurities_right + V_impurity_curr
-        return impurity_reductions, impurity_vars
-    return impurity_reductions  # Jay: we can change the type of impurity_reductions to Tuple[np.ndarray] whose each array has size 1
+        return total_queries
 
 
 def sample_targets(
@@ -116,7 +144,7 @@ def sample_targets(
     arms: Tuple[np.ndarray, np.ndarray],
     histograms: List[object],
     batch_size: int,
-    impurity_measure: str = "",
+    impurity_measure: str = GINI,
 ) -> Tuple[np.ndarray, np.ndarray, int]:
     """
     Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
@@ -159,7 +187,11 @@ def sample_targets(
         h.add(samples, sample_labels)  # This is where the labels are used
         # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
         i_r, cb_d = get_impurity_reductions(
-            is_classification, h, f2bin_dict[f], ret_vars=True
+            is_classification=is_classification,
+            histogram=h,
+            _bin_edge_idcs=f2bin_dict[f],
+            ret_vars=True,
+            impurity_measure=impurity_measure,
         )
         impurity_reductions = np.concatenate([impurity_reductions, i_r])
         cb_deltas = np.concatenate(
@@ -170,51 +202,14 @@ def sample_targets(
     return impurity_reductions, cb_deltas, num_queries
 
 
-def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bool:
-    # TODO: Fix this. Use a dictionary to store original labels -> label index
-    #  or use something like label_idx,
-    #  label in np.unique(labels) to avoid assuming that the labels are 0, ... K-1
-    class_dict: dict = class_to_idx(np.unique(labels))
-    counts: np.ndarray = counts_of_labels(
-        class_dict, labels
-    )  # counts[i] is the number of points that have the label class_dict[i]
-    p = counts / len(labels)
-    root_impurity = 1 - np.dot(p, p)
-
-    left_idcs = np.where(data[:, feature] <= value)
-    left_labels = labels[left_idcs]
-    L_counts: np.ndarray = counts_of_labels(class_dict, left_labels)
-
-    # This is already a pure node
-    if len(left_idcs[0]) == 0:
-        return False
-    p_L = L_counts / np.sum(L_counts)
-
-    right_idcs = np.where(data[:, feature] > value)
-    right_labels = labels[right_idcs]
-    R_counts: np.ndarray = counts_of_labels(class_dict, right_labels)
-
-    # This is already a pure node
-    if len(right_idcs[0]) == 0:
-        return False
-    p_R = R_counts / np.sum(R_counts)
-
-    split_impurity = (1 - np.dot(p_L, p_L)) * np.sum(L_counts) + (
-        1 - np.dot(p_R, p_R)
-    ) * np.sum(R_counts)
-    split_impurity /= len(labels)
-
-    return TOLERANCE < root_impurity - split_impurity
-
-
 def solve_mab(
     data: np.ndarray,
     labels: np.ndarray,
     discrete_bins_dict: DefaultDict,
-    fixed_bin_type: str = "",
+    fixed_bin_type: str = LINEAR,
     erf_k: str = "",
     is_classification: bool = True,
-    impurity_measure: str = "",
+    impurity_measure: str = GINI,
     min_impurity_reduction: float = 0,
 ) -> Tuple[int, float, float, int]:
     """

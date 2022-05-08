@@ -6,6 +6,7 @@ from typing import Union, Tuple, DefaultDict
 
 from data_structures.node import Node
 from utils.utils import data_to_discrete
+from utils.constants import MAB, LINEAR, BEST, DEPTH, GINI
 
 
 class TreeBase(ABC):
@@ -20,31 +21,42 @@ class TreeBase(ABC):
         labels: np.ndarray,
         max_depth: int,
         classes: dict = None,
-        splitter: str = "best",
         min_samples_split: int = 2,
         min_impurity_decrease: float = -1e-6,
         max_leaf_nodes: int = None,
         discrete_features: DefaultDict = defaultdict(list),
-        bin_type: str = "linear",
+        bin_type: str = LINEAR,
         erf_k: str = "",
         budget: int = None,
         is_classification: bool = True,
+        criterion: str = GINI,
+        splitter: str = BEST,
+        solver: str = MAB,
         verbose: bool = True,
     ) -> None:
-        self.data = data  # TODO(@motiwari): Is this a reference or a copy?
-        self.labels = labels  # TODO(@motiwari): Is this a reference or a copy?
+        self.data = data  # This is a REFERENCE
+        self.labels = labels  # This is a REFERENCE
+        self.max_depth = max_depth
         self.n_data = len(labels)
         if is_classification:
             self.classes = classes  # dict from class name to class index
             self.idx_to_class = {value: key for key, value in classes.items()}
-        self.bin_type = bin_type
+        self.min_samples_split = min_samples_split
+        # Make this a small negative number to avoid infinite loop when all leaves are at max_depth
+        self.min_impurity_decrease = min_impurity_decrease
+        self.max_leaf_nodes = max_leaf_nodes
         self.discrete_features = (
             discrete_features
             if len(discrete_features) > 0
             else data_to_discrete(data, n=10)
         )
-        self.is_classification = is_classification
+        self.bin_type = bin_type
         self.remaining_budget = budget
+        self.is_classification = is_classification
+        self.criterion = criterion
+        self.splitter = splitter
+        self.solver = solver
+        self.verbose = verbose
 
         self.node = Node(
             tree=self,
@@ -56,28 +68,21 @@ class TreeBase(ABC):
             bin_type=self.bin_type,
             erf_k=erf_k,
             is_classification=self.is_classification,
-            verbose=verbose,
+            verbose=self.verbose,
+            solver=self.solver,
         )
 
         # These are copied from the link below. We won't need all of them.
         # https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
         self.leaves = []
-        self.criterion = "GINI"
-        self.splitter = "best"
-        self.max_depth = 1
-        self.min_samples_split = min_samples_split
+
         self.min_samples_leaf = 1
         self.min_weight_fraction = 0.0
         self.max_features = None
         self.random_state = None
-        self.max_leaf_nodes = max_leaf_nodes
-        # Make this a small negative number to avoid infinite loop when all leaves are at max_depth
-        self.min_impurity_decrease = min_impurity_decrease
         self.class_weight = None
         self.ccp_alpha = 0.0
         self.depth = 1
-        self.max_depth = max_depth
-        self.verbose = verbose
 
         self.num_splits = 0
         self.num_queries = 0
@@ -117,7 +122,7 @@ class TreeBase(ABC):
         :return: None
         """
         # Best-first tree fitting
-        if self.splitter == "best":
+        if self.splitter == BEST:
             self.leaves.append(self.node)
             sufficient_impurity_decrease = True
             while sufficient_impurity_decrease:
@@ -193,7 +198,7 @@ class TreeBase(ABC):
                 self.depth = self.get_depth()
 
         # Depth-first tree fitting
-        elif self.splitter == "depth":
+        elif self.splitter == DEPTH:
             raise Exception(
                 "Budget tracking in recursive splitting is not yet supported. Are you sure you know what you're doing?"
             )
