@@ -2,10 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from sklearn.tree import DecisionTreeRegressor, plot_tree, export_text
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.datasets import load_diabetes
 
 import ground_truth
 from data_structures.tree_regressor import TreeRegressor
+from data_structures.forest_regressor import ForestRegressor
 
 
 def test_tree_diabetes(verbose: bool = False):
@@ -29,6 +31,23 @@ def test_tree_diabetes(verbose: bool = False):
         tree.tree_print()
     mse = np.sum(np.square(tree.predict_batch(data) - labels)) / len(data)
     print(f"MSE is {mse}")
+
+
+def test_forest_diabetes(verbose: bool = False):
+    diabetes = load_diabetes()
+    data, labels = diabetes.data, diabetes.target
+
+    RF = RandomForestRegressor(n_estimators=1, max_depth=6)
+    RF.fit(data, labels)
+    print("---Ground_Truth_Tree---")
+    mse = np.sum(np.square(RF.predict(data) - labels)) / len(data)
+    print(f"MSE of sklearn forest is {mse}")
+
+    print("---FastTree---")
+    FF = ForestRegressor(n_estimators=20, max_depth=1, verbose=verbose)
+    FF.fit(data, labels)
+    mse = np.sum(np.square(FF.predict_batch(data) - labels)) / len(data)
+    print(f"MSE of fastforest is {mse}")
 
 
 if __name__ == "__main__":
