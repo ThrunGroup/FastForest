@@ -30,7 +30,7 @@ class ForestTests(unittest.TestCase):
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
-        self.assertTrue((acc / len(data)) >= 0.97)
+        self.assertTrue((acc / len(data)) >= 0.98)
 
     def test_forest_iris(self) -> None:
         iris = sklearn.datasets.load_iris()
