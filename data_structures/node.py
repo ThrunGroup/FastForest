@@ -75,17 +75,17 @@ class Node:
 
         if self.solver == MAB:
             results = solve_mab(
-                self.data,
-                self.labels,
-                self.tree.discrete_features,
+                data=self.data,
+                labels=self.labels,
+                discrete_bins_dict=self.tree.discrete_features,
                 fixed_bin_type=self.bin_type,
                 is_classification=self.is_classification,
             )
         elif self.solver == EXACT:
             results = solve_exactly(
-                self.data,
-                self.labels,
-                self.tree.discrete_features,
+                data=self.data,
+                labels=self.labels,
+                discrete_bins_dict=self.tree.discrete_features,
                 fixed_bin_type=self.bin_type,
                 is_classification=self.is_classification,
             )
@@ -116,15 +116,16 @@ class Node:
         child_data = self.data[idcs]
         child_labels = self.labels[idcs]
         return Node(
-            self.tree,
-            self,
-            child_data,
-            child_labels,
-            self.depth + 1,
-            self.proportion * (len(child_labels) / len(self.labels)),
+            tree=self.tree,
+            parent=self,
+            data=child_data,
+            labels=child_labels,
+            depth=self.depth + 1,
+            proportion=self.proportion * (len(child_labels) / len(self.labels)),
             bin_type=self.bin_type,
             is_classification=self.is_classification,
             solver=self.solver,
+            verbose=self.verbose,
         )
 
     def split(self) -> None:

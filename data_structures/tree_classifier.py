@@ -29,6 +29,7 @@ class TreeClassifier(TreeBase, Classifier):
         splitter: str = BEST,
         solver: str = MAB,
         erf_k: str = "",
+        random_state: int = 0,
         verbose: bool = True,
     ):
         self.classes = classes  # dict from class name to class index
@@ -48,6 +49,7 @@ class TreeClassifier(TreeBase, Classifier):
             criterion=criterion,
             splitter=splitter,
             solver=solver,
-            verbose=verbose,
             erf_k=erf_k,
+            random_state=random_state,
+            verbose=verbose,
         )
