@@ -2,6 +2,7 @@ import numpy as np
 from typing import Tuple, DefaultDict
 
 from data_structures.tree_classifier import TreeClassifier
+from data_structures.boosted_tree_classifier import BoostedTreeClassifier
 from data_structures.classifier import Classifier
 from utils.constants import BUFFER, MAB, LINEAR, GINI, SQRT, BEST
 from utils.utils import class_to_idx, data_to_discrete
@@ -30,6 +31,10 @@ class ForestClassifier(Classifier):
         solver: str = MAB,
         verbose: bool = True,
         erf_k: str = SQRT,
+
+        # parameters specific for boosting
+        use_boosting: bool = False,
+        loss_type: str = "CELoss"
     ) -> None:
         self.data = data
         self.num_features = len(data[0])
@@ -80,6 +85,9 @@ class ForestClassifier(Classifier):
             data, n=10
         )  # TODO: Fix this hard-coding
 
+        self.use_boosting = use_boosting
+        self.loss_type = loss_type
+
     def check_both_or_neither(
         self, data: np.ndarray = None, labels: np.ndarray = None
     ) -> bool:
@@ -107,6 +115,7 @@ class ForestClassifier(Classifier):
             self.labels = labels
 
         self.trees = []
+        new_labels = [self.labels]
         for i in range(self.n_estimators):
             if self.remaining_budget is not None and self.remaining_budget <= 0:
                 break
@@ -127,29 +136,51 @@ class ForestClassifier(Classifier):
                 N = len(self.labels)
                 idcs = np.random.choice(N, size=N, replace=True)
                 new_data = self.data[idcs, :]
-                new_labels = self.labels[idcs]
+                new_labels[0] = self.labels[idcs]
             else:
                 new_data = self.data
-                new_labels = self.labels
+                new_labels[0] = self.labels
 
-            tree = TreeClassifier(
-                data=new_data[
-                    :, feature_idcs
-                ],  # Randomly choose a subset of the available features
-                labels=new_labels,
-                max_depth=self.max_depth,
-                classes=self.classes,
-                budget=self.remaining_budget,
-                verbose=self.verbose,
-                min_samples_split=self.min_samples_split,
-                min_impurity_decrease=self.min_impurity_decrease,
-                max_leaf_nodes=self.max_leaf_nodes,
-                discrete_features=self.discrete_features,
-                bin_type=self.bin_type,
-                solver=self.solver,
-                erf_k=self.erf_k,
-            )
+            if self.use_boosting:
+                tree = BoostedTreeClassifier(
+                    data=new_data[
+                         :, feature_idcs
+                         ],  # Randomly choose a subset of the available features
+                    labels=new_labels[0],
+                    max_depth=self.max_depth,
+                    classes=self.classes,
+                    budget=self.remaining_budget,
+                    verbose=self.verbose,
+                    min_samples_split=self.min_samples_split,
+                    min_impurity_decrease=self.min_impurity_decrease,
+                    max_leaf_nodes=self.max_leaf_nodes,
+                    discrete_features=self.discrete_features,
+                    bin_type=self.bin_type,
+                    solver=self.solver,
+                    erf_k=self.erf_k,
+                    loss_type=self.loss_type
+                )
+            else:
+                tree = TreeClassifier(
+                    data=new_data[
+                        :, feature_idcs
+                    ],  # Randomly choose a subset of the available features
+                    labels=new_labels[0],
+                    max_depth=self.max_depth,
+                    classes=self.classes,
+                    budget=self.remaining_budget,
+                    verbose=self.verbose,
+                    min_samples_split=self.min_samples_split,
+                    min_impurity_decrease=self.min_impurity_decrease,
+                    max_leaf_nodes=self.max_leaf_nodes,
+                    discrete_features=self.discrete_features,
+                    bin_type=self.bin_type,
+                    solver=self.solver,
+                    erf_k=self.erf_k,
+                )
             tree.fit()
+            if self.use_boosting:
+                new_labels[0] = tree.update_next_labels()
             self.trees.append(tree)
 
             # Bookkeeping

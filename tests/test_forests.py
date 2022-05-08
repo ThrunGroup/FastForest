@@ -8,6 +8,7 @@ import ground_truth
 from utils import data_generator
 from data_structures.forest_classifier import ForestClassifier
 from data_structures.tree_classifier import TreeClassifier
+from data_structures.boosted_tree_classifier import BoostedTreeClassifier
 import utils.utils
 from utils.constants import EXACT
 
@@ -15,6 +16,21 @@ from utils.constants import EXACT
 class ForestTests(unittest.TestCase):
     # We can't have an __init__ function due to pytest providing errors about function signatures.
     np.random.seed(0)
+
+    def test_boosted_forest_iris(self) -> None:
+        iris = sklearn.datasets.load_iris()
+        data, labels = iris.data, iris.target
+        f = ForestClassifier(
+            data=data,
+            labels=labels,
+            n_estimators=20,
+            max_depth=5,
+            use_boosting=True,
+            loss_type="CELoss"
+        )
+        f.fit()
+        acc = np.sum(f.predict_batch(data)[0] == labels)
+        self.assertTrue((acc / len(data)) >= 0.97)
 
     def test_forest_iris(self) -> None:
         iris = sklearn.datasets.load_iris()
