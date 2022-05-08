@@ -92,7 +92,7 @@ def choose_bin_type(D: int, N: int, B: int) -> str:
     """
     Return a type of bin we use depending on the number of unique feature values, data, and bins.
 
-    :param D: Number of discrete feature vlaues
+    :param D: Number of discrete feature values
     :param N: Number of data
     :param B: Number of bins
     :return: Return one among three bin types--linear, discrete, and identity
@@ -111,6 +111,7 @@ def make_histograms(
     labels: np.ndarray,
     discrete_bins_dict: DefaultDict,
     fixed_bin_type: str = "",
+    erf_k: str = "",
     num_bins: int = 11,
 ) -> Tuple[List[Histogram], List, List]:
     """
@@ -122,6 +123,7 @@ def make_histograms(
     :param labels: An 1d-array of target dat
     :param discrete_bins_dict: A DefaultDict mapping feature index to unique feature values
     :param fixed_bin_type: Fixed type of bin which should be one of "linear", "discrete", and "identity"
+    :param erf_k: The type of subsampling to use for bin_edges. The default is sqrt(n).
     :param num_bins: Number of bins
     :return: A list of histograms, a list of indices not considered, and a list of indices considered
     """
@@ -153,6 +155,12 @@ def make_histograms(
         elif bin_type == LINEAR:
             min_bin, max_bin = np.min(f_data), np.max(f_data)
             num_bins = B
+        elif bin_type == "random":  # this is for extremely random forests
+            min_bin, max_bin = np.min(f_data), np.max(f_data)
+            if erf_k == "" or erf_k == "SQRT":
+                num_bins = np.sqrt(np.shape(data)[0]).astype(int)
+            else:
+                NotImplementedError("Invalid choice of erf_k")
         else:
             NotImplementedError("Invalid choice of bin_type")
 

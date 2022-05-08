@@ -25,6 +25,7 @@ class Node:
         criterion: str = GINI,
         solver: str = MAB,
         verbose: bool = True,
+        erf_k: str = "",
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
@@ -32,6 +33,7 @@ class Node:
         self.labels = labels
         self.n_data = len(labels)
         self.bin_type = bin_type
+        self.erf_k = erf_k
         self.depth = depth
         self.proportion = proportion
         self.is_classification = is_classification

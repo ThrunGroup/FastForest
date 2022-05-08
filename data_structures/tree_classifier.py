@@ -28,6 +28,7 @@ class TreeClassifier(TreeBase, Classifier):
         criterion: str = GINI,
         splitter: str = BEST,
         solver: str = MAB,
+        erf_k: str = "",
         verbose: bool = True,
     ):
         self.classes = classes  # dict from class name to class index
@@ -48,4 +49,5 @@ class TreeClassifier(TreeBase, Classifier):
             splitter=splitter,
             solver=solver,
             verbose=verbose,
+            erf_k=erf_k,
         )

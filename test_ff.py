@@ -9,7 +9,6 @@ from utils.constants import LINEAR
 def test_tree_iris2(verbose: bool = False) -> None:
     """
     Compare tree fitting with different hyperparameters
-
     :param verbose: Whether to print how the trees are constructed in details.
     """
     iris = datasets.load_iris()

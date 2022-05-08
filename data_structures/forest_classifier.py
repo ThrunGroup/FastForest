@@ -29,12 +29,14 @@ class ForestClassifier(Classifier):
         splitter: str = BEST,
         solver: str = MAB,
         verbose: bool = True,
+        erf_k: str = SQRT,
     ) -> None:
         self.data = data
         self.num_features = len(data[0])
         self.labels = labels
         self.trees = []
         self.n_estimators = n_estimators
+
         self.max_depth = max_depth
         self.bootstrap = bootstrap
         self.feature_subsampling = feature_subsampling
@@ -42,6 +44,7 @@ class ForestClassifier(Classifier):
         self.min_impurity_decrease = min_impurity_decrease
         self.max_leaf_nodes = max_leaf_nodes
         self.bin_type = bin_type
+        self.erf_k = erf_k
 
         self.classes: dict = class_to_idx(
             np.unique(labels)
@@ -144,6 +147,7 @@ class ForestClassifier(Classifier):
                 discrete_features=self.discrete_features,
                 bin_type=self.bin_type,
                 solver=self.solver,
+                erf_k=self.erf_k,
             )
             tree.fit()
             self.trees.append(tree)
