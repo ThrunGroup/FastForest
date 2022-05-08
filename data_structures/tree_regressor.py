@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from data_structures.regressor import Regressor
 from data_structures.tree_base import TreeBase
-from utils.constants import MAB, LINEAR, GINI, BEST
+from utils.constants import MAB, LINEAR, BEST, MSE
 
 
 class TreeRegressor(TreeBase, Regressor):
@@ -25,7 +25,7 @@ class TreeRegressor(TreeBase, Regressor):
         bin_type: str = LINEAR,
         erf_k: str = "",
         budget: int = None,
-        criterion: str = GINI,
+        criterion: str = MSE,
         splitter: str = BEST,
         solver: str = MAB,
         verbose: bool = True,

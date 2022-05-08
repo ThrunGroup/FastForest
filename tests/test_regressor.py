@@ -25,7 +25,7 @@ def test_tree_diabetes(verbose: bool = False):
     print(f"MSE is {mse}")
 
     print("---FastTree---")
-    tree = TreeRegressor(data, labels, max_depth=6)
+    tree = TreeRegressor(data, labels, max_depth=6, verbose=verbose)
     tree.fit()
     if verbose:
         tree.tree_print()
@@ -52,3 +52,4 @@ def test_forest_diabetes(verbose: bool = False):
 
 if __name__ == "__main__":
     test_tree_diabetes()
+    test_forest_diabetes()

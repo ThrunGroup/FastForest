@@ -70,6 +70,7 @@ class TreeBase(ABC):
             is_classification=self.is_classification,
             verbose=self.verbose,
             solver=self.solver,
+            criterion=self.criterion
         )
 
         # These are copied from the link below. We won't need all of them.
