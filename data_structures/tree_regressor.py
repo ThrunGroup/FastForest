@@ -39,11 +39,11 @@ class TreeRegressor(TreeBase, Regressor):
             max_leaf_nodes=max_leaf_nodes,
             discrete_features=discrete_features,
             bin_type=bin_type,
+            verbose=verbose,
             erf_k=erf_k,
             budget=budget,
             is_classification=False,
             criterion=criterion,
             splitter=splitter,
             solver=solver,
-            verbose=verbose,
         )

@@ -1,12 +1,13 @@
 import numpy as np
+from typing import Tuple, DefaultDict
 
 from data_structures.forest_base import ForestBase
-from data_structures.classifier import Classifier
-from utils.constants import MAB, LINEAR, GINI, SQRT, BEST
-from utils.utils import class_to_idx
+from data_structures.regressor import Regressor
+from utils.constants import BUFFER, MAB, LINEAR, GINI, SQRT, BEST
+from utils.utils import class_to_idx, data_to_discrete
 
 
-class ForestClassifier(ForestBase, Classifier):
+class ForestRegressor(ForestBase, Regressor):
     """
     Class for vanilla random forest classifier model, which averages each tree's predictions
     """
@@ -30,10 +31,6 @@ class ForestClassifier(ForestBase, Classifier):
         verbose: bool = True,
         erf_k: str = SQRT,
     ) -> None:
-        self.classes: dict = class_to_idx(
-            np.unique(labels)
-        )  # a dictionary that maps class name to class index
-        self.n_classes = len(self.classes)
         super().__init__(
             data=data,
             labels=labels,
@@ -51,5 +48,5 @@ class ForestClassifier(ForestBase, Classifier):
             solver=solver,
             verbose=verbose,
             erf_k=erf_k,
-            is_classification=True,
+            is_classification=False,
         )
