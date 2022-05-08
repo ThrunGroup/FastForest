@@ -2,6 +2,7 @@ import numpy as np
 import itertools
 from collections import defaultdict
 from typing import DefaultDict, Tuple, List
+import random
 
 from data_structures.histogram import Histogram
 from utils.constants import LINEAR, DISCRETE, IDENTITY
@@ -19,6 +20,11 @@ def type_check() -> None:
 
     if TYPE_CHECKING:
         from tree import Tree
+
+
+def set_seed(seed: int) -> None:
+    random.seed(seed)
+    np.random.seed(seed)
 
 
 def count_occurrence(class_: np.ndarray, labels: np.ndarray) -> int:

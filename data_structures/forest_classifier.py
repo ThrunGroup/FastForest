@@ -4,7 +4,7 @@ from typing import Tuple, DefaultDict
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.classifier import Classifier
 from utils.constants import BUFFER, MAB, LINEAR, GINI, SQRT, BEST
-from utils.utils import class_to_idx, data_to_discrete
+from utils.utils import class_to_idx, data_to_discrete, set_seed
 
 
 class ForestClassifier(Classifier):
@@ -28,8 +28,9 @@ class ForestClassifier(Classifier):
         criterion: str = GINI,
         splitter: str = BEST,
         solver: str = MAB,
-        verbose: bool = True,
         erf_k: str = SQRT,
+        random_state: int = 0,
+        verbose: bool = True,
     ) -> None:
         self.data = data
         self.num_features = len(data[0])
@@ -44,7 +45,6 @@ class ForestClassifier(Classifier):
         self.min_impurity_decrease = min_impurity_decrease
         self.max_leaf_nodes = max_leaf_nodes
         self.bin_type = bin_type
-        self.erf_k = erf_k
 
         self.classes: dict = class_to_idx(
             np.unique(labels)
@@ -55,8 +55,11 @@ class ForestClassifier(Classifier):
         self.num_queries = 0
 
         self.criterion = criterion
-        self.solver = solver
         self.splitter = splitter
+        self.solver = solver
+        self.erf_k = erf_k
+        self.random_state = random_state
+        set_seed(self.random_state)
         self.verbose = verbose
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
@@ -67,7 +70,6 @@ class ForestClassifier(Classifier):
         self.max_features = None
         self.oob_score = False
         self.n_jobs = None
-        self.random_state = None
         self.warm_start = False
         self.class_weight = None
         self.ccp_alpha = 0.0
@@ -140,7 +142,6 @@ class ForestClassifier(Classifier):
                 max_depth=self.max_depth,
                 classes=self.classes,
                 budget=self.remaining_budget,
-                verbose=self.verbose,
                 min_samples_split=self.min_samples_split,
                 min_impurity_decrease=self.min_impurity_decrease,
                 max_leaf_nodes=self.max_leaf_nodes,
@@ -148,6 +149,8 @@ class ForestClassifier(Classifier):
                 bin_type=self.bin_type,
                 solver=self.solver,
                 erf_k=self.erf_k,
+                random_state=self.random_state + i,  # +i for diversity of trees
+                verbose=self.verbose,
             )
             tree.fit()
             self.trees.append(tree)
