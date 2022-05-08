@@ -93,9 +93,8 @@ class BoostedTreeClassifier(TreeBase, Classifier):
         NOTE: this function assumes tree is already fitted
         :return: the new updated labels
         """
-        _, prediction_probs = self.predict_batch(self.data)
-        mean_probs = np.mean(prediction_probs, axis=1)
-        return -self.find_gradient(mean_probs) / self.find_hessian(mean_probs)
+        preds, _ = self.predict_batch(self.data)
+        return -self.find_gradient(preds) / self.find_hessian(preds)
 
 
 
