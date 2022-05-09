@@ -19,7 +19,7 @@ class ForestRegressor(ForestBase, Regressor):
         n_estimators: int = 100,
         max_depth: int = None,
         bootstrap: bool = True,
-        feature_subsampling: str = SQRT,
+        feature_subsampling: str = None,
         min_samples_split: int = 2,
         min_impurity_decrease: float = 0,
         max_leaf_nodes: int = None,
@@ -28,7 +28,7 @@ class ForestRegressor(ForestBase, Regressor):
         criterion: str = GINI,
         splitter: str = BEST,
         solver: str = MAB,
-        verbose: bool = True,
+        verbose: bool = False,
         erf_k: str = SQRT,
     ) -> None:
         super().__init__(

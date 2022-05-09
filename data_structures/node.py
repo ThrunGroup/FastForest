@@ -2,30 +2,33 @@ from __future__ import (
     annotations,
 )  # For typechecking parent: Node, this is somehow important
 import numpy as np
+import math
 from typing import Union
+from collections import defaultdict
 
 from utils.solvers import solve_mab, solve_exactly
 from utils.utils import type_check, counts_of_labels
-from utils.constants import MAB, EXACT, GINI, LINEAR
+from utils.constants import MAB, EXACT, GINI, LINEAR, SQRT
 
 type_check()
 
 
 class Node:
     def __init__(
-        self,
-        tree: Tree,
-        parent: Node,
-        data: np.ndarray,
-        labels: np.ndarray,
-        depth: int,
-        proportion: float,
-        is_classification: bool = True,
-        bin_type: str = LINEAR,
-        criterion: str = GINI,
-        solver: str = MAB,
-        verbose: bool = True,
-        erf_k: str = "",
+            self,
+            tree: Tree,
+            parent: Node,
+            data: np.ndarray,
+            labels: np.ndarray,
+            depth: int,
+            proportion: float,
+            is_classification: bool = True,
+            bin_type: str = LINEAR,
+            criterion: str = GINI,
+            solver: str = MAB,
+            verbose: bool = True,
+            erf_k: str = "",
+            feature_subsampling: Union[str, int] = None,
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
@@ -42,6 +45,25 @@ class Node:
         self.verbose = verbose
         self.solver = solver
         self.criterion = criterion
+        self.feature_subsampling = feature_subsampling
+        self.discrete_features = defaultdict(list)
+
+        # Subsample features
+        N = len(self.data[0])
+        if feature_subsampling is None:
+            self.feature_idcs = np.arange(N)
+        elif feature_subsampling == SQRT:
+            self.feature_idcs = np.random.choice(N, math.ceil(math.sqrt(N)), replace=False)
+        elif type(feature_subsampling) == int:  # If int, subsample feature_subsampling(int) features.
+            self.feature_idcs = np.random.choice(N, feature_subsampling, replace=False)
+        else:
+            raise NotImplementedError("Invalid type of feature_subsampling")
+
+        # New discrete_features corresponding to new feature indices
+        i = 0
+        for feature_idx in self.feature_idcs:
+            self.discrete_features[i] = self.tree.discrete_features[feature_idx]
+            i += 1
 
         # NOTE: Do not assume labels are all integers from 0 to num_classes-1
         if is_classification:
@@ -75,18 +97,18 @@ class Node:
 
         if self.solver == MAB:
             results = solve_mab(
-                self.data,
+                self.data[:, self.feature_idcs],
                 self.labels,
-                self.tree.discrete_features,
+                self.discrete_features,
                 fixed_bin_type=self.bin_type,
                 is_classification=self.is_classification,
                 impurity_measure=self.criterion
             )
         elif self.solver == EXACT:
             results = solve_exactly(
-                self.data,
+                self.data[:, self.feature_idcs],
                 self.labels,
-                self.tree.discrete_features,
+                self.discrete_features,
                 fixed_bin_type=self.bin_type,
                 is_classification=self.is_classification,
                 impurity_measure=self.criterion
@@ -104,6 +126,7 @@ class Node:
                 self.split_reduction,
                 self.num_queries,
             ) = results
+            self.split_feature = self.feature_idcs[self.split_feature]  # Feature indices of original feature
             self.split_reduction *= self.proportion  # Normalize by number of datapoints
             if self.verbose:
                 print("Calculated split with", self.num_queries, "queries")
@@ -128,7 +151,8 @@ class Node:
             is_classification=self.is_classification,
             solver=self.solver,
             verbose=self.verbose,
-            criterion=self.criterion
+            criterion=self.criterion,
+            feature_subsampling=self.feature_subsampling
         )
 
     def split(self) -> None:
@@ -146,7 +170,7 @@ class Node:
         # Verify that splitting would actually help
         if self.split_reduction is not None:
             assert (
-                self.split_reduction < 0
+                    self.split_reduction < 0
             ), "Error: splitting this node would increase impurity. Should never be here"
 
             # NOTE: Asymmetry with <= and >
@@ -168,7 +192,7 @@ class Node:
         Me: split x < 5:
         """
         assert (self.left and self.right) or (
-            self.left is None and self.right is None
+                self.left is None and self.right is None
         ), "Error: split is malformed"
         if self.left:
             print(

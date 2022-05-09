@@ -32,7 +32,8 @@ class TreeBase(ABC):
         criterion: str = GINI,
         splitter: str = BEST,
         solver: str = MAB,
-        verbose: bool = True,
+        verbose: bool = False,
+        feature_subsampling: Union[str, int] = None,
     ) -> None:
         self.data = data  # This is a REFERENCE
         self.labels = labels  # This is a REFERENCE
@@ -57,6 +58,7 @@ class TreeBase(ABC):
         self.splitter = splitter
         self.solver = solver
         self.verbose = verbose
+        self.feature_subsampling = feature_subsampling
 
         self.node = Node(
             tree=self,
@@ -70,7 +72,8 @@ class TreeBase(ABC):
             is_classification=self.is_classification,
             verbose=self.verbose,
             solver=self.solver,
-            criterion=self.criterion
+            criterion=self.criterion,
+            feature_subsampling=self.feature_subsampling
         )
 
         # These are copied from the link below. We won't need all of them.

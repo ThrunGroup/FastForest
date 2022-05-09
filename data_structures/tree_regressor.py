@@ -1,5 +1,5 @@
 import numpy as np
-from typing import DefaultDict
+from typing import DefaultDict, Union
 from collections import defaultdict
 
 from data_structures.regressor import Regressor
@@ -28,7 +28,8 @@ class TreeRegressor(TreeBase, Regressor):
         criterion: str = MSE,
         splitter: str = BEST,
         solver: str = MAB,
-        verbose: bool = True,
+        verbose: bool = False,
+        feature_subsampling: Union[str, int] = None,
     ):
         super().__init__(
             data=data,
@@ -46,4 +47,5 @@ class TreeRegressor(TreeBase, Regressor):
             criterion=criterion,
             splitter=splitter,
             solver=solver,
+            feature_subsampling=feature_subsampling
         )
