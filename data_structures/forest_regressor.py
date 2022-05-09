@@ -9,7 +9,7 @@ from utils.utils import class_to_idx, data_to_discrete
 
 class ForestRegressor(ForestBase, Regressor):
     """
-    Class for vanilla random forest classifier model, which averages each tree's predictions
+    Class for vanilla random forest regression model, which averages each tree's predictions
     """
 
     def __init__(

@@ -53,8 +53,12 @@ class Node:
         if feature_subsampling is None:
             self.feature_idcs = np.arange(N)
         elif feature_subsampling == SQRT:
-            self.feature_idcs = np.random.choice(N, math.ceil(math.sqrt(N)), replace=False)
-        elif type(feature_subsampling) == int:  # If int, subsample feature_subsampling(int) features.
+            self.feature_idcs = np.random.choice(
+                N, math.ceil(math.sqrt(N)), replace=False
+            )
+        elif (
+            type(feature_subsampling) == int
+        ):  # If an int, subsample feature_subsampling features.
             self.feature_idcs = np.random.choice(N, feature_subsampling, replace=False)
         else:
             raise NotImplementedError("Invalid type of feature_subsampling")
@@ -102,7 +106,7 @@ class Node:
                 discrete_bins_dict=self.discrete_features,
                 fixed_bin_type=self.bin_type,
                 is_classification=self.is_classification,
-                impurity_measure=self.criterion
+                impurity_measure=self.criterion,
             )
         elif self.solver == EXACT:
             results = solve_exactly(
@@ -111,7 +115,7 @@ class Node:
                 discrete_bins_dict=self.discrete_features,
                 fixed_bin_type=self.bin_type,
                 is_classification=self.is_classification,
-                impurity_measure=self.criterion
+                impurity_measure=self.criterion,
             )
         else:
             raise Exception("Invalid solver specified, must be MAB or EXACT")
@@ -126,7 +130,9 @@ class Node:
                 self.split_reduction,
                 self.num_queries,
             ) = results
-            self.split_feature = self.feature_idcs[self.split_feature]  # Feature index of original dataset
+            self.split_feature = self.feature_idcs[
+                self.split_feature
+            ]  # Feature index of original dataset
             self.split_reduction *= self.proportion  # Normalize by number of datapoints
             if self.verbose:
                 print("Calculated split with", self.num_queries, "queries")
@@ -152,7 +158,7 @@ class Node:
             solver=self.solver,
             verbose=self.verbose,
             criterion=self.criterion,
-            feature_subsampling=self.feature_subsampling
+            feature_subsampling=self.feature_subsampling,
         )
 
     def split(self) -> None:

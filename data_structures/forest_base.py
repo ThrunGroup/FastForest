@@ -112,6 +112,7 @@ class ForestBase(ABC):
             if self.bootstrap:
                 N = len(self.labels)
                 idcs = np.random.choice(N, size=N, replace=True)
+                # TODO(@motiwari): Can we remove the : index below?
                 new_data = self.data[idcs, :]
                 new_labels = self.labels[idcs]
             else:
@@ -176,6 +177,7 @@ class ForestBase(ABC):
             agg_preds = np.empty((T, self.n_classes))
 
             for tree_idx, tree in enumerate(self.trees):
+                # Average over predicted probabilities, not just hard labels
                 agg_preds[tree_idx] = tree.predict(datapoint)[1]
 
             avg_preds = agg_preds.mean(axis=0)
