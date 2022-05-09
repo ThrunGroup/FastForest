@@ -1,10 +1,10 @@
 import numpy as np
-from typing import DefaultDict
+from typing import DefaultDict, Union
 from collections import defaultdict
 
 from data_structures.regressor import Regressor
 from data_structures.tree_base import TreeBase
-from utils.constants import MAB, LINEAR, GINI, BEST
+from utils.constants import MAB, LINEAR, BEST, MSE
 
 
 class TreeRegressor(TreeBase, Regressor):
@@ -25,11 +25,12 @@ class TreeRegressor(TreeBase, Regressor):
         bin_type: str = LINEAR,
         erf_k: str = "",
         budget: int = None,
-        criterion: str = GINI,
+        criterion: str = MSE,
         splitter: str = BEST,
         solver: str = MAB,
+        feature_subsampling: Union[str, int] = None,
         random_state: int = 0,
-        verbose: bool = True,
+        verbose: bool = False,
     ):
         super().__init__(
             data=data,
@@ -46,6 +47,7 @@ class TreeRegressor(TreeBase, Regressor):
             criterion=criterion,
             splitter=splitter,
             solver=solver,
+            feature_subsampling=feature_subsampling,
             random_state=random_state,
             verbose=verbose,
         )

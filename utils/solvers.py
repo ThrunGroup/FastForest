@@ -9,6 +9,7 @@ from utils.constants import (
     CONF_MULTIPLIER,
     TOLERANCE,
     GINI,
+    MSE,
     LINEAR,
 )
 from utils.criteria import get_impurity_reductions
@@ -237,6 +238,8 @@ def solve_mab(
     N = len(data)
     batch_size = 100  # Right now, constant batch size
     round_count = 0
+    if impurity_measure == "":
+        impurity_measure = GINI if is_classification else MSE
 
     candidates = np.array(list(itertools.product(range(F), range(B))))
     estimates = np.empty((F, B))
