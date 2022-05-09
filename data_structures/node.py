@@ -15,20 +15,20 @@ type_check()
 
 class Node:
     def __init__(
-            self,
-            tree: Tree,
-            parent: Node,
-            data: np.ndarray,
-            labels: np.ndarray,
-            depth: int,
-            proportion: float,
-            is_classification: bool = True,
-            bin_type: str = LINEAR,
-            criterion: str = GINI,
-            solver: str = MAB,
-            verbose: bool = True,
-            erf_k: str = "",
-            feature_subsampling: Union[str, int] = None,
+        self,
+        tree: Tree,
+        parent: Node,
+        data: np.ndarray,
+        labels: np.ndarray,
+        depth: int,
+        proportion: float,
+        is_classification: bool = True,
+        bin_type: str = LINEAR,
+        criterion: str = GINI,
+        solver: str = MAB,
+        verbose: bool = True,
+        erf_k: str = "",
+        feature_subsampling: Union[str, int] = None,
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
@@ -97,18 +97,18 @@ class Node:
 
         if self.solver == MAB:
             results = solve_mab(
-                self.data[:, self.feature_idcs],
-                self.labels,
-                self.discrete_features,
+                data=self.data[:, self.feature_idcs],
+                labels=self.labels,
+                discrete_bins_dict=self.discrete_features,
                 fixed_bin_type=self.bin_type,
                 is_classification=self.is_classification,
                 impurity_measure=self.criterion
             )
         elif self.solver == EXACT:
             results = solve_exactly(
-                self.data[:, self.feature_idcs],
-                self.labels,
-                self.discrete_features,
+                data=self.data[:, self.feature_idcs],
+                labels=self.labels,
+                discrete_bins_dict=self.discrete_features,
                 fixed_bin_type=self.bin_type,
                 is_classification=self.is_classification,
                 impurity_measure=self.criterion
@@ -126,7 +126,7 @@ class Node:
                 self.split_reduction,
                 self.num_queries,
             ) = results
-            self.split_feature = self.feature_idcs[self.split_feature]  # Feature indices of original feature
+            self.split_feature = self.feature_idcs[self.split_feature]  # Feature index of original dataset
             self.split_reduction *= self.proportion  # Normalize by number of datapoints
             if self.verbose:
                 print("Calculated split with", self.num_queries, "queries")
@@ -141,12 +141,12 @@ class Node:
         child_data = self.data[idcs]
         child_labels = self.labels[idcs]
         return Node(
-            self.tree,
-            self,
-            child_data,
-            child_labels,
-            self.depth + 1,
-            self.proportion * (len(child_labels) / len(self.labels)),
+            tree=self.tree,
+            parent=self,
+            data=child_data,
+            labels=child_labels,
+            depth=self.depth + 1,
+            proportion=self.proportion * (len(child_labels) / len(self.labels)),
             bin_type=self.bin_type,
             is_classification=self.is_classification,
             solver=self.solver,
@@ -170,7 +170,7 @@ class Node:
         # Verify that splitting would actually help
         if self.split_reduction is not None:
             assert (
-                    self.split_reduction < 0
+                self.split_reduction < 0
             ), "Error: splitting this node would increase impurity. Should never be here"
 
             # NOTE: Asymmetry with <= and >
@@ -192,7 +192,7 @@ class Node:
         Me: split x < 5:
         """
         assert (self.left and self.right) or (
-                self.left is None and self.right is None
+            self.left is None and self.right is None
         ), "Error: split is malformed"
         if self.left:
             print(

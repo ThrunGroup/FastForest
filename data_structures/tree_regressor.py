@@ -28,8 +28,9 @@ class TreeRegressor(TreeBase, Regressor):
         criterion: str = MSE,
         splitter: str = BEST,
         solver: str = MAB,
-        verbose: bool = False,
         feature_subsampling: Union[str, int] = None,
+        random_state: int = 0,
+        verbose: bool = False,
     ):
         super().__init__(
             data=data,
@@ -40,12 +41,13 @@ class TreeRegressor(TreeBase, Regressor):
             max_leaf_nodes=max_leaf_nodes,
             discrete_features=discrete_features,
             bin_type=bin_type,
-            verbose=verbose,
             erf_k=erf_k,
             budget=budget,
             is_classification=False,
             criterion=criterion,
             splitter=splitter,
             solver=solver,
-            feature_subsampling=feature_subsampling
+            feature_subsampling=feature_subsampling,
+            random_state=random_state,
+            verbose=verbose,
         )

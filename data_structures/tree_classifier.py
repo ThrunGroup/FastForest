@@ -29,8 +29,9 @@ class TreeClassifier(TreeBase, Classifier):
         splitter: str = BEST,
         solver: str = MAB,
         erf_k: str = "",
-        verbose: bool = False,
         feature_subsampling: Union[str, int] = None,
+        random_state: int = 0,
+        verbose: bool = False,
     ):
         self.classes = classes  # dict from class name to class index
         self.idx_to_class = {value: key for key, value in classes.items()}
@@ -44,12 +45,13 @@ class TreeClassifier(TreeBase, Classifier):
             max_leaf_nodes=max_leaf_nodes,
             discrete_features=discrete_features,
             bin_type=bin_type,
-            erf_k=erf_k,
             budget=budget,
             is_classification=True,
             criterion=criterion,
             splitter=splitter,
             solver=solver,
+            erf_k=erf_k,
+            random_state=random_state,
+            feature_subsampling=feature_subsampling,
             verbose=verbose,
-            feature_subsampling=feature_subsampling
         )
