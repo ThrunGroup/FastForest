@@ -69,7 +69,7 @@ class ForestTests(unittest.TestCase):
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
-        self.assertTrue((acc / len(data)) > 0.86)
+        self.assertTrue((acc / len(data)) > 0.84)
 
     def test_tree_toy(self, show: bool = False) -> None:
         toy = data_generator.create_data(10000)
