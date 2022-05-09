@@ -3,7 +3,7 @@ from typing import Tuple, DefaultDict, Union
 from abc import ABC
 
 from utils.constants import BUFFER, MAB, LINEAR, GINI, SQRT, BEST
-from utils.utils import data_to_discrete
+from utils.utils import data_to_discrete, set_seed
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.tree_regressor import TreeRegressor
 
@@ -29,9 +29,10 @@ class ForestBase(ABC):
         criterion: str = GINI,
         splitter: str = BEST,
         solver: str = MAB,
-        verbose: bool = False,
         erf_k: str = SQRT,
         is_classification: bool = True,
+        random_state: int = 0,
+        verbose: bool = False,
     ) -> None:
         self.data = data
         self.labels = labels
@@ -47,14 +48,16 @@ class ForestBase(ABC):
         self.min_impurity_decrease = min_impurity_decrease
         self.max_leaf_nodes = max_leaf_nodes
         self.bin_type = bin_type
-        self.erf_k = erf_k
 
         self.remaining_budget = budget
         self.num_queries = 0
 
         self.criterion = criterion
-        self.solver = solver
         self.splitter = splitter
+        self.solver = solver
+        self.erf_k = erf_k
+        self.random_state = random_state
+        set_seed(self.random_state)
         self.verbose = verbose
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
@@ -65,7 +68,6 @@ class ForestBase(ABC):
         self.max_features = None
         self.oob_score = False
         self.n_jobs = None
-        self.random_state = None
         self.warm_start = False
         self.class_weight = None
         self.ccp_alpha = 0.0
@@ -123,7 +125,6 @@ class ForestBase(ABC):
                     max_depth=self.max_depth,
                     classes=self.classes,
                     budget=self.remaining_budget,
-                    verbose=self.verbose,
                     min_samples_split=self.min_samples_split,
                     min_impurity_decrease=self.min_impurity_decrease,
                     max_leaf_nodes=self.max_leaf_nodes,
@@ -132,6 +133,8 @@ class ForestBase(ABC):
                     solver=self.solver,
                     erf_k=self.erf_k,
                     feature_subsampling=self.feature_subsampling,
+                    random_state=self.random_state + i,
+                    verbose=self.verbose,
                 )
             else:
                 tree = TreeRegressor(
@@ -139,7 +142,6 @@ class ForestBase(ABC):
                     labels=new_labels,
                     max_depth=self.max_depth,
                     budget=self.remaining_budget,
-                    verbose=self.verbose,
                     min_samples_split=self.min_samples_split,
                     min_impurity_decrease=self.min_impurity_decrease,
                     max_leaf_nodes=self.max_leaf_nodes,
@@ -148,6 +150,8 @@ class ForestBase(ABC):
                     solver=self.solver,
                     erf_k=self.erf_k,
                     feature_subsampling=self.feature_subsampling,
+                    random_state=self.random_state + i,
+                    verbose=self.verbose,
                 )
             tree.fit()
             self.trees.append(tree)

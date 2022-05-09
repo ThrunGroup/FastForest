@@ -17,7 +17,7 @@ def test_tree_diabetes(seed: int = 1, verbose: bool = False):
     diabetes = load_diabetes()
     data, labels = diabetes.data, diabetes.target
 
-    DT = DecisionTreeRegressor(max_depth=6)
+    DT = DecisionTreeRegressor(max_depth=6, random_state=seed)
     DT.fit(data, labels)
     print("---Ground_Truth_Tree---")
     if verbose:
@@ -28,7 +28,7 @@ def test_tree_diabetes(seed: int = 1, verbose: bool = False):
     print(f"MSE is {mse}\n")
 
     print("---FastTree---")
-    tree = TreeRegressor(data, labels, max_depth=6, verbose=verbose)
+    tree = TreeRegressor(data, labels, max_depth=6, verbose=verbose, random_state=seed)
     tree.fit()
     if verbose:
         tree.tree_print()
@@ -36,22 +36,30 @@ def test_tree_diabetes(seed: int = 1, verbose: bool = False):
     print(f"MSE is {mse}\n")
 
 
-def test_forest_diabetes(seed: int = 1, verbose: bool = False, features_subsampling: str = None):
-    np.random.seed(seed)
-    random.seed(seed)
+def test_forest_diabetes(
+    seed: int = 1, verbose: bool = False, features_subsampling: str = None
+):
     diabetes = load_diabetes()
     data, labels = diabetes.data, diabetes.target
 
     print(f"Experiment with {features_subsampling} feature_subsampling")
     max_features = "sqrt" if features_subsampling == SQRT else features_subsampling
-    RF = RandomForestRegressor(n_estimators=10, max_depth=6, max_features=max_features)
+    RF = RandomForestRegressor(
+        n_estimators=10, max_depth=6, max_features=max_features, random_state=seed
+    )
     RF.fit(data, labels)
     print("---Ground_Truth_Forest---")
     mse = np.sum(np.square(RF.predict(data) - labels)) / len(data)
     print(f"MSE of sklearn forest is {mse}\n")
 
     print("---FastForest---")
-    FF = ForestRegressor(n_estimators=10, max_depth=6, verbose=verbose, feature_subsampling=features_subsampling)
+    FF = ForestRegressor(
+        n_estimators=10,
+        max_depth=6,
+        verbose=verbose,
+        feature_subsampling=features_subsampling,
+        random_state=seed,
+    )
     FF.fit(data, labels)
     mse = np.sum(np.square(FF.predict_batch(data) - labels)) / len(data)
     print(f"MSE of fastforest is {mse}\n")

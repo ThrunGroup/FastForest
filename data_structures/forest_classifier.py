@@ -27,8 +27,9 @@ class ForestClassifier(ForestBase, Classifier):
         criterion: str = GINI,
         splitter: str = BEST,
         solver: str = MAB,
-        verbose: bool = False,
         erf_k: str = SQRT,
+        random_state: int = 0,
+        verbose: bool = False,
     ) -> None:
         self.classes: dict = class_to_idx(
             np.unique(labels)
@@ -49,7 +50,8 @@ class ForestClassifier(ForestBase, Classifier):
             criterion=criterion,
             splitter=splitter,
             solver=solver,
-            verbose=verbose,
             erf_k=erf_k,
             is_classification=True,
+            random_state=random_state,
+            verbose=verbose,
         )

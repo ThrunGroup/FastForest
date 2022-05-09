@@ -76,7 +76,7 @@ class TreeBase(ABC):
             verbose=self.verbose,
             solver=self.solver,
             criterion=self.criterion,
-            feature_subsampling=self.feature_subsampling
+            feature_subsampling=self.feature_subsampling,
         )
 
         # These are copied from the link below. We won't need all of them.
