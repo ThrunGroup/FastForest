@@ -11,9 +11,11 @@ from utils.constants import (
     GINI,
     MSE,
     LINEAR,
+    BATCH_SIZE,
 )
 from utils.criteria import get_impurity_reductions
 from utils.utils import type_check, class_to_idx, counts_of_labels, make_histograms
+
 
 type_check()
 
@@ -236,7 +238,7 @@ def solve_mab(
     F = len(data[0])
     B = 11  # TODO: Fix this hard-coding
     N = len(data)
-    batch_size = 100  # Right now, constant batch size
+    batch_size = BATCH_SIZE
     round_count = 0
     if impurity_measure == "":
         impurity_measure = GINI if is_classification else MSE
