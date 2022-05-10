@@ -41,6 +41,7 @@ class TreeBase(ABC):
         splitter: str = BEST,
         solver: str = MAB,
         random_state: int = 0,
+        with_replacement: bool = True,
         verbose: bool = False,
     ) -> None:
         self.data = data  # This is a REFERENCE
@@ -81,6 +82,7 @@ class TreeBase(ABC):
         self.solver = solver
         self.random_state = random_state
         set_seed(self.random_state)
+        self.with_replacement = with_replacement
         self.verbose = verbose
 
         self.node = Node(
@@ -98,6 +100,7 @@ class TreeBase(ABC):
             criterion=self.criterion,
             feature_subsampling=self.feature_subsampling,
             tree_global_feature_subsampling=self.tree_global_feature_subsampling,
+            with_replacement=self.with_replacement
         )
 
         # These are copied from the link below. We won't need all of them.

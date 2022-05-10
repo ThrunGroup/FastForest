@@ -391,7 +391,7 @@ def solve_mab(
         round_count += 1
 
     best_split = zip(
-        np.where(lcbs == np.nanmin(lcbs))[0], np.where(lcbs == np.nanmin(lcbs))[1]
+        np.where(estimates == np.nanmin(estimates))[0], np.where(estimates == np.nanmin(estimates))[1]
     ).__next__()  # Get first element
     best_feature = best_split[0]
     best_value = histograms[best_feature].bin_edges[best_split[1]]

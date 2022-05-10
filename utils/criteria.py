@@ -32,7 +32,7 @@ def get_gini(
         assert pop_size >= n, "Sample size is greater than the population size"
         if pop_size <= 1:
             return 0, 0
-        V_p *= (pop_size - n) / (n * (pop_size - 1))
+        V_p *= (pop_size - n) / (pop_size - 1)
 
     G = 1 - np.dot(p, p)
     # This variance comes from propagation of error formula, see
@@ -70,7 +70,7 @@ def get_entropy(counts: np.ndarray, ret_var=False, pop_size: int = None) -> Unio
         assert pop_size >= n, "Sample size is greater than the population size"
         if pop_size <= 1:
             return 0, 0
-        V_p *= (pop_size - n) / (n * (pop_size - 1))
+        V_p *= (pop_size - n) / (pop_size - 1)
     log_p = np.zeros(len(p))
     for i in range(len(p)):
         if p[i] != 0:
@@ -135,7 +135,7 @@ def get_mse(
     """
     assert len(np.array(targets_pile).shape) == 1, "Invalid pile of target values"
     n = len(targets_pile)
-    if n == 0:
+    if n <= 1:
         if ret_var:
             return 0, 0
         return 0
@@ -143,19 +143,19 @@ def get_mse(
         scipy.stats.moment(targets_pile, 2)
     )  # 2nd central moment is mse with mean as a predicted value
     fourth_moment = float(scipy.stats.moment(targets_pile, 4))
+
     # This variance comes from the variance of sample variance,
     # see https://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance.
     # Use sample variance as an estimation of population variance.
     pop_var = mse
-    if n < 3:
-        V_mse = float("inf")
+    if n == 2:
+        V_mse = (fourth_moment - pop_var ** 2) / 4
     else:
         V_mse = (fourth_moment - (pop_var ** 2) * (n - 3) / (n - 1)) / n
-        if pop_size is not None:
-            assert pop_size >= n, "Sample size is greater than the population size"
-            if pop_size <= 1:
-                return 0, 0
-            V_mse *= (pop_size - n) / (n * (pop_size - 1))
+
+    if pop_size is not None:
+        assert pop_size >= n, "Sample size is greater than the population size"
+        V_mse *= (pop_size - n) / (pop_size - 1)
     if ret_var:
         return mse, V_mse
     return mse
@@ -219,15 +219,17 @@ def get_impurity_reductions(
 
         # Impurity is weighted by population of each node during a split
         if is_classification:
-            left_weight = np.sum(h.left[b_idx, :]) / n
-            right_weight = np.sum(h.right[b_idx, :]) / n
+            left_weight = np.sum(h.left[b_idx, :])
+            right_weight = np.sum(h.right[b_idx, :])
         else:
-            left_weight = len(h.left_pile[b_idx]) / n
-            right_weight = len(h.right_pile[b_idx]) / n
+            left_weight = len(h.left_pile[b_idx])
+            right_weight = len(h.right_pile[b_idx])
 
         # Population of left and right node is approximated by left_weight and right_weight
-        left_size = None if pop_size is None else int(np.sum(h.left[b_idx, :]) * pop_size / n)
-        right_size = None if pop_size is None else int(np.sum(h.right[b_idx, :]) * pop_size / n)
+        left_size = None if pop_size is None else int(left_weight * pop_size / n)
+        right_size = None if pop_size is None else int(right_weight * pop_size / n)
+        left_weight /= n
+        right_weight /= n
         if is_classification:
             IL, V_IL = get_impurity(h.left[b_idx, :], ret_var=True, pop_size=left_size)
             IR, V_IR = get_impurity(h.right[b_idx, :], ret_var=True, pop_size=right_size)

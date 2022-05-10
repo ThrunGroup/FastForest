@@ -30,6 +30,7 @@ class ForestClassifier(ForestBase, Classifier):
         splitter: str = BEST,
         solver: str = MAB,
         random_state: int = 0,
+        with_replacement: bool = True,
         verbose: bool = False,
     ) -> None:
         self.classes: dict = class_to_idx(
@@ -55,5 +56,6 @@ class ForestClassifier(ForestBase, Classifier):
             solver=solver,
             is_classification=True,
             random_state=random_state,
+            with_replacement=with_replacement,
             verbose=verbose,
         )

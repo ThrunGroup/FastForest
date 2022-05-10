@@ -29,6 +29,7 @@ class ForestRegressor(ForestBase, Regressor):
         splitter: str = BEST,
         solver: str = MAB,
         random_state: int = 0,
+        with_replacement: bool = True,
         verbose: bool = False,
     ) -> None:
         super().__init__(
@@ -50,5 +51,6 @@ class ForestRegressor(ForestBase, Regressor):
             solver=solver,
             is_classification=False,
             random_state=random_state,
+            with_replacement=with_replacement,
             verbose=verbose,
         )
