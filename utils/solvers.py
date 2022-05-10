@@ -86,14 +86,14 @@ def solve_exactly(
     :param impurity_measure: Minimum impurity reduction beyond which to return a nonempty solution
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
+    N = len(data)
+    F = len(data[0])
+
     if binning_type == IDENTITY:
         B = len(data)
     else:
-        pass
+        B = num_bins
 
-    B = 11  # TODO: Fix this hard-coding
-    N = len(data)
-    F = len(data[0])
     candidates = np.array(list(itertools.product(range(F), range(B))))
     estimates = np.empty((F, B))
 
@@ -244,9 +244,16 @@ def solve_mab(
     :param impurity_measure: A name of impurity_measure
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
-    F = len(data[0])
-    B = 11  # TODO: Fix this hard-coding
     N = len(data)
+    F = len(data[0])
+    if binning_type == IDENTITY:
+        raise Exception(
+            "You're running solve_mab without histogramming. Did you mean to?"
+        )
+        B = N
+    else:
+        B = num_bins
+
     batch_size = BATCH_SIZE
     round_count = 0
     if impurity_measure == "":
@@ -263,10 +270,10 @@ def solve_mab(
     # Make a list of histograms, a list of indices that we don't consider as potential arms, and a list of indices
     # that we consider as potential arms.
     histograms, not_considered_idcs, considered_idcs = make_histograms(
-        is_classification,
-        data,
-        labels,
-        discrete_bins_dict,
+        is_classification=is_classification,
+        data=data,
+        labels=labels,
+        discrete_bins_dict=discrete_bins_dict,
         binning_type=binning_type,
         erf_k=erf_k,
         num_bins=B,
@@ -290,12 +297,12 @@ def solve_mab(
         exact_accesses = np.where((num_samples + batch_size >= N) & (exact_mask == 0))
         if len(exact_accesses[0]) > 0:
             estimates[exact_accesses], _vars, num_queries = sample_targets(
-                is_classification,
-                data,
-                labels,
-                exact_accesses,
-                histograms,
-                N,
+                is_classification=is_classification,
+                data=data,
+                labels=labels,
+                arms=exact_accesses,
+                histograms=histograms,
+                batch_size=N,
                 impurity_measure=impurity_measure,
             )
 
@@ -324,12 +331,12 @@ def solve_mab(
         )
         # NOTE: cb_delta contains a value for EVERY arm, even non-candidates, so need [accesses]
         estimates[accesses], cb_delta[accesses], num_queries = sample_targets(
-            is_classification,
-            data,
-            labels,
-            accesses,
-            histograms,
-            batch_size,
+            is_classification=is_classification,
+            data=data,
+            labels=labels,
+            arms=accesses,
+            histograms=histograms,
+            batch_size=batch_size,
             impurity_measure=impurity_measure,
         )
         num_samples[accesses] += batch_size
