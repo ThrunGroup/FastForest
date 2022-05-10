@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from data_structures.regressor import Regressor
 from data_structures.tree_base import TreeBase
-from utils.constants import MAB, LINEAR, BEST, MSE
+from utils.constants import MAB, LINEAR, BEST, MSE, DEFAULT_NUM_BINS
 
 
 class TreeRegressor(TreeBase, Regressor):
@@ -25,6 +25,7 @@ class TreeRegressor(TreeBase, Regressor):
         max_leaf_nodes: int = None,
         discrete_features: DefaultDict = defaultdict(list),
         bin_type: str = LINEAR,
+        num_bins: int = DEFAULT_NUM_BINS,
         erf_k: str = "",
         budget: int = None,
         criterion: str = MSE,
@@ -44,6 +45,7 @@ class TreeRegressor(TreeBase, Regressor):
             max_leaf_nodes=max_leaf_nodes,
             discrete_features=discrete_features,
             bin_type=bin_type,
+            num_bins=num_bins,
             erf_k=erf_k,
             budget=budget,
             is_classification=False,

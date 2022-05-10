@@ -13,6 +13,7 @@ from utils.constants import (
     LINEAR,
     IDENTITY,
     BATCH_SIZE,
+    DEFAULT_NUM_BINS,
 )
 from utils.criteria import get_impurity_reductions
 from utils.utils import type_check, class_to_idx, counts_of_labels, make_histograms
@@ -63,6 +64,7 @@ def solve_exactly(
     labels: np.ndarray,
     discrete_bins_dict: DefaultDict,
     binning_type: str = IDENTITY,
+    num_bins: int = DEFAULT_NUM_BINS,
     is_classification: bool = True,
     impurity_measure: str = GINI,
     min_impurity_reduction: float = 0,
@@ -84,6 +86,11 @@ def solve_exactly(
     :param impurity_measure: Minimum impurity reduction beyond which to return a nonempty solution
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
+    if binning_type == IDENTITY:
+        B = len(data)
+    else:
+        pass
+
     B = 11  # TODO: Fix this hard-coding
     N = len(data)
     F = len(data[0])
@@ -211,6 +218,7 @@ def solve_mab(
     labels: np.ndarray,
     discrete_bins_dict: DefaultDict,
     binning_type: str = LINEAR,
+    num_bins: int = DEFAULT_NUM_BINS,
     erf_k: str = "",
     is_classification: bool = True,
     impurity_measure: str = GINI,

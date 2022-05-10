@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from data_structures.classifier import Classifier
 from data_structures.tree_base import TreeBase
-from utils.constants import MAB, LINEAR, GINI, BEST
+from utils.constants import MAB, LINEAR, GINI, BEST, DEFAULT_NUM_BINS
 
 
 class TreeClassifier(TreeBase, Classifier):
@@ -26,6 +26,7 @@ class TreeClassifier(TreeBase, Classifier):
         max_leaf_nodes: int = None,
         discrete_features: DefaultDict = defaultdict(list),
         bin_type: str = LINEAR,
+        num_bins: int = DEFAULT_NUM_BINS,
         budget: int = None,
         criterion: str = GINI,
         splitter: str = BEST,
@@ -48,6 +49,7 @@ class TreeClassifier(TreeBase, Classifier):
             max_leaf_nodes=max_leaf_nodes,
             discrete_features=discrete_features,
             bin_type=bin_type,
+            num_bins=num_bins,
             budget=budget,
             is_classification=True,
             criterion=criterion,

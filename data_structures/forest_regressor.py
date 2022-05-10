@@ -1,10 +1,8 @@
 import numpy as np
-from typing import Tuple, DefaultDict
 
 from data_structures.forest_base import ForestBase
 from data_structures.regressor import Regressor
-from utils.constants import BUFFER, MAB, LINEAR, GINI, SQRT, BEST
-from utils.utils import class_to_idx, data_to_discrete
+from utils.constants import MAB, LINEAR, GINI, SQRT, BEST, DEFAULT_NUM_BINS
 
 
 class ForestRegressor(ForestBase, Regressor):
@@ -25,6 +23,7 @@ class ForestRegressor(ForestBase, Regressor):
         min_impurity_decrease: float = 0,
         max_leaf_nodes: int = None,
         bin_type: str = LINEAR,
+        num_bins: int = DEFAULT_NUM_BINS,
         budget: int = None,
         criterion: str = GINI,
         splitter: str = BEST,
@@ -45,6 +44,7 @@ class ForestRegressor(ForestBase, Regressor):
             min_impurity_decrease=min_impurity_decrease,
             max_leaf_nodes=max_leaf_nodes,
             bin_type=bin_type,
+            num_bins=num_bins,
             budget=budget,
             criterion=criterion,
             splitter=splitter,

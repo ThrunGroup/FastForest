@@ -12,7 +12,7 @@ from utils.utils import (
     choose_features,
     remap_discrete_features,
 )
-from utils.constants import MAB, EXACT, GINI, LINEAR, SQRT
+from utils.constants import MAB, EXACT, GINI, LINEAR, DEFAULT_NUM_BINS
 
 type_check()
 
@@ -28,6 +28,7 @@ class Node:
         proportion: float,
         is_classification: bool = True,
         bin_type: str = LINEAR,
+        num_bins: int = DEFAULT_NUM_BINS,
         criterion: str = GINI,
         solver: str = MAB,
         verbose: bool = True,
@@ -41,6 +42,7 @@ class Node:
         self.labels = labels
         self.n_data = len(labels)
         self.bin_type = bin_type
+        self.num_bins = num_bins
         self.erf_k = erf_k
         self.depth = depth
         self.proportion = proportion
@@ -100,7 +102,8 @@ class Node:
                 data=self.data[:, self.feature_idcs],
                 labels=self.labels,
                 discrete_bins_dict=self.discrete_features,
-                fixed_bin_type=self.bin_type,
+                binning_type=self.bin_type,
+                num_bins=self.num_bins,
                 is_classification=self.is_classification,
                 impurity_measure=self.criterion,
             )
@@ -109,7 +112,8 @@ class Node:
                 data=self.data[:, self.feature_idcs],
                 labels=self.labels,
                 discrete_bins_dict=self.discrete_features,
-                fixed_bin_type=self.bin_type,
+                binning_type=self.bin_type,
+                num_bins=self.num_bins,
                 is_classification=self.is_classification,
                 impurity_measure=self.criterion,
             )
@@ -150,6 +154,7 @@ class Node:
             depth=self.depth + 1,
             proportion=self.proportion * (len(child_labels) / len(self.labels)),
             bin_type=self.bin_type,
+            num_bins=self.num_bins,
             is_classification=self.is_classification,
             solver=self.solver,
             verbose=self.verbose,

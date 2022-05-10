@@ -2,7 +2,16 @@ import numpy as np
 from typing import Tuple, DefaultDict, Union
 from abc import ABC
 
-from utils.constants import BUFFER, MAB, LINEAR, GINI, SQRT, BEST, MAX_SEED
+from utils.constants import (
+    BUFFER,
+    MAB,
+    LINEAR,
+    GINI,
+    SQRT,
+    BEST,
+    MAX_SEED,
+    DEFAULT_NUM_BINS,
+)
 from utils.utils import data_to_discrete, set_seed
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.tree_regressor import TreeRegressor
@@ -26,6 +35,7 @@ class ForestBase(ABC):
         min_impurity_decrease: float = 0,
         max_leaf_nodes: int = None,
         bin_type: str = LINEAR,
+        num_bins: int = DEFAULT_NUM_BINS,
         budget: int = None,
         criterion: str = GINI,
         splitter: str = BEST,
@@ -50,6 +60,7 @@ class ForestBase(ABC):
         self.min_impurity_decrease = min_impurity_decrease
         self.max_leaf_nodes = max_leaf_nodes
         self.bin_type = bin_type
+        self.num_bins = num_bins
 
         self.remaining_budget = budget
         self.num_queries = 0
@@ -138,6 +149,7 @@ class ForestBase(ABC):
                     max_leaf_nodes=self.max_leaf_nodes,
                     discrete_features=self.discrete_features,
                     bin_type=self.bin_type,
+                    num_bins=self.num_bins,
                     solver=self.solver,
                     erf_k=self.erf_k,
                     feature_subsampling=self.feature_subsampling,
@@ -155,6 +167,7 @@ class ForestBase(ABC):
                     max_leaf_nodes=self.max_leaf_nodes,
                     discrete_features=self.discrete_features,
                     bin_type=self.bin_type,
+                    num_bins=self.num_bins,
                     solver=self.solver,
                     erf_k=self.erf_k,
                     feature_subsampling=self.feature_subsampling,

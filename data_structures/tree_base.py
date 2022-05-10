@@ -12,7 +12,7 @@ from utils.utils import (
     choose_features,
     remap_discrete_features,
 )
-from utils.constants import MAB, LINEAR, SQRT, BEST, DEPTH, GINI
+from utils.constants import MAB, LINEAR, BEST, DEPTH, GINI, DEFAULT_NUM_BINS
 
 
 class TreeBase(ABC):
@@ -34,6 +34,7 @@ class TreeBase(ABC):
         max_leaf_nodes: int = None,
         discrete_features: DefaultDict = defaultdict(list),
         bin_type: str = LINEAR,
+        num_bins: int = DEFAULT_NUM_BINS,
         erf_k: str = "",
         budget: int = None,
         is_classification: bool = True,
@@ -72,6 +73,8 @@ class TreeBase(ABC):
         self.max_leaf_nodes = max_leaf_nodes
 
         self.bin_type = bin_type
+        self.num_bins = num_bins
+
         self.remaining_budget = budget
         self.is_classification = is_classification
         self.criterion = criterion
@@ -89,6 +92,7 @@ class TreeBase(ABC):
             depth=0,
             proportion=1.0,
             bin_type=self.bin_type,
+            num_bins=self.num_bins,
             erf_k=erf_k,
             is_classification=self.is_classification,
             verbose=self.verbose,
