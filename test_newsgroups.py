@@ -53,7 +53,7 @@ def test_tree_news(
 ):
     X_train, Y_train, X_test, Y_test = preprocess_news()
     if print_sklearn:
-        dt = DecisionTreeClassifier(max_depth=6, random_state=0)
+        dt = DecisionTreeClassifier(max_depth=5, random_state=0)
         dt.fit(X_train, Y_train)
         print(
             "sklearn Decision Tree Train Accuracy:",
@@ -74,11 +74,12 @@ def test_tree_news(
     tc = TreeClassifier(
         data=X_train,
         labels=Y_train,
-        max_depth=6,
+        max_depth=4,
         classes=classes,
         verbose=False,
         bin_type="",
         random_state=seed,
+        solver=solver,
         with_replacement=with_replacement,
     )
     tc.fit()
