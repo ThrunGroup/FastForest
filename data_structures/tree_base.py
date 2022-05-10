@@ -5,7 +5,7 @@ from abc import ABC
 from typing import Union, Tuple, DefaultDict
 
 from data_structures.node import Node
-from utils.utils import data_to_discrete
+from utils.utils import data_to_discrete, set_seed
 from utils.constants import MAB, LINEAR, BEST, DEPTH, GINI
 
 
@@ -32,7 +32,9 @@ class TreeBase(ABC):
         criterion: str = GINI,
         splitter: str = BEST,
         solver: str = MAB,
-        verbose: bool = True,
+        feature_subsampling: Union[str, int] = None,
+        random_state: int = 0,
+        verbose: bool = False,
     ) -> None:
         self.data = data  # This is a REFERENCE
         self.labels = labels  # This is a REFERENCE
@@ -56,7 +58,10 @@ class TreeBase(ABC):
         self.criterion = criterion
         self.splitter = splitter
         self.solver = solver
+        self.random_state = random_state
+        set_seed(self.random_state)
         self.verbose = verbose
+        self.feature_subsampling = feature_subsampling
 
         self.node = Node(
             tree=self,
@@ -70,6 +75,8 @@ class TreeBase(ABC):
             is_classification=self.is_classification,
             verbose=self.verbose,
             solver=self.solver,
+            criterion=self.criterion,
+            feature_subsampling=self.feature_subsampling,
         )
 
         # These are copied from the link below. We won't need all of them.
@@ -79,7 +86,6 @@ class TreeBase(ABC):
         self.min_samples_leaf = 1
         self.min_weight_fraction = 0.0
         self.max_features = None
-        self.random_state = None
         self.class_weight = None
         self.ccp_alpha = 0.0
         self.depth = 1

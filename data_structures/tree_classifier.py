@@ -1,5 +1,5 @@
 import numpy as np
-from typing import DefaultDict
+from typing import DefaultDict, Union
 from collections import defaultdict
 
 from data_structures.classifier import Classifier
@@ -29,9 +29,9 @@ class TreeClassifier(TreeBase, Classifier):
         splitter: str = BEST,
         solver: str = MAB,
         erf_k: str = "",
-        verbose: bool = True,
-        use_boosting: bool = False,
-        loss_type: str = DEFAULT_BOOSTING_LOSS
+        feature_subsampling: Union[str, int] = None,
+        random_state: int = 0,
+        verbose: bool = False,
     ):
         self.classes = classes  # dict from class name to class index
         self.idx_to_class = {value: key for key, value in classes.items()}
@@ -52,6 +52,8 @@ class TreeClassifier(TreeBase, Classifier):
             criterion=criterion,
             splitter=splitter,
             solver=solver,
-            verbose=verbose,
             erf_k=erf_k,
+            random_state=random_state,
+            feature_subsampling=feature_subsampling,
+            verbose=verbose,
         )
