@@ -200,7 +200,7 @@ def sample_targets(
         i_r, cb_d = get_impurity_reductions(
             is_classification=is_classification,
             histogram=h,
-            _bin_edge_idcs=f2bin_dict[f],
+            bin_edge_idcs=f2bin_dict[f],
             ret_vars=True,
             impurity_measure=impurity_measure,
         )
