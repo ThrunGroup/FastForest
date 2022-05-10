@@ -1,12 +1,18 @@
 import numpy as np
+import math
 
 from collections import defaultdict
 from abc import ABC
 from typing import Union, Tuple, DefaultDict
 
 from data_structures.node import Node
-from utils.utils import data_to_discrete, set_seed
-from utils.constants import MAB, LINEAR, BEST, DEPTH, GINI
+from utils.utils import (
+    data_to_discrete,
+    set_seed,
+    choose_features,
+    remap_discrete_features,
+)
+from utils.constants import MAB, LINEAR, SQRT, BEST, DEPTH, GINI
 
 
 class TreeBase(ABC):
@@ -53,6 +59,17 @@ class TreeBase(ABC):
             else data_to_discrete(data, n=10)
         )
 
+        if self.tree_global_feature_subsampling:
+            # Sample the features randomly once, to be used in the entire tree
+            self.feature_idcs = choose_features(data, self.feature_subsampling)
+
+            self.discrete_features = remap_discrete_features(
+                self.feature_idcs, self.discrete_features
+            )
+
+            # TOO(@motiwari): This may reorder the features. Need to consider how to re-map them to original features.
+            self.data = self.data[:, self.feature_idcs]
+
         self.min_samples_split = min_samples_split
         # Make this a small negative number to avoid infinite loop when all leaves are at max_depth
         self.min_impurity_decrease = min_impurity_decrease
@@ -82,6 +99,7 @@ class TreeBase(ABC):
             solver=self.solver,
             criterion=self.criterion,
             feature_subsampling=self.feature_subsampling,
+            tree_global_feature_subsampling=self.tree_global_feature_subsampling,
         )
 
         # These are copied from the link below. We won't need all of them.

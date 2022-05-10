@@ -1,11 +1,13 @@
-import numpy as np
+import random
 import itertools
+import math
+import numpy as np
 from collections import defaultdict
 from typing import DefaultDict, Tuple, List
-import random
+
 
 from data_structures.histogram import Histogram
-from utils.constants import LINEAR, DISCRETE, IDENTITY
+from utils.constants import LINEAR, DISCRETE, IDENTITY, SQRT
 
 
 def type_check() -> None:
@@ -189,3 +191,27 @@ def make_histograms(
         )
         considered_idcs += list(itertools.product([f_idx], range(histogram.num_bins)))
     return histograms, not_considered_idcs, considered_idcs
+
+
+def choose_features(data: np.ndarray, feature_subsampling: str):
+    N = len(data[0])  # Number of features
+    if feature_subsampling is None:
+        return np.arange(N)
+    elif feature_subsampling == SQRT:
+        return np.random.choice(N, math.ceil(math.sqrt(N)), replace=False)
+    elif (
+        type(feature_subsampling) == int
+    ):  # If an int, subsample feature_subsampling features.
+        return np.random.choice(N, feature_subsampling, replace=False)
+    else:
+        raise NotImplementedError("Invalid type of feature_subsampling")
+
+
+def remap_discrete_features(feature_idcs, tree_discrete_features: defaultdict(list)):
+    # New discrete_features corresponding to new feature indices
+    discrete_features = {}
+    for i, feature_idx in enumerate(feature_idcs):
+        # Our i-th corresponds to the feature_idx-th discrete feature in the tree
+        # TODO(@motiwari): is this correct? Asked Jeyong
+        discrete_features[i] = tree_discrete_features[feature_idx]
+    return discrete_features

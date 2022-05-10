@@ -2,12 +2,16 @@ from __future__ import (
     annotations,
 )  # For typechecking parent: Node, this is somehow important
 import numpy as np
-import math
 from typing import Union
 from collections import defaultdict
 
 from utils.solvers import solve_mab, solve_exactly
-from utils.utils import type_check, counts_of_labels
+from utils.utils import (
+    type_check,
+    counts_of_labels,
+    choose_features,
+    remap_discrete_features,
+)
 from utils.constants import MAB, EXACT, GINI, LINEAR, SQRT
 
 type_check()
@@ -29,6 +33,7 @@ class Node:
         verbose: bool = True,
         erf_k: str = "",
         feature_subsampling: Union[str, int] = None,
+        tree_global_feature_subsampling: bool = False,
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
@@ -46,28 +51,19 @@ class Node:
         self.solver = solver
         self.criterion = criterion
         self.feature_subsampling = feature_subsampling
+        self.tree_global_feature_subsampling = tree_global_feature_subsampling
         self.discrete_features = defaultdict(list)
 
-        # Subsample features
-        N = len(self.data[0])
-        if feature_subsampling is None:
-            self.feature_idcs = np.arange(N)
-        elif feature_subsampling == SQRT:
-            self.feature_idcs = np.random.choice(
-                N, math.ceil(math.sqrt(N)), replace=False
-            )
-        elif (
-            type(feature_subsampling) == int
-        ):  # If an int, subsample feature_subsampling features.
-            self.feature_idcs = np.random.choice(N, feature_subsampling, replace=False)
+        if not tree_global_feature_subsampling:
+            # The features aren't global to the tree, so we should be resampling the features at every node
+            self.feature_idcs = choose_features(data, self.feature_subsampling)
         else:
-            raise NotImplementedError("Invalid type of feature_subsampling")
+            # Features are chosen at the tree level. Use all features
+            self.feature_idcs = np.arange(len(self.data[0]))  # Choose all features
 
-        # New discrete_features corresponding to new feature indices
-        i = 0
-        for feature_idx in self.feature_idcs:
-            self.discrete_features[i] = self.tree.discrete_features[feature_idx]
-            i += 1
+        self.discrete_features = remap_discrete_features(
+            self.feature_idcs, self.tree.discrete_features
+        )
 
         # NOTE: Do not assume labels are all integers from 0 to num_classes-1
         if is_classification:
@@ -159,6 +155,7 @@ class Node:
             verbose=self.verbose,
             criterion=self.criterion,
             feature_subsampling=self.feature_subsampling,
+            tree_global_feature_subsampling=self.tree_global_feature_subsampling,
         )
 
     def split(self) -> None:
