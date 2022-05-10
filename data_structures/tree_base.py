@@ -40,7 +40,7 @@ class TreeBase(ABC):
         self.n_data = len(labels)
         if is_classification:
             self.classes = classes  # dict from class name to class index
-            self.idx_to_class = {value: key for key, value in classes.items()}
+            self.idx_to_class = {value: key for (key, value) in classes.items()}
         self.min_samples_split = min_samples_split
         # Make this a small negative number to avoid infinite loop when all leaves are at max_depth
         self.min_impurity_decrease = min_impurity_decrease
@@ -266,3 +266,5 @@ class TreeBase(ABC):
         """
         self.node.n_print()
         print("\n")  # For consistency with sklearn
+
+

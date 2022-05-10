@@ -1,10 +1,10 @@
 import numpy as np
 import itertools
 from collections import defaultdict
-from typing import DefaultDict, Tuple, List
+from typing import Any, DefaultDict, Tuple, List
 
 from data_structures.histogram import Histogram
-from utils.constants import LINEAR, DISCRETE, IDENTITY
+from utils.constants import LINEAR, DISCRETE, IDENTITY, DEFAULT_GRAD_SMOOTHING_VAL
 
 
 def type_check() -> None:
@@ -183,3 +183,48 @@ def make_histograms(
         )
         considered_idcs += list(itertools.product([f_idx], range(histogram.num_bins)))
     return histograms, not_considered_idcs, considered_idcs
+
+
+# helper functions for boosting
+def find_gradient(loss_type: str, predictions: np.ndarray, labels: np.ndarray) -> np.ndarray:
+    """
+    Computes the gradient for the given loss function using numpy broadcasting
+    ex) gradient instance for Cross-Entropy Loss:
+        d_loss_d_pred = -label/pred
+
+    :return: the gradient matrix of size len(labels)
+    """
+    if loss_type == "CELoss":
+        return -(labels + DEFAULT_GRAD_SMOOTHING_VAL) / (predictions + DEFAULT_GRAD_SMOOTHING_VAL)
+    else:
+        NotImplementedError("Invalid choice of loss function")
+
+
+def find_hessian(loss_type: str, predictions: np.ndarray, labels: np.ndarray) -> np.ndarray:
+    """
+    Computes the hessian for the given loss function using numpy broadcasting
+    ex) hessian instance for Cross-Entropy Loss:
+        d_loss_d_pred = label/pred^2
+
+    :return: the gradient matrix of size len(labels)
+    """
+    if loss_type == "CELoss":
+        return (labels + DEFAULT_GRAD_SMOOTHING_VAL) / (np.square(predictions) + DEFAULT_GRAD_SMOOTHING_VAL)
+    else:
+        NotImplementedError("Invalid choice of loss function")
+
+
+def update_next_labels(tree: Any, loss_type: str,
+                       data: np.ndarray, labels: np.ndarray) -> np.ndarray:
+    """
+    This function updates the labels for the next iteration of boosting.
+    The resulting new training set will look like {X, -grad/hessian}.
+    It does so by following these steps:
+        - get the predictions array by calling predict
+        - compute the labels for the next iteration.
+
+    NOTE: this function assumes tree is already fitted
+    :return: the new updated labels
+    """
+    preds, _ = tree.predict_batch(data)
+    return -find_gradient(loss_type, preds, labels) / find_hessian(loss_type, preds, labels)

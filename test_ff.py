@@ -1,10 +1,27 @@
 import numpy as np
 from sklearn import datasets
 
+from data_structures.forest_classifier import ForestClassifier
 from data_structures.tree_classifier import TreeClassifier
 from utils.utils import class_to_idx
 from utils.constants import LINEAR
 
+
+def test_boosted_forest_iris() -> None:
+    iris = datasets.load_iris()
+    data, labels = iris.data, iris.target
+    f = ForestClassifier(
+        data=data,
+        labels=labels,
+        n_estimators=20,
+        max_depth=5,
+        use_boosting=True,
+        loss_type="CELoss"
+    )
+    f.fit()
+    import ipdb; ipdb.set_trace()
+    acc = np.sum(f.predict_batch(data)[0] == labels)
+    print(acc)
 
 def test_tree_iris2(verbose: bool = False) -> None:
     """
@@ -46,7 +63,8 @@ def test_tree_iris2(verbose: bool = False) -> None:
 
 def main():
     print("Fitting tree iris dataset with different hyperparameters:\n")
-    test_tree_iris2()
+    #test_tree_iris2()
+    test_boosted_forest_iris()
 
 
 if __name__ == "__main__":

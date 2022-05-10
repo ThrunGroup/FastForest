@@ -16,7 +16,7 @@ from utils.constants import EXACT
 class ForestTests(unittest.TestCase):
     # We can't have an __init__ function due to pytest providing errors about function signatures.
     np.random.seed(0)
-
+    """
     def test_boosted_forest_iris(self) -> None:
         iris = sklearn.datasets.load_iris()
         data, labels = iris.data, iris.target
@@ -31,7 +31,7 @@ class ForestTests(unittest.TestCase):
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
         self.assertTrue((acc / len(data)) >= 0.98)
-
+    """
     def test_forest_iris(self) -> None:
         iris = sklearn.datasets.load_iris()
         data, labels = iris.data, iris.target
@@ -44,7 +44,7 @@ class ForestTests(unittest.TestCase):
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
         self.assertTrue((acc / len(data)) >= 0.98)
-
+        
     def test_ERF_iris(self) -> None:
         iris = sklearn.datasets.load_iris()
         data, labels = iris.data, iris.target
@@ -184,7 +184,6 @@ class ForestTests(unittest.TestCase):
         acc2 = np.sum(t2.predict_batch(data)[0] == labels)
         print(acc1, acc2)
         self.assertTrue(acc1 < acc2)
-
 
 if __name__ == "__main__":
     unittest.main()

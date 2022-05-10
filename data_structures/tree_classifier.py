@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from data_structures.classifier import Classifier
 from data_structures.tree_base import TreeBase
-from utils.constants import MAB, LINEAR, GINI, BEST
+from utils.constants import MAB, LINEAR, GINI, BEST, DEFAULT_BOOSTING_LOSS
 
 
 class TreeClassifier(TreeBase, Classifier):
@@ -30,9 +30,13 @@ class TreeClassifier(TreeBase, Classifier):
         solver: str = MAB,
         erf_k: str = "",
         verbose: bool = True,
+        use_boosting: bool = False,
+        loss_type: str = DEFAULT_BOOSTING_LOSS
     ):
         self.classes = classes  # dict from class name to class index
         self.idx_to_class = {value: key for key, value in classes.items()}
+
+        # attributes for TreeBase
         super().__init__(
             data=data,
             labels=labels,

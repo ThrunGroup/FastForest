@@ -2,15 +2,16 @@ import numpy as np
 from typing import Tuple, DefaultDict
 
 from data_structures.tree_classifier import TreeClassifier
-from data_structures.boosted_tree_classifier import BoostedTreeClassifier
+from data_structures.boosting import Boosting
 from data_structures.classifier import Classifier
-from utils.constants import BUFFER, MAB, LINEAR, GINI, SQRT, BEST
-from utils.utils import class_to_idx, data_to_discrete
+from utils.constants import BUFFER, MAB, LINEAR, GINI, SQRT, BEST, DEFAULT_BOOSTING_LOSS
+from utils.utils import class_to_idx, data_to_discrete, update_next_labels
 
 
 class ForestClassifier(Classifier):
     """
-    Class for vanilla random forest model, which averages each tree's predictions
+    Class for random forest model, which averages each tree's predictions.
+    Includes support for both vanilla and boosting model.
     """
 
     def __init__(
@@ -31,14 +32,13 @@ class ForestClassifier(Classifier):
         solver: str = MAB,
         verbose: bool = True,
         erf_k: str = SQRT,
-
-        # parameters specific for boosting
         use_boosting: bool = False,
-        loss_type: str = "CELoss"
+        loss_type: str = DEFAULT_BOOSTING_LOSS
     ) -> None:
         self.data = data
         self.num_features = len(data[0])
         self.labels = labels
+        self.next_iteration_labels = labels
         self.trees = []
         self.n_estimators = n_estimators
 
@@ -80,11 +80,9 @@ class ForestClassifier(Classifier):
 
         # Need this to do remapping when features are shuffled
         self.tree_feature_idcs = {}
-
         self.discrete_features: DefaultDict = data_to_discrete(
             data, n=10
         )  # TODO: Fix this hard-coding
-
         self.use_boosting = use_boosting
         self.loss_type = loss_type
 
@@ -115,7 +113,6 @@ class ForestClassifier(Classifier):
             self.labels = labels
 
         self.trees = []
-        new_labels = [self.labels]
         for i in range(self.n_estimators):
             if self.remaining_budget is not None and self.remaining_budget <= 0:
                 break
@@ -132,55 +129,42 @@ class ForestClassifier(Classifier):
 
             self.tree_feature_idcs[i] = feature_idcs
 
-            if self.bootstrap:
-                N = len(self.labels)
-                idcs = np.random.choice(N, size=N, replace=True)
-                new_data = self.data[idcs, :]
-                new_labels[0] = self.labels[idcs]
-            else:
-                new_data = self.data
-                new_labels[0] = self.labels
-
             if self.use_boosting:
-                tree = BoostedTreeClassifier(
-                    data=new_data[
-                         :, feature_idcs
-                         ],  # Randomly choose a subset of the available features
-                    labels=new_labels[0],
-                    max_depth=self.max_depth,
-                    classes=self.classes,
-                    budget=self.remaining_budget,
-                    verbose=self.verbose,
-                    min_samples_split=self.min_samples_split,
-                    min_impurity_decrease=self.min_impurity_decrease,
-                    max_leaf_nodes=self.max_leaf_nodes,
-                    discrete_features=self.discrete_features,
-                    bin_type=self.bin_type,
-                    solver=self.solver,
-                    erf_k=self.erf_k,
-                    loss_type=self.loss_type
-                )
+                labels = self.next_iteration_labels
+                # need to update class_dict since labels changed
+                self.classes = class_to_idx(np.unique(labels))
             else:
-                tree = TreeClassifier(
-                    data=new_data[
-                        :, feature_idcs
-                    ],  # Randomly choose a subset of the available features
-                    labels=new_labels[0],
-                    max_depth=self.max_depth,
-                    classes=self.classes,
-                    budget=self.remaining_budget,
-                    verbose=self.verbose,
-                    min_samples_split=self.min_samples_split,
-                    min_impurity_decrease=self.min_impurity_decrease,
-                    max_leaf_nodes=self.max_leaf_nodes,
-                    discrete_features=self.discrete_features,
-                    bin_type=self.bin_type,
-                    solver=self.solver,
-                    erf_k=self.erf_k,
-                )
+                labels = self.labels
+
+            if self.bootstrap:
+                N = len(labels)
+                idcs = np.random.choice(N, size=N, replace=True)
+                data_for_tree_fitting = self.data[idcs, :]
+                label_for_tree_fitting = labels[idcs]
+            else:
+                data_for_tree_fitting = self.data
+                label_for_tree_fitting = labels
+
+            tree = TreeClassifier(
+                data=data_for_tree_fitting[
+                     :, feature_idcs
+                     ],  # Randomly choose a subset of the available features
+                labels=label_for_tree_fitting,
+                max_depth=self.max_depth,
+                classes=self.classes,
+                budget=self.remaining_budget,
+                verbose=self.verbose,
+                min_samples_split=self.min_samples_split,
+                min_impurity_decrease=self.min_impurity_decrease,
+                max_leaf_nodes=self.max_leaf_nodes,
+                discrete_features=self.discrete_features,
+                bin_type=self.bin_type,
+                solver=self.solver,
+                erf_k=self.erf_k,
+            )
             tree.fit()
             if self.use_boosting:
-                new_labels[0] = tree.update_next_labels()
+                self.next_iteration_labels = update_next_labels(tree, self.loss_type, self.data, labels)
             self.trees.append(tree)
 
             # Bookkeeping
@@ -199,6 +183,7 @@ class ForestClassifier(Classifier):
         agg_preds = np.empty((T, self.n_classes))
 
         for tree_idx, tree in enumerate(self.trees):
+            import ipdb; ipdb.set_trace()
             agg_preds[tree_idx] = tree.predict(
                 datapoint[self.tree_feature_idcs[tree_idx]]
             )[1]

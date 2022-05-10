@@ -29,3 +29,7 @@ IDENTITY = "IDENTITY"
 
 # Feature subsampling
 SQRT = "SQRT"
+
+# Boosting
+DEFAULT_BOOSTING_LOSS = "CELoss"
+DEFAULT_GRAD_SMOOTHING_VAL = 1e-1
