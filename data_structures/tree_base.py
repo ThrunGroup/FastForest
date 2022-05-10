@@ -21,6 +21,8 @@ class TreeBase(ABC):
         labels: np.ndarray,
         max_depth: int,
         classes: dict = None,
+        feature_subsampling: Union[str, int] = None,
+        tree_global_feature_subsampling: bool = False,
         min_samples_split: int = 2,
         min_impurity_decrease: float = -1e-6,
         max_leaf_nodes: int = None,
@@ -32,7 +34,6 @@ class TreeBase(ABC):
         criterion: str = GINI,
         splitter: str = BEST,
         solver: str = MAB,
-        feature_subsampling: Union[str, int] = None,
         random_state: int = 0,
         verbose: bool = False,
     ) -> None:
@@ -43,15 +44,20 @@ class TreeBase(ABC):
         if is_classification:
             self.classes = classes  # dict from class name to class index
             self.idx_to_class = {value: key for key, value in classes.items()}
-        self.min_samples_split = min_samples_split
-        # Make this a small negative number to avoid infinite loop when all leaves are at max_depth
-        self.min_impurity_decrease = min_impurity_decrease
-        self.max_leaf_nodes = max_leaf_nodes
+
+        self.feature_subsampling = feature_subsampling
+        self.tree_global_feature_subsampling = tree_global_feature_subsampling
         self.discrete_features = (
             discrete_features
             if len(discrete_features) > 0
             else data_to_discrete(data, n=10)
         )
+
+        self.min_samples_split = min_samples_split
+        # Make this a small negative number to avoid infinite loop when all leaves are at max_depth
+        self.min_impurity_decrease = min_impurity_decrease
+        self.max_leaf_nodes = max_leaf_nodes
+
         self.bin_type = bin_type
         self.remaining_budget = budget
         self.is_classification = is_classification
@@ -61,7 +67,6 @@ class TreeBase(ABC):
         self.random_state = random_state
         set_seed(self.random_state)
         self.verbose = verbose
-        self.feature_subsampling = feature_subsampling
 
         self.node = Node(
             tree=self,

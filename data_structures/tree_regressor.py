@@ -18,6 +18,8 @@ class TreeRegressor(TreeBase, Regressor):
         data: np.ndarray,
         labels: np.ndarray,
         max_depth: int,
+        feature_subsampling: Union[str, int] = None,
+        tree_global_feature_subsampling: bool = False,
         min_samples_split: int = 2,
         min_impurity_decrease: float = -1e-5,
         max_leaf_nodes: int = None,
@@ -28,7 +30,6 @@ class TreeRegressor(TreeBase, Regressor):
         criterion: str = MSE,
         splitter: str = BEST,
         solver: str = MAB,
-        feature_subsampling: Union[str, int] = None,
         random_state: int = 0,
         verbose: bool = False,
     ):
@@ -36,6 +37,8 @@ class TreeRegressor(TreeBase, Regressor):
             data=data,
             labels=labels,
             max_depth=max_depth,
+            feature_subsampling=feature_subsampling,
+            tree_global_feature_subsampling=tree_global_feature_subsampling,
             min_samples_split=min_samples_split,
             min_impurity_decrease=min_impurity_decrease,
             max_leaf_nodes=max_leaf_nodes,
@@ -47,7 +50,6 @@ class TreeRegressor(TreeBase, Regressor):
             criterion=criterion,
             splitter=splitter,
             solver=solver,
-            feature_subsampling=feature_subsampling,
             random_state=random_state,
             verbose=verbose,
         )

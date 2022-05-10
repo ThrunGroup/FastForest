@@ -21,6 +21,7 @@ class ForestBase(ABC):
         max_depth: int = None,
         bootstrap: bool = True,
         feature_subsampling: str = None,
+        tree_global_feature_subsampling: bool = False,
         min_samples_split: int = 2,
         min_impurity_decrease: float = 0,
         max_leaf_nodes: int = None,
@@ -39,11 +40,12 @@ class ForestBase(ABC):
         self.trees = []
         self.n_estimators = n_estimators
         self.is_classification = is_classification
-        self.num_features = 0
 
         self.max_depth = max_depth
         self.bootstrap = bootstrap
         self.feature_subsampling = feature_subsampling
+        self.tree_global_feature_subsampling = tree_global_feature_subsampling
+
         self.min_samples_split = min_samples_split
         self.min_impurity_decrease = min_impurity_decrease
         self.max_leaf_nodes = max_leaf_nodes
@@ -100,7 +102,6 @@ class ForestBase(ABC):
             self.labels = labels
 
         self.trees = []
-        self.num_features = len(self.data[0])
         self.discrete_features: DefaultDict = data_to_discrete(self.data, n=10)
         for i in range(self.n_estimators):
             if self.remaining_budget is not None and self.remaining_budget <= 0:

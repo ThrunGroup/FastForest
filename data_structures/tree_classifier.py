@@ -19,6 +19,8 @@ class TreeClassifier(TreeBase, Classifier):
         labels: np.ndarray,
         max_depth: int,
         classes: dict,
+        feature_subsampling: Union[str, int] = None,
+        tree_global_feature_subsampling: bool = False,
         min_samples_split: int = 2,
         min_impurity_decrease: float = -1e-6,
         max_leaf_nodes: int = None,
@@ -29,7 +31,6 @@ class TreeClassifier(TreeBase, Classifier):
         splitter: str = BEST,
         solver: str = MAB,
         erf_k: str = "",
-        feature_subsampling: Union[str, int] = None,
         random_state: int = 0,
         verbose: bool = False,
     ):
@@ -40,6 +41,8 @@ class TreeClassifier(TreeBase, Classifier):
             labels=labels,
             max_depth=max_depth,
             classes=classes,
+            feature_subsampling=feature_subsampling,
+            tree_global_feature_subsampling=tree_global_feature_subsampling,
             min_samples_split=min_samples_split,
             min_impurity_decrease=min_impurity_decrease,
             max_leaf_nodes=max_leaf_nodes,
@@ -52,6 +55,5 @@ class TreeClassifier(TreeBase, Classifier):
             solver=solver,
             erf_k=erf_k,
             random_state=random_state,
-            feature_subsampling=feature_subsampling,
             verbose=verbose,
         )
