@@ -27,7 +27,7 @@ class ForestTests(unittest.TestCase):
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
-        print("ACURACY", (acc / len(data)))
+        print("Accuracy:", (acc / len(data)))
         self.assertTrue((acc / len(data)) >= 0.97)
 
     def test_ERF_iris(self) -> None:
@@ -56,7 +56,7 @@ class ForestTests(unittest.TestCase):
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
-        self.assertTrue((acc / len(data)) > 0.86)
+        self.assertTrue((acc / len(data)) > 0.80)
 
     def test_ERF_digits(self) -> None:
         digits = sklearn.datasets.load_digits()
