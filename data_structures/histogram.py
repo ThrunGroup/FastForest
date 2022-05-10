@@ -2,7 +2,7 @@ import numpy as np
 import bisect
 from typing import Any, Tuple
 
-from utils.constants import LINEAR, DISCRETE, IDENTITY
+from utils.constants import LINEAR, DISCRETE, IDENTITY, RANDOM
 
 
 class Histogram:
@@ -42,7 +42,7 @@ class Histogram:
             self.bin_edges = self.discrete_bin()
         elif self.bin_type == IDENTITY:
             self.bin_edges = self.identity_bin()
-        elif self.bin_type == "random":
+        elif self.bin_type == RANDOM:
             self.bin_edges = self.random_bin()
         else:
             raise NotImplementedError("Invalid type of bin")
@@ -148,4 +148,4 @@ class Histogram:
         """
         splits = np.random.uniform(self.min_bin, self.max_bin, size=self.num_bins)
         # sorting is necessary for now since we're using binary search to find the correct bin
-        return np.sort(splits, kind='mergesort')
+        return np.sort(splits, kind="mergesort")

@@ -7,7 +7,7 @@ from typing import DefaultDict, Tuple, List
 
 
 from data_structures.histogram import Histogram
-from utils.constants import LINEAR, DISCRETE, IDENTITY, SQRT
+from utils.constants import LINEAR, DISCRETE, IDENTITY, SQRT, RANDOM
 
 
 def type_check() -> None:
@@ -163,7 +163,7 @@ def make_histograms(
         elif bin_type == LINEAR:
             min_bin, max_bin = np.min(f_data), np.max(f_data)
             num_bins = B
-        elif bin_type == "random":  # this is for extremely random forests
+        elif bin_type == RANDOM:  # For extremely random forests
             min_bin, max_bin = np.min(f_data), np.max(f_data)
             if erf_k == "" or erf_k == "SQRT":
                 num_bins = np.sqrt(np.shape(data)[0]).astype(int)
