@@ -11,6 +11,7 @@ from utils.constants import (
     GINI,
     MSE,
     LINEAR,
+    IDENTITY,
     BATCH_SIZE,
 )
 from utils.criteria import get_impurity_reductions
@@ -61,7 +62,7 @@ def solve_exactly(
     data: np.ndarray,
     labels: np.ndarray,
     discrete_bins_dict: DefaultDict,
-    fixed_bin_type: str = LINEAR,
+    binning_type: str = IDENTITY,
     is_classification: bool = True,
     impurity_measure: str = GINI,
     min_impurity_reduction: float = 0,
@@ -76,7 +77,7 @@ def solve_exactly(
     :param data: Feature set
     :param labels: Labels of datapoints
     :param discrete_bins_dict: A dictionary of discrete bins
-    :param fixed_bin_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
+    :param binning_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
     :param num_queries: mutable variable to update the number of datapoints queried
     :param is_classification:  Whether is a classification problem(True) or regression problem(False)
     :param impurity_measure: A name of impurity_measure
@@ -92,11 +93,11 @@ def solve_exactly(
     # Make a list of histograms, a list of indices that we don't consider as potential arms, and a list of indices
     # that we consider as potential arms.
     histograms, not_considered_idcs, considered_idcs = make_histograms(
-        is_classification,
-        data,
-        labels,
-        discrete_bins_dict,
-        fixed_bin_type=fixed_bin_type,
+        is_classification=is_classification,
+        data=data,
+        labels=labels,
+        discrete_bins_dict=discrete_bins_dict,
+        binning_type=binning_type,
         num_bins=B,
     )
 
@@ -114,12 +115,12 @@ def solve_exactly(
     )
 
     estimates[accesses], _cb_delta, num_queries = sample_targets(
-        is_classification,
-        data,
-        labels,
-        accesses,
-        histograms,
-        N,
+        is_classification=is_classification,
+        data=data,
+        labels=labels,
+        arms=accesses,
+        histograms=histograms,
+        batch_size=N,
         impurity_measure=impurity_measure,
     )
 
@@ -209,7 +210,7 @@ def solve_mab(
     data: np.ndarray,
     labels: np.ndarray,
     discrete_bins_dict: DefaultDict,
-    fixed_bin_type: str = LINEAR,
+    binning_type: str = LINEAR,
     erf_k: str = "",
     is_classification: bool = True,
     impurity_measure: str = GINI,
@@ -228,7 +229,7 @@ def solve_mab(
     :param data: Feature set
     :param labels: Labels of datapoints
     :param discrete_bins_dict: A dictionary of discrete bins
-    :param fixed_bin_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
+    :param binning_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
     :param erf_k: The type of subsampling to use for bin_edges. The default is sqrt(n).
     :param num_queries: mutable variable to update the number of datapoints queried
     :param is_classification:  Whether is a classification problem(True) or regression problem(False)
@@ -258,7 +259,7 @@ def solve_mab(
         data,
         labels,
         discrete_bins_dict,
-        fixed_bin_type=fixed_bin_type,
+        binning_type=binning_type,
         erf_k=erf_k,
         num_bins=B,
     )

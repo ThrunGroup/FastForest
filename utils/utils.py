@@ -118,7 +118,7 @@ def make_histograms(
     data: np.ndarray,
     labels: np.ndarray,
     discrete_bins_dict: DefaultDict,
-    fixed_bin_type: str = "",
+    binning_type: str = "",
     erf_k: str = "",
     num_bins: int = 11,
 ) -> Tuple[List[Histogram], List, List]:
@@ -130,7 +130,7 @@ def make_histograms(
     :param data: A 2d-array of input data
     :param labels: An 1d-array of target dat
     :param discrete_bins_dict: A DefaultDict mapping feature index to unique feature values
-    :param fixed_bin_type: Fixed type of bin which should be one of "linear", "discrete", and "identity"
+    :param binning_type: Fixed type of bin which should be one of "linear", "discrete", and "identity"
     :param erf_k: The type of subsampling to use for bin_edges. The default is sqrt(n).
     :param num_bins: Number of bins
     :return: A list of histograms, a list of indices not considered, and a list of indices considered
@@ -148,10 +148,10 @@ def make_histograms(
         else:
             D = len(discrete_bins_dict[f_idx])
 
-        if fixed_bin_type == "":
+        if binning_type == "":
             bin_type = choose_bin_type(D, N, B)
         else:
-            bin_type = fixed_bin_type
+            bin_type = binning_type
 
         if bin_type == DISCRETE:
             num_bins = D
