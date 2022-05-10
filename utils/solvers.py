@@ -294,11 +294,15 @@ def solve_mab(
             lcbs[exact_accesses] = ucbs[exact_accesses] = estimates[exact_accesses]
             exact_mask[exact_accesses] = 1
             num_samples[exact_accesses] += N
+            total_queries += num_queries
+
+            # None of the CIs overlap with 0. We are confident that there is no possible impurity reduction.
+            if lcbs.min() > 0:
+                break
 
             # TODO(@motiwari): Can't use nanmin here -- why?
             cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
             candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
-            total_queries += num_queries
 
         # Last candidates were exactly computed
         if len(candidates) <= 1:
@@ -320,14 +324,18 @@ def solve_mab(
             impurity_measure=impurity_measure,
         )
         num_samples[accesses] += batch_size
+        total_queries += num_queries
         lcbs[accesses] = estimates[accesses] - CONF_MULTIPLIER * cb_delta[accesses]
         ucbs[accesses] = estimates[accesses] + CONF_MULTIPLIER * cb_delta[accesses]
+
+        # None of the CIs overlap with 0. We are confident that there is no possible impurity reduction.
+        if lcbs.min() > 0:
+            break
 
         # TODO(@motiwari): Can't use nanmin here -- why?
         # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
         cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
-        total_queries += num_queries
         round_count += 1
 
     best_split = zip(
