@@ -35,3 +35,6 @@ IDENTITY = "IDENTITY"
 
 # Feature subsampling
 SQRT = "SQRT"
+
+# For randomness
+MAX_SEED = 2 ** 32

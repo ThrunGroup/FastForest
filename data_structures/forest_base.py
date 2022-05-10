@@ -2,7 +2,7 @@ import numpy as np
 from typing import Tuple, DefaultDict, Union
 from abc import ABC
 
-from utils.constants import BUFFER, MAB, LINEAR, GINI, SQRT, BEST
+from utils.constants import BUFFER, MAB, LINEAR, GINI, SQRT, BEST, MAX_SEED
 from utils.utils import data_to_discrete, set_seed
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.tree_regressor import TreeRegressor
@@ -119,6 +119,12 @@ class ForestBase(ABC):
                 new_data = self.data
                 new_labels = self.labels
 
+            # NOTE: We cannot just let the tree's random states be forest.random_state + i, because then
+            # two forests whose index is off by 1 will have very correlated results (e.g. when running multiple exps),
+            # e.g., the first tree of the second forest will have the same random seed as the second tree of the first
+            # forest. For this reason, we need to generate a new sequence of random numbers to seed the trees.
+            tree_random_state = np.random.randint(MAX_SEED)
+
             if self.is_classification:
                 tree = TreeClassifier(
                     data=new_data,
@@ -134,7 +140,7 @@ class ForestBase(ABC):
                     solver=self.solver,
                     erf_k=self.erf_k,
                     feature_subsampling=self.feature_subsampling,
-                    random_state=self.random_state + i,
+                    random_state=tree_random_state,
                     verbose=self.verbose,
                 )
             else:
@@ -151,7 +157,7 @@ class ForestBase(ABC):
                     solver=self.solver,
                     erf_k=self.erf_k,
                     feature_subsampling=self.feature_subsampling,
-                    random_state=self.random_state + i,
+                    random_state=tree_random_state,
                     verbose=self.verbose,
                 )
             tree.fit()
