@@ -194,6 +194,13 @@ def make_histograms(
 
 
 def choose_features(data: np.ndarray, feature_subsampling: str):
+    """
+    Choose a random subset of features from all available features.
+
+    :param data: dataset to be fit. Only used for computing the total number of features
+    :param feature_subsampling: The feature subsampling method; None, SQRT, or int
+    :return:
+    """
     N = len(data[0])  # Number of features
     if feature_subsampling is None:
         return np.arange(N)
@@ -208,10 +215,20 @@ def choose_features(data: np.ndarray, feature_subsampling: str):
 
 
 def remap_discrete_features(feature_idcs, tree_discrete_features: defaultdict(list)):
+    """
+
+    :param feature_idcs: The new feature indices of the object (e.g., Node)
+    :param tree_discrete_features: The features that are discrete globally (e.g., in the Tree)
+    :return: the new set of discrete features
+    """
     # New discrete_features corresponding to new feature indices
     discrete_features = {}
     for i, feature_idx in enumerate(feature_idcs):
-        # Our i-th corresponds to the feature_idx-th discrete feature in the tree
         # TODO(@motiwari): is this correct? Asked Jeyong
+        # Our i-th corresponds to the feature_idx-th discrete feature in the tree.
+        # If tree_discrete_features[feature_idx] is discrete, then tree_discrete_features[feature_idx] = list_of_vals
+        # and discrete_features[i] = list_of_vals (also discrete).
+        # If tree_discrete_features[feature_idx] is NOT discrete, then tree_discrete_features[feature_idx] = []
+        # and discrete_features[i] = [] (also not discrete).
         discrete_features[i] = tree_discrete_features[feature_idx]
     return discrete_features

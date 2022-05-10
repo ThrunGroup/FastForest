@@ -62,13 +62,9 @@ class TreeBase(ABC):
         if self.tree_global_feature_subsampling:
             # Sample the features randomly once, to be used in the entire tree
             self.feature_idcs = choose_features(data, self.feature_subsampling)
-
             self.discrete_features = remap_discrete_features(
                 self.feature_idcs, self.discrete_features
             )
-
-            # TOO(@motiwari): This may reorder the features. Need to consider how to re-map them to original features.
-            self.data = self.data[:, self.feature_idcs]
 
         self.min_samples_split = min_samples_split
         # Make this a small negative number to avoid infinite loop when all leaves are at max_depth

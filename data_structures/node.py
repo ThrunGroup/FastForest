@@ -54,16 +54,16 @@ class Node:
         self.tree_global_feature_subsampling = tree_global_feature_subsampling
         self.discrete_features = defaultdict(list)
 
-        if not tree_global_feature_subsampling:
+        if tree_global_feature_subsampling:
+            # Features are chosen at the tree level. Use all of tree's features
+            self.feature_idcs = self.tree.feature_idcs
+            self.discrete_features = self.tree.discrete_features
+        else:
             # The features aren't global to the tree, so we should be resampling the features at every node
             self.feature_idcs = choose_features(data, self.feature_subsampling)
-        else:
-            # Features are chosen at the tree level. Use all features
-            self.feature_idcs = np.arange(len(self.data[0]))  # Choose all features
-
-        self.discrete_features = remap_discrete_features(
-            self.feature_idcs, self.tree.discrete_features
-        )
+            self.discrete_features = remap_discrete_features(
+                self.feature_idcs, self.tree.discrete_features
+            )
 
         # NOTE: Do not assume labels are all integers from 0 to num_classes-1
         if is_classification:
