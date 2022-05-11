@@ -51,8 +51,8 @@ class ForestBase(ABC):
         self.org_targets = labels
         self.new_targets = labels
 
-        # self.curr_data and self.curr_targets are the data, targets that are fed into the current tree to fit.
-        # These may be smaller than original dataset size if self.bootstrap is true.
+        # self.curr_data and self.curr_targets are the data, targets that are used to fit the current tree.
+        # These attributes may be smaller than the original dataset size if self.bootstrap is true.
         self.curr_data = None
         self.curr_targets = None
         self.trees = []
