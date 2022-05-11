@@ -13,7 +13,7 @@ def RandomForestClassifier(ForestClassifier):
     tree_global_feature_subsampling: bool = False,
     bin_type: str = IDENTITY,
     num_bins: int = None,
-    erf_k: str = None,
+    erf_k: int = None,
     solver: str = EXACT (default value, not fixed)
     """
 

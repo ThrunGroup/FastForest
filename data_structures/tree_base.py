@@ -35,7 +35,7 @@ class TreeBase(ABC):
         discrete_features: DefaultDict = defaultdict(list),
         bin_type: str = LINEAR,
         num_bins: int = DEFAULT_NUM_BINS,
-        erf_k: str = "",
+        erf_k: int = None,
         budget: int = None,
         is_classification: bool = True,
         criterion: str = GINI,

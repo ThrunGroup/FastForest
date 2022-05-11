@@ -32,7 +32,7 @@ class Node:
         criterion: str = GINI,
         solver: str = MAB,
         verbose: bool = True,
-        erf_k: str = "",
+        erf_k: int = None,
         feature_subsampling: Union[str, int] = None,
         tree_global_feature_subsampling: bool = False,
     ) -> None:
