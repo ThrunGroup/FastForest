@@ -1,32 +1,20 @@
 import numpy as np
 
 from data_structures.forest_regressor import ForestRegressor
-from utils.constants import SQRT, IDENTITY, GINI, BEST, EXACT, MAB
+from utils.constants import SQRT, IDENTITY, BEST, EXACT, MSE
 
 
 def RandomForestClassifier(ForestRegressor):
     """
     A RandomForestClassifier, which is a ForestClassifier with the following settings:
 
-    data: np.ndarray = None,
-    labels: np.ndarray = None,
-    n_estimators: int = 100,
-    max_depth: int = None,
     bootstrap: bool = True,
     feature_subsampling: str = None,
     tree_global_feature_subsampling: bool = False,
-    min_samples_split: int = 2,
-    min_impurity_decrease: float = 0,
-    max_leaf_nodes: int = None,
-    bin_type: str = LINEAR,
-    num_bins: int = DEFAULT_NUM_BINS,
-    budget: int = None,
-    criterion: str = GINI,
-    splitter: str = BEST,
-    solver: str = MAB,
-    erf_k: str = SQRT,
-    random_state: int = 0,
-    verbose: bool = False,
+    bin_type: str = IDENTITY,
+    num_bins: int = None,
+    erf_k: str = None,
+    solver: str = EXACT (default value, not fixed)
     """
 
     def __init__(
@@ -39,7 +27,7 @@ def RandomForestClassifier(ForestRegressor):
         min_impurity_decrease: float = 0,
         max_leaf_nodes: int = None,
         budget: int = None,
-        criterion: str = GINI,
+        criterion: str = MSE,
         splitter: str = BEST,
         solver: str = EXACT,
         random_state: int = 0,

@@ -12,9 +12,9 @@ def RandomForestClassifier(ForestClassifier):
     feature_subsampling: str = SQRT,
     tree_global_feature_subsampling: bool = False,
     bin_type: str = IDENTITY,
-    criterion: str = GINI,
-    splitter: str = BEST,
-    solver: str = EXACT,
+    num_bins: int = None,
+    erf_k: str = None,
+    solver: str = EXACT (default value, not fixed)
     """
 
     def __init__(
