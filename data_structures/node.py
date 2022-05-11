@@ -103,7 +103,7 @@ class Node:
                 binning_type=self.bin_type,
                 num_bins=self.num_bins,
                 is_classification=self.is_classification,
-                impurity_measure=self.criterion
+                impurity_measure=self.criterion,
             )
         elif self.solver == EXACT:
             results = solve_exactly(

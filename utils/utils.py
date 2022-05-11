@@ -6,8 +6,16 @@ from collections import defaultdict
 from typing import Any, DefaultDict, Tuple, List
 
 from data_structures.histogram import Histogram
-from utils.constants import LINEAR, DISCRETE, IDENTITY,  SQRT, RANDOM, DEFAULT_NUM_BINS, \
-                            DEFAULT_GRAD_SMOOTHING_VAL, DEFAULT_LEARNING_RATE
+from utils.constants import (
+    LINEAR,
+    DISCRETE,
+    IDENTITY,
+    SQRT,
+    RANDOM,
+    DEFAULT_NUM_BINS,
+    DEFAULT_GRAD_SMOOTHING_VAL,
+    DEFAULT_LEARNING_RATE
+)
 
 
 def type_check() -> None:
@@ -229,16 +237,15 @@ def remap_discrete_features(feature_idcs, tree_discrete_features: defaultdict(li
     return discrete_features
 
 
-# helper functions for boosting
 def find_gradient(loss_type: str, predictions: np.ndarray, labels: np.ndarray) -> np.ndarray:
     """
-    Computes the gradient for the given loss function using numpy broadcasting
-    ex) gradient instance for Cross-Entropy Loss:
+    Computes the gradient for the given loss function w.r.t the prediction label
+    ex) gradient for cross-entropy Loss:
         d_loss_d_pred = -label/pred
 
     :return: the gradient matrix of size len(labels)
     """
-    if loss_type == "CELoss":
+    if loss_type == DEFAULT_CLASSIFIER_LOSS:
         return -(labels + DEFAULT_GRAD_SMOOTHING_VAL) / (predictions + DEFAULT_GRAD_SMOOTHING_VAL)
     else:
         NotImplementedError("Invalid choice of loss function")
@@ -246,33 +253,37 @@ def find_gradient(loss_type: str, predictions: np.ndarray, labels: np.ndarray) -
 
 def find_hessian(loss_type: str, predictions: np.ndarray, labels: np.ndarray) -> np.ndarray:
     """
-    Computes the hessian for the given loss function using numpy broadcasting
-    ex) hessian instance for Cross-Entropy Loss:
+    Computes the hessian for the given loss function w.r.t the prediction label
+    ex) hessian for Cross-Entropy Loss:
         d_loss_d_pred = label/pred^2
 
     :return: the gradient matrix of size len(labels)
     """
-    if loss_type == "CELoss":
+    if loss_type == DEFAULT_CLASSIFIER_LOSS:
         return (labels + DEFAULT_GRAD_SMOOTHING_VAL) / (np.square(predictions) + DEFAULT_GRAD_SMOOTHING_VAL)
     else:
         NotImplementedError("Invalid choice of loss function")
 
 
-def update_next_labels(tree_idx: int, tree: Any, loss_type: str, is_classification,
-                       data: np.ndarray, labels: np.ndarray) -> np.ndarray:
+def update_next_labels(
+    tree_idx: int,
+    loss_type: str,
+    is_classification,
+    labels: np.ndarray,
+    predictions: np.ndarray
+) -> np.ndarray:
     """
-    This function updates the labels for the next iteration of boosting.
+    Updates the labels for the next iteration of boosting.
     The resulting new training set will look like {X, -grad/hessian}.
     It does so by following these steps:
         - get the predictions array by calling predict
-        - compute the labels for the next iteration.
+        - compute the targets for the next iteration.
 
     NOTE: this function assumes tree is already fitted
     :return: the new updated labels
     """
     lr = 1.0 if tree_idx == 0 else DEFAULT_LEARNING_RATE
-    preds, _ = tree.predict_batch(data)
     if is_classification:
         return -find_gradient(loss_type, preds, labels) / find_hessian(loss_type, preds, labels)
     else:
-        return labels - (lr * preds)
+        return labels - (lr * predictions)

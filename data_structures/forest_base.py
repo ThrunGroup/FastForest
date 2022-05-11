@@ -124,19 +124,19 @@ class ForestBase(ABC):
                 print("Fitting tree", i)
 
             if self.use_boosting:
-                labels = self.labels_for_boosting
+                new_labels = self.labels_for_boosting
             else:
-                labels = self.labels
+                new_labels = self.labels
 
             if self.bootstrap:
-                N = len(labels)
+                N = len(new_labels)
                 idcs = np.random.choice(N, size=N, replace=True)
                 # TODO(@motiwari): Can we remove the : index below?
                 new_data = self.data[idcs, :]
-                new_labels = labels[idcs]
+                new_labels = new_labels[idcs]
             else:
                 new_data = self.data
-                new_labels = labels
+                new_labels = new_labels
 
             # NOTE: We cannot just let the tree's random states be forest.random_state + i, because then
             # two forests whose index is off by 1 will have very correlated results (e.g. when running multiple exps),
@@ -180,14 +180,13 @@ class ForestBase(ABC):
                     verbose=self.verbose,
                 )
             tree.fit()
-            if self.use_boosting:   # TODO: implement boosting for classification
-                self.labels_for_boosting = update_next_labels(
-                    tree_idx=i,
-                    tree=tree,
+            if self.use_boosting:
+                self.labels = update_next_labels(
+                    is_residual=i,
                     loss_type=DEFAULT_REGRESSOR_LOSS,
                     is_classification=self.is_classification,
-                    data=self.data,
                     labels=labels,  # TODO: currently uses O(n) computation
+                    predictions=self.predict_batch(self.data)
                 )
             self.trees.append(tree)
 

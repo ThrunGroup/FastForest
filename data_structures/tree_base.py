@@ -293,4 +293,3 @@ class TreeBase(ABC):
         """
         self.node.n_print()
         print("\n")  # For consistency with sklearn
-        

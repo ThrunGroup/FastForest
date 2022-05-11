@@ -30,7 +30,7 @@ class ForestRegressor(ForestBase, Regressor):
         solver: str = MAB,
         random_state: int = 0,
         verbose: bool = False,
-        use_boosting: bool = False
+        use_boosting: bool = False,
     ) -> None:
         super().__init__(
             data=data,
@@ -52,5 +52,5 @@ class ForestRegressor(ForestBase, Regressor):
             is_classification=False,
             random_state=random_state,
             verbose=verbose,
-            use_boosting=use_boosting
+            use_boosting=use_boosting,
         )
