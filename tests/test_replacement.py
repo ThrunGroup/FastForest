@@ -9,7 +9,7 @@ from utils.utils import set_seed
 
 class TestReplacement(unittest.TestCase):
     def test_tree_diabetes(self):
-        seed = 3
+        seed = 0
         set_seed(seed)
         num_with, mse_with = test_tree_diabetes(seed=seed, with_replacement=True)
         num_without, mse_without = test_tree_diabetes(seed=seed, with_replacement=False)
@@ -23,7 +23,7 @@ class TestReplacement(unittest.TestCase):
         )
 
     def test_tree_news(self):
-        seed = 1
+        seed = 0
         set_seed(seed)
         num_with, acc_with = test_tree_news(seed=seed, with_replacement=True)
         num_without, acc_without = test_tree_news(seed=seed, with_replacement=False)
