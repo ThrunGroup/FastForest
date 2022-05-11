@@ -273,15 +273,14 @@ def get_next_targets(
     predictions: np.ndarray
 ) -> np.ndarray:
     """
-    Updates the targets for the next iteration of boosting.
-    For classification, the resulting new training set will look like {X, -grad/hessian} and
-    for regression, it will look like {X, ensemble_residuals}
-    NOTE: this function assumes tree is already fitted
+    Updates the targets for the next iteration of boosting. For classification, the resulting new training set will
+    look like {X, -grad/hessian} and for regression, it will look like {X, ensemble_residuals}. This function assumes
+    the tree is already fitted.
 
     :return: the new updated targets
     """
     lr = DEFAULT_LEARNING_RATE if is_residual else 1.0
     if is_classification:
-        return -find_gradient(loss_type, preds, targets) / find_hessian(loss_type, preds, targets)
+        return -find_gradient(loss_type, predictions, targets) / find_hessian(loss_type, predictions, targets)
     else:
         return targets - (lr * predictions)
