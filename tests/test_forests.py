@@ -1,14 +1,15 @@
 import sklearn.datasets
+from sklearn.datasets import load_diabetes
 import unittest
 import numpy as np
 from collections import defaultdict
 
-
 import ground_truth
 from utils import data_generator
 from data_structures.forest_classifier import ForestClassifier
+from data_structures.forest_regressor import ForestRegressor
 from data_structures.tree_classifier import TreeClassifier
-from data_structures.boosted_tree_classifier import BoostedTreeClassifier
+from data_structures.tree_regressor import TreeRegressor
 import utils.utils
 from utils.constants import EXACT
 
@@ -16,22 +17,7 @@ from utils.constants import EXACT
 class ForestTests(unittest.TestCase):
     # We can't have an __init__ function due to pytest providing errors about function signatures.
     np.random.seed(0)
-    """
-    def test_boosted_forest_iris(self) -> None:
-        iris = sklearn.datasets.load_iris()
-        data, labels = iris.data, iris.target
-        f = ForestClassifier(
-            data=data,
-            labels=labels,
-            n_estimators=20,
-            max_depth=5,
-            use_boosting=True,
-            loss_type="CELoss"
-        )
-        f.fit()
-        acc = np.sum(f.predict_batch(data)[0] == labels)
-        self.assertTrue((acc / len(data)) >= 0.98)
-    """
+
     def test_forest_iris(self) -> None:
         iris = sklearn.datasets.load_iris()
         data, labels = iris.data, iris.target
@@ -44,7 +30,7 @@ class ForestTests(unittest.TestCase):
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
         self.assertTrue((acc / len(data)) >= 0.98)
-        
+
     def test_ERF_iris(self) -> None:
         iris = sklearn.datasets.load_iris()
         data, labels = iris.data, iris.target
@@ -184,6 +170,7 @@ class ForestTests(unittest.TestCase):
         acc2 = np.sum(t2.predict_batch(data)[0] == labels)
         print(acc1, acc2)
         self.assertTrue(acc1 < acc2)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -6,7 +6,8 @@ import random
 
 
 from data_structures.histogram import Histogram
-from utils.constants import LINEAR, DISCRETE, IDENTITY, DEFAULT_GRAD_SMOOTHING_VAL
+from utils.constants import LINEAR, DISCRETE, IDENTITY, \
+                            DEFAULT_GRAD_SMOOTHING_VAL, DEFAULT_LEARNING_RATE
 
 
 def type_check() -> None:
@@ -221,7 +222,7 @@ def find_hessian(loss_type: str, predictions: np.ndarray, labels: np.ndarray) ->
         NotImplementedError("Invalid choice of loss function")
 
 
-def update_next_labels(tree: Any, loss_type: str,
+def update_next_labels(tree_idx: int, tree: Any, loss_type: str, is_classification,
                        data: np.ndarray, labels: np.ndarray) -> np.ndarray:
     """
     This function updates the labels for the next iteration of boosting.
@@ -233,5 +234,10 @@ def update_next_labels(tree: Any, loss_type: str,
     NOTE: this function assumes tree is already fitted
     :return: the new updated labels
     """
+    lr = 1.0 if tree_idx == 0 else DEFAULT_LEARNING_RATE
     preds, _ = tree.predict_batch(data)
-    return -find_gradient(loss_type, preds, labels) / find_hessian(loss_type, preds, labels)
+    if is_classification:
+        return -find_gradient(loss_type, preds, labels) / find_hessian(loss_type, preds, labels)
+    else:
+        return labels - (lr * preds)
+    

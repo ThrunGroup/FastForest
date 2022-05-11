@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from data_structures.classifier import Classifier
 from data_structures.tree_base import TreeBase
-from utils.constants import MAB, LINEAR, GINI, BEST, DEFAULT_BOOSTING_LOSS
+from utils.constants import MAB, LINEAR, GINI, BEST
 
 
 class TreeClassifier(TreeBase, Classifier):

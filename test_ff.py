@@ -7,22 +7,6 @@ from utils.utils import class_to_idx
 from utils.constants import LINEAR
 
 
-def test_boosted_forest_iris() -> None:
-    iris = datasets.load_iris()
-    data, labels = iris.data, iris.target
-    f = ForestClassifier(
-        data=data,
-        labels=labels,
-        n_estimators=20,
-        max_depth=5,
-        use_boosting=True,
-        loss_type="CELoss"
-    )
-    f.fit()
-    import ipdb; ipdb.set_trace()
-    acc = np.sum(f.predict_batch(data)[0] == labels)
-    print(acc)
-
 def test_tree_iris2(verbose: bool = False) -> None:
     """
     Compare tree fitting with different hyperparameters

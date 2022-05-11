@@ -37,8 +37,11 @@ def test_tree_diabetes(seed: int = 1, verbose: bool = False):
 
 
 def test_forest_diabetes(
-    seed: int = 1, verbose: bool = False, features_subsampling: str = None
-):
+    seed: int = 1,
+    verbose: bool = False,
+    features_subsampling: str = None,
+    use_boosting: bool = False,
+) -> None:
     diabetes = load_diabetes()
     data, labels = diabetes.data, diabetes.target
 
@@ -59,6 +62,7 @@ def test_forest_diabetes(
         verbose=verbose,
         feature_subsampling=features_subsampling,
         random_state=seed,
+        use_boosting=use_boosting
     )
     FF.fit(data, labels)
     mse = np.sum(np.square(FF.predict_batch(data) - labels)) / len(data)
@@ -69,3 +73,5 @@ if __name__ == "__main__":
     test_tree_diabetes()
     test_forest_diabetes()
     test_forest_diabetes(features_subsampling=SQRT)
+    test_forest_diabetes(use_boosting=True)
+

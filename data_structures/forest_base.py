@@ -2,8 +2,8 @@ import numpy as np
 from typing import Tuple, DefaultDict, Union
 from abc import ABC
 
-from utils.constants import BUFFER, MAB, LINEAR, GINI, SQRT, BEST
-from utils.utils import data_to_discrete, set_seed
+from utils.constants import BUFFER, MAB, LINEAR, GINI, SQRT, BEST, DEFAULT_REGRESSOR_LOSS
+from utils.utils import data_to_discrete, set_seed, update_next_labels
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.tree_regressor import TreeRegressor
 
@@ -33,9 +33,11 @@ class ForestBase(ABC):
         is_classification: bool = True,
         random_state: int = 0,
         verbose: bool = False,
+        use_boosting: bool = False,
     ) -> None:
         self.data = data
         self.labels = labels
+        self.labels_for_boosting = labels
         self.trees = []
         self.n_estimators = n_estimators
         self.is_classification = is_classification
@@ -59,6 +61,7 @@ class ForestBase(ABC):
         self.random_state = random_state
         set_seed(self.random_state)
         self.verbose = verbose
+        self.use_boosting = use_boosting
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
@@ -109,15 +112,20 @@ class ForestBase(ABC):
             if self.verbose:
                 print("Fitting tree", i)
 
+            if self.use_boosting:
+                labels = self.labels_for_boosting
+            else:
+                labels = self.labels
+
             if self.bootstrap:
-                N = len(self.labels)
+                N = len(labels)
                 idcs = np.random.choice(N, size=N, replace=True)
                 # TODO(@motiwari): Can we remove the : index below?
                 new_data = self.data[idcs, :]
-                new_labels = self.labels[idcs]
+                new_labels = labels[idcs]
             else:
                 new_data = self.data
-                new_labels = self.labels
+                new_labels = labels
 
             if self.is_classification:
                 tree = TreeClassifier(
@@ -152,9 +160,18 @@ class ForestBase(ABC):
                     erf_k=self.erf_k,
                     feature_subsampling=self.feature_subsampling,
                     random_state=self.random_state + i,
-                    verbose=self.verbose,
+                    verbose=self.verbose
                 )
             tree.fit()
+            if self.use_boosting:   # TODO: implement boosting for classification
+                self.labels_for_boosting = update_next_labels(
+                    tree_idx=i,
+                    tree=tree,
+                    loss_type=DEFAULT_REGRESSOR_LOSS,
+                    is_classification=self.is_classification,
+                    data=self.data,
+                    labels=labels,  # TODO: currently uses O(n) computation
+                )
             self.trees.append(tree)
 
             # Bookkeeping
