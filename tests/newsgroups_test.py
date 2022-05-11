@@ -5,7 +5,7 @@ from sklearn.decomposition import PCA
 from sklearn.tree import DecisionTreeClassifier
 
 from data_structures.tree_classifier import TreeClassifier
-from utils.constants import EXACT, BEST, MAB
+from utils.constants import EXACT, BEST, MAB, ENTROPY
 import utils.utils
 
 
@@ -40,7 +40,6 @@ def preprocess_news(verbose: bool = False):
     pca.fit(train_vectors.toarray())
     pca_train_vecs = pca.transform(train_vectors.toarray())
     pca_test_vecs = pca.transform(test_vectors.toarray())
-
     return pca_train_vecs, ng_train.target, pca_test_vecs, ng_test.target
 
 
@@ -64,11 +63,6 @@ def test_tree_news(
             np.mean(dt.predict(X_test) == Y_test),
         )
 
-    # cross_val_score(dt, pca_train_vecs, ng_train.target, cv=10).mean()
-    print("--Experiment FastTree with Newsgroups dataset--")
-    print(f"Seed : {seed}")
-    print(f"Solver: {solver}")
-    print(f"Sample with replacement: {with_replacement}")
     classes_arr = np.unique(Y_train)
     classes = utils.utils.class_to_idx(classes_arr)
     tc = TreeClassifier(
@@ -81,14 +75,18 @@ def test_tree_news(
         random_state=seed,
         solver=solver,
         with_replacement=with_replacement,
+        criterion=ENTROPY,
     )
     tc.fit()
-    print(
-        "Train accuracy:",
-        np.mean(tc.predict_batch(X_train)[0] == Y_train),
-    )
-    print(
-        "Test accuracy:", np.mean(tc.predict_batch(X_test)[0] == Y_test)
-    )
-    print("Num queries:", tc.num_queries, "\n")
+    train_acc = np.mean(tc.predict_batch(X_train)[0] == Y_train)
+    test_acc = np.mean(tc.predict_batch(X_test)[0] == Y_test)
+    if verbose:
+        print("--Experiment FastTree with Newsgroups dataset--")
+        print(f"Seed : {seed}")
+        print(f"Solver: {solver}")
+        print(f"Sample with replacement: {with_replacement}")
+        print("Train accuracy:", train_acc)
+        print("Test accuracy:", test_acc)
+        print("Num queries:", tc.num_queries, "\n")
 
+    return tc.num_queries, train_acc

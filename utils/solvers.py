@@ -197,9 +197,9 @@ def sample_targets(
     cb_deltas = np.array([], dtype=float)
     N = len(data)
 
-    is_with_replacement = True if population_idcs is None else False
+    with_replacement = population_idcs is None
     initial_pop_size = None if population_idcs is None else N
-    if is_with_replacement:  # Sample without replacement
+    if with_replacement:  # Sample with replacement
         sample_idcs = (
             np.arange(N)
             if N <= batch_size
@@ -344,7 +344,8 @@ def solve_mab(
                 exact_mask[exact_accesses] = 1
                 num_samples[exact_accesses] += N
 
-                cand_condition = np.where((lcbs < np.nanmin(ucbs)) & (exact_mask == 0))
+                # TODO(@motiwari): Can't use nanmin here -- why?
+                cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
                 candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
                 total_queries += num_queries
 
@@ -356,6 +357,7 @@ def solve_mab(
         if len(candidates) <= 1:
             break
         if population_idcs is not None and len(population_idcs) == 0:
+            lcbs = ucbs = estimates
             break
 
         # Massage arm indices for use by numpy slicing
@@ -386,7 +388,6 @@ def solve_mab(
         # TODO(@motiwari): Can't use nanmin here -- why?
         # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
         cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
-        cand_condition = np.where((lcbs <= np.nanmin(ucbs)) & (exact_mask == 0))
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
         round_count += 1
 

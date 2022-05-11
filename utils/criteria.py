@@ -24,14 +24,13 @@ def get_gini(
             return 0, 0
         return 0
     p = counts / n
-
-    # Use FPC for variance calculation.
-    # See https://stats.stackexchange.com/questions/376417/sampling-from-finite-population-with-replacement.
     V_p = p * (1 - p) / n
     if pop_size is not None:
         assert pop_size >= n, "Sample size is greater than the population size"
         if pop_size <= 1:
             return 0, 0
+        # Use FPC for variance calculation, see
+        # https://stats.stackexchange.com/questions/376417/sampling-from-finite-population-with-replacement
         V_p *= (pop_size - n) / (pop_size - 1)
 
     G = 1 - np.dot(p, p)
@@ -63,13 +62,13 @@ def get_entropy(counts: np.ndarray, ret_var=False, pop_size: int = None) -> Unio
         return 0
 
     p = counts / n
-    # Use FPC for variance calculation.
-    # See https://stats.stackexchange.com/questions/376417/sampling-from-finite-population-with-replacement.
     V_p = p * (1 - p) / n
     if pop_size is not None:
         assert pop_size >= n, "Sample size is greater than the population size"
         if pop_size <= 1:
             return 0, 0
+        # Use FPC for variance calculation, see
+        # https://stats.stackexchange.com/questions/376417/sampling-from-finite-population-with-replacement
         V_p *= (pop_size - n) / (pop_size - 1)
     log_p = np.zeros(len(p))
     for i in range(len(p)):
@@ -143,14 +142,16 @@ def get_mse(
         scipy.stats.moment(targets_pile, 2)
     )  # 2nd central moment is mse with mean as a predicted value
     fourth_moment = float(scipy.stats.moment(targets_pile, 4))
-
-    # This variance comes from the variance of sample variance,
-    # see https://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance.
-    # Use sample variance as an estimation of population variance.
     pop_var = mse
     if n == 2:
+        # This variance comes from the variance of sample variance, see
+        # https://math.stackexchange.com/questions/72975/variance-of-sample-variance
+        # Use sample variance as an estimation of population variance.
         V_mse = (fourth_moment - pop_var ** 2) / 4
     else:
+        # This variance comes from the variance of sample variance, see
+        # https://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance
+        # Use sample variance as an estimation of population variance.
         V_mse = (fourth_moment - (pop_var ** 2) * (n - 3) / (n - 1)) / n
 
     if pop_size is not None:

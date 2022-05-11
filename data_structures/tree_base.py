@@ -175,33 +175,35 @@ class TreeBase(ABC):
                 #  can be assessed on equal footing. Or engineer budget such that a full tree can be made?
 
                 for leaf_idx, leaf in enumerate(self.leaves):
+                    # First check splittable conditions that don't require calculating best split
+                    if leaf.depth >= self.max_depth or leaf.n_data <= self.min_samples_leaf:
+                        leaf.is_splittable = False
+                        continue
 
                     # num_queries for the leaf should be updated only if we're not caching
                     # Need to get this before call to .calculate_best_split() below
                     split_already_computed = leaf.best_reduction_computed
-
-                    if leaf.is_splittable is None:
-                        # Uses cached value of calculate_best_split so no additional cost
-                        leaf.is_splittable = self.check_splittable(leaf)
-
-                    # don't add queries if best split is already computed
-                    # add number of queries we made if the best split is NOT already computed
-                    if not split_already_computed and leaf.best_reduction_computed:
-                        self.num_queries += leaf.num_queries
-                        if self.remaining_budget is not None:
-                            self.remaining_budget -= leaf.num_queries
-
-                    # Do not split leaves which are not splittable
-                    if not leaf.is_splittable:
-                        continue
-
                     if self.remaining_budget is None or self.remaining_budget > 0:
                         # Runs solve_mab if not previously computed, which incurs cost!
                         reduction = leaf.calculate_best_split()
                     else:
                         break
+                    # don't add queries if best split is already computed
+                    # add number of queries we made if the best split is NOT already computed
+                    if not split_already_computed:
+                        self.num_queries += leaf.num_queries
+                        if self.remaining_budget is not None:
+                            self.remaining_budget -= leaf.num_queries
 
-                    if reduction is not None and reduction < best_leaf_reduction:
+                    if leaf.is_splittable is None:
+                        # Uses cached value of calculate_best_split so no additional cost
+                        leaf.is_splittable = self.check_splittable(leaf)
+
+                    if (
+                        reduction is not None
+                        and reduction < best_leaf_reduction
+                        and leaf.is_splittable
+                    ):
                         best_leaf = leaf
                         best_leaf_idx = leaf_idx
                         best_leaf_reduction = reduction

@@ -12,9 +12,14 @@ from utils.constants import SQRT, EXACT, MAB
 
 
 def test_tree_diabetes(
-    seed: int = 1, verbose: bool = False, with_replacement: bool = False, solver: str = MAB, print_sklearn: bool = False
+    seed: int = 1,
+    verbose: bool = False,
+    with_replacement: bool = False,
+    solver: str = MAB,
+    print_sklearn: bool = False,
 ):
-    print("--DT experiment with diabetes dataset--")
+    if verbose:
+        print("--DT experiment with diabetes dataset--")
     np.random.seed(seed)
     random.seed(seed)
     diabetes = load_diabetes()
@@ -30,10 +35,6 @@ def test_tree_diabetes(
         mse = np.sum(np.square(DT.predict(data) - labels)) / len(data)
         print(f"MSE is {mse}\n")
 
-    print("-FastTree")
-    print(f"Seed : {seed}")
-    print(f"Solver: {solver}")
-    print(f"Sample with replacement: {with_replacement}")
     tree = TreeRegressor(
         data,
         labels,
@@ -41,14 +42,21 @@ def test_tree_diabetes(
         verbose=verbose,
         random_state=seed,
         solver=solver,
+        bin_type="",
         with_replacement=with_replacement,
     )
     tree.fit()
     if verbose:
         tree.tree_print()
     mse = np.sum(np.square(tree.predict_batch(data) - labels)) / len(data)
-    print(f"MSE is {mse}")
-    print(f"num_queries is {tree.num_queries}\n")
+    if verbose:
+        print("-FastTree")
+        print(f"Seed : {seed}")
+        print(f"Solver: {solver}")
+        print(f"Sample with replacement: {with_replacement}")
+        print(f"MSE is {mse}")
+        print(f"num_queries is {tree.num_queries}\n")
+    return tree.num_queries, mse
 
 
 def test_forest_diabetes(
@@ -57,9 +65,10 @@ def test_forest_diabetes(
     features_subsampling: str = None,
     solver: str = MAB,
     with_replacement: bool = False,
-    print_sklearn: bool = False
+    print_sklearn: bool = False,
 ):
-    print("--RF experiment with diabetes dataset--")
+    if verbose:
+        print("--RF experiment with diabetes dataset--")
     diabetes = load_diabetes()
     data, labels = diabetes.data, diabetes.target
     if print_sklearn:
@@ -72,11 +81,6 @@ def test_forest_diabetes(
         mse = np.sum(np.square(RF.predict(data) - labels)) / len(data)
         print(f"MSE of sklearn forest is {mse}\n")
 
-    print("-FastForest")
-    print(f"Features subsampling: {features_subsampling}")
-    print(f"Seed : {seed}")
-    print(f"Solver: {solver}")
-    print(f"Sample with replacement: {with_replacement}")
     FF = ForestRegressor(
         n_estimators=10,
         max_depth=6,
@@ -84,12 +88,20 @@ def test_forest_diabetes(
         feature_subsampling=features_subsampling,
         random_state=seed,
         with_replacement=with_replacement,
+        bin_type="",
         solver=solver,
     )
     FF.fit(data, labels)
     mse = np.sum(np.square(FF.predict_batch(data) - labels)) / len(data)
-    print(f"MSE of fastforest is {mse}")
-    print(f"num_queries is {FF.num_queries}\n")
+    if verbose:
+        print("-FastForest")
+        print(f"Features subsampling: {features_subsampling}")
+        print(f"Seed : {seed}")
+        print(f"Solver: {solver}")
+        print(f"Sample with replacement: {with_replacement}")
+        print(f"MSE of fastforest is {mse}")
+        print(f"num_queries is {FF.num_queries}\n")
+    return FF.num_queries, mse
 
 
 if __name__ == "__main__":
