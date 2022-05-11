@@ -1,16 +1,18 @@
 import sklearn.datasets
+from sklearn.datasets import load_diabetes
 import unittest
 import numpy as np
 from collections import defaultdict
 
-
 import ground_truth
-from utils import data_generator
-from data_structures.forest_classifier import ForestClassifier
-from data_structures.tree_classifier import TreeClassifier
-from data_structures.wrappers.random_forest_classifier import RandomForestClassifier
 import utils.utils
+from utils import data_generator
 from utils.constants import EXACT, RANDOM
+from data_structures.forest_classifier import ForestClassifier
+from data_structures.forest_regressor import ForestRegressor
+from data_structures.tree_classifier import TreeClassifier
+from data_structures.tree_regressor import TreeRegressor
+from data_structures.wrappers.random_forest_classifier import RandomForestClassifier
 
 
 class ForestTests(unittest.TestCase):

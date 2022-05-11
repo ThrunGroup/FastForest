@@ -37,6 +37,7 @@ class TreeClassifier(TreeBase, Classifier):
     ):
         self.classes = classes  # dict from class name to class index
         self.idx_to_class = {value: key for key, value in classes.items()}
+
         super().__init__(
             data=data,
             labels=labels,

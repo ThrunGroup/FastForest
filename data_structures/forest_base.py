@@ -11,8 +11,9 @@ from utils.constants import (
     BEST,
     MAX_SEED,
     DEFAULT_NUM_BINS,
+    DEFAULT_REGRESSOR_LOSS
 )
-from utils.utils import data_to_discrete, set_seed
+from utils.utils import data_to_discrete, set_seed, get_next_targets
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.tree_regressor import TreeRegressor
 
@@ -44,9 +45,16 @@ class ForestBase(ABC):
         random_state: int = 0,
         with_replacement: bool = True,
         verbose: bool = False,
+        use_boosting: bool = False,
     ) -> None:
         self.data = data
-        self.labels = labels
+        self.org_targets = labels
+        self.new_targets = labels
+
+        # self.curr_data and self.curr_targets are the data, targets that are used to fit the current tree.
+        # These attributes may be smaller than the original dataset size if self.bootstrap is true.
+        self.curr_data = None
+        self.curr_targets = None
         self.trees = []
         self.n_estimators = n_estimators
         self.is_classification = is_classification
@@ -72,6 +80,7 @@ class ForestBase(ABC):
         set_seed(self.random_state)
         self.with_replacement = with_replacement
         self.verbose = verbose
+        self.use_boosting = use_boosting
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
@@ -110,7 +119,8 @@ class ForestBase(ABC):
         self.check_both_or_neither(data, labels)
         if data is not None:
             self.data = data
-            self.labels = labels
+            self.org_targets = labels
+            self.new_targets = labels
 
         self.trees = []
         self.discrete_features: DefaultDict = data_to_discrete(self.data, n=10)
@@ -121,15 +131,19 @@ class ForestBase(ABC):
             if self.verbose:
                 print("Fitting tree", i)
 
+            if self.use_boosting:
+                self.curr_targets = self.new_targets
+            else:
+                self.curr_targets = self.org_targets
+
             if self.bootstrap:
-                N = len(self.labels)
+                N = len(self.curr_targets)
                 idcs = np.random.choice(N, size=N, replace=True)
                 # TODO(@motiwari): Can we remove the : index below?
-                new_data = self.data[idcs, :]
-                new_labels = self.labels[idcs]
+                self.curr_data = self.data[idcs, :]
+                self.curr_targets = self.curr_targets[idcs]
             else:
-                new_data = self.data
-                new_labels = self.labels
+                self.curr_data = self.data
 
             # NOTE: We cannot just let the tree's random states be forest.random_state + i, because then
             # two forests whose index is off by 1 will have very correlated results (e.g. when running multiple exps),
@@ -139,8 +153,8 @@ class ForestBase(ABC):
 
             if self.is_classification:
                 tree = TreeClassifier(
-                    data=new_data,
-                    labels=new_labels,
+                    data=self.curr_data,
+                    labels=self.curr_targets,
                     max_depth=self.max_depth,
                     classes=self.classes,
                     budget=self.remaining_budget,
@@ -158,8 +172,8 @@ class ForestBase(ABC):
                 )
             else:
                 tree = TreeRegressor(
-                    data=new_data,
-                    labels=new_labels,
+                    data=self.curr_data,
+                    labels=self.curr_targets,
                     max_depth=self.max_depth,
                     budget=self.remaining_budget,
                     min_samples_split=self.min_samples_split,
@@ -175,6 +189,15 @@ class ForestBase(ABC):
                     verbose=self.verbose,
                 )
             tree.fit()
+            if self.use_boosting:
+                # TODO: currently uses O(n) computation
+                self.new_targets = get_next_targets(
+                    is_residual=i,
+                    loss_type=DEFAULT_REGRESSOR_LOSS,
+                    is_classification=self.is_classification,
+                    targets=self.new_targets,
+                    predictions=self.predict_batch(self.data)
+                )
             self.trees.append(tree)
 
             # Bookkeeping
