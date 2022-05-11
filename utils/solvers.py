@@ -1,5 +1,7 @@
-import numpy as np
+import math
 import itertools
+import numpy as np
+
 
 from typing import List, Tuple, DefaultDict
 from collections import defaultdict
@@ -14,6 +16,7 @@ from utils.constants import (
     IDENTITY,
     BATCH_SIZE,
     DEFAULT_NUM_BINS,
+    RANDOM,
 )
 from utils.criteria import get_impurity_reductions
 from utils.utils import type_check, class_to_idx, counts_of_labels, make_histograms
@@ -91,6 +94,12 @@ def solve_exactly(
 
     if binning_type == IDENTITY:
         B = len(data)
+    elif binning_type == RANDOM:
+        assert (
+            num_bins is None
+        ), "When using Extremely Random Forests, please pass num_bins=None explicitly. If you want to set a custom \
+            number of Extremely Random bins, please update callsites and remove this assertion."
+        B = math.ceil(np.sqrt(F))
     else:
         B = num_bins
 
@@ -249,6 +258,12 @@ def solve_mab(
             "You're running solve_mab without histogramming. Did you mean to?"
         )
         B = N
+    elif binning_type == RANDOM:
+        assert (
+            num_bins is None
+        ), "When using Extremely Random Forests, please pass num_bins=None explicitly. If you want to set a custom \
+            number of Extremely Random bins, please update callsites and remove this assertion."
+        B = math.ceil(np.sqrt(F))
     else:
         B = num_bins
 

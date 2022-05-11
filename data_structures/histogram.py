@@ -2,7 +2,7 @@ import numpy as np
 import bisect
 from typing import Any, Tuple
 
-from utils.constants import LINEAR, DISCRETE, IDENTITY, RANDOM
+from utils.constants import LINEAR, DISCRETE, IDENTITY, RANDOM, DEFAULT_NUM_BINS
 
 
 class Histogram:
@@ -21,7 +21,7 @@ class Histogram:
             0,
             1,
         ),  # classes is the tuple of labels (labels can be any type)
-        num_bins: int = 11,
+        num_bins: int = DEFAULT_NUM_BINS,
         min_bin: float = 0.0,
         max_bin: float = 1.0,
         bin_type: str = LINEAR,

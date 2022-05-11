@@ -10,7 +10,7 @@ from data_structures.forest_classifier import ForestClassifier
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.wrappers.random_forest_classifier import RandomForestClassifier
 import utils.utils
-from utils.constants import EXACT, RANDOM, SQRT
+from utils.constants import EXACT, RANDOM
 
 
 class ForestTests(unittest.TestCase):
@@ -54,6 +54,7 @@ class ForestTests(unittest.TestCase):
             n_estimators=20,
             max_depth=5,
             bin_type=RANDOM,
+            num_bins=None,
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
@@ -76,7 +77,12 @@ class ForestTests(unittest.TestCase):
         digits = sklearn.datasets.load_digits()
         data, labels = digits.data, digits.target
         f = ForestClassifier(
-            data=data, labels=labels, n_estimators=10, max_depth=5, bin_type=RANDOM
+            data=data,
+            labels=labels,
+            n_estimators=10,
+            max_depth=5,
+            bin_type=RANDOM,
+            num_bins=None,
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
