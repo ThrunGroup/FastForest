@@ -113,8 +113,8 @@ class ForestBase(ABC):
 
         self.check_both_or_neither(data, labels)
         if data is not None:
-            data_to_fit = data
-            labels_to_fit = labels
+            self.data = data
+            self.org_targets = labels
 
         self.trees = []
         self.discrete_features: DefaultDict = data_to_discrete(self.data, n=10)
