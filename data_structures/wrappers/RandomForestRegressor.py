@@ -34,7 +34,6 @@ def RandomForestClassifier(ForestRegressor):
         verbose: bool = False,
     ) -> None:
         super().__init__(
-            self,
             data=data,
             labels=labels,
             n_estimators=n_estimators,
