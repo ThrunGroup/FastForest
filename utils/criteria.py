@@ -7,7 +7,7 @@ from utils.constants import GINI, ENTROPY, VARIANCE, MSE
 
 
 def get_gini(
-    counts: np.ndarray, ret_var: bool = False
+    counts: np.ndarray, ret_var: bool = False, pop_size: int = None,
 ) -> Union[Tuple[float, float], float]:
     """
     Compute the Gini impurity for a given node, where the node is represented by the number of counts of each class
@@ -15,6 +15,7 @@ def get_gini(
 
     :param counts: 1d array of counts where ith element is the number of counts on the ith class(label).
     :param ret_var: Whether to return the variance of the estimate
+    :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
     :return: the Gini impurity of the node, as well as its estimated variance if ret_var
     """
     n = np.sum(counts)
@@ -24,6 +25,14 @@ def get_gini(
         return 0
     p = counts / n
     V_p = p * (1 - p) / n
+    if pop_size is not None:
+        assert pop_size >= n, "Sample size is greater than the population size"
+        if pop_size <= 1:
+            return 0, 0
+        # Use FPC for variance calculation, see
+        # https://stats.stackexchange.com/questions/376417/sampling-from-finite-population-with-replacement
+        V_p *= (pop_size - n) / (pop_size - 1)
+
     G = 1 - np.dot(p, p)
     # This variance comes from propagation of error formula, see
     # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
@@ -36,13 +45,14 @@ def get_gini(
     return float(G)
 
 
-def get_entropy(counts: np.ndarray, ret_var=False) -> Union[Tuple[float, float], float]:
+def get_entropy(counts: np.ndarray, ret_var=False, pop_size: int = None) -> Union[Tuple[float, float], float]:
     """
     Compute the entropy impurity for a given node, where the node is represented by the number of counts of each class
     label. The entropy impurity is equal to - sum{i=1}^k (p_i * log_2 p_i)
 
     :param counts: 1d array of counts where ith element is the number of counts on the ith class(label)
     :param ret_var: Whether to return the variance of the estimate
+    :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
     :return: the entropy impurity of the node, as well as its estimated variance if ret_var
     """
     n = np.sum(counts)
@@ -53,6 +63,13 @@ def get_entropy(counts: np.ndarray, ret_var=False) -> Union[Tuple[float, float],
 
     p = counts / n
     V_p = p * (1 - p) / n
+    if pop_size is not None:
+        assert pop_size >= n, "Sample size is greater than the population size"
+        if pop_size <= 1:
+            return 0, 0
+        # Use FPC for variance calculation, see
+        # https://stats.stackexchange.com/questions/376417/sampling-from-finite-population-with-replacement
+        V_p *= (pop_size - n) / (pop_size - 1)
     log_p = np.zeros(len(p))
     for i in range(len(p)):
         if p[i] != 0:
@@ -104,6 +121,7 @@ def get_variance(
 def get_mse(
     targets_pile: List,
     ret_var: bool = False,
+    pop_size: int = None,
 ) -> Union[Tuple[float, float], float]:
     """
     Compute the MSE for a given node, where the node is represented by the pile of all target values. Also Compute the
@@ -111,11 +129,12 @@ def get_mse(
 
     :param targets_pile: An array of all target values in the node
     :param ret_var: Whether to return the variance of the estimate
+    :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
     :return: the mse(variance) of the node, as well as its estimated variance if ret_var
     """
     assert len(np.array(targets_pile).shape) == 1, "Invalid pile of target values"
     n = len(targets_pile)
-    if n == 0:
+    if n <= 1:
         if ret_var:
             return 0, 0
         return 0
@@ -123,14 +142,21 @@ def get_mse(
         scipy.stats.moment(targets_pile, 2)
     )  # 2nd central moment is mse with mean as a predicted value
     fourth_moment = float(scipy.stats.moment(targets_pile, 4))
-    # This variance comes from the variance of sample variance,
-    # see https://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance.
-    # Use sample variance as an estimation of population variance.
     pop_var = mse
-    if n < 3:
-        V_mse = float("inf")
+    if n == 2:
+        # This variance comes from the variance of sample variance, see
+        # https://math.stackexchange.com/questions/72975/variance-of-sample-variance
+        # Use sample variance as an estimation of population variance.
+        V_mse = (fourth_moment - pop_var ** 2) / 4
     else:
-        V_mse = (fourth_moment - (n - 3) * (pop_var ** 2) / (n - 1)) / n
+        # This variance comes from the variance of sample variance, see
+        # https://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance
+        # Use sample variance as an estimation of population variance.
+        V_mse = (fourth_moment - (pop_var ** 2) * (n - 3) / (n - 1)) / n
+
+    if pop_size is not None:
+        assert pop_size >= n, "Sample size is greater than the population size"
+        V_mse *= (pop_size - n) / (pop_size - 1)
     if ret_var:
         return mse, V_mse
     return mse
@@ -158,6 +184,7 @@ def get_impurity_reductions(
     bin_edge_idcs: List[int],
     ret_vars: bool = False,
     impurity_measure: str = "",
+    pop_size: int = None,
 ) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
     """
     Given a histogram of counts for each bin, compute the impurity reductions if we were to split a node on any of the
@@ -167,6 +194,8 @@ def get_impurity_reductions(
 
     :param is_classification: Whether the problem is a classification problem(True) or a regression problem(False)
     :returns: Impurity reduction when splitting node by bins in bin_edge_idcs
+    :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
+    :returns: Impurity reduction when splitting node by bins in _bin_edge_idcs
     """
     if impurity_measure == "":
         impurity_measure = GINI if is_classification else MSE
@@ -188,20 +217,27 @@ def get_impurity_reductions(
         n = len(h.left_pile[0]) + len(h.right_pile[0])
     for i in range(b):
         b_idx = bin_edge_idcs[i]
-        if is_classification:
-            IL, V_IL = get_impurity(h.left[b_idx, :], ret_var=True)
-            IR, V_IR = get_impurity(h.right[b_idx, :], ret_var=True)
-        else:
-            IL, V_IL = get_impurity(h.left_pile[b_idx], ret_var=True)
-            IR, V_IR = get_impurity(h.right_pile[b_idx], ret_var=True)
 
         # Impurity is weighted by population of each node during a split
         if is_classification:
-            left_weight = np.sum(h.left[b_idx, :]) / n
-            right_weight = np.sum(h.right[b_idx, :]) / n
+            left_weight = np.sum(h.left[b_idx, :])
+            right_weight = np.sum(h.right[b_idx, :])
         else:
-            left_weight = len(h.left_pile[b_idx]) / n
-            right_weight = len(h.right_pile[b_idx]) / n
+            left_weight = len(h.left_pile[b_idx])
+            right_weight = len(h.right_pile[b_idx])
+
+        # Population of left and right node is approximated by left_weight and right_weight
+        left_size = None if pop_size is None else int(left_weight * pop_size / n)
+        right_size = None if pop_size is None else int(right_weight * pop_size / n)
+        left_weight /= n
+        right_weight /= n
+        if is_classification:
+            IL, V_IL = get_impurity(h.left[b_idx, :], ret_var=True, pop_size=left_size)
+            IR, V_IR = get_impurity(h.right[b_idx, :], ret_var=True, pop_size=right_size)
+        else:
+            IL, V_IL = get_impurity(h.left_pile[b_idx], ret_var=True, pop_size=left_size)
+            IR, V_IR = get_impurity(h.right_pile[b_idx], ret_var=True, pop_size=right_size)
+
         impurities_left[i], V_impurities_left[i] = (
             float(left_weight * IL),
             float((left_weight ** 2) * V_IL),
@@ -213,11 +249,11 @@ def get_impurity_reductions(
 
     if is_classification:
         impurity_curr, V_impurity_curr = get_impurity(
-            h.left[0, :] + h.right[0, :], ret_var=True
+            h.left[0, :] + h.right[0, :], ret_var=True, pop_size=pop_size
         )
     else:
         impurity_curr, V_impurity_curr = get_impurity(
-            h.left_pile[0] + h.right_pile[0], ret_var=True
+            h.left_pile[0] + h.right_pile[0], ret_var=True, pop_size=pop_size
         )
     impurity_curr = float(impurity_curr)
     V_impurity_curr = float(V_impurity_curr)

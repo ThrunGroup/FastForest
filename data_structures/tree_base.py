@@ -41,6 +41,7 @@ class TreeBase(ABC):
         splitter: str = BEST,
         solver: str = MAB,
         random_state: int = 0,
+        with_replacement: bool = True,
         verbose: bool = False,
     ) -> None:
         self.data = data  # This is a REFERENCE
@@ -81,6 +82,7 @@ class TreeBase(ABC):
         self.solver = solver
         self.random_state = random_state
         set_seed(self.random_state)
+        self.with_replacement = with_replacement
         self.verbose = verbose
 
         self.node = Node(
@@ -98,6 +100,7 @@ class TreeBase(ABC):
             criterion=self.criterion,
             feature_subsampling=self.feature_subsampling,
             tree_global_feature_subsampling=self.tree_global_feature_subsampling,
+            with_replacement=self.with_replacement,
         )
 
         # These are copied from the link below. We won't need all of them.
@@ -121,6 +124,36 @@ class TreeBase(ABC):
         """
         return max([leaf.depth for leaf in self.leaves])
 
+    def check_splittable_constraints(self, node: Node) -> bool:
+        """
+        Check whether the node satisfies the splittable condition of splitting that "do not" call
+        node.calculate_best_split().
+
+        :param node: A node which is considered
+        :return: Whether it's possible to split a node
+        """
+
+        return (
+            self.max_depth > node.depth
+            and self.min_samples_split < node.n_data
+            and len(np.unique(node.labels)) > 1
+        )
+
+    def check_splittable_impurity(self, node: Node) -> bool:
+        """
+        Check whether the node satisfies the splittable condition of splitting that does call
+        node.calculate_best_split().
+
+        :param node: A node which is considered
+        :return: Whether it's possible to split a node
+        """
+
+        return (
+            node.calculate_best_split() is not None
+            and self.min_impurity_decrease
+            > node.calculate_best_split() * node.n_data / self.n_data
+        )
+
     def check_splittable(self, node: Node) -> bool:
         """
         Check whether the node satisfies the splittable condition of splitting.
@@ -129,16 +162,7 @@ class TreeBase(ABC):
         :param node: A node which is considered
         :return: Whether it's possible to split a node
         """
-        # TODO: Return False if node is a pure node
-        if node.calculate_best_split() is not None:
-            return (
-                self.max_depth > node.depth
-                and self.min_samples_split < node.n_data
-                and self.min_impurity_decrease
-                > node.calculate_best_split() * node.n_data / self.n_data
-            )
-        else:
-            return False
+        return self.check_splittable_constraints(node) and self.check_splittable_impurity(node)
 
     def fit(self) -> None:
         """
@@ -172,8 +196,9 @@ class TreeBase(ABC):
                 #  can be assessed on equal footing. Or engineer budget such that a full tree can be made?
 
                 for leaf_idx, leaf in enumerate(self.leaves):
-                    # Do not split leaves which are already at max_depth
-                    if leaf.depth == self.max_depth:
+                    # First check splittable conditions that don't require calculating best split
+                    if not self.check_splittable_constraints(leaf):
+                        leaf.is_splittable = False
                         continue
 
                     # num_queries for the leaf should be updated only if we're not caching
@@ -184,7 +209,6 @@ class TreeBase(ABC):
                         reduction = leaf.calculate_best_split()
                     else:
                         break
-
                     # don't add queries if best split is already computed
                     # add number of queries we made if the best split is NOT already computed
                     if not split_already_computed:
