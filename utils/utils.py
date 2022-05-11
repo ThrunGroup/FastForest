@@ -265,7 +265,7 @@ def find_hessian(loss_type: str, predictions: np.ndarray, labels: np.ndarray) ->
         NotImplementedError("Invalid choice of loss function")
 
 
-def update_next_labels(
+def get_next_targets(
     tree_idx: int,
     loss_type: str,
     is_classification,
