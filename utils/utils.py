@@ -237,51 +237,51 @@ def remap_discrete_features(feature_idcs, tree_discrete_features: defaultdict(li
     return discrete_features
 
 
-def find_gradient(loss_type: str, predictions: np.ndarray, labels: np.ndarray) -> np.ndarray:
+def find_gradient(loss_type: str, predictions: np.ndarray, targets: np.ndarray) -> np.ndarray:
     """
-    Computes the gradient for the given loss function w.r.t the prediction label
+    Computes the gradient for the given loss function w.r.t the prediction target
     ex) gradient for cross-entropy loss:
-        d_loss_d_pred = -label/pred
+        d_loss_d_pred = -target/pred
 
-    :return: the gradient matrix of size len(labels)
+    :return: the gradient matrix of size len(targets)
     """
     if loss_type == DEFAULT_CLASSIFIER_LOSS:
-        return -(labels + DEFAULT_GRAD_SMOOTHING_VAL) / (predictions + DEFAULT_GRAD_SMOOTHING_VAL)
+        return -(targets + DEFAULT_GRAD_SMOOTHING_VAL) / (predictions + DEFAULT_GRAD_SMOOTHING_VAL)
     else:
         NotImplementedError("Invalid choice of loss function")
 
 
-def find_hessian(loss_type: str, predictions: np.ndarray, labels: np.ndarray) -> np.ndarray:
+def find_hessian(loss_type: str, predictions: np.ndarray, targets: np.ndarray) -> np.ndarray:
     """
-    Computes the hessian for the given loss function w.r.t the prediction label
+    Computes the hessian for the given loss function w.r.t the prediction target
     ex) hessian for cross-entropy loss:
-        d_loss_d_pred = label/pred^2
+        d_loss_d_pred = target/pred^2
 
-    :return: the gradient matrix of size len(labels)
+    :return: the gradient matrix of size len(targets)
     """
     if loss_type == DEFAULT_CLASSIFIER_LOSS:
-        return (labels + DEFAULT_GRAD_SMOOTHING_VAL) / (np.square(predictions) + DEFAULT_GRAD_SMOOTHING_VAL)
+        return (targets + DEFAULT_GRAD_SMOOTHING_VAL) / (np.square(predictions) + DEFAULT_GRAD_SMOOTHING_VAL)
     else:
         NotImplementedError("Invalid choice of loss function")
 
 
 def get_next_targets(
-    tree_idx: int,
+    is_residual: int,
     loss_type: str,
     is_classification,
-    labels: np.ndarray,
+    targets: np.ndarray,
     predictions: np.ndarray
 ) -> np.ndarray:
     """
     Updates the targets for the next iteration of boosting.
     For classification, the resulting new training set will look like {X, -grad/hessian} and
     for regression, it will look like {X, ensemble_residuals}
-
     NOTE: this function assumes tree is already fitted
+
     :return: the new updated targets
     """
-    lr = 1.0 if tree_idx == 0 else DEFAULT_LEARNING_RATE
+    lr = DEFAULT_LEARNING_RATE if is_residual else 1.0
     if is_classification:
-        return -find_gradient(loss_type, preds, labels) / find_hessian(loss_type, preds, labels)
+        return -find_gradient(loss_type, preds, targets) / find_hessian(loss_type, preds, targets)
     else:
-        return labels - (lr * predictions)
+        return targets - (lr * predictions)

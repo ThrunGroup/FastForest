@@ -50,6 +50,12 @@ class ForestBase(ABC):
         self.data = data
         self.org_targets = labels
         self.new_targets = labels
+
+        # self.curr_data and self.curr_targets are the data, targets
+        # that are fed into the current tree to fit. These may be smaller
+        # than original size if self.bootstrap is true.
+        self.curr_data = None
+        self.curr_targets = None
         self.trees = []
         self.n_estimators = n_estimators
         self.is_classification = is_classification
@@ -115,6 +121,7 @@ class ForestBase(ABC):
         if data is not None:
             self.data = data
             self.org_targets = labels
+            self.new_targets = labels
 
         self.trees = []
         self.discrete_features: DefaultDict = data_to_discrete(self.data, n=10)
@@ -126,18 +133,18 @@ class ForestBase(ABC):
                 print("Fitting tree", i)
 
             if self.use_boosting:
-                labels_to_fit = self.new_targets
+                self.curr_targets = self.new_targets
             else:
-                labels_to_fit = self.org_targets
+                self.curr_targets = self.org_targets
 
             if self.bootstrap:
-                N = len(labels_to_fit)
+                N = len(self.curr_targets)
                 idcs = np.random.choice(N, size=N, replace=True)
                 # TODO(@motiwari): Can we remove the : index below?
-                data_to_fit = self.data[idcs, :]
-                labels_to_fit = labels_to_fit[idcs]
+                self.curr_data = self.data[idcs, :]
+                self.curr_targets = self.curr_targets[idcs]
             else:
-                data_to_fit = self.data
+                self.curr_data = self.data
 
             # NOTE: We cannot just let the tree's random states be forest.random_state + i, because then
             # two forests whose index is off by 1 will have very correlated results (e.g. when running multiple exps),
@@ -147,8 +154,8 @@ class ForestBase(ABC):
 
             if self.is_classification:
                 tree = TreeClassifier(
-                    data=data_to_fit,
-                    labels=labels_to_fit,
+                    data=self.curr_data,
+                    labels=self.curr_targets,
                     max_depth=self.max_depth,
                     classes=self.classes,
                     budget=self.remaining_budget,
@@ -166,8 +173,8 @@ class ForestBase(ABC):
                 )
             else:
                 tree = TreeRegressor(
-                    data=data_to_fit,
-                    labels=labels_to_fit,
+                    data=self.curr_data,
+                    labels=self.curr_targets,
                     max_depth=self.max_depth,
                     budget=self.remaining_budget,
                     min_samples_split=self.min_samples_split,
@@ -185,11 +192,11 @@ class ForestBase(ABC):
             tree.fit()
             if self.use_boosting:
                 # TODO: currently uses O(n) computation
-                self.new_targets = update_next_labels(
+                self.new_targets = get_next_targets(
                     is_residual=i,
                     loss_type=DEFAULT_REGRESSOR_LOSS,
                     is_classification=self.is_classification,
-                    labels=new_labels,
+                    targets=self.new_targets,
                     predictions=self.predict_batch(self.data)
                 )
             self.trees.append(tree)
