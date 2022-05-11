@@ -1,10 +1,10 @@
 import numpy as np
 
 from data_structures.forest_regressor import ForestRegressor
-from utils.constants import SQRT, IDENTITY, BEST, EXACT, MSE, DEFAULT_ERF_K, RANDOM
+from utils.constants import SQRT, BEST, EXACT, MSE, DEFAULT_ERF_K, RANDOM
 
 
-def RandomForestClassifier(ForestRegressor):
+class RandomForestClassifier(ForestRegressor):
     """
     A RandomForestClassifier, which is a ForestClassifier with the following settings:
 

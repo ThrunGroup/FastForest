@@ -2,10 +2,10 @@ import math
 import numpy as np
 
 from data_structures.forest_classifier import ForestClassifier
-from utils.constants import SQRT, IDENTITY, GINI, BEST, EXACT
+from utils.constants import IDENTITY, GINI, BEST, EXACT
 
 
-def RandomPatchesClassifier(ForestClassifier):
+class RandomPatchesClassifier(ForestClassifier):
     """
     A RandomPatchesClassifier, which is a RandomForestClassifier with the following settings with subsampled data and
     features.

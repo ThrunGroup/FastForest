@@ -2,10 +2,10 @@ import math
 import numpy as np
 
 from data_structures.forest_regressor import ForestRegressor
-from utils.constants import SQRT, IDENTITY, BEST, EXACT, MSE
+from utils.constants import IDENTITY, BEST, EXACT, MSE
 
 
-def RandomPatchesRegressor(ForestRegressor):
+class RandomPatchesRegressor(ForestRegressor):
     """
     A RandomPatchesRegressor, which is a RandomForestRegressor with the following settings with subsampled data and
     features.

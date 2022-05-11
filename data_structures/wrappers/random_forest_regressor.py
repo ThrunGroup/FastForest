@@ -4,7 +4,7 @@ from data_structures.forest_regressor import ForestRegressor
 from utils.constants import SQRT, IDENTITY, BEST, EXACT, MSE
 
 
-def RandomForestRegressor(ForestRegressor):
+class RandomForestRegressor(ForestRegressor):
     """
     A RandomForestClassifier, which is a ForestClassifier with the following settings:
 

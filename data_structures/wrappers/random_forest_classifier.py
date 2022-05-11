@@ -4,7 +4,7 @@ from data_structures.forest_classifier import ForestClassifier
 from utils.constants import SQRT, IDENTITY, GINI, BEST, EXACT
 
 
-def RandomForestClassifier(ForestClassifier):
+class RandomForestClassifier(ForestClassifier):
     """
     A RandomForestClassifier, which is a ForestClassifier with the following settings:
 
