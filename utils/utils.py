@@ -240,7 +240,7 @@ def remap_discrete_features(feature_idcs, tree_discrete_features: defaultdict(li
 def find_gradient(loss_type: str, predictions: np.ndarray, labels: np.ndarray) -> np.ndarray:
     """
     Computes the gradient for the given loss function w.r.t the prediction label
-    ex) gradient for cross-entropy Loss:
+    ex) gradient for cross-entropy loss:
         d_loss_d_pred = -label/pred
 
     :return: the gradient matrix of size len(labels)
@@ -254,7 +254,7 @@ def find_gradient(loss_type: str, predictions: np.ndarray, labels: np.ndarray) -
 def find_hessian(loss_type: str, predictions: np.ndarray, labels: np.ndarray) -> np.ndarray:
     """
     Computes the hessian for the given loss function w.r.t the prediction label
-    ex) hessian for Cross-Entropy Loss:
+    ex) hessian for cross-entropy loss:
         d_loss_d_pred = label/pred^2
 
     :return: the gradient matrix of size len(labels)
