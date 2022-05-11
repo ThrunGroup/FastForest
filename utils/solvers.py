@@ -1,5 +1,7 @@
-import numpy as np
+import math
 import itertools
+import numpy as np
+
 
 from typing import List, Tuple, DefaultDict
 from collections import defaultdict
@@ -11,9 +13,14 @@ from utils.constants import (
     GINI,
     MSE,
     LINEAR,
+    IDENTITY,
+    BATCH_SIZE,
+    DEFAULT_NUM_BINS,
+    RANDOM,
 )
 from utils.criteria import get_impurity_reductions
 from utils.utils import type_check, class_to_idx, counts_of_labels, make_histograms
+
 
 type_check()
 
@@ -59,7 +66,8 @@ def solve_exactly(
     data: np.ndarray,
     labels: np.ndarray,
     discrete_bins_dict: DefaultDict,
-    fixed_bin_type: str = LINEAR,
+    binning_type: str = IDENTITY,
+    num_bins: int = DEFAULT_NUM_BINS,
     is_classification: bool = True,
     impurity_measure: str = GINI,
     min_impurity_reduction: float = 0,
@@ -75,27 +83,38 @@ def solve_exactly(
     :param data: Feature set
     :param labels: Labels of datapoints
     :param discrete_bins_dict: A dictionary of discrete bins
-    :param fixed_bin_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
+    :param binning_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
     :param num_queries: mutable variable to update the number of datapoints queried
     :param is_classification:  Whether is a classification problem(True) or regression problem(False)
     :param impurity_measure: A name of impurity_measure
     :param impurity_measure: Minimum impurity reduction beyond which to return a nonempty solution
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
-    B = 11  # TODO: Fix this hard-coding
     N = len(data)
     F = len(data[0])
+
+    if binning_type == IDENTITY:
+        B = len(data)
+    elif binning_type == RANDOM:
+        assert (
+            num_bins is None
+        ), "When using Extremely Random Forests, please pass num_bins=None explicitly. If you want to set a custom \
+            number of Extremely Random bins, please update callsites and remove this assertion."
+        B = math.ceil(np.sqrt(F))
+    else:
+        B = num_bins
+
     candidates = np.array(list(itertools.product(range(F), range(B))))
     estimates = np.empty((F, B))
 
     # Make a list of histograms, a list of indices that we don't consider as potential arms, and a list of indices
     # that we consider as potential arms.
     histograms, not_considered_idcs, considered_idcs = make_histograms(
-        is_classification,
-        data,
-        labels,
-        discrete_bins_dict,
-        fixed_bin_type=fixed_bin_type,
+        is_classification=is_classification,
+        data=data,
+        labels=labels,
+        discrete_bins_dict=discrete_bins_dict,
+        binning_type=binning_type,
         num_bins=B,
         erf_k=erf_k
     )
@@ -114,12 +133,12 @@ def solve_exactly(
     )
 
     estimates[accesses], _cb_delta, num_queries = sample_targets(
-        is_classification,
-        data,
-        labels,
-        accesses,
-        histograms,
-        N,
+        is_classification=is_classification,
+        data=data,
+        labels=labels,
+        arms=accesses,
+        histograms=histograms,
+        batch_size=N,
         impurity_measure=impurity_measure,
     )
 
@@ -192,7 +211,7 @@ def sample_targets(
         i_r, cb_d = get_impurity_reductions(
             is_classification=is_classification,
             histogram=h,
-            _bin_edge_idcs=f2bin_dict[f],
+            bin_edge_idcs=f2bin_dict[f],
             ret_vars=True,
             impurity_measure=impurity_measure,
         )
@@ -209,8 +228,8 @@ def solve_mab(
     data: np.ndarray,
     labels: np.ndarray,
     discrete_bins_dict: DefaultDict,
-    fixed_bin_type: str = LINEAR,
-    erf_k: str = "",
+    binning_type: str = LINEAR,
+    num_bins: int = DEFAULT_NUM_BINS,
     is_classification: bool = True,
     impurity_measure: str = GINI,
     min_impurity_reduction: float = 0,
@@ -228,17 +247,29 @@ def solve_mab(
     :param data: Feature set
     :param labels: Labels of datapoints
     :param discrete_bins_dict: A dictionary of discrete bins
-    :param fixed_bin_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
-    :param erf_k: The type of subsampling to use for bin_edges. The default is sqrt(n).
+    :param binning_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
     :param num_queries: mutable variable to update the number of datapoints queried
     :param is_classification:  Whether is a classification problem(True) or regression problem(False)
     :param impurity_measure: A name of impurity_measure
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
-    F = len(data[0])
-    B = 11  # TODO: Fix this hard-coding
     N = len(data)
-    batch_size = 100  # Right now, constant batch size
+    F = len(data[0])
+    if binning_type == IDENTITY:
+        raise Exception(
+            "You're running solve_mab without histogramming. Did you mean to?"
+        )
+        B = N
+    elif binning_type == RANDOM:
+        assert (
+            num_bins is None
+        ), "When using Extremely Random Forests, please pass num_bins=None explicitly. If you want to set a custom \
+            number of Extremely Random bins, please update callsites and remove this assertion."
+        B = math.ceil(np.sqrt(F))
+    else:
+        B = num_bins
+
+    batch_size = BATCH_SIZE
     round_count = 0
     if impurity_measure == "":
         impurity_measure = GINI if is_classification else MSE
@@ -254,12 +285,11 @@ def solve_mab(
     # Make a list of histograms, a list of indices that we don't consider as potential arms, and a list of indices
     # that we consider as potential arms.
     histograms, not_considered_idcs, considered_idcs = make_histograms(
-        is_classification,
-        data,
-        labels,
-        discrete_bins_dict,
-        fixed_bin_type=fixed_bin_type,
-        erf_k=erf_k,
+        is_classification=is_classification,
+        data=data,
+        labels=labels,
+        discrete_bins_dict=discrete_bins_dict,
+        binning_type=binning_type,
         num_bins=B,
     )
 
@@ -281,12 +311,12 @@ def solve_mab(
         exact_accesses = np.where((num_samples + batch_size >= N) & (exact_mask == 0))
         if len(exact_accesses[0]) > 0:
             estimates[exact_accesses], _vars, num_queries = sample_targets(
-                is_classification,
-                data,
-                labels,
-                exact_accesses,
-                histograms,
-                N,
+                is_classification=is_classification,
+                data=data,
+                labels=labels,
+                arms=exact_accesses,
+                histograms=histograms,
+                batch_size=N,
                 impurity_measure=impurity_measure,
             )
 
@@ -294,11 +324,15 @@ def solve_mab(
             lcbs[exact_accesses] = ucbs[exact_accesses] = estimates[exact_accesses]
             exact_mask[exact_accesses] = 1
             num_samples[exact_accesses] += N
+            total_queries += num_queries
+
+            # None of the CIs overlap with 0. We are confident that there is no possible impurity reduction.
+            if lcbs.min() > 0:
+                break
 
             # TODO(@motiwari): Can't use nanmin here -- why?
             cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
             candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
-            total_queries += num_queries
 
         # Last candidates were exactly computed
         if len(candidates) <= 1:
@@ -311,23 +345,27 @@ def solve_mab(
         )
         # NOTE: cb_delta contains a value for EVERY arm, even non-candidates, so need [accesses]
         estimates[accesses], cb_delta[accesses], num_queries = sample_targets(
-            is_classification,
-            data,
-            labels,
-            accesses,
-            histograms,
-            batch_size,
+            is_classification=is_classification,
+            data=data,
+            labels=labels,
+            arms=accesses,
+            histograms=histograms,
+            batch_size=batch_size,
             impurity_measure=impurity_measure,
         )
         num_samples[accesses] += batch_size
+        total_queries += num_queries
         lcbs[accesses] = estimates[accesses] - CONF_MULTIPLIER * cb_delta[accesses]
         ucbs[accesses] = estimates[accesses] + CONF_MULTIPLIER * cb_delta[accesses]
+
+        # None of the CIs overlap with 0. We are confident that there is no possible impurity reduction.
+        if lcbs.min() > 0:
+            break
 
         # TODO(@motiwari): Can't use nanmin here -- why?
         # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
         cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
-        total_queries += num_queries
         round_count += 1
 
     best_split = zip(

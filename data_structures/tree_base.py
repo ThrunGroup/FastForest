@@ -1,12 +1,18 @@
 import numpy as np
+import math
 
 from collections import defaultdict
 from abc import ABC
 from typing import Union, Tuple, DefaultDict
 
 from data_structures.node import Node
-from utils.utils import data_to_discrete, set_seed
-from utils.constants import MAB, LINEAR, BEST, DEPTH, GINI
+from utils.utils import (
+    data_to_discrete,
+    set_seed,
+    choose_features,
+    remap_discrete_features,
+)
+from utils.constants import MAB, LINEAR, BEST, DEPTH, GINI, DEFAULT_NUM_BINS
 
 
 class TreeBase(ABC):
@@ -21,18 +27,19 @@ class TreeBase(ABC):
         labels: np.ndarray,
         max_depth: int,
         classes: dict = None,
+        feature_subsampling: Union[str, int] = None,
+        tree_global_feature_subsampling: bool = False,
         min_samples_split: int = 2,
         min_impurity_decrease: float = -1e-6,
         max_leaf_nodes: int = None,
         discrete_features: DefaultDict = defaultdict(list),
         bin_type: str = LINEAR,
-        erf_k: str = "",
+        num_bins: int = DEFAULT_NUM_BINS,
         budget: int = None,
         is_classification: bool = True,
         criterion: str = GINI,
         splitter: str = BEST,
         solver: str = MAB,
-        feature_subsampling: Union[str, int] = None,
         random_state: int = 0,
         verbose: bool = False,
     ) -> None:
@@ -42,17 +49,32 @@ class TreeBase(ABC):
         self.n_data = len(labels)
         if is_classification:
             self.classes = classes  # dict from class name to class index
-            self.idx_to_class = {value: key for (key, value) in classes.items()}
-        self.min_samples_split = min_samples_split
-        # Make this a small negative number to avoid infinite loop when all leaves are at max_depth
-        self.min_impurity_decrease = min_impurity_decrease
-        self.max_leaf_nodes = max_leaf_nodes
+            self.idx_to_class = {value: key for key, value in classes.items()}
+
+        self.feature_subsampling = feature_subsampling
+        self.tree_global_feature_subsampling = tree_global_feature_subsampling
+
         self.discrete_features = (
             discrete_features
             if len(discrete_features) > 0
             else data_to_discrete(data, n=10)
         )
+
+        if self.tree_global_feature_subsampling:
+            # Sample the features randomly once, to be used in the entire tree
+            self.feature_idcs = choose_features(data, self.feature_subsampling)
+            self.discrete_features = remap_discrete_features(
+                self.feature_idcs, self.discrete_features
+            )
+
+        self.min_samples_split = min_samples_split
+        # Make this a small negative number to avoid infinite loop when all leaves are at max_depth
+        self.min_impurity_decrease = min_impurity_decrease
+        self.max_leaf_nodes = max_leaf_nodes
+
         self.bin_type = bin_type
+        self.num_bins = num_bins
+
         self.remaining_budget = budget
         self.is_classification = is_classification
         self.criterion = criterion
@@ -61,7 +83,6 @@ class TreeBase(ABC):
         self.random_state = random_state
         set_seed(self.random_state)
         self.verbose = verbose
-        self.feature_subsampling = feature_subsampling
 
         self.node = Node(
             tree=self,
@@ -71,12 +92,13 @@ class TreeBase(ABC):
             depth=0,
             proportion=1.0,
             bin_type=self.bin_type,
-            erf_k=erf_k,
+            num_bins=self.num_bins,
             is_classification=self.is_classification,
             verbose=self.verbose,
             solver=self.solver,
             criterion=self.criterion,
             feature_subsampling=self.feature_subsampling,
+            tree_global_feature_subsampling=self.tree_global_feature_subsampling,
         )
 
         # These are copied from the link below. We won't need all of them.
