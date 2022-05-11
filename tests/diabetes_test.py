@@ -66,6 +66,7 @@ def test_forest_diabetes(
     solver: str = MAB,
     with_replacement: bool = False,
     print_sklearn: bool = False,
+    use_boosting: bool = False,
 ):
     if verbose:
         print("--RF experiment with diabetes dataset--")
@@ -90,6 +91,7 @@ def test_forest_diabetes(
         with_replacement=with_replacement,
         bin_type="",
         solver=solver,
+        use_boosting=use_boosting,
     )
     FF.fit(data, labels)
     mse = np.sum(np.square(FF.predict_batch(data) - labels)) / len(data)
@@ -111,3 +113,4 @@ if __name__ == "__main__":
     test_forest_diabetes(seed=50, with_replacement=False)
     test_forest_diabetes(seed=50, features_subsampling=SQRT, with_replacement=True)
     test_forest_diabetes(seed=50, features_subsampling=SQRT, with_replacement=False)
+    test_forest_diabetes(use_boosting=True)
