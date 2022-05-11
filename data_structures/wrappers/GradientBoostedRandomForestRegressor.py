@@ -1,3 +1,3 @@
-def GradientBoostedExtremelyRandomForestRegressor():
+def GradientBoostedRandomForestRegressor():
     def __init__(self):
         raise NotImplementedError("Not done yet")
