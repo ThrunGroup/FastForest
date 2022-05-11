@@ -188,7 +188,7 @@ class ForestBase(ABC):
                     is_residual=i,
                     loss_type=DEFAULT_REGRESSOR_LOSS,
                     is_classification=self.is_classification,
-                    labels=labels,  # TODO: currently uses O(n) computation
+                    labels=new_labels,  # TODO: currently uses O(n) computation
                     predictions=self.predict_batch(self.data)
                 )
             self.trees.append(tree)
