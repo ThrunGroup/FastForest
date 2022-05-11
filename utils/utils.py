@@ -274,13 +274,11 @@ def update_next_labels(
 ) -> np.ndarray:
     """
     Updates the labels for the next iteration of boosting.
-    The resulting new training set will look like {X, -grad/hessian}.
-    It does so by following these steps:
-        - get the predictions array by calling predict
-        - compute the targets for the next iteration.
+    For classification, the resulting new training set will look like {X, -grad/hessian} and
+    for regression, it will look like {X, ensemble_residuals}
 
     NOTE: this function assumes tree is already fitted
-    :return: the new updated labels
+    :return: the new updated targets
     """
     lr = 1.0 if tree_idx == 0 else DEFAULT_LEARNING_RATE
     if is_classification:
