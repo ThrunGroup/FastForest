@@ -29,7 +29,6 @@ class ForestClassifier(ForestBase, Classifier):
         criterion: str = GINI,
         splitter: str = BEST,
         solver: str = MAB,
-        erf_k: str = SQRT,
         random_state: int = 0,
         verbose: bool = False,
     ) -> None:
@@ -54,7 +53,6 @@ class ForestClassifier(ForestBase, Classifier):
             criterion=criterion,
             splitter=splitter,
             solver=solver,
-            erf_k=erf_k,
             is_classification=True,
             random_state=random_state,
             verbose=verbose,

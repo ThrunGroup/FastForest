@@ -15,7 +15,6 @@ class RandomPatchesClassifier(ForestClassifier):
     tree_global_feature_subsampling: bool = True,
     bin_type: str = IDENTITY,
     num_bins: int = None,
-    erf_k: int = None,
     solver: str = EXACT (default value, not fixed)
     """
 
@@ -61,7 +60,6 @@ class RandomPatchesClassifier(ForestClassifier):
             criterion=criterion,
             splitter=splitter,
             solver=solver,
-            erf_k=None,  # Fixed
             random_state=random_state,
             verbose=verbose,
         )

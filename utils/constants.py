@@ -34,7 +34,6 @@ IDENTITY = "IDENTITY"
 RANDOM = "RANDOM"
 
 DEFAULT_NUM_BINS = 11
-DEFAULT_ERF_K = 11
 
 # Feature subsampling
 SQRT = "SQRT"

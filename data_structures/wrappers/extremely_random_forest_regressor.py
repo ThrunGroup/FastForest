@@ -1,19 +1,18 @@
 import numpy as np
 
 from data_structures.forest_regressor import ForestRegressor
-from utils.constants import SQRT, BEST, EXACT, MSE, DEFAULT_ERF_K, RANDOM
+from utils.constants import SQRT, BEST, EXACT, MSE, RANDOM
 
 
-class RandomForestClassifier(ForestRegressor):
+class ExtremelyRandomForestRegressor(ForestRegressor):
     """
-    A RandomForestClassifier, which is a ForestClassifier with the following settings:
+    A ExtremelyRandomForestRegressor, which is a ForestRegressor with the following settings:
 
     bootstrap: bool = True,
     feature_subsampling: str = SQRT,
     tree_global_feature_subsampling: bool = False,
     bin_type: str = RANDOM,
     num_bins: int = None,
-    erf_k: int = DEFAULT_ERF_K (default value, not fixed)
     solver: str = EXACT (default value, not fixed)
     """
 
@@ -23,6 +22,7 @@ class RandomForestClassifier(ForestRegressor):
         labels: np.ndarray = None,
         n_estimators: int = 100,
         max_depth: int = None,
+        num_bins: int = None,
         min_samples_split: int = 2,
         min_impurity_decrease: float = 0,
         max_leaf_nodes: int = None,
@@ -30,7 +30,6 @@ class RandomForestClassifier(ForestRegressor):
         criterion: str = MSE,
         splitter: str = BEST,
         solver: str = EXACT,
-        erf_k: int = DEFAULT_ERF_K,
         random_state: int = 0,
         verbose: bool = False,
     ) -> None:
@@ -47,12 +46,11 @@ class RandomForestClassifier(ForestRegressor):
             min_impurity_decrease=min_impurity_decrease,
             max_leaf_nodes=max_leaf_nodes,
             bin_type=RANDOM,  # Fixed
-            num_bins=None,  # Fixed
+            num_bins=num_bins,  # Fixed
             budget=budget,
             criterion=criterion,
             splitter=splitter,
             solver=solver,
-            erf_k=erf_k,  # Fixed
             random_state=random_state,
             verbose=verbose,
         )

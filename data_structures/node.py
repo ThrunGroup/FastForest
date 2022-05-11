@@ -32,7 +32,6 @@ class Node:
         criterion: str = GINI,
         solver: str = MAB,
         verbose: bool = True,
-        erf_k: int = None,
         feature_subsampling: Union[str, int] = None,
         tree_global_feature_subsampling: bool = False,
     ) -> None:
@@ -43,7 +42,6 @@ class Node:
         self.n_data = len(labels)
         self.bin_type = bin_type
         self.num_bins = num_bins
-        self.erf_k = erf_k
         self.depth = depth
         self.proportion = proportion
         self.is_classification = is_classification

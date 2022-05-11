@@ -7,7 +7,7 @@ from typing import DefaultDict, Tuple, List
 
 
 from data_structures.histogram import Histogram
-from utils.constants import LINEAR, DISCRETE, IDENTITY, SQRT, RANDOM
+from utils.constants import LINEAR, DISCRETE, IDENTITY, SQRT, RANDOM, DEFAULT_NUM_BINS
 
 
 def type_check() -> None:
@@ -119,8 +119,7 @@ def make_histograms(
     labels: np.ndarray,
     discrete_bins_dict: DefaultDict,
     binning_type: str = "",
-    erf_k: str = "",
-    num_bins: int = 11,
+    num_bins: int = DEFAULT_NUM_BINS,
 ) -> Tuple[List[Histogram], List, List]:
     """
     Choose a bin type and number of bins, and make a histogram. Add it to histograms list. Also, filter
@@ -131,7 +130,6 @@ def make_histograms(
     :param labels: An 1d-array of target dat
     :param discrete_bins_dict: A DefaultDict mapping feature index to unique feature values
     :param binning_type: Fixed type of bin which should be one of "linear", "discrete", and "identity"
-    :param erf_k: The type of subsampling to use for bin_edges. The default is sqrt(n).
     :param num_bins: Number of bins
     :return: A list of histograms, a list of indices not considered, and a list of indices considered
     """
@@ -165,18 +163,15 @@ def make_histograms(
             num_bins = B
         elif bin_type == RANDOM:  # For extremely random forests
             min_bin, max_bin = np.min(f_data), np.max(f_data)
-            if erf_k == "" or erf_k == "SQRT":
-                num_bins = np.sqrt(np.shape(data)[0]).astype(int)
-            else:
-                NotImplementedError("Invalid choice of erf_k")
+            num_bins = np.sqrt(np.shape(data)[0]).astype(int)
         else:
             NotImplementedError("Invalid choice of bin_type")
 
         histogram = Histogram(
-            is_classification,
-            f_idx,
-            discrete_bins_dict[f_idx],
-            f_data,
+            is_classification=is_classification,
+            feature_idx=f_idx,
+            unique_fvals=discrete_bins_dict[f_idx],
+            f_data=f_data,
             classes=classes,
             num_bins=num_bins,
             min_bin=min_bin,

@@ -28,7 +28,6 @@ class ForestRegressor(ForestBase, Regressor):
         criterion: str = GINI,
         splitter: str = BEST,
         solver: str = MAB,
-        erf_k: str = SQRT,
         random_state: int = 0,
         verbose: bool = False,
     ) -> None:
@@ -49,7 +48,6 @@ class ForestRegressor(ForestBase, Regressor):
             criterion=criterion,
             splitter=splitter,
             solver=solver,
-            erf_k=erf_k,
             is_classification=False,
             random_state=random_state,
             verbose=verbose,

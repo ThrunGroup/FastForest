@@ -40,7 +40,6 @@ class ForestBase(ABC):
         criterion: str = GINI,
         splitter: str = BEST,
         solver: str = MAB,
-        erf_k: str = SQRT,
         is_classification: bool = True,
         random_state: int = 0,
         verbose: bool = False,
@@ -68,7 +67,6 @@ class ForestBase(ABC):
         self.criterion = criterion
         self.splitter = splitter
         self.solver = solver
-        self.erf_k = erf_k
         self.random_state = random_state
         set_seed(self.random_state)
         self.verbose = verbose
@@ -151,7 +149,6 @@ class ForestBase(ABC):
                     bin_type=self.bin_type,
                     num_bins=self.num_bins,
                     solver=self.solver,
-                    erf_k=self.erf_k,
                     feature_subsampling=self.feature_subsampling,
                     random_state=tree_random_state,
                     verbose=self.verbose,
@@ -169,7 +166,6 @@ class ForestBase(ABC):
                     bin_type=self.bin_type,
                     num_bins=self.num_bins,
                     solver=self.solver,
-                    erf_k=self.erf_k,
                     feature_subsampling=self.feature_subsampling,
                     random_state=tree_random_state,
                     verbose=self.verbose,

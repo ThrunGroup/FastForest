@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from data_structures.classifier import Classifier
 from data_structures.tree_base import TreeBase
-from utils.constants import MAB, LINEAR, GINI, BEST, DEFAULT_NUM_BINS, DEFAULT_ERF_K
+from utils.constants import MAB, LINEAR, GINI, BEST, DEFAULT_NUM_BINS
 
 
 class TreeClassifier(TreeBase, Classifier):
@@ -31,7 +31,6 @@ class TreeClassifier(TreeBase, Classifier):
         criterion: str = GINI,
         splitter: str = BEST,
         solver: str = MAB,
-        erf_k: int = None,
         random_state: int = 0,
         verbose: bool = False,
     ):
@@ -55,7 +54,6 @@ class TreeClassifier(TreeBase, Classifier):
             criterion=criterion,
             splitter=splitter,
             solver=solver,
-            erf_k=erf_k,
             random_state=random_state,
             verbose=verbose,
         )

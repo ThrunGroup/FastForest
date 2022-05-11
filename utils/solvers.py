@@ -219,7 +219,6 @@ def solve_mab(
     discrete_bins_dict: DefaultDict,
     binning_type: str = LINEAR,
     num_bins: int = DEFAULT_NUM_BINS,
-    erf_k: str = "",
     is_classification: bool = True,
     impurity_measure: str = GINI,
     min_impurity_reduction: float = 0,
@@ -238,7 +237,6 @@ def solve_mab(
     :param labels: Labels of datapoints
     :param discrete_bins_dict: A dictionary of discrete bins
     :param binning_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
-    :param erf_k: The type of subsampling to use for bin_edges. The default is sqrt(n).
     :param num_queries: mutable variable to update the number of datapoints queried
     :param is_classification:  Whether is a classification problem(True) or regression problem(False)
     :param impurity_measure: A name of impurity_measure
@@ -275,7 +273,6 @@ def solve_mab(
         labels=labels,
         discrete_bins_dict=discrete_bins_dict,
         binning_type=binning_type,
-        erf_k=erf_k,
         num_bins=B,
     )
 
