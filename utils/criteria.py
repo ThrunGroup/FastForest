@@ -155,7 +155,7 @@ def get_impurity_fn(impurity_measure: str) -> Callable:
 def get_impurity_reductions(
     is_classification: bool,
     histogram: Histogram,
-    _bin_edge_idcs: List[int],
+    bin_edge_idcs: List[int],
     ret_vars: bool = False,
     impurity_measure: str = "",
 ) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
@@ -166,14 +166,14 @@ def get_impurity_reductions(
     Impurity is measured either by Gini index or entropy
 
     :param is_classification: Whether the problem is a classification problem(True) or a regression problem(False)
-    :returns: Impurity reduction when splitting node by bins in _bin_edge_idcs
+    :returns: Impurity reduction when splitting node by bins in bin_edge_idcs
     """
     if impurity_measure == "":
         impurity_measure = GINI if is_classification else MSE
     get_impurity = get_impurity_fn(impurity_measure)
 
     h = histogram
-    b = len(_bin_edge_idcs)
+    b = len(bin_edge_idcs)
     assert (
         b <= h.num_bins
     ), "len(bin_edges) whose impurity reductions we want to calculate is greater than len(total_bin_edges)"
@@ -187,7 +187,7 @@ def get_impurity_reductions(
     else:
         n = len(h.left_pile[0]) + len(h.right_pile[0])
     for i in range(b):
-        b_idx = _bin_edge_idcs[i]
+        b_idx = bin_edge_idcs[i]
         if is_classification:
             IL, V_IL = get_impurity(h.left[b_idx, :], ret_var=True)
             IR, V_IR = get_impurity(h.right[b_idx, :], ret_var=True)

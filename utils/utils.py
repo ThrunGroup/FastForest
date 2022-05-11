@@ -1,11 +1,13 @@
-import numpy as np
+import random
 import itertools
+import math
+import numpy as np
 from collections import defaultdict
 from typing import DefaultDict, Tuple, List
-import random
+
 
 from data_structures.histogram import Histogram
-from utils.constants import LINEAR, DISCRETE, IDENTITY
+from utils.constants import LINEAR, DISCRETE, IDENTITY, SQRT, RANDOM, DEFAULT_NUM_BINS
 
 
 def type_check() -> None:
@@ -116,9 +118,8 @@ def make_histograms(
     data: np.ndarray,
     labels: np.ndarray,
     discrete_bins_dict: DefaultDict,
-    fixed_bin_type: str = "",
-    erf_k: str = "",
-    num_bins: int = 11,
+    binning_type: str = "",
+    num_bins: int = DEFAULT_NUM_BINS,
 ) -> Tuple[List[Histogram], List, List]:
     """
     Choose a bin type and number of bins, and make a histogram. Add it to histograms list. Also, filter
@@ -128,8 +129,7 @@ def make_histograms(
     :param data: A 2d-array of input data
     :param labels: An 1d-array of target dat
     :param discrete_bins_dict: A DefaultDict mapping feature index to unique feature values
-    :param fixed_bin_type: Fixed type of bin which should be one of "linear", "discrete", and "identity"
-    :param erf_k: The type of subsampling to use for bin_edges. The default is sqrt(n).
+    :param binning_type: Fixed type of bin which should be one of "linear", "discrete", and "identity"
     :param num_bins: Number of bins
     :return: A list of histograms, a list of indices not considered, and a list of indices considered
     """
@@ -146,10 +146,10 @@ def make_histograms(
         else:
             D = len(discrete_bins_dict[f_idx])
 
-        if fixed_bin_type == "":
+        if binning_type == "":
             bin_type = choose_bin_type(D, N, B)
         else:
-            bin_type = fixed_bin_type
+            bin_type = binning_type
 
         if bin_type == DISCRETE:
             num_bins = D
@@ -161,20 +161,17 @@ def make_histograms(
         elif bin_type == LINEAR:
             min_bin, max_bin = np.min(f_data), np.max(f_data)
             num_bins = B
-        elif bin_type == "random":  # this is for extremely random forests
+        elif bin_type == RANDOM:  # For extremely random forests
             min_bin, max_bin = np.min(f_data), np.max(f_data)
-            if erf_k == "" or erf_k == "SQRT":
-                num_bins = np.sqrt(np.shape(data)[0]).astype(int)
-            else:
-                NotImplementedError("Invalid choice of erf_k")
+            num_bins = np.sqrt(np.shape(data)[0]).astype(int)
         else:
             NotImplementedError("Invalid choice of bin_type")
 
         histogram = Histogram(
-            is_classification,
-            f_idx,
-            discrete_bins_dict[f_idx],
-            f_data,
+            is_classification=is_classification,
+            feature_idx=f_idx,
+            unique_fvals=discrete_bins_dict[f_idx],
+            f_data=f_data,
             classes=classes,
             num_bins=num_bins,
             min_bin=min_bin,
@@ -189,3 +186,44 @@ def make_histograms(
         )
         considered_idcs += list(itertools.product([f_idx], range(histogram.num_bins)))
     return histograms, not_considered_idcs, considered_idcs
+
+
+def choose_features(data: np.ndarray, feature_subsampling: str):
+    """
+    Choose a random subset of features from all available features.
+
+    :param data: dataset to be fit. Only used for computing the total number of features
+    :param feature_subsampling: The feature subsampling method; None, SQRT, or int
+    :return:
+    """
+    N = len(data[0])  # Number of features
+    if feature_subsampling is None:
+        return np.arange(N)
+    elif feature_subsampling == SQRT:
+        return np.random.choice(N, math.ceil(math.sqrt(N)), replace=False)
+    elif (
+        type(feature_subsampling) == int
+    ):  # If an int, subsample feature_subsampling features.
+        return np.random.choice(N, feature_subsampling, replace=False)
+    else:
+        raise NotImplementedError("Invalid type of feature_subsampling")
+
+
+def remap_discrete_features(feature_idcs, tree_discrete_features: defaultdict(list)):
+    """
+
+    :param feature_idcs: The new feature indices of the object (e.g., Node)
+    :param tree_discrete_features: The features that are discrete globally (e.g., in the Tree)
+    :return: the new set of discrete features
+    """
+    # New discrete_features corresponding to new feature indices
+    discrete_features = {}
+    for i, feature_idx in enumerate(feature_idcs):
+        # TODO(@motiwari): is this correct? Asked Jeyong
+        # Our i-th corresponds to the feature_idx-th discrete feature in the tree.
+        # If tree_discrete_features[feature_idx] is discrete, then tree_discrete_features[feature_idx] = list_of_vals
+        # and discrete_features[i] = list_of_vals (also discrete).
+        # If tree_discrete_features[feature_idx] is NOT discrete, then tree_discrete_features[feature_idx] = []
+        # and discrete_features[i] = [] (also not discrete).
+        discrete_features[i] = tree_discrete_features[feature_idx]
+    return discrete_features

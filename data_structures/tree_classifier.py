@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from data_structures.classifier import Classifier
 from data_structures.tree_base import TreeBase
-from utils.constants import MAB, LINEAR, GINI, BEST
+from utils.constants import MAB, LINEAR, GINI, BEST, DEFAULT_NUM_BINS
 
 
 class TreeClassifier(TreeBase, Classifier):
@@ -19,17 +19,18 @@ class TreeClassifier(TreeBase, Classifier):
         labels: np.ndarray,
         max_depth: int,
         classes: dict,
+        feature_subsampling: Union[str, int] = None,
+        tree_global_feature_subsampling: bool = False,
         min_samples_split: int = 2,
         min_impurity_decrease: float = -1e-6,
         max_leaf_nodes: int = None,
         discrete_features: DefaultDict = defaultdict(list),
         bin_type: str = LINEAR,
+        num_bins: int = DEFAULT_NUM_BINS,
         budget: int = None,
         criterion: str = GINI,
         splitter: str = BEST,
         solver: str = MAB,
-        erf_k: str = "",
-        feature_subsampling: Union[str, int] = None,
         random_state: int = 0,
         verbose: bool = False,
     ):
@@ -40,18 +41,19 @@ class TreeClassifier(TreeBase, Classifier):
             labels=labels,
             max_depth=max_depth,
             classes=classes,
+            feature_subsampling=feature_subsampling,
+            tree_global_feature_subsampling=tree_global_feature_subsampling,
             min_samples_split=min_samples_split,
             min_impurity_decrease=min_impurity_decrease,
             max_leaf_nodes=max_leaf_nodes,
             discrete_features=discrete_features,
             bin_type=bin_type,
+            num_bins=num_bins,
             budget=budget,
             is_classification=True,
             criterion=criterion,
             splitter=splitter,
             solver=solver,
-            erf_k=erf_k,
             random_state=random_state,
-            feature_subsampling=feature_subsampling,
             verbose=verbose,
         )

@@ -2,7 +2,16 @@ import numpy as np
 from typing import Tuple, DefaultDict, Union
 from abc import ABC
 
-from utils.constants import BUFFER, MAB, LINEAR, GINI, SQRT, BEST
+from utils.constants import (
+    BUFFER,
+    MAB,
+    LINEAR,
+    GINI,
+    SQRT,
+    BEST,
+    MAX_SEED,
+    DEFAULT_NUM_BINS,
+)
 from utils.utils import data_to_discrete, set_seed
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.tree_regressor import TreeRegressor
@@ -21,15 +30,16 @@ class ForestBase(ABC):
         max_depth: int = None,
         bootstrap: bool = True,
         feature_subsampling: str = None,
+        tree_global_feature_subsampling: bool = False,
         min_samples_split: int = 2,
         min_impurity_decrease: float = 0,
         max_leaf_nodes: int = None,
         bin_type: str = LINEAR,
+        num_bins: int = DEFAULT_NUM_BINS,
         budget: int = None,
         criterion: str = GINI,
         splitter: str = BEST,
         solver: str = MAB,
-        erf_k: str = SQRT,
         is_classification: bool = True,
         random_state: int = 0,
         verbose: bool = False,
@@ -39,15 +49,17 @@ class ForestBase(ABC):
         self.trees = []
         self.n_estimators = n_estimators
         self.is_classification = is_classification
-        self.num_features = 0
 
         self.max_depth = max_depth
         self.bootstrap = bootstrap
         self.feature_subsampling = feature_subsampling
+        self.tree_global_feature_subsampling = tree_global_feature_subsampling
+
         self.min_samples_split = min_samples_split
         self.min_impurity_decrease = min_impurity_decrease
         self.max_leaf_nodes = max_leaf_nodes
         self.bin_type = bin_type
+        self.num_bins = num_bins
 
         self.remaining_budget = budget
         self.num_queries = 0
@@ -55,7 +67,6 @@ class ForestBase(ABC):
         self.criterion = criterion
         self.splitter = splitter
         self.solver = solver
-        self.erf_k = erf_k
         self.random_state = random_state
         set_seed(self.random_state)
         self.verbose = verbose
@@ -100,7 +111,6 @@ class ForestBase(ABC):
             self.labels = labels
 
         self.trees = []
-        self.num_features = len(self.data[0])
         self.discrete_features: DefaultDict = data_to_discrete(self.data, n=10)
         for i in range(self.n_estimators):
             if self.remaining_budget is not None and self.remaining_budget <= 0:
@@ -119,6 +129,12 @@ class ForestBase(ABC):
                 new_data = self.data
                 new_labels = self.labels
 
+            # NOTE: We cannot just let the tree's random states be forest.random_state + i, because then
+            # two forests whose index is off by 1 will have very correlated results (e.g. when running multiple exps),
+            # e.g., the first tree of the second forest will have the same random seed as the second tree of the first
+            # forest. For this reason, we need to generate a new sequence of random numbers to seed the trees.
+            tree_random_state = np.random.randint(MAX_SEED)
+
             if self.is_classification:
                 tree = TreeClassifier(
                     data=new_data,
@@ -131,10 +147,10 @@ class ForestBase(ABC):
                     max_leaf_nodes=self.max_leaf_nodes,
                     discrete_features=self.discrete_features,
                     bin_type=self.bin_type,
+                    num_bins=self.num_bins,
                     solver=self.solver,
-                    erf_k=self.erf_k,
                     feature_subsampling=self.feature_subsampling,
-                    random_state=self.random_state + i,
+                    random_state=tree_random_state,
                     verbose=self.verbose,
                 )
             else:
@@ -148,10 +164,10 @@ class ForestBase(ABC):
                     max_leaf_nodes=self.max_leaf_nodes,
                     discrete_features=self.discrete_features,
                     bin_type=self.bin_type,
+                    num_bins=self.num_bins,
                     solver=self.solver,
-                    erf_k=self.erf_k,
                     feature_subsampling=self.feature_subsampling,
-                    random_state=self.random_state + i,
+                    random_state=tree_random_state,
                     verbose=self.verbose,
                 )
             tree.fit()
