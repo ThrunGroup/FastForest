@@ -273,7 +273,7 @@ def update_next_labels(
     predictions: np.ndarray
 ) -> np.ndarray:
     """
-    Updates the labels for the next iteration of boosting.
+    Updates the targets for the next iteration of boosting.
     For classification, the resulting new training set will look like {X, -grad/hessian} and
     for regression, it will look like {X, ensemble_residuals}
 
