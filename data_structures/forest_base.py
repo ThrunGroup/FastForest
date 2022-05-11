@@ -138,7 +138,6 @@ class ForestBase(ABC):
                 new_labels = new_labels[idcs]
             else:
                 new_data = self.data
-                new_labels = new_labels
 
             # NOTE: We cannot just let the tree's random states be forest.random_state + i, because then
             # two forests whose index is off by 1 will have very correlated results (e.g. when running multiple exps),
