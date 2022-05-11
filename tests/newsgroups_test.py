@@ -88,5 +88,4 @@ def test_tree_news(
         print("Train accuracy:", train_acc)
         print("Test accuracy:", test_acc)
         print("Num queries:", tc.num_queries, "\n")
-
     return tc.num_queries, train_acc

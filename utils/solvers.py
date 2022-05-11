@@ -2,7 +2,6 @@ import math
 import itertools
 import numpy as np
 
-
 from typing import List, Tuple, DefaultDict
 from collections import defaultdict
 
@@ -20,7 +19,6 @@ from utils.constants import (
 from utils.criteria import get_impurity_reductions
 from utils.utils import type_check, class_to_idx, counts_of_labels, make_histograms
 from data_structures.histogram import Histogram
-
 
 type_check()
 
@@ -158,14 +156,14 @@ def solve_exactly(
 
 
 def sample_targets(
-        is_classification: bool,
-        data: np.ndarray,
-        labels: np.ndarray,
-        arms: Tuple[np.ndarray, np.ndarray],
-        histograms: List[object],
-        batch_size: int,
-        impurity_measure: str = GINI,
-        population_idcs: np.ndarray = None,
+    is_classification: bool,
+    data: np.ndarray,
+    labels: np.ndarray,
+    arms: Tuple[np.ndarray, np.ndarray],
+    histograms: List[object],
+    batch_size: int,
+    impurity_measure: str = GINI,
+    population_idcs: np.ndarray = None,
 ) -> Tuple[np.ndarray, np.ndarray, int, np.ndarray]:
     """
     Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
@@ -213,7 +211,9 @@ def sample_targets(
             else np.random.choice(M, batch_size, replace=False)
         )
         sample_idcs = population_idcs[idcs]
-        population_idcs = np.delete(population_idcs, idcs)  # Delete drawn samples from population
+        population_idcs = np.delete(
+            population_idcs, idcs
+        )  # Delete drawn samples from population
     num_queries = len(sample_idcs)  # May be less than batch_size due to truncation
     samples = data[sample_idcs]
     sample_labels = labels[sample_idcs]
@@ -248,7 +248,7 @@ def solve_mab(
     is_classification: bool = True,
     impurity_measure: str = GINI,
     min_impurity_reduction: float = 0,
-    with_replaceement: bool = False,
+    with_replacement: bool = False,
 ) -> Tuple[int, float, float, int]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
@@ -327,16 +327,18 @@ def solve_mab(
         # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
         if with_replacement:
-            exact_accesses = np.where((num_samples + batch_size >= N) & (exact_mask == 0))
+            exact_accesses = np.where(
+                (num_samples + batch_size >= N) & (exact_mask == 0)
+            )
             if len(exact_accesses[0]) > 0:
                 estimates[exact_accesses], _vars, num_queries, _ = sample_targets(
-                is_classification=is_classification,
-                data=data,
-                labels=labels,
-                arms=exact_accesses,
-                histograms=histograms,
-                batch_size=N,
-                impurity_measure=impurity_measure,
+                    is_classification=is_classification,
+                    data=data,
+                    labels=labels,
+                    arms=exact_accesses,
+                    histograms=histograms,
+                    batch_size=N,
+                    impurity_measure=impurity_measure,
                 )
 
                 # The confidence intervals now only contain a point, since the return has been computed exactly
@@ -366,7 +368,12 @@ def solve_mab(
             candidates[:, 1],
         )
         # NOTE: cb_delta contains a value for EVERY arm, even non-candidates, so need [accesses]
-        estimates[accesses], cb_delta[accesses], num_queries, population_idcs = sample_targets(
+        (
+            estimates[accesses],
+            cb_delta[accesses],
+            num_queries,
+            population_idcs,
+        ) = sample_targets(
             is_classification=is_classification,
             data=data,
             labels=labels,
@@ -374,7 +381,7 @@ def solve_mab(
             histograms=histograms,
             batch_size=batch_size,
             impurity_measure=impurity_measure,
-            population_idcs=population_idcs
+            population_idcs=population_idcs,
         )
         num_samples[accesses] += batch_size
         total_queries += num_queries
@@ -392,7 +399,8 @@ def solve_mab(
         round_count += 1
 
     best_split = zip(
-        np.where(estimates == np.nanmin(estimates))[0], np.where(estimates == np.nanmin(estimates))[1]
+        np.where(estimates == np.nanmin(estimates))[0],
+        np.where(estimates == np.nanmin(estimates))[1],
     ).__next__()  # Get first element
     best_feature = best_split[0]
     best_value = histograms[best_feature].bin_edges[best_split[1]]

@@ -1,5 +1,5 @@
 # Parameters
-BATCH_SIZE = 1000
+BATCH_SIZE = 30
 CONF_MULTIPLIER = 1
 TOLERANCE = -1e-1
 BUFFER = 1000
@@ -39,4 +39,4 @@ DEFAULT_NUM_BINS = 11
 SQRT = "SQRT"
 
 # For randomness
-MAX_SEED = 2 ** 32
+MAX_SEED = 2 ** 31
