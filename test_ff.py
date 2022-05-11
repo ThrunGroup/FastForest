@@ -48,7 +48,7 @@ def test_tree_iris2(verbose: bool = False) -> None:
 def main():
     print("Fitting tree iris dataset with different hyperparameters:\n")
     test_tree_iris2()
-    
+
 
 if __name__ == "__main__":
     np.random.seed(0)

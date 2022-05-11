@@ -53,7 +53,6 @@ class TreeBase(ABC):
 
         self.feature_subsampling = feature_subsampling
         self.tree_global_feature_subsampling = tree_global_feature_subsampling
-
         self.discrete_features = (
             discrete_features
             if len(discrete_features) > 0
@@ -294,5 +293,4 @@ class TreeBase(ABC):
         """
         self.node.n_print()
         print("\n")  # For consistency with sklearn
-
-
+        
