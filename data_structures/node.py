@@ -34,6 +34,7 @@ class Node:
         verbose: bool = True,
         feature_subsampling: Union[str, int] = None,
         tree_global_feature_subsampling: bool = False,
+        with_replacement: bool = True,
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
@@ -53,6 +54,7 @@ class Node:
         self.feature_subsampling = feature_subsampling
         self.tree_global_feature_subsampling = tree_global_feature_subsampling
         self.discrete_features = defaultdict(list)
+        self.with_replacement = with_replacement
 
         if tree_global_feature_subsampling:
             # Features are chosen at the tree level. Use all of tree's features
@@ -104,6 +106,7 @@ class Node:
                 num_bins=self.num_bins,
                 is_classification=self.is_classification,
                 impurity_measure=self.criterion,
+                with_replacement=self.with_replacement,
             )
         elif self.solver == EXACT:
             results = solve_exactly(
@@ -159,6 +162,7 @@ class Node:
             criterion=self.criterion,
             feature_subsampling=self.feature_subsampling,
             tree_global_feature_subsampling=self.tree_global_feature_subsampling,
+            with_replacement=self.with_replacement,
         )
 
     def split(self) -> None:

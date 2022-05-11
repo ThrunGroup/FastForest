@@ -2,10 +2,8 @@ import math
 import itertools
 import numpy as np
 
-
 from typing import List, Tuple, DefaultDict
 from collections import defaultdict
-
 
 from utils.constants import (
     CONF_MULTIPLIER,
@@ -20,7 +18,7 @@ from utils.constants import (
 )
 from utils.criteria import get_impurity_reductions
 from utils.utils import type_check, class_to_idx, counts_of_labels, make_histograms
-
+from data_structures.histogram import Histogram
 
 type_check()
 
@@ -130,7 +128,7 @@ def solve_exactly(
         candidates[:, 1],
     )
 
-    estimates[accesses], _cb_delta, num_queries = sample_targets(
+    estimates[accesses], _cb_delta, num_queries, _ = sample_targets(
         is_classification=is_classification,
         data=data,
         labels=labels,
@@ -165,7 +163,8 @@ def sample_targets(
     histograms: List[object],
     batch_size: int,
     impurity_measure: str = GINI,
-) -> Tuple[np.ndarray, np.ndarray, int]:
+    population_idcs: np.ndarray = None,
+) -> Tuple[np.ndarray, np.ndarray, int, np.ndarray]:
     """
     Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
     their feature values into the (potentially non-empty) histograms and recompute the changes in impurity
@@ -178,6 +177,7 @@ def sample_targets(
     :param histograms: list of the histograms for ALL feature indices
     :param batch_size: the number of samples we're going to choose
     :param impurity_measure: A name of impurity measure
+    :param population_idcs: An array of remaining population indices. If an empty array, sample data with replacement
     :return: impurity_reduction and its variance of accesses
     """
     # TODO(@motiwari): Samples all bin edges for a given feature, should only sample those under consideration.
@@ -195,15 +195,31 @@ def sample_targets(
     cb_deltas = np.array([], dtype=float)
     N = len(data)
 
-    sample_idcs = (
-        np.arange(N) if N <= batch_size else np.random.choice(N, size=batch_size)
-    )  # Default: with replacement (replace=True)
+    with_replacement = population_idcs is None
+    initial_pop_size = None if population_idcs is None else N
+    if with_replacement:  # Sample with replacement
+        sample_idcs = (
+            np.arange(N)
+            if N <= batch_size
+            else np.random.choice(N, size=batch_size, replace=True)
+        )
+    else:
+        M = len(population_idcs)
+        idcs = (
+            np.arange(M)
+            if batch_size >= M
+            else np.random.choice(M, batch_size, replace=False)
+        )
+        sample_idcs = population_idcs[idcs]
+        population_idcs = np.delete(
+            population_idcs, idcs
+        )  # Delete drawn samples from population
     num_queries = len(sample_idcs)  # May be less than batch_size due to truncation
     samples = data[sample_idcs]
     sample_labels = labels[sample_idcs]
 
     for f_idx, f in enumerate(f2bin_dict):
-        h = histograms[f]
+        h: Histogram = histograms[f]
         h.add(samples, sample_labels)  # This is where the labels are used
         # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
         i_r, cb_d = get_impurity_reductions(
@@ -212,6 +228,7 @@ def sample_targets(
             bin_edge_idcs=f2bin_dict[f],
             ret_vars=True,
             impurity_measure=impurity_measure,
+            pop_size=initial_pop_size,
         )
         impurity_reductions = np.concatenate([impurity_reductions, i_r])
         cb_deltas = np.concatenate(
@@ -219,7 +236,7 @@ def sample_targets(
         )  # The above fn returns the vars
 
     # TODO(@motiwari): This seems dangerous, because access appears to be a linear index to the array
-    return impurity_reductions, cb_deltas, num_queries
+    return impurity_reductions, cb_deltas, num_queries, population_idcs
 
 
 def solve_mab(
@@ -231,6 +248,7 @@ def solve_mab(
     is_classification: bool = True,
     impurity_measure: str = GINI,
     min_impurity_reduction: float = 0,
+    with_replacement: bool = False,
 ) -> Tuple[int, float, float, int]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
@@ -249,6 +267,7 @@ def solve_mab(
     :param num_queries: mutable variable to update the number of datapoints queried
     :param is_classification:  Whether is a classification problem(True) or regression problem(False)
     :param impurity_measure: A name of impurity_measure
+    :param with_replacement: Whether to sample with replacement.
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
     N = len(data)
@@ -269,6 +288,7 @@ def solve_mab(
 
     batch_size = BATCH_SIZE
     round_count = 0
+    population_idcs = None if with_replacement is True else np.arange(N)
     if impurity_measure == "":
         impurity_measure = GINI if is_classification else MSE
 
@@ -306,34 +326,40 @@ def solve_mab(
         # If we have already pulled the arms more times than the number of datapoints in the original dataset,
         # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
-        exact_accesses = np.where((num_samples + batch_size >= N) & (exact_mask == 0))
-        if len(exact_accesses[0]) > 0:
-            estimates[exact_accesses], _vars, num_queries = sample_targets(
-                is_classification=is_classification,
-                data=data,
-                labels=labels,
-                arms=exact_accesses,
-                histograms=histograms,
-                batch_size=N,
-                impurity_measure=impurity_measure,
+        if with_replacement:
+            exact_accesses = np.where(
+                (num_samples + batch_size >= N) & (exact_mask == 0)
             )
+            if len(exact_accesses[0]) > 0:
+                estimates[exact_accesses], _vars, num_queries, _ = sample_targets(
+                    is_classification=is_classification,
+                    data=data,
+                    labels=labels,
+                    arms=exact_accesses,
+                    histograms=histograms,
+                    batch_size=N,
+                    impurity_measure=impurity_measure,
+                )
 
-            # The confidence intervals now only contain a point, since the return has been computed exactly
-            lcbs[exact_accesses] = ucbs[exact_accesses] = estimates[exact_accesses]
-            exact_mask[exact_accesses] = 1
-            num_samples[exact_accesses] += N
-            total_queries += num_queries
+                # The confidence intervals now only contain a point, since the return has been computed exactly
+                lcbs[exact_accesses] = ucbs[exact_accesses] = estimates[exact_accesses]
+                exact_mask[exact_accesses] = 1
+                num_samples[exact_accesses] += N
 
-            # None of the CIs overlap with 0. We are confident that there is no possible impurity reduction.
-            if lcbs.min() > 0:
-                break
+                # TODO(@motiwari): Can't use nanmin here -- why?
+                cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
+                candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
+                total_queries += num_queries
 
-            # TODO(@motiwari): Can't use nanmin here -- why?
-            cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
-            candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
+                # None of the CIs overlap with 0. We are confident that there is no possible impurity reduction.
+                if lcbs.min() > 0:
+                    break
 
         # Last candidates were exactly computed
         if len(candidates) <= 1:
+            break
+        if population_idcs is not None and len(population_idcs) == 0:
+            lcbs = ucbs = estimates
             break
 
         # Massage arm indices for use by numpy slicing
@@ -342,7 +368,12 @@ def solve_mab(
             candidates[:, 1],
         )
         # NOTE: cb_delta contains a value for EVERY arm, even non-candidates, so need [accesses]
-        estimates[accesses], cb_delta[accesses], num_queries = sample_targets(
+        (
+            estimates[accesses],
+            cb_delta[accesses],
+            num_queries,
+            population_idcs,
+        ) = sample_targets(
             is_classification=is_classification,
             data=data,
             labels=labels,
@@ -350,6 +381,7 @@ def solve_mab(
             histograms=histograms,
             batch_size=batch_size,
             impurity_measure=impurity_measure,
+            population_idcs=population_idcs,
         )
         num_samples[accesses] += batch_size
         total_queries += num_queries
@@ -367,7 +399,8 @@ def solve_mab(
         round_count += 1
 
     best_split = zip(
-        np.where(lcbs == np.nanmin(lcbs))[0], np.where(lcbs == np.nanmin(lcbs))[1]
+        np.where(estimates == np.nanmin(estimates))[0],
+        np.where(estimates == np.nanmin(estimates))[1],
     ).__next__()  # Get first element
     best_feature = best_split[0]
     best_value = histograms[best_feature].bin_edges[best_split[1]]

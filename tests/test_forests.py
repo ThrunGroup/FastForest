@@ -23,10 +23,7 @@ class ForestTests(unittest.TestCase):
         iris = sklearn.datasets.load_iris()
         data, labels = iris.data, iris.target
         f = RandomForestClassifier(
-            data=data,
-            labels=labels,
-            n_estimators=20,
-            max_depth=5,
+            data=data, labels=labels, n_estimators=20, max_depth=5,
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
@@ -36,12 +33,7 @@ class ForestTests(unittest.TestCase):
     def test_forest_iris(self) -> None:
         iris = sklearn.datasets.load_iris()
         data, labels = iris.data, iris.target
-        f = ForestClassifier(
-            data=data,
-            labels=labels,
-            n_estimators=20,
-            max_depth=5,
-        )
+        f = ForestClassifier(data=data, labels=labels, n_estimators=20, max_depth=5,)
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
         print("Accuracy:", (acc / len(data)))
@@ -65,12 +57,7 @@ class ForestTests(unittest.TestCase):
     def test_forest_digits(self) -> None:
         digits = sklearn.datasets.load_digits()
         data, labels = digits.data, digits.target
-        f = ForestClassifier(
-            data=data,
-            labels=labels,
-            n_estimators=10,
-            max_depth=5,
-        )
+        f = ForestClassifier(data=data, labels=labels, n_estimators=10, max_depth=5,)
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
         self.assertTrue((acc / len(data)) > 0.80)
@@ -130,7 +117,7 @@ class ForestTests(unittest.TestCase):
         print("Number of queries:", t.num_queries)
         acc = np.sum(t.predict_batch(data)[0] == labels)
         print("MAB solution Tree Train Accuracy:", acc / len(data))
-        self.assertTrue((acc / len(data)) > 0.99)
+        self.assertTrue((acc / len(data)) > 0.985)
 
     def test_exact_tree_iris(self) -> None:
         iris = sklearn.datasets.load_iris()

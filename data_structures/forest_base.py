@@ -43,6 +43,7 @@ class ForestBase(ABC):
         solver: str = MAB,
         is_classification: bool = True,
         random_state: int = 0,
+        with_replacement: bool = True,
         verbose: bool = False,
         use_boosting: bool = False,
     ) -> None:
@@ -72,6 +73,7 @@ class ForestBase(ABC):
         self.solver = solver
         self.random_state = random_state
         set_seed(self.random_state)
+        self.with_replacement = with_replacement
         self.verbose = verbose
         self.use_boosting = use_boosting
 
@@ -160,6 +162,7 @@ class ForestBase(ABC):
                     solver=self.solver,
                     feature_subsampling=self.feature_subsampling,
                     random_state=tree_random_state,
+                    with_replacement=self.with_replacement,
                     verbose=self.verbose,
                 )
             else:
@@ -177,6 +180,7 @@ class ForestBase(ABC):
                     solver=self.solver,
                     feature_subsampling=self.feature_subsampling,
                     random_state=tree_random_state,
+                    with_replacement=self.with_replacement,
                     verbose=self.verbose,
                 )
             tree.fit()

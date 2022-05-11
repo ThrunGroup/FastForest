@@ -145,7 +145,7 @@ def make_histograms(
     B = num_bins
     histograms = []
     not_considered_idcs, considered_idcs = [], []
-    classes = tuple(np.unique(labels))
+    classes = tuple(np.unique(labels)) if is_classification else []
     for f_idx in range(len(data[0])):
         min_bin, max_bin = 0, 0
         f_data = data[:, f_idx]
