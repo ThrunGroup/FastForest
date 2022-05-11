@@ -63,6 +63,7 @@ def solve_exactly(
     is_classification: bool = True,
     impurity_measure: str = GINI,
     min_impurity_reduction: float = 0,
+    erf_k: str = ""
 ) -> Tuple[int, float, float, int]:
     """
     Find the best feature to split on, as well as the value that feature should be split at, using the canonical (exact)
@@ -96,6 +97,7 @@ def solve_exactly(
         discrete_bins_dict,
         fixed_bin_type=fixed_bin_type,
         num_bins=B,
+        erf_k=erf_k
     )
 
     considered_idcs = np.array(considered_idcs)
