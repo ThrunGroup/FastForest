@@ -11,7 +11,7 @@ from utils.constants import (
     BEST,
     MAX_SEED,
     DEFAULT_NUM_BINS,
-    DEFAULT_REGRESSOR_LOSS
+    DEFAULT_REGRESSOR_LOSS,
 )
 from utils.utils import data_to_discrete, set_seed, get_next_targets
 from data_structures.tree_classifier import TreeClassifier
@@ -45,7 +45,7 @@ class ForestBase(ABC):
         random_state: int = 0,
         with_replacement: bool = True,
         verbose: bool = False,
-        use_boosting: bool = False,
+        boosting: bool = False,
     ) -> None:
         self.data = data
         self.org_targets = labels
@@ -80,7 +80,7 @@ class ForestBase(ABC):
         set_seed(self.random_state)
         self.with_replacement = with_replacement
         self.verbose = verbose
-        self.use_boosting = use_boosting
+        self.boosting = boosting
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
@@ -131,7 +131,7 @@ class ForestBase(ABC):
             if self.verbose:
                 print("Fitting tree", i)
 
-            if self.use_boosting:
+            if self.boosting:
                 self.curr_targets = self.new_targets
             else:
                 self.curr_targets = self.org_targets
@@ -189,14 +189,14 @@ class ForestBase(ABC):
                     verbose=self.verbose,
                 )
             tree.fit()
-            if self.use_boosting:
+            if self.boosting:
                 # TODO: currently uses O(n) computation
                 self.new_targets = get_next_targets(
                     is_residual=i,
                     loss_type=DEFAULT_REGRESSOR_LOSS,
                     is_classification=self.is_classification,
                     targets=self.new_targets,
-                    predictions=self.predict_batch(self.data)
+                    predictions=self.predict_batch(self.data),
                 )
             self.trees.append(tree)
 
@@ -227,7 +227,10 @@ class ForestBase(ABC):
             label_pred = list(self.classes.keys())[avg_preds.argmax()]
             return label_pred, avg_preds
         else:
-            agg_pred = np.empty(T)
-            for tree_idx, tree in enumerate(self.trees):
-                agg_pred[tree_idx] = tree.predict(datapoint)
-            return float(agg_pred.mean())
+            if self.boosting:
+                pass
+            else:
+                agg_pred = np.empty(T)
+                for tree_idx, tree in enumerate(self.trees):
+                    agg_pred[tree_idx] = tree.predict(datapoint)
+                return float(agg_pred.mean())
