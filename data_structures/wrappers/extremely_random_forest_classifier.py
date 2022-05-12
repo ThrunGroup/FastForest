@@ -6,7 +6,7 @@ from utils.constants import SQRT, RANDOM, GINI, BEST, EXACT
 
 class ExtremelyRandomForestClassifier(ForestClassifier):
     """
-    A RandomForestClassifier, which is a ForestClassifier with the following settings:
+    A ExtremelyRandomForestClassifier, which is a ForestClassifier with the following settings:
 
     bootstrap: bool = True,
     feature_subsampling: str = SQRT,
