@@ -85,6 +85,8 @@ class ForestBase(ABC):
         self.boosting = boosting
         if self.boosting and boosting_lr is None:
             raise Exception("Need to set boosting_lr when using boosting")
+        if self.boosting and self.is_classification:
+            raise Exception("Boosting in classification is not supported yet.")
         self.boosting_lr = boosting_lr
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
