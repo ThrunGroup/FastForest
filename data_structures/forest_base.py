@@ -7,13 +7,13 @@ from utils.constants import (
     MAB,
     LINEAR,
     GINI,
-    SQRT,
     BEST,
     MAX_SEED,
     DEFAULT_NUM_BINS,
     DEFAULT_REGRESSOR_LOSS,
 )
-from utils.utils import data_to_discrete, set_seed, get_next_targets
+from utils.utils import data_to_discrete, set_seed
+from utils.boosting import get_next_targets
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.tree_regressor import TreeRegressor
 
@@ -46,6 +46,7 @@ class ForestBase(ABC):
         with_replacement: bool = True,
         verbose: bool = False,
         boosting: bool = False,
+        boosting_lr: float = None,
     ) -> None:
         self.data = data
         self.org_targets = labels
@@ -80,7 +81,11 @@ class ForestBase(ABC):
         set_seed(self.random_state)
         self.with_replacement = with_replacement
         self.verbose = verbose
+
         self.boosting = boosting
+        if self.boosting and boosting_lr is None:
+            raise Exception("Need to set boosting_lr when using boosting")
+        self.boosting_lr = boosting_lr
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
@@ -115,7 +120,6 @@ class ForestBase(ABC):
 
         :return: None
         """
-
         self.check_both_or_neither(data, labels)
         if data is not None:
             self.data = data
@@ -131,16 +135,14 @@ class ForestBase(ABC):
             if self.verbose:
                 print("Fitting tree", i)
 
-            if self.boosting:
-                self.curr_targets = self.new_targets
-            else:
-                self.curr_targets = self.org_targets
+            # If we're not boosting, fit to the original targets
+            # If we're using boosting, set to the new targets that were computed at the end of the previous tree fit
+            self.curr_targets = self.new_targets if self.boosting else self.org_targets
 
             if self.bootstrap:
                 N = len(self.curr_targets)
                 idcs = np.random.choice(N, size=N, replace=True)
-                # TODO(@motiwari): Can we remove the : index below?
-                self.curr_data = self.data[idcs, :]
+                self.curr_data = self.data[idcs]
                 self.curr_targets = self.curr_targets[idcs]
             else:
                 self.curr_data = self.data
@@ -189,16 +191,16 @@ class ForestBase(ABC):
                     verbose=self.verbose,
                 )
             tree.fit()
+            self.trees.append(tree)
+
             if self.boosting:
                 # TODO: currently uses O(n) computation
                 self.new_targets = get_next_targets(
-                    is_residual=i,
                     loss_type=DEFAULT_REGRESSOR_LOSS,
                     is_classification=self.is_classification,
                     targets=self.new_targets,
                     predictions=self.predict_batch(self.data),
                 )
-            self.trees.append(tree)
 
             # Bookkeeping
             self.num_queries += tree.num_queries
@@ -218,17 +220,20 @@ class ForestBase(ABC):
         T = len(self.trees)
         if self.is_classification:
             agg_preds = np.empty((T, self.n_classes))
-
             for tree_idx, tree in enumerate(self.trees):
                 # Average over predicted probabilities, not just hard labels
                 agg_preds[tree_idx] = tree.predict(datapoint)[1]
-
             avg_preds = agg_preds.mean(axis=0)
             label_pred = list(self.classes.keys())[avg_preds.argmax()]
             return label_pred, avg_preds
         else:
             if self.boosting:
-                pass
+                for tree_idx, tree in enumerate(self.trees):
+                    if tree_idx == 0:
+                        agg_pred = tree.predict(datapoint)
+                    else:
+                        agg_pred += self.boosting_lr * tree.predict(datapoint)
+                return agg_pred
             else:
                 agg_pred = np.empty(T)
                 for tree_idx, tree in enumerate(self.trees):
