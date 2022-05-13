@@ -29,7 +29,7 @@ class ForestRegressor(ForestBase, Regressor):
         splitter: str = BEST,
         solver: str = MAB,
         random_state: int = 0,
-        with_replacement: bool = True,
+        with_replacement: bool = False,
         verbose: bool = False,
         boosting: bool = False,
     ) -> None:

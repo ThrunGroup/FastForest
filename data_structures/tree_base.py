@@ -41,7 +41,7 @@ class TreeBase(ABC):
         splitter: str = BEST,
         solver: str = MAB,
         random_state: int = 0,
-        with_replacement: bool = True,
+        with_replacement: bool = False,
         verbose: bool = False,
     ) -> None:
         self.data = data  # This is a REFERENCE
@@ -162,7 +162,9 @@ class TreeBase(ABC):
         :param node: A node which is considered
         :return: Whether it's possible to split a node
         """
-        return self.check_splittable_constraints(node) and self.check_splittable_impurity(node)
+        return self.check_splittable_constraints(
+            node
+        ) and self.check_splittable_impurity(node)
 
     def fit(self) -> None:
         """
