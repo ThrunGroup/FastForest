@@ -32,6 +32,7 @@ class GradientBoostedRandomForestRegressor(ForestRegressor):
         splitter: str = BEST,
         solver: str = EXACT,
         random_state: int = 0,
+        with_replacement: bool = False,
         verbose: bool = False,
         boosting_lr: float = None,
     ) -> None:
@@ -57,6 +58,7 @@ class GradientBoostedRandomForestRegressor(ForestRegressor):
             splitter=splitter,
             solver=solver,
             random_state=random_state,
+            with_replacement=with_replacement,
             verbose=verbose,
             boosting=True,  # Fixed
             boosting_lr=boosting_lr,  # Fixed

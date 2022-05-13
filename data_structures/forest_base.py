@@ -43,7 +43,7 @@ class ForestBase(ABC):
         solver: str = MAB,
         is_classification: bool = True,
         random_state: int = 0,
-        with_replacement: bool = True,
+        with_replacement: bool = False,
         verbose: bool = False,
         boosting: bool = False,
         boosting_lr: float = None,
