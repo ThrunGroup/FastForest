@@ -6,13 +6,13 @@ from utils.constants import SQRT, GINI, BEST, EXACT, DEFAULT_NUM_BINS, LINEAR
 
 class HistogramRandomForestClassifier(ForestClassifier):
     """
-    A RandomForestClassifier, which is a ForestClassifier with the following settings:
+    A HistogramRandomForestClassifier, which is a ForestClassifier with the following settings:
 
     bootstrap: bool = True,
     feature_subsampling: str = SQRT,
     tree_global_feature_subsampling: bool = False,
-    bin_type: str = IDENTITY,
-    num_bins: int = None,
+    bin_type: str = LINEAR,
+    num_bins: int = DEFAULT_NUM_BINS, (default value, not fixed)
     solver: str = EXACT (default value, not fixed, but cannot use MAB because there's no binning)
     """
 
@@ -46,7 +46,7 @@ class HistogramRandomForestClassifier(ForestClassifier):
             min_impurity_decrease=min_impurity_decrease,
             max_leaf_nodes=max_leaf_nodes,
             bin_type=LINEAR,  # Fixed
-            num_bins=num_bins,  # Fixed
+            num_bins=num_bins,
             budget=budget,
             criterion=criterion,
             splitter=splitter,

@@ -4,9 +4,9 @@ from data_structures.forest_regressor import ForestRegressor
 from utils.constants import SQRT, LINEAR, DEFAULT_NUM_BINS, BEST, EXACT, MSE
 
 
-class HistogramRandomForestRegressor(ForestRegressor):
+class GradientBoostedHistogramRandomForestRegressor(ForestRegressor):
     """
-    A HistogramRandomForestRegressor, which is a ForestRegressor with the following settings:
+    A GradientBoostedHistogramRandomForestRegressor, which is a ForestRegressor with the following settings:
 
     bootstrap: bool = True,
     feature_subsampling: str = SQRT,
@@ -14,6 +14,8 @@ class HistogramRandomForestRegressor(ForestRegressor):
     bin_type: str = LINEAR,
     num_bins: int = DEFAULT_NUM_BINS, (default value, not fixed)
     solver: str = EXACT (default value, not fixed, but cannot use MAB because there's no binning)
+    boosting: bool = True,
+    boosting_lr: float = passed parameter
     """
 
     def __init__(
@@ -33,7 +35,12 @@ class HistogramRandomForestRegressor(ForestRegressor):
         random_state: int = 0,
         with_replacement: bool = False,
         verbose: bool = False,
+        boosting_lr: float = None,
     ) -> None:
+        if boosting_lr is None:
+            raise Exception(
+                "Must pass boosting_lr to GradientBoostedRandomForestRegressor"
+            )
         super().__init__(
             data=data,
             labels=labels,
@@ -46,7 +53,7 @@ class HistogramRandomForestRegressor(ForestRegressor):
             min_impurity_decrease=min_impurity_decrease,
             max_leaf_nodes=max_leaf_nodes,
             bin_type=LINEAR,  # Fixed
-            num_bins=num_bins,
+            num_bins=num_bins,  # Fixed
             budget=budget,
             criterion=criterion,
             splitter=splitter,
@@ -54,4 +61,6 @@ class HistogramRandomForestRegressor(ForestRegressor):
             random_state=random_state,
             with_replacement=with_replacement,
             verbose=verbose,
+            boosting=True,  # Fixed
+            boosting_lr=boosting_lr,  # Fixed
         )

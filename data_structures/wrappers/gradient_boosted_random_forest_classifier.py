@@ -57,5 +57,5 @@ class GradientBoostedRandomForestClassifier(ForestClassifier):
             with_replacement=with_replacement,
             verbose=verbose,
             boosting=True,  # Fixed
-            boosting_lr=boosting_lr,  # Fixed
+            boosting_lr=boosting_lr,
         )
