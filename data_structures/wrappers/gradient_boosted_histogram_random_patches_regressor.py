@@ -22,8 +22,8 @@ class HistogramRandomPatchesRegressor(ForestRegressor):
         self,
         data: np.ndarray = None,
         labels: np.ndarray = None,
-        alpha_N: float = 1.0,
-        alpha_F: float = 1.0,
+        alpha_N: float = None,
+        alpha_F: float = None,
         n_estimators: int = 100,
         max_depth: int = None,
         num_bins: int = DEFAULT_NUM_BINS,
@@ -39,6 +39,8 @@ class HistogramRandomPatchesRegressor(ForestRegressor):
         verbose: bool = False,
         boosting_lr: float = None,
     ) -> None:
+        if alpha_N is None or alpha_F is None:
+            raise Exception("Need to pass alpha_N and alpha_F to RP objects")
         N = len(data)
         F = len(data[0])
         data_idcs = np.random.choice(N, math.ceil(alpha_N * N), replace=False)
@@ -47,8 +49,8 @@ class HistogramRandomPatchesRegressor(ForestRegressor):
         self.data = data[data_idcs, feature_idcs]
         self.labels = labels[data_idcs]
         super().__init__(
-            data=data,
-            labels=labels,
+            data=self.data,  # Fixed
+            labels=self.labels,  # Fixed
             n_estimators=n_estimators,
             max_depth=max_depth,
             bootstrap=False,  # Fixed

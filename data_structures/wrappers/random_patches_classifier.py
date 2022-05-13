@@ -22,8 +22,8 @@ class RandomPatchesClassifier(ForestClassifier):
         self,
         data: np.ndarray = None,
         labels: np.ndarray = None,
-        alpha_N: float = 1.0,
-        alpha_F: float = 1.0,
+        alpha_N: float = None,
+        alpha_F: float = None,
         n_estimators: int = 100,
         max_depth: int = None,
         min_samples_split: int = 2,
@@ -37,6 +37,8 @@ class RandomPatchesClassifier(ForestClassifier):
         with_replacement: bool = False,
         verbose: bool = False,
     ) -> None:
+        if alpha_N is None or alpha_F is None:
+            raise Exception("Need to pass alpha_N and alpha_F to RP objects")
         N = len(data)
         F = len(data[0])
         data_idcs = np.random.choice(N, math.ceil(alpha_N * N), replace=False)
