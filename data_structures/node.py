@@ -34,7 +34,7 @@ class Node:
         verbose: bool = True,
         feature_subsampling: Union[str, int] = None,
         tree_global_feature_subsampling: bool = False,
-        with_replacement: bool = True,
+        with_replacement: bool = False,
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards

@@ -202,15 +202,17 @@ def choose_features(data: np.ndarray, feature_subsampling: str):
     :param feature_subsampling: The feature subsampling method; None, SQRT, or int
     :return:
     """
-    N = len(data[0])  # Number of features
+    F = len(data[0])  # Number of features
     if feature_subsampling is None:
-        return np.arange(N)
+        return np.arange(F)
     elif feature_subsampling == SQRT:
-        return np.random.choice(N, math.ceil(math.sqrt(N)), replace=False)
-    elif (
-        type(feature_subsampling) == int
-    ):  # If an int, subsample feature_subsampling features.
-        return np.random.choice(N, feature_subsampling, replace=False)
+        return np.random.choice(F, math.ceil(math.sqrt(F)), replace=False)
+    elif type(feature_subsampling) == int:
+        # If an int, subsample feature_subsampling features.
+        return np.random.choice(F, feature_subsampling, replace=False)
+    elif type(feature_subsampling) == float:
+        # If an float, return feature_subsampling*num_features features.
+        return np.random.choice(F, math.ceil(feature_subsampling * F), replace=False)
     else:
         raise NotImplementedError("Invalid type of feature_subsampling")
 

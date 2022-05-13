@@ -43,7 +43,7 @@ class ForestBase(ABC):
         solver: str = MAB,
         is_classification: bool = True,
         random_state: int = 0,
-        with_replacement: bool = True,
+        with_replacement: bool = False,
         verbose: bool = False,
         boosting: bool = False,
         boosting_lr: float = None,
@@ -86,7 +86,9 @@ class ForestBase(ABC):
         if self.boosting and boosting_lr is None:
             raise Exception("Need to set boosting_lr when using boosting")
         if self.boosting and self.is_classification:
-            raise Exception("Boosting in classification is not supported yet.")
+            raise NotImplementedError(
+                "Boosting in classification is not supported yet."
+            )
         self.boosting_lr = boosting_lr
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.

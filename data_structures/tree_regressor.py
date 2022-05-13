@@ -31,7 +31,7 @@ class TreeRegressor(TreeBase, Regressor):
         splitter: str = BEST,
         solver: str = MAB,
         random_state: int = 0,
-        with_replacement: bool = True,
+        with_replacement: bool = False,
         verbose: bool = False,
     ):
         super().__init__(

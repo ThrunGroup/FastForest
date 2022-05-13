@@ -32,6 +32,7 @@ class GradientBoostedRandomForestClassifier(ForestClassifier):
         splitter: str = BEST,
         solver: str = EXACT,
         random_state: int = 0,
+        with_replacement: bool = False,
         verbose: bool = False,
         boosting_lr: float = None,
     ) -> None:
@@ -53,7 +54,8 @@ class GradientBoostedRandomForestClassifier(ForestClassifier):
             splitter=splitter,
             solver=solver,
             random_state=random_state,
+            with_replacement=with_replacement,
             verbose=verbose,
             boosting=True,  # Fixed
-            boosting_lr=boosting_lr,  # Fixed
+            boosting_lr=boosting_lr,
         )

@@ -5,17 +5,19 @@ from data_structures.forest_classifier import ForestClassifier
 from utils.constants import IDENTITY, GINI, BEST, EXACT
 
 
-class RandomPatchesClassifier(ForestClassifier):
+class GradientBoostedHistogramRandomPatchesClassifier(ForestClassifier):
     """
-    A RandomPatchesClassifier, which is a ForestClassifier with the following settings with subsampled data and
+    A GradientBoostedHistogramRandomPatchesClassifier, which is a ForestClassifier with the following settings with subsampled data and
     features.
 
     bootstrap: bool = False,
     feature_subsampling: str = None,
     tree_global_feature_subsampling: bool = True,
-    bin_type: str = IDENTITY,
-    num_bins: int = None,
+    bin_type: str = LINEAR,
+    num_bins: int = DEFAULT_NUM_BINS, (default value, not fixed)
     solver: str = EXACT (default value, not fixed)
+    boosting: bool = True,
+    boosting_lr: float = parameter
     """
 
     def __init__(
@@ -36,6 +38,7 @@ class RandomPatchesClassifier(ForestClassifier):
         random_state: int = 0,
         with_replacement: bool = False,
         verbose: bool = False,
+        boosting_lr: float = None,
     ) -> None:
         if alpha_N is None or alpha_F is None:
             raise Exception("Need to pass alpha_N and alpha_F to RP objects")
@@ -66,4 +69,6 @@ class RandomPatchesClassifier(ForestClassifier):
             random_state=random_state,
             with_replacement=with_replacement,
             verbose=verbose,
+            boosting=True,  # Fixed
+            boosting_lr=boosting_lr,
         )

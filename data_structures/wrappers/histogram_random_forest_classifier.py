@@ -1,21 +1,19 @@
 import numpy as np
 
-from data_structures.forest_regressor import ForestRegressor
-from utils.constants import SQRT, IDENTITY, BEST, EXACT, MSE
+from data_structures.forest_classifier import ForestClassifier
+from utils.constants import SQRT, GINI, BEST, EXACT, DEFAULT_NUM_BINS, LINEAR
 
 
-class GradientBoostedRandomForestRegressor(ForestRegressor):
+class HistogramRandomForestClassifier(ForestClassifier):
     """
-    A GradientBoostedRandomForestRegressor, which is a ForestRegressor with the following settings:
+    A HistogramRandomForestClassifier, which is a ForestClassifier with the following settings:
 
     bootstrap: bool = True,
     feature_subsampling: str = SQRT,
     tree_global_feature_subsampling: bool = False,
-    bin_type: str = IDENTITY,
-    num_bins: int = None,
+    bin_type: str = LINEAR,
+    num_bins: int = DEFAULT_NUM_BINS, (default value, not fixed)
     solver: str = EXACT (default value, not fixed, but cannot use MAB because there's no binning)
-    boosting: bool = True,
-    boosting_lr: float = passed parameter
     """
 
     def __init__(
@@ -24,22 +22,18 @@ class GradientBoostedRandomForestRegressor(ForestRegressor):
         labels: np.ndarray = None,
         n_estimators: int = 100,
         max_depth: int = None,
+        num_bins: int = DEFAULT_NUM_BINS,
         min_samples_split: int = 2,
         min_impurity_decrease: float = 0,
         max_leaf_nodes: int = None,
         budget: int = None,
-        criterion: str = MSE,
+        criterion: str = GINI,
         splitter: str = BEST,
         solver: str = EXACT,
         random_state: int = 0,
         with_replacement: bool = False,
         verbose: bool = False,
-        boosting_lr: float = None,
     ) -> None:
-        if boosting_lr is None:
-            raise Exception(
-                "Must pass boosting_lr to GradientBoostedRandomForestRegressor"
-            )
         super().__init__(
             data=data,
             labels=labels,
@@ -51,8 +45,8 @@ class GradientBoostedRandomForestRegressor(ForestRegressor):
             min_samples_split=min_samples_split,
             min_impurity_decrease=min_impurity_decrease,
             max_leaf_nodes=max_leaf_nodes,
-            bin_type=IDENTITY,  # Fixed
-            num_bins=None,  # Fixed
+            bin_type=LINEAR,  # Fixed
+            num_bins=num_bins,
             budget=budget,
             criterion=criterion,
             splitter=splitter,
@@ -60,6 +54,4 @@ class GradientBoostedRandomForestRegressor(ForestRegressor):
             random_state=random_state,
             with_replacement=with_replacement,
             verbose=verbose,
-            boosting=True,  # Fixed
-            boosting_lr=boosting_lr,  # Fixed
         )

@@ -7,7 +7,7 @@ from utils.constants import IDENTITY, BEST, EXACT, MSE
 
 class RandomPatchesRegressor(ForestRegressor):
     """
-    A RandomPatchesRegressor, which is a RandomForestRegressor with the following settings with subsampled data and
+    A RandomPatchesRegressor, which is a ForestRegressor with the following settings with subsampled data and
     features.
 
     bootstrap: bool = False,
@@ -22,8 +22,8 @@ class RandomPatchesRegressor(ForestRegressor):
         self,
         data: np.ndarray = None,
         labels: np.ndarray = None,
-        alpha_N: float = 1.0,
-        alpha_F: float = 1.0,
+        alpha_N: float = None,
+        alpha_F: float = None,
         n_estimators: int = 100,
         max_depth: int = None,
         min_samples_split: int = 2,
@@ -34,8 +34,11 @@ class RandomPatchesRegressor(ForestRegressor):
         splitter: str = BEST,
         solver: str = EXACT,
         random_state: int = 0,
+        with_replacement: bool = False,
         verbose: bool = False,
     ) -> None:
+        if alpha_N is None or alpha_F is None:
+            raise Exception("Need to pass alpha_N and alpha_F to RP objects")
         N = len(data)
         F = len(data[0])
         data_idcs = np.random.choice(N, math.ceil(alpha_N * N), replace=False)
@@ -44,8 +47,8 @@ class RandomPatchesRegressor(ForestRegressor):
         self.data = data[data_idcs, feature_idcs]
         self.labels = labels[data_idcs]
         super().__init__(
-            data=data,
-            labels=labels,
+            data=self.data,  # Fixed
+            labels=self.labels,  # Fixed
             n_estimators=n_estimators,
             max_depth=max_depth,
             bootstrap=False,  # Fixed
@@ -61,5 +64,6 @@ class RandomPatchesRegressor(ForestRegressor):
             splitter=splitter,
             solver=solver,
             random_state=random_state,
+            with_replacement=with_replacement,
             verbose=verbose,
         )
