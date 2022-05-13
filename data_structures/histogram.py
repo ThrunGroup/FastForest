@@ -72,6 +72,20 @@ class Histogram:
     def set_bin(self, bin_array: np.ndarray):
         self.bin_edges = bin_array
 
+    def empty_samples(self, bin_idcs: np.ndarray) -> None:
+        """
+        Empty the samples stored in bins
+
+        :param bin_idcs: Bin indices we want to empty
+        """
+        if self.is_classification:
+            self.left[bin_idcs, :] = np.zeros(len(self.classes), dtype=np.int32)
+            self.right[bin_idcs, :] = np.zeros(len(self.classes), dtype=np.int32)
+        else:
+            for bin_idx in bin_idcs:
+                self.left_pile[bin_idx] = []
+                self.right_pile[bin_idx] = []
+
     def add(self, X: np.ndarray, Y: np.ndarray):
         """
         Given dataset X , add all the points in the dataset to the histogram.

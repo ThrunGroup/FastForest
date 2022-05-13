@@ -46,9 +46,7 @@ def count_occurrence(class_: np.ndarray, labels: np.ndarray) -> int:
     return len(np.where(labels == class_)[0])
 
 
-def class_to_idx(
-    classes: np.ndarray,
-) -> dict:
+def class_to_idx(classes: np.ndarray,) -> dict:
     """
     Helpful function for generating dictionary that maps class names to class index
     Helper function for function for generating dictionary that maps class names to class index
@@ -225,7 +223,6 @@ def remap_discrete_features(feature_idcs, tree_discrete_features: defaultdict(li
     # New discrete_features corresponding to new feature indices
     discrete_features = {}
     for i, feature_idx in enumerate(feature_idcs):
-        # TODO(@motiwari): is this correct? Asked Jeyong
         # Our i-th corresponds to the feature_idx-th discrete feature in the tree.
         # If tree_discrete_features[feature_idx] is discrete, then tree_discrete_features[feature_idx] = list_of_vals
         # and discrete_features[i] = list_of_vals (also discrete).
@@ -233,3 +230,10 @@ def remap_discrete_features(feature_idcs, tree_discrete_features: defaultdict(li
         # and discrete_features[i] = [] (also not discrete).
         discrete_features[i] = tree_discrete_features[feature_idx]
     return discrete_features
+
+
+def empty_histograms(histograms: List[Histogram], arms: Tuple[np.ndarray, np.ndarray]):
+    for idx in range(len(arms[0])):
+        f = arms[0][idx]
+        b = arms[1][idx]
+        histograms[f].empty_samples([b])

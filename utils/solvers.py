@@ -17,7 +17,7 @@ from utils.constants import (
     RANDOM,
 )
 from utils.criteria import get_impurity_reductions
-from utils.utils import type_check, class_to_idx, counts_of_labels, make_histograms
+from utils.utils import type_check, class_to_idx, counts_of_labels, make_histograms, empty_histograms
 from data_structures.histogram import Histogram
 
 type_check()
@@ -331,6 +331,7 @@ def solve_mab(
                 (num_samples + batch_size >= N) & (exact_mask == 0)
             )
             if len(exact_accesses[0]) > 0:
+                empty_histograms(histograms, exact_accesses)
                 estimates[exact_accesses], _vars, num_queries, _ = sample_targets(
                     is_classification=is_classification,
                     data=data,
