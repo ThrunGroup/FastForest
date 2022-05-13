@@ -2,19 +2,19 @@ import math
 import numpy as np
 
 from data_structures.forest_classifier import ForestClassifier
-from utils.constants import IDENTITY, GINI, BEST, EXACT
+from utils.constants import LINEAR, DEFAULT_NUM_BINS, GINI, BEST, EXACT
 
 
-class RandomPatchesClassifier(ForestClassifier):
+class HistogramRandomPatchesClassifier(ForestClassifier):
     """
-    A RandomPatchesClassifier, which is a ForestClassifier with the following settings with subsampled data and
+    A HistogramRandomPatchesClassifier, which is a ForestClassifier with the following settings with subsampled data and
     features.
 
     bootstrap: bool = False,
     feature_subsampling: str = None,
     tree_global_feature_subsampling: bool = True,
-    bin_type: str = IDENTITY,
-    num_bins: int = None,
+    bin_type: str = LINEAR,
+    num_bins: int = DEFAULT_NUM_BINS, (default value, not fixed)
     solver: str = EXACT (default value, not fixed)
     """
 
@@ -26,6 +26,7 @@ class RandomPatchesClassifier(ForestClassifier):
         alpha_F: float = 1.0,
         n_estimators: int = 100,
         max_depth: int = None,
+        num_bins: int = DEFAULT_NUM_BINS,
         min_samples_split: int = 2,
         min_impurity_decrease: float = 0,
         max_leaf_nodes: int = None,
@@ -55,8 +56,8 @@ class RandomPatchesClassifier(ForestClassifier):
             min_samples_split=min_samples_split,
             min_impurity_decrease=min_impurity_decrease,
             max_leaf_nodes=max_leaf_nodes,
-            bin_type=IDENTITY,  # Fixed
-            num_bins=None,  # Fixed
+            bin_type=LINEAR,  # Fixed
+            num_bins=num_bins,
             budget=budget,
             criterion=criterion,
             splitter=splitter,

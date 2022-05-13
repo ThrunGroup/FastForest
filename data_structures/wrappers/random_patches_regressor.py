@@ -7,7 +7,7 @@ from utils.constants import IDENTITY, BEST, EXACT, MSE
 
 class RandomPatchesRegressor(ForestRegressor):
     """
-    A RandomPatchesRegressor, which is a RandomForestRegressor with the following settings with subsampled data and
+    A RandomPatchesRegressor, which is a ForestRegressor with the following settings with subsampled data and
     features.
 
     bootstrap: bool = False,
