@@ -1,5 +1,6 @@
 import numpy as np
 import bisect
+import math
 from typing import Any, Tuple
 
 from utils.constants import LINEAR, DISCRETE, IDENTITY, RANDOM, DEFAULT_NUM_BINS
@@ -57,16 +58,29 @@ class Histogram:
             self.left_pile = [[] for i in range(self.num_bins)]
             self.right_pile = [[] for i in range(self.num_bins)]
 
-    @staticmethod
-    def get_bin(val: float, bin_edges: np.ndarray) -> int:
+    def get_bin(self, val: float, bin_edges: np.ndarray) -> int:
         """
-        Binary Search for the value in bin_edges array.
+        Search for the value in bin_edges array. This operation does a O(1) search if bin_type is LINEAR,
+        otherwise it does a binary search over the number of bin_edges.
         NOTE:
             - if value equals one of the edges, get_bin returns index + 1
             - returns len(bin_edges) + 1 if val is greater than the biggest edge which is ok
               since len(count_bucket) = len(bin_edges) + 1
         """
+        if self.bin_type == LINEAR:
+            if self.num_bins == 1 or self.min_bin == self.max_bin:
+                return 0
 
+            bin_width = (self.max_bin - self.min_bin) / (self.num_bins - 1)
+            float_idx = (val - self.min_bin) / bin_width
+            if float_idx < 0:
+                return 0
+            elif float_idx > self.num_bins - 1:
+                return self.num_bins
+            else:
+                return math.ceil(float_idx)
+
+        # any other bin type uses binary search
         return bisect.bisect_left(bin_edges, val)
 
     def set_bin(self, bin_array: np.ndarray):
