@@ -2,7 +2,7 @@ import numpy as np
 
 from data_structures.forest_base import ForestBase
 from data_structures.classifier import Classifier
-from utils.constants import MAB, LINEAR, GINI, SQRT, BEST, DEFAULT_NUM_BINS
+from utils.constants import MAB, LINEAR, GINI, BEST, DEFAULT_NUM_BINS
 from utils.utils import class_to_idx
 
 

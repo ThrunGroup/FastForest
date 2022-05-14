@@ -287,6 +287,9 @@ class TreeBase(ABC):
         :param datapoint: datapoint to fit
         :return: the probabilities of the datapoint being each class label or the mean value of labels
         """
+        assert (
+            len(datapoint.shape) == 1
+        ), "Can only call .predict() directly on a single datapoint"
         node = self.node
         while node.left:
             feature_value = datapoint[node.split_feature]
