@@ -46,6 +46,9 @@ class TreeBase(ABC):
     ) -> None:
         self.data = data  # This is a REFERENCE
         self.labels = labels  # This is a REFERENCE
+        assert len(self.data) == len(
+            self.labels
+        ), "Data and labels must have the same size"
         self.max_depth = max_depth
         self.n_data = len(labels)
         if is_classification:
