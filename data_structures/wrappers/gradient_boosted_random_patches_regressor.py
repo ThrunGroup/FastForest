@@ -5,9 +5,9 @@ from data_structures.forest_regressor import ForestRegressor
 from utils.constants import IDENTITY, BEST, EXACT, MSE
 
 
-class HistogramRandomPatchesRegressor(ForestRegressor):
+class GradientBoostedRandomPatchesRegressor(ForestRegressor):
     """
-    A HistogramRandomPatchesRegressor, which is a ForestRegressor with the following settings with subsampled data and
+    A GradientBoostedRandomPatchesRegressor, which is a ForestRegressor with the following settings with subsampled data and
     features.
 
     bootstrap: bool = False,

@@ -4,7 +4,7 @@ from data_structures.forest_classifier import ForestClassifier
 from utils.constants import SQRT, RANDOM, GINI, BEST, EXACT
 
 
-class ExtremelyRandomForestClassifier(ForestClassifier):
+class GradientBoostedExtremelyRandomForestClassifier(ForestClassifier):
     """
     A GradientBoostedExtremelyRandomForestClassifier, which is a ForestClassifier with the following settings:
 

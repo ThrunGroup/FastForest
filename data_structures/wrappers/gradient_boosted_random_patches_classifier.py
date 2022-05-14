@@ -5,9 +5,9 @@ from data_structures.forest_classifier import ForestClassifier
 from utils.constants import IDENTITY, GINI, BEST, EXACT
 
 
-class GradientBoostedHistogramRandomPatchesClassifier(ForestClassifier):
+class GradientBoostedRandomPatchesClassifier(ForestClassifier):
     """
-    A GradientBoostedHistogramRandomPatchesClassifier, which is a ForestClassifier with the following settings with subsampled data and
+    A GradientBoostedRandomPatchesClassifier, which is a ForestClassifier with the following settings with subsampled data and
     features.
 
     bootstrap: bool = False,
