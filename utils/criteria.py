@@ -45,7 +45,9 @@ def get_gini(
     return float(G)
 
 
-def get_entropy(counts: np.ndarray, ret_var=False, pop_size: int = None) -> Union[Tuple[float, float], float]:
+def get_entropy(
+    counts: np.ndarray, ret_var=False, pop_size: int = None
+) -> Union[Tuple[float, float], float]:
     """
     Compute the entropy impurity for a given node, where the node is represented by the number of counts of each class
     label. The entropy impurity is equal to - sum{i=1}^k (p_i * log_2 p_i)
@@ -119,9 +121,7 @@ def get_variance(
 
 
 def get_mse(
-    targets_pile: List,
-    ret_var: bool = False,
-    pop_size: int = None,
+    targets_pile: List, ret_var: bool = False, pop_size: int = None,
 ) -> Union[Tuple[float, float], float]:
     """
     Compute the MSE for a given node, where the node is represented by the pile of all target values. Also Compute the
@@ -138,28 +138,55 @@ def get_mse(
         if ret_var:
             return 0, 0
         return 0
-    mse = float(
-        scipy.stats.moment(targets_pile, 2)
-    )  # 2nd central moment is mse with mean as a predicted value
+    second_moment = float(scipy.stats.moment(targets_pile, 2))
+    # Todo: Have to put unbiased estimation of fourth central moment of population
     fourth_moment = float(scipy.stats.moment(targets_pile, 4))
-    pop_var = mse
-    if n == 2:
-        # This variance comes from the variance of sample variance, see
-        # https://math.stackexchange.com/questions/72975/variance-of-sample-variance
-        # Use sample variance as an estimation of population variance.
-        V_mse = (fourth_moment - pop_var ** 2) / 4
-    else:
-        # This variance comes from the variance of sample variance, see
-        # https://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance
-        # Use sample variance as an estimation of population variance.
-        V_mse = (fourth_moment - (pop_var ** 2) * (n - 3) / (n - 1)) / n
 
-    if pop_size is not None:
-        assert pop_size >= n, "Sample size is greater than the population size"
-        V_mse *= (pop_size - n) / (pop_size - 1)
+    if pop_size == n:
+        if ret_var:
+            return second_moment, 0
+        return second_moment
+    estimated_mse = (
+        second_moment * n / (n - 1)
+    )  # 2nd central moment is mse with mean as a predicted value and use Bessel's correction
+
+    if pop_size is not None and pop_size > 3:
+        # Todo: Add a formula when pop_size is equal to 3.
+        N = pop_size
+        c1 = (
+            N
+            * (N - n)
+            * (N * n - N - n - 1)
+            / (n * (n - 1) * (N - 1) * (N - 2) * (N - 3))
+        )
+        c3 = -(
+            N
+            * (N - n)
+            * ((N ** 2) * n - 3 * n - 3 * (N ** 2) + 6 * N - 3)
+            / (n * (n - 1) * ((N - 1) ** 2) * (N - 2) * (N - 3))
+        )
+        # Use the formula of the variance of sample variance when sampled with replacement, see
+        # https://www.asasrms.org/Proceedings/y2008/Files/300992.pdf#page=2
+        V_mse = c1 * fourth_moment + c3 * (estimated_mse ** 2)
+
+        # Derive myself with reference to
+        # https://stats.stackexchange.com/questions/5158/explanation-of-finite-population-correction-factor
+        estimated_mse = estimated_mse * (pop_size - 1) / pop_size
+    else:
+        if n == 2:
+            # This variance comes from the variance of sample variance, see
+            # https://math.stackexchange.com/questions/72975/variance-of-sample-variance
+            # Use sample variance as an estimation of population variance.
+            V_mse = (fourth_moment + estimated_mse ** 2) / 2
+        else:
+            # This variance comes from the variance of sample variance, see
+            # https://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance
+            # Use sample variance as an estimation of population variance.
+            V_mse = (fourth_moment - (estimated_mse ** 2) * (n - 3) / (n - 1)) / n
+
     if ret_var:
-        return mse, V_mse
-    return mse
+        return estimated_mse, V_mse
+    return estimated_mse
 
 
 def get_impurity_fn(impurity_measure: str) -> Callable:
@@ -233,10 +260,16 @@ def get_impurity_reductions(
         right_weight /= n
         if is_classification:
             IL, V_IL = get_impurity(h.left[b_idx, :], ret_var=True, pop_size=left_size)
-            IR, V_IR = get_impurity(h.right[b_idx, :], ret_var=True, pop_size=right_size)
+            IR, V_IR = get_impurity(
+                h.right[b_idx, :], ret_var=True, pop_size=right_size
+            )
         else:
-            IL, V_IL = get_impurity(h.left_pile[b_idx], ret_var=True, pop_size=left_size)
-            IR, V_IR = get_impurity(h.right_pile[b_idx], ret_var=True, pop_size=right_size)
+            IL, V_IL = get_impurity(
+                h.left_pile[b_idx], ret_var=True, pop_size=left_size
+            )
+            IR, V_IR = get_impurity(
+                h.right_pile[b_idx], ret_var=True, pop_size=right_size
+            )
 
         impurities_left[i], V_impurities_left[i] = (
             float(left_weight * IL),
