@@ -1,3 +1,5 @@
 .idea/
 __pycache__/
 experiments/.ipynb_checkpoints/*
+experiments/mnist
+experiments/.DS_Store
