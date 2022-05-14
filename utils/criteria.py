@@ -148,10 +148,10 @@ def get_mse(
         return second_moment
     estimated_mse = (
         second_moment * n / (n - 1)
-    )  # 2nd central moment is mse with mean as a predicted value and use Bassel's correction
+    )  # 2nd central moment is mse with mean as a predicted value and use Bessel's correction
 
     if pop_size is not None and pop_size > 3:
-        # Todo: Add a formula when pop_size is equal to 1 or 2.
+        # Todo: Add a formula when pop_size is equal to 3.
         N = pop_size
         c1 = (
             N
@@ -177,7 +177,7 @@ def get_mse(
             # This variance comes from the variance of sample variance, see
             # https://math.stackexchange.com/questions/72975/variance-of-sample-variance
             # Use sample variance as an estimation of population variance.
-            V_mse = (fourth_moment + estimated_mse ** 2) / 4
+            V_mse = (fourth_moment + estimated_mse ** 2) / 2
         else:
             # This variance comes from the variance of sample variance, see
             # https://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance
