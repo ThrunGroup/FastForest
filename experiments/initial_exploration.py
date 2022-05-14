@@ -1,57 +1,12 @@
 import numpy as np
-
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.decomposition import PCA
-
-from sklearn.datasets import *
+import time
 
 from sklearn.tree import DecisionTreeClassifier as DecisionTreeClassifier_sklearn
 from sklearn.ensemble import RandomForestClassifier as RandomForestClassifier_sklearn
-import copy
 
 from data_structures.tree_classifier import TreeClassifier as TreeClassifier_ours
-import utils.utils
-import time
-
 from utils.constants import EXACT, MAB
-
-
-def load_pca_ng(n_components: int = 100):
-    """
-    Loads the 20 newgroups dataset, choosing just 2 subcategories, and PCA transforms their TF-IDF vectors
-
-    :param n_components: Number of components to use in PCA
-    :return: tuple of PCA train vectors, train labels, PCA test vectors, test labels, and classes dict
-    """
-    # Download the data from two categories
-    cats = ["alt.atheism", "sci.space"]
-    ng_train = fetch_20newsgroups(
-        subset="train", remove=("headers", "footers", "quotes"), categories=cats
-    )
-    ng_test = fetch_20newsgroups(
-        subset="test", remove=("headers", "footers", "quotes"), categories=cats
-    )
-
-    vectorizer = TfidfVectorizer()
-    _trans = vectorizer.fit(ng_train.data)
-    train_vectors = vectorizer.transform(ng_train.data)
-    test_vectors = vectorizer.transform(ng_test.data)
-    print("Number of datapoints: ", len(ng_train.data))
-    print("Number of features: ", train_vectors.shape[1])
-    print(
-        "Balance: ", np.sum(ng_train.target) / len(ng_train.target)
-    )  # 55-45, roughly balanced
-
-    pca = PCA(n_components=n_components)
-    pca.fit(train_vectors.toarray())
-
-    classes_arr = np.unique(ng_train.target)
-    classes = utils.utils.class_to_idx(classes_arr)
-
-    pca_train_vecs = pca.transform(train_vectors.toarray())
-    pca_test_vecs = pca.transform(test_vectors.toarray())
-
-    return pca_train_vecs, ng_train.target, pca_test_vecs, ng_test.target, classes
+from experiments.exp_utils import load_pca_ng, make_huge
 
 
 def sklearn_ng_perf(pca_train_vecs, train_labels, pca_test_vecs, test_labels):
@@ -111,18 +66,6 @@ def ours_ng_perf(
     print("Num queries:", tc.num_queries)
     print(solver + " Runtime:", end - start)
     print("-" * 30)
-
-
-def make_huge(pca_train_vecs, train_labels, doublings: int = 4):
-    pca_train_vecs_huge = copy.deepcopy(pca_train_vecs)
-    pca_train_labels_huge = copy.deepcopy(train_labels)
-    print(pca_train_vecs_huge.shape)
-    for i in range(doublings):
-        pca_train_vecs_huge = np.concatenate((pca_train_vecs_huge, pca_train_vecs_huge))
-        pca_train_labels_huge = np.concatenate(
-            (pca_train_labels_huge, pca_train_labels_huge)
-        )
-    return pca_train_vecs_huge, pca_train_labels_huge
 
 
 def main():
