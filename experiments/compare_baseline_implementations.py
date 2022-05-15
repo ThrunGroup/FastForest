@@ -97,8 +97,8 @@ def compare_accuracies(
             our_model = RFR_ours(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=5,
-                max_depth=5,
+                n_estimators=1,
+                max_depth=3,
                 min_samples_split=2,
                 min_impurity_decrease=0,
                 max_leaf_nodes=None,
@@ -110,9 +110,9 @@ def compare_accuracies(
                 verbose=False,
             )
             their_model = RFR_sklearn(
-                n_estimators=5,
+                n_estimators=1,
                 criterion="squared_error",
-                max_depth=5,
+                max_depth=3,
                 min_samples_split=2,
                 max_leaf_nodes=None,
                 min_impurity_decrease=0.0,
@@ -156,7 +156,7 @@ def compare_accuracies(
         our_model.fit()
         their_model.fit(train_data, train_targets)
 
-        if compare == "RFC" or compare == "ERFC" or compare == "HRFC":
+        if compare == "RFC" or compare == "ERFC":
             is_classification = True
             our_train_acc = np.mean(
                 our_model.predict_batch(train_data)[0] == train_targets
@@ -224,8 +224,9 @@ def compare_accuracies(
 def main():
     # To Compare:
     # RandomForestClassifier -- DONE
-    # RandomForestRegressor
     # ExtremelyRandomizedForestClassifier -- DONE
+
+    # RandomForestRegressor
     # ExtremelyRandomizedForestRegressor -- DONE
     # GradientBoostingRegressor
     # HistGradientBoostingRegressor
@@ -246,28 +247,42 @@ def main():
     # VotingRegressor
 
     # Classification
-    pca_train_vecs, train_labels, pca_test_vecs, test_labels, classes = load_pca_ng()
+    # pca_train_vecs, train_labels, pca_test_vecs, test_labels, classes = load_pca_ng()
     # print("Performing Experiment: Random Forest Classifier")
     # print(
     #     compare_accuracies(
     #         "RFC", pca_train_vecs, train_labels, pca_test_vecs, test_labels
     #     )
     # )
-    print("Performing Experiment: Extremely Random Forest Classifier")
-    print(
-        compare_accuracies(
-            "ERFC", pca_train_vecs, train_labels, pca_test_vecs, test_labels
-        )
-    )
+
+    # print("Performing Experiment: Extremely Random Forest Classifier")
+    # print(
+    #     compare_accuracies(
+    #         "ERFC", pca_train_vecs, train_labels, pca_test_vecs, test_labels
+    #     )
+    # )
 
     # Regression
     train_data, train_targets, test_data, test_targets = load_housing()
-    # print("Performing Experiment: Random Forest Regression")
-    # print(compare_accuracies("RFR", train_data, train_targets, test_data, test_targets))
-    print("Performing Experiment: Extremely Random Forest Regression")
+
+    # Subsample the data because training on 20k points (the full housing dataset) takes too long for RFR
+    train_data_subsampled = train_data[:5000]
+    train_targets_subsampled = train_targets[:5000]
+    print("Performing Experiment: Random Forest Regression")
     print(
-        compare_accuracies("ERFR", train_data, train_targets, test_data, test_targets)
+        compare_accuracies(
+            "RFR",
+            train_data_subsampled,
+            train_targets_subsampled,
+            test_data,
+            test_targets,
+        )
     )
+
+    # print("Performing Experiment: Extremely Random Forest Regression")
+    # print(
+    #     compare_accuracies("ERFR", train_data, train_targets, test_data, test_targets)
+    # )
 
 
 if __name__ == "__main__":

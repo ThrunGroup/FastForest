@@ -44,7 +44,7 @@ class GradientBoostedExtremelyRandomForestRegressor(ForestRegressor):
             max_depth=max_depth,
             # https://scikit-learn.org/stable/modules/ensemble.html#extremely-randomized-trees suggests bootstrapping
             bootstrap=True,  # Fixed
-            feature_subsampling=SQRT,  # Fixed
+            feature_subsampling=None,  # Fixed
             tree_global_feature_subsampling=False,  # Fixed
             min_samples_split=min_samples_split,
             min_impurity_decrease=min_impurity_decrease,
