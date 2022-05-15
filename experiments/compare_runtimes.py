@@ -110,6 +110,8 @@ def compare_runtimes(
     test_data: np.ndarray = None,
     test_targets: np.ndarray = None,
     num_seeds: int = 1,
+    run_theirs: bool = True,
+    profile_name: str = "profile",
 ) -> bool:
     # Runtimes
     our_train_times = []
@@ -125,8 +127,8 @@ def compare_runtimes(
             our_model = HRFC(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=5,
-                max_depth=5,
+                n_estimators=1,
+                max_depth=1,
                 min_samples_split=2,
                 min_impurity_decrease=0,
                 max_leaf_nodes=None,
@@ -140,8 +142,8 @@ def compare_runtimes(
             their_model = HRFC(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=5,
-                max_depth=5,
+                n_estimators=1,
+                max_depth=1,
                 min_samples_split=2,
                 min_impurity_decrease=0,
                 max_leaf_nodes=None,
@@ -462,17 +464,18 @@ def compare_runtimes(
         our_runtime = time_measured_fit(our_model)
         our_prof.disable()
         our_stats = pstats.Stats(our_prof).strip_dirs().sort_stats("tottime")
-        our_stats.dump_stats("our_profile")
+        our_stats.dump_stats(profile_name + "_ours")
 
         our_train_times.append(our_runtime)
         print("Ours fitted", our_runtime)
 
-        their_prof = cProfile.Profile()
-        their_prof.enable()
-        # their_runtime = time_measured_fit(their_model)
-        their_prof.disable()
-        their_stats = pstats.Stats(their_prof).strip_dirs().sort_stats("tottime")
-        their_stats.dump_stats("their_profile")
+        if run_theirs:
+            their_prof = cProfile.Profile()
+            their_prof.enable()
+            their_runtime = time_measured_fit(their_model)
+            their_prof.disable()
+            their_stats = pstats.Stats(their_prof).strip_dirs().sort_stats("tottime")
+            their_stats.dump_stats(profile_name + "_theirs")
 
         their_train_times.append(their_runtime)
         print("Theirs fitted", their_runtime)
@@ -486,12 +489,13 @@ def compare_runtimes(
             our_test_acc = np.mean(
                 our_model.predict_batch(test_data)[0] == test_targets
             )
-            their_train_acc = np.mean(
-                their_model.predict_batch(train_data)[0] == train_targets
-            )
-            their_test_acc = np.mean(
-                their_model.predict_batch(test_data)[0] == test_targets
-            )
+            if run_theirs:
+                their_train_acc = np.mean(
+                    their_model.predict_batch(train_data)[0] == train_targets
+                )
+                their_test_acc = np.mean(
+                    their_model.predict_batch(test_data)[0] == test_targets
+                )
         elif compare in REGRESSION_MODELS:
             is_classification = False
             our_train_acc = np.mean(
@@ -500,23 +504,25 @@ def compare_runtimes(
             our_test_acc = np.mean(
                 (our_model.predict_batch(test_data) - test_targets) ** 2
             )
-            their_train_acc = np.mean(
-                (their_model.predict_batch(train_data) - train_targets) ** 2
-            )
-            their_test_acc = np.mean(
-                (their_model.predict_batch(test_data) - test_targets) ** 2
-            )
+            if run_theirs:
+                their_train_acc = np.mean(
+                    (their_model.predict_batch(train_data) - train_targets) ** 2
+                )
+                their_test_acc = np.mean(
+                    (their_model.predict_batch(test_data) - test_targets) ** 2
+                )
         else:
             raise Exception("Invalid model choice.")
 
         metric = "accuracy" if is_classification else "MSE"
         print(f"(Ours) Train {metric}:", our_train_acc)
         print(f"(Ours) Test {metric}:", our_test_acc)
-        print(f"(Theirs) Train {metric}:", their_train_acc)
-        print(f"(Theirs) Test {metric}:", their_test_acc)
         print("*" * 30)
         print("(Ours) Runtime:", our_runtime)
-        print("(Theirs) Runtime:", their_runtime)
+        if run_theirs:
+            print(f"(Theirs) Train {metric}:", their_train_acc)
+            print(f"(Theirs) Test {metric}:", their_test_acc)
+            print("(Theirs) Runtime:", their_runtime)
         print("-" * 30)
 
         our_train_accs.append(our_train_acc)
@@ -531,18 +537,19 @@ def compare_runtimes(
     our_avg_test = np.mean(our_test_accs)
     our_std_test = np.std(our_test_accs)
 
-    their_avg_train = np.mean(their_train_accs)
-    their_std_train = np.std(their_train_accs)
-
-    their_avg_test = np.mean(their_test_accs)
-    their_std_test = np.std(their_test_accs)
-
     # For runtimes
     our_avg_train_time = np.mean(our_train_times)
     our_std_train_time = np.std(our_train_times)
 
-    their_avg_train_time = np.mean(their_train_times)
-    their_std_train_time = np.std(their_train_times)
+    if run_theirs:
+        their_avg_train = np.mean(their_train_accs)
+        their_std_train = np.std(their_train_accs)
+
+        their_avg_test = np.mean(their_test_accs)
+        their_std_test = np.std(their_test_accs)
+
+        their_avg_train_time = np.mean(their_train_times)
+        their_std_train_time = np.std(their_train_times)
 
     # See if confidence intervals overlap
     overlap = np.abs(their_avg_test - our_avg_test) < their_std_test + our_std_test
@@ -609,13 +616,27 @@ def main():
     train_images, train_labels = mndata.load_training()
     test_images, test_labels = mndata.load_testing()
 
-    C_SUBSAMPLE_SIZE = 10000
-    train_images = np.array(train_images)[:C_SUBSAMPLE_SIZE]
-    train_labels = np.array(train_labels)[:C_SUBSAMPLE_SIZE]
-    test_images = np.array(test_images)[:C_SUBSAMPLE_SIZE]
-    test_labels = np.array(test_labels)[:C_SUBSAMPLE_SIZE]
+    for C_SUBSAMPLE_SIZE in [2000, 10000, 60000]:
+        train_images_subsampled = np.array(train_images)[:C_SUBSAMPLE_SIZE]
+        train_labels_subsampled = np.array(train_labels)[:C_SUBSAMPLE_SIZE]
+        test_images_subsampled = np.array(test_images)[:C_SUBSAMPLE_SIZE]
+        test_labels_subsampled = np.array(test_labels)[:C_SUBSAMPLE_SIZE]
 
-    compare_runtimes("HRFC", train_images, train_labels, test_images, test_labels)
+        compare_runtimes(
+            "HRFC",
+            train_images_subsampled,
+            train_labels_subsampled,
+            test_images_subsampled,
+            test_labels_subsampled,
+            run_theirs=False,
+            profile_name="HRFC" + str(C_SUBSAMPLE_SIZE) + "_profile",
+        )
+
+    ##################################
+    ##################################
+    ##################################
+    ##################################
+    ##################################
     # compare_runtimes("ERFC", train_images, train_labels, test_images, test_labels)
     # compare_runtimes("HRPC", train_images, train_labels, test_images, test_labels)
 
