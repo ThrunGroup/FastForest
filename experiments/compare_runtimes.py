@@ -3,7 +3,7 @@ from typing import Any, Tuple
 
 from experiments.exp_utils import *
 from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
-from utils.constants import GINI, BEST, EXACT, MAB, MSE
+from utils.constants import GINI, BEST, EXACT, MAB, MSE, DEFAULT_NUM_BINS
 
 from mnist import MNIST
 
@@ -162,7 +162,7 @@ def compare_runtimes(
                 criterion=GINI,
                 splitter=BEST,
                 solver=MAB,
-                random_state=0,
+                random_state=seed,
                 with_replacement=False,
                 verbose=False,
             )
@@ -180,13 +180,50 @@ def compare_runtimes(
                 criterion=GINI,
                 splitter=BEST,
                 solver=EXACT,
+                random_state=seed,
+                with_replacement=False,
+                verbose=False,
+            )
+        elif compare == "HRPC":
+            our_model = HRPC(
+                data=train_data,
+                labels=train_targets,
+                alpha_N=0.5,
+                alpha_F=0.5,
+                n_estimators=5,
+                max_depth=5,
+                num_bins=DEFAULT_NUM_BINS,
+                min_samples_split=2,
+                min_impurity_decrease=0,
+                max_leaf_nodes=None,
+                budget=None,
+                criterion=GINI,
+                splitter=BEST,
+                solver=MAB,
+                random_state=0,
+                with_replacement=False,
+                verbose=False,
+            )
+            their_model = HRPC(
+                data=train_data,
+                labels=train_targets,
+                alpha_N=0.5,
+                alpha_F=0.5,
+                n_estimators=5,
+                max_depth=5,
+                num_bins=DEFAULT_NUM_BINS,
+                min_samples_split=2,
+                min_impurity_decrease=0,
+                max_leaf_nodes=None,
+                budget=None,
+                criterion=GINI,
+                splitter=BEST,
+                solver=EXACT,
                 random_state=0,
                 with_replacement=False,
                 verbose=False,
             )
 
-        elif compare == "HRPC":
-            raise NotImplementedError("Need to decide what models to compare")
         elif compare == "ERFR":
             raise NotImplementedError("Need to decide what models to compare")
         elif compare == "GBERFR":
@@ -338,7 +375,8 @@ def main():
     test_labels = np.array(test_labels)[:2000]
 
     # compare_runtimes("HRFC", train_images, train_labels, test_images, test_labels)
-    compare_runtimes("ERFC", train_images, train_labels, test_images, test_labels)
+    # compare_runtimes("ERFC", train_images, train_labels, test_images, test_labels)
+    compare_runtimes("HRPC", train_images, train_labels, test_images, test_labels)
 
 
 if __name__ == "__main__":
