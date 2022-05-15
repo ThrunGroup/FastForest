@@ -223,9 +223,42 @@ def compare_runtimes(
                 with_replacement=False,
                 verbose=False,
             )
-
         elif compare == "ERFR":
-            raise NotImplementedError("Need to decide what models to compare")
+            our_model = ERFR(
+                data=train_data,
+                labels=train_targets,
+                n_estimators=5,
+                max_depth=5,
+                num_bins=None,
+                min_samples_split=2,
+                min_impurity_decrease=0,
+                max_leaf_nodes=None,
+                budget=None,
+                criterion=MSE,
+                splitter=BEST,
+                solver=MAB,
+                random_state=0,
+                with_replacement=False,
+                verbose=False,
+            )
+
+            their_model = ERFR(
+                data=train_data,
+                labels=train_targets,
+                n_estimators=5,
+                max_depth=5,
+                num_bins=None,
+                min_samples_split=2,
+                min_impurity_decrease=0,
+                max_leaf_nodes=None,
+                budget=None,
+                criterion=MSE,
+                splitter=BEST,
+                solver=EXACT,
+                random_state=0,
+                with_replacement=False,
+                verbose=False,
+            )
         elif compare == "GBERFR":
             raise NotImplementedError("Need to decide what models to compare")
         elif compare == "HRFR":
@@ -253,6 +286,7 @@ def compare_runtimes(
         print()
 
         if compare in CLASSIFICATION_MODELS:
+            is_classification = True
             our_train_acc = np.mean(
                 our_model.predict_batch(train_data)[0] == train_targets
             )
@@ -266,14 +300,27 @@ def compare_runtimes(
                 their_model.predict_batch(test_data)[0] == test_targets
             )
         elif compare in REGRESSION_MODELS:
-            raise NotImplementedError("Need to decide what models to compare")
+            is_classification = False
+            our_train_acc = np.mean(
+                (our_model.predict_batch(train_data) - train_targets) ** 2
+            )
+            our_test_acc = np.mean(
+                (our_model.predict_batch(test_data) - test_targets) ** 2
+            )
+            their_train_acc = np.mean(
+                (their_model.predict_batch(train_data) - train_targets) ** 2
+            )
+            their_test_acc = np.mean(
+                (their_model.predict_batch(test_data) - test_targets) ** 2
+            )
         else:
             raise Exception("Invalid model choice.")
 
-        print("(Ours) Train accuracy:", our_train_acc)
-        print("(Ours) Test accuracy:", our_test_acc)
-        print("(Theirs) Train accuracy:", their_train_acc)
-        print("(Theirs) Test accuracy:", their_test_acc)
+        metric = "accuracy" if is_classification else "MSE"
+        print(f"(Ours) Train {metric}:", our_train_acc)
+        print(f"(Ours) Test {metric}:", our_test_acc)
+        print(f"(Theirs) Train {metric}:", their_train_acc)
+        print(f"(Theirs) Test {metric}:", their_test_acc)
         print("*" * 30)
         print("(Ours) Runtime:", our_runtime)
         print("(Theirs) Runtime:", their_runtime)
@@ -363,7 +410,7 @@ def main():
     # GBRFR
     # GBRPR
 
-    # Classification
+    ############### Classification
     mndata = MNIST("mnist/")
 
     train_images, train_labels = mndata.load_training()
@@ -376,7 +423,15 @@ def main():
 
     # compare_runtimes("HRFC", train_images, train_labels, test_images, test_labels)
     # compare_runtimes("ERFC", train_images, train_labels, test_images, test_labels)
-    compare_runtimes("HRPC", train_images, train_labels, test_images, test_labels)
+    # compare_runtimes("HRPC", train_images, train_labels, test_images, test_labels)
+
+    ############### Regression
+    train_data, train_targets, test_data, test_targets = load_housing()
+    # Subsample the data because training on 20k points (the full housing dataset) takes too long for RFR
+    train_data_subsampled = train_data[:3000]
+    train_targets_subsampled = train_targets[:3000]
+
+    compare_runtimes("ERFR", train_data, train_targets, test_data, test_targets)
 
 
 if __name__ == "__main__":
