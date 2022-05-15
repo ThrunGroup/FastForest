@@ -149,7 +149,42 @@ def compare_runtimes(
                 verbose=False,
             )
         elif compare == "ERFC":
-            raise NotImplementedError("Need to decide what models to compare")
+            our_model = ERFC(
+                data=train_data,
+                labels=train_targets,
+                n_estimators=5,
+                max_depth=5,
+                num_bins=None,
+                min_samples_split=2,
+                min_impurity_decrease=0,
+                max_leaf_nodes=None,
+                budget=None,
+                criterion=GINI,
+                splitter=BEST,
+                solver=MAB,
+                random_state=0,
+                with_replacement=False,
+                verbose=False,
+            )
+
+            their_model = ERFC(
+                data=train_data,
+                labels=train_targets,
+                n_estimators=5,
+                max_depth=5,
+                num_bins=None,
+                min_samples_split=2,
+                min_impurity_decrease=0,
+                max_leaf_nodes=None,
+                budget=None,
+                criterion=GINI,
+                splitter=BEST,
+                solver=EXACT,
+                random_state=0,
+                with_replacement=False,
+                verbose=False,
+            )
+
         elif compare == "HRPC":
             raise NotImplementedError("Need to decide what models to compare")
         elif compare == "ERFR":
@@ -302,7 +337,8 @@ def main():
     test_images = np.array(test_images)[:2000]
     test_labels = np.array(test_labels)[:2000]
 
-    compare_runtimes("HRFC", train_images, train_labels, test_images, test_labels)
+    # compare_runtimes("HRFC", train_images, train_labels, test_images, test_labels)
+    compare_runtimes("ERFC", train_images, train_labels, test_images, test_labels)
 
 
 if __name__ == "__main__":
