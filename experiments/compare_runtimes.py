@@ -79,6 +79,9 @@ from data_structures.wrappers.histogram_random_patches_regressor import (
 from data_structures.wrappers.gradient_boosted_random_patches_regressor import (
     GradientBoostedRandomPatchesRegressor as GBRPR,
 )
+from data_structures.wrappers.gradient_boosted_histogram_random_patches_regressor import (
+    GradientBoostedHistogramRandomPatchesRegressor as GBHRPR,
+)
 from data_structures.wrappers.histogram_random_patches_regressor import (
     HistogramRandomPatchesRegressor as HBRPR,
 )
@@ -237,11 +240,10 @@ def compare_runtimes(
                 criterion=MSE,
                 splitter=BEST,
                 solver=MAB,
-                random_state=0,
+                random_state=seed,
                 with_replacement=False,
                 verbose=False,
             )
-
             their_model = ERFR(
                 data=train_data,
                 labels=train_targets,
@@ -255,20 +257,199 @@ def compare_runtimes(
                 criterion=MSE,
                 splitter=BEST,
                 solver=EXACT,
-                random_state=0,
+                random_state=seed,
                 with_replacement=False,
                 verbose=False,
             )
         elif compare == "GBERFR":
-            raise NotImplementedError("Need to decide what models to compare")
+            our_model = GBERFR(
+                data=train_data,
+                labels=train_targets,
+                n_estimators=5,
+                max_depth=5,
+                num_bins=None,
+                min_samples_split=2,
+                min_impurity_decrease=0,
+                max_leaf_nodes=None,
+                budget=None,
+                criterion=MSE,
+                splitter=BEST,
+                solver=MAB,
+                random_state=seed,
+                with_replacement=False,
+                verbose=False,
+                boosting_lr=0.1,
+            )
+            their_model = GBERFR(
+                data=train_data,
+                labels=train_targets,
+                n_estimators=5,
+                max_depth=5,
+                num_bins=None,
+                min_samples_split=2,
+                min_impurity_decrease=0,
+                max_leaf_nodes=None,
+                budget=None,
+                criterion=MSE,
+                splitter=BEST,
+                solver=EXACT,
+                random_state=seed,
+                with_replacement=False,
+                verbose=False,
+                boosting_lr=0.1,
+            )
         elif compare == "HRFR":
-            raise NotImplementedError("Need to decide what models to compare")
+            our_model = HRFR(
+                data=train_data,
+                labels=train_targets,
+                n_estimators=5,
+                max_depth=5,
+                num_bins=DEFAULT_NUM_BINS,
+                min_samples_split=2,
+                min_impurity_decrease=0,
+                max_leaf_nodes=None,
+                budget=None,
+                criterion=MSE,
+                splitter=BEST,
+                solver=MAB,
+                random_state=seed,
+                with_replacement=False,
+                verbose=False,
+            )
+            their_model = HRFR(
+                data=train_data,
+                labels=train_targets,
+                n_estimators=5,
+                max_depth=5,
+                num_bins=DEFAULT_NUM_BINS,
+                min_samples_split=2,
+                min_impurity_decrease=0,
+                max_leaf_nodes=None,
+                budget=None,
+                criterion=MSE,
+                splitter=BEST,
+                solver=EXACT,
+                random_state=seed,
+                with_replacement=False,
+                verbose=False,
+            )
         elif compare == "GBHRFR":
-            raise NotImplementedError("Need to decide what models to compare")
+            our_model = GBHRFR(
+                data=train_data,
+                labels=train_targets,
+                n_estimators=5,
+                max_depth=5,
+                num_bins=DEFAULT_NUM_BINS,
+                min_samples_split=2,
+                min_impurity_decrease=0,
+                max_leaf_nodes=None,
+                budget=None,
+                criterion=MSE,
+                splitter=BEST,
+                solver=MAB,
+                random_state=0,
+                with_replacement=False,
+                verbose=False,
+                boosting_lr=0.1,
+            )
+            their_model = GBHRFR(
+                data=train_data,
+                labels=train_targets,
+                n_estimators=5,
+                max_depth=5,
+                num_bins=DEFAULT_NUM_BINS,
+                min_samples_split=2,
+                min_impurity_decrease=0,
+                max_leaf_nodes=None,
+                budget=None,
+                criterion=MSE,
+                splitter=BEST,
+                solver=EXACT,
+                random_state=0,
+                with_replacement=False,
+                verbose=False,
+                boosting_lr=0.1,
+            )
         elif compare == "HRPR":
-            raise NotImplementedError("Need to decide what models to compare")
+            our_model = HRPR(
+                data=train_data,
+                labels=train_targets,
+                alpha_N=0.5,
+                alpha_F=0.5,
+                n_estimators=5,
+                max_depth=5,
+                num_bins=DEFAULT_NUM_BINS,
+                min_samples_split=2,
+                min_impurity_decrease=0,
+                max_leaf_nodes=None,
+                budget=None,
+                criterion=MSE,
+                splitter=BEST,
+                solver=MAB,
+                random_state=0,
+                with_replacement=False,
+                verbose=False,
+            )
+            their_model = HRPR(
+                data=train_data,
+                labels=train_targets,
+                alpha_N=0.5,
+                alpha_F=0.5,
+                n_estimators=5,
+                max_depth=5,
+                num_bins=DEFAULT_NUM_BINS,
+                min_samples_split=2,
+                min_impurity_decrease=0,
+                max_leaf_nodes=None,
+                budget=None,
+                criterion=MSE,
+                splitter=BEST,
+                solver=EXACT,
+                random_state=0,
+                with_replacement=False,
+                verbose=False,
+            )
         elif compare == "GBHRPR":
-            raise NotImplementedError("Need to decide what models to compare")
+            our_model = GBHRPR(
+                data=train_data,
+                labels=train_targets,
+                alpha_N=0.5,
+                alpha_F=0.5,
+                n_estimators=5,
+                max_depth=5,
+                num_bins=DEFAULT_NUM_BINS,
+                min_samples_split=2,
+                min_impurity_decrease=0,
+                max_leaf_nodes=None,
+                budget=None,
+                criterion=MSE,
+                splitter=BEST,
+                solver=MAB,
+                random_state=seed,
+                with_replacement=False,
+                verbose=False,
+                boosting_lr=0.1,
+            )
+            their_model = GBHRPR(
+                data=train_data,
+                labels=train_targets,
+                alpha_N=0.5,
+                alpha_F=0.5,
+                n_estimators=5,
+                max_depth=5,
+                num_bins=DEFAULT_NUM_BINS,
+                min_samples_split=2,
+                min_impurity_decrease=0,
+                max_leaf_nodes=None,
+                budget=None,
+                criterion=MSE,
+                splitter=BEST,
+                solver=EXACT,
+                random_state=seed,
+                with_replacement=False,
+                verbose=False,
+                boosting_lr=0.1,
+            )
         else:
             raise NotImplementedError("Need to decide what models to compare")
 
@@ -431,7 +612,12 @@ def main():
     train_data_subsampled = train_data[:3000]
     train_targets_subsampled = train_targets[:3000]
 
-    compare_runtimes("ERFR", train_data, train_targets, test_data, test_targets)
+    # compare_runtimes("ERFR", train_data, train_targets, test_data, test_targets)
+    # compare_runtimes("GBERFR", train_data, train_targets, test_data, test_targets)
+    # compare_runtimes("HRFR", train_data, train_targets, test_data, test_targets)
+    # compare_runtimes("GBHRFR", train_data, train_targets, test_data, test_targets)
+    # compare_runtimes("HRPR", train_data, train_targets, test_data, test_targets)
+    compare_runtimes("GBHRPR", train_data, train_targets, test_data, test_targets)
 
 
 if __name__ == "__main__":
