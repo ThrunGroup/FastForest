@@ -119,7 +119,6 @@ def compare_runtimes(
     their_train_accs = []
     their_test_accs = []
     for seed in range(num_seeds):
-        # Ok to have n_jobs = -1 throughout?
         if compare == "HRFC":
             our_model = HRFC(
                 data=train_data,
@@ -169,7 +168,6 @@ def compare_runtimes(
                 with_replacement=False,
                 verbose=False,
             )
-
             their_model = ERFC(
                 data=train_data,
                 labels=train_targets,
@@ -614,9 +612,9 @@ def main():
     train_targets_subsampled = train_targets[:SUBSAMPLE_SIZE]
     print(len(train_data_subsampled), len(train_targets_subsampled))
 
-    compare_runtimes(
-        "ERFR", train_data_subsampled, train_targets_subsampled, test_data, test_targets
-    )
+    # compare_runtimes(
+    #     "ERFR", train_data_subsampled, train_targets_subsampled, test_data, test_targets
+    # )
     # compare_runtimes(
     #     "GBERFR",
     #     train_data_subsampled,
@@ -637,13 +635,13 @@ def main():
     # compare_runtimes(
     #     "HRPR", train_data_subsampled, train_targets_subsampled, test_data, test_targets
     # )
-    # compare_runtimes(
-    #     "GBHRPR",
-    #     train_data_subsampled,
-    #     train_targets_subsampled,
-    #     test_data,
-    #     test_targets,
-    # )
+    compare_runtimes(
+        "GBHRPR",
+        train_data_subsampled,
+        train_targets_subsampled,
+        test_data,
+        test_targets,
+    )
 
 
 if __name__ == "__main__":
