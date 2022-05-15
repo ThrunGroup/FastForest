@@ -17,7 +17,13 @@ from utils.constants import (
     RANDOM,
 )
 from utils.criteria import get_impurity_reductions
-from utils.utils import type_check, class_to_idx, counts_of_labels, make_histograms, empty_histograms
+from utils.utils import (
+    type_check,
+    class_to_idx,
+    counts_of_labels,
+    make_histograms,
+    empty_histograms,
+)
 from data_structures.histogram import Histogram
 
 type_check()
@@ -198,11 +204,11 @@ def sample_targets(
     with_replacement = population_idcs is None
     initial_pop_size = None if population_idcs is None else N
     if with_replacement:  # Sample with replacement
-        sample_idcs = (
-            np.arange(N)
-            if N <= batch_size
-            else np.random.choice(N, size=batch_size, replace=True)
-        )
+        if N <= batch_size:
+            sample_idcs = np.arange(N)
+            pop_size = N  # Since we're sampling all the samples
+        else:
+            sample_idcs = np.random.choice(N, size=batch_size, replace=True)
     else:
         M = len(population_idcs)
         idcs = (
