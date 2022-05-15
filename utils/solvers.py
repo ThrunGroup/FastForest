@@ -206,7 +206,7 @@ def sample_targets(
     if with_replacement:  # Sample with replacement
         if N <= batch_size:
             sample_idcs = np.arange(N)
-            pop_size = N  # Since we're sampling all the samples
+            initial_pop_size = N  # Since we're sampling all the samples
         else:
             sample_idcs = np.random.choice(N, size=batch_size, replace=True)
     else:
