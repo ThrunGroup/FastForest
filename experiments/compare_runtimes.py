@@ -203,7 +203,7 @@ def compare_runtimes(
                 criterion=GINI,
                 splitter=BEST,
                 solver=MAB,
-                random_state=0,
+                random_state=seed,
                 with_replacement=False,
                 verbose=False,
             )
@@ -222,7 +222,7 @@ def compare_runtimes(
                 criterion=GINI,
                 splitter=BEST,
                 solver=EXACT,
-                random_state=0,
+                random_state=seed,
                 with_replacement=False,
                 verbose=False,
             )
@@ -347,7 +347,7 @@ def compare_runtimes(
                 criterion=MSE,
                 splitter=BEST,
                 solver=MAB,
-                random_state=0,
+                random_state=seed,
                 with_replacement=False,
                 verbose=False,
                 boosting_lr=0.1,
@@ -365,7 +365,7 @@ def compare_runtimes(
                 criterion=MSE,
                 splitter=BEST,
                 solver=EXACT,
-                random_state=0,
+                random_state=seed,
                 with_replacement=False,
                 verbose=False,
                 boosting_lr=0.1,
@@ -386,7 +386,7 @@ def compare_runtimes(
                 criterion=MSE,
                 splitter=BEST,
                 solver=MAB,
-                random_state=0,
+                random_state=seed,
                 with_replacement=False,
                 verbose=False,
             )
@@ -405,7 +405,7 @@ def compare_runtimes(
                 criterion=MSE,
                 splitter=BEST,
                 solver=EXACT,
-                random_state=0,
+                random_state=seed,
                 with_replacement=False,
                 verbose=False,
             )
@@ -469,7 +469,7 @@ def compare_runtimes(
 
         their_prof = cProfile.Profile()
         their_prof.enable()
-        their_runtime = time_measured_fit(their_model)
+        # their_runtime = time_measured_fit(their_model)
         their_prof.disable()
         their_stats = pstats.Stats(their_prof).strip_dirs().sort_stats("tottime")
         their_stats.dump_stats("their_profile")
@@ -609,22 +609,23 @@ def main():
     train_images, train_labels = mndata.load_training()
     test_images, test_labels = mndata.load_testing()
 
-    train_images = np.array(train_images)[:2000]
-    train_labels = np.array(train_labels)[:2000]
-    test_images = np.array(test_images)[:2000]
-    test_labels = np.array(test_labels)[:2000]
+    C_SUBSAMPLE_SIZE = 10000
+    train_images = np.array(train_images)[:C_SUBSAMPLE_SIZE]
+    train_labels = np.array(train_labels)[:C_SUBSAMPLE_SIZE]
+    test_images = np.array(test_images)[:C_SUBSAMPLE_SIZE]
+    test_labels = np.array(test_labels)[:C_SUBSAMPLE_SIZE]
 
-    # compare_runtimes("HRFC", train_images, train_labels, test_images, test_labels)
+    compare_runtimes("HRFC", train_images, train_labels, test_images, test_labels)
     # compare_runtimes("ERFC", train_images, train_labels, test_images, test_labels)
     # compare_runtimes("HRPC", train_images, train_labels, test_images, test_labels)
 
     ############### Regression
-    train_data, train_targets, test_data, test_targets = load_housing()
-    # Subsample the data because training on 20k points (the full housing dataset) takes too long for RFR
-    SUBSAMPLE_SIZE = 3000
-    train_data_subsampled = train_data[:SUBSAMPLE_SIZE]
-    train_targets_subsampled = train_targets[:SUBSAMPLE_SIZE]
-    print(len(train_data_subsampled), len(train_targets_subsampled))
+    # train_data, train_targets, test_data, test_targets = load_housing()
+    # # Subsample the data because training on 20k points (the full housing dataset) takes too long for RFR
+    # R_SUBSAMPLE_SIZE = 3000
+    # train_data_subsampled = train_data[:R_SUBSAMPLE_SIZE]
+    # train_targets_subsampled = train_targets[:R_SUBSAMPLE_SIZE]
+    # print(len(train_data_subsampled), len(train_targets_subsampled))
 
     # compare_runtimes(
     #     "ERFR", train_data_subsampled, train_targets_subsampled, test_data, test_targets
@@ -636,9 +637,9 @@ def main():
     #     test_data,
     #     test_targets,
     # )
-    compare_runtimes(
-        "HRFR", train_data_subsampled, train_targets_subsampled, test_data, test_targets
-    )
+    # compare_runtimes(
+    #     "HRFR", train_data_subsampled, train_targets_subsampled, test_data, test_targets
+    # )
     # compare_runtimes(
     #     "GBHRFR",
     #     train_data_subsampled,
