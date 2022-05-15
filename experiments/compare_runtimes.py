@@ -477,9 +477,9 @@ def compare_runtimes(
             their_stats = pstats.Stats(their_prof).strip_dirs().sort_stats("tottime")
             their_stats.dump_stats(profile_name + "_theirs")
 
-        their_train_times.append(their_runtime)
-        print("Theirs fitted", their_runtime)
-        print()
+            their_train_times.append(their_runtime)
+            print("Theirs fitted", their_runtime)
+            print()
 
         if compare in CLASSIFICATION_MODELS:
             is_classification = True
@@ -519,16 +519,16 @@ def compare_runtimes(
         print(f"(Ours) Test {metric}:", our_test_acc)
         print("*" * 30)
         print("(Ours) Runtime:", our_runtime)
+        our_train_accs.append(our_train_acc)
+        our_test_accs.append(our_test_acc)
         if run_theirs:
             print(f"(Theirs) Train {metric}:", their_train_acc)
             print(f"(Theirs) Test {metric}:", their_test_acc)
+            print("-" * 30)
             print("(Theirs) Runtime:", their_runtime)
-        print("-" * 30)
-
-        our_train_accs.append(our_train_acc)
-        our_test_accs.append(our_test_acc)
-        their_train_accs.append(their_train_acc)
-        their_test_accs.append(their_test_acc)
+            their_train_accs.append(their_train_acc)
+            their_test_accs.append(their_test_acc)
+        print("/" * 30)
 
     # For accuracies
     our_avg_train = np.mean(our_train_accs)
@@ -551,22 +551,22 @@ def compare_runtimes(
         their_avg_train_time = np.mean(their_train_times)
         their_std_train_time = np.std(their_train_times)
 
-    # See if confidence intervals overlap
-    overlap = np.abs(their_avg_test - our_avg_test) < their_std_test + our_std_test
+        # See if confidence intervals overlap
+        overlap = np.abs(their_avg_test - our_avg_test) < their_std_test + our_std_test
     return (
-        overlap,
+        overlap if run_theirs else None,
         our_avg_train,
         our_std_train,
         our_avg_test,
         our_std_test,
-        their_avg_train,
-        their_std_train,
-        their_avg_test,
-        their_std_test,
+        their_avg_train if run_theirs else None,
+        their_std_train if run_theirs else None,
+        their_avg_test if run_theirs else None,
+        their_std_test if run_theirs else None,
         our_avg_train_time,
         our_std_train_time,
-        their_avg_train_time,
-        their_std_train_time,
+        their_avg_train_time if run_theirs else None,
+        their_std_train_time if run_theirs else None,
     )
 
 
@@ -629,7 +629,7 @@ def main():
             test_images_subsampled,
             test_labels_subsampled,
             run_theirs=False,
-            profile_name="HRFC" + str(C_SUBSAMPLE_SIZE) + "_profile",
+            profile_name="HRFC_" + str(C_SUBSAMPLE_SIZE) + "_profile",
         )
 
     ##################################
