@@ -7,7 +7,6 @@ from sklearn.ensemble import ExtraTreesRegressor as ERFR_sklearn
 from experiments.exp_utils import *
 from utils.constants import GINI, BEST, EXACT, MSE
 
-
 from data_structures.wrappers.random_forest_classifier import (
     RandomForestClassifier as RFC_ours,
 )
@@ -126,7 +125,7 @@ def compare_accuracies(
             our_model = ERFR_ours(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=5,
+                n_estimators=1,
                 max_depth=5,
                 num_bins=None,
                 min_samples_split=2,
@@ -140,7 +139,7 @@ def compare_accuracies(
                 verbose=False,
             )
             their_model = ERFR_sklearn(
-                n_estimators=5,
+                n_estimators=1,
                 criterion="squared_error",
                 max_depth=5,
                 min_samples_split=2,
@@ -174,10 +173,10 @@ def compare_accuracies(
                 (our_model.predict_batch(test_data) - test_targets) ** 2
             )
             their_train_acc = np.mean(
-                (our_model.predict_batch(train_data) - train_targets) ** 2
+                (their_model.predict(train_data) - train_targets) ** 2
             )
             their_test_acc = np.mean(
-                (our_model.predict_batch(test_data) - test_targets) ** 2
+                (their_model.predict(test_data) - test_targets) ** 2
             )
 
         print("Trial", seed)
@@ -221,9 +220,10 @@ def compare_accuracies(
 
 def main():
     # To Compare:
-    # RandomForest
-    # ExtremelyRandomizedForests
-    # GradientBoostingClassifier
+    # RandomForestClassifier -- DONE
+    # RandomForestRegressor
+    # ExtremelyRandomizedForestClassifier -- DONE
+    # ExtremelyRandomizedForestRegressor -- DONE
     # GradientBoostingRegressor
     # HistGradientBoostingRegressor
 
@@ -259,8 +259,8 @@ def main():
 
     # Regression
     train_data, train_targets, test_data, test_targets = load_housing()
-    print("Performing Experiment: Extremely Random Forest Regression")
-    print(compare_accuracies("RFR", train_data, train_targets, test_data, test_targets))
+    # print("Performing Experiment: Random Forest Regression")
+    # print(compare_accuracies("RFR", train_data, train_targets, test_data, test_targets))
     print("Performing Experiment: Extremely Random Forest Regression")
     print(
         compare_accuracies("ERFR", train_data, train_targets, test_data, test_targets)
