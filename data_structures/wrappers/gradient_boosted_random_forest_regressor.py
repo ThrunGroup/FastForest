@@ -24,6 +24,9 @@ class GradientBoostedRandomForestRegressor(ForestRegressor):
         labels: np.ndarray = None,
         n_estimators: int = 100,
         max_depth: int = None,
+        # Despite the fact that this class is named GBRFR, which suggests bootstrapping, we need to allow passing
+        # bootstrap=False for comparison to sklearn's GradientBoostingRegressor, which does not support bootstrapping
+        bootstrap: bool = True,
         min_samples_split: int = 2,
         min_impurity_decrease: float = 0,
         max_leaf_nodes: int = None,
@@ -40,13 +43,14 @@ class GradientBoostedRandomForestRegressor(ForestRegressor):
             raise Exception(
                 "Must pass boosting_lr to GradientBoostedRandomForestRegressor"
             )
+        self.boosting_lr = boosting_lr
         super().__init__(
             data=data,
             labels=labels,
             n_estimators=n_estimators,
             max_depth=max_depth,
-            bootstrap=True,  # Fixed
-            feature_subsampling=None,  # Fixed
+            bootstrap=bootstrap,  # See note above
+            feature_subsampling=SQRT,  # Fixed
             tree_global_feature_subsampling=False,  # Fixed
             min_samples_split=min_samples_split,
             min_impurity_decrease=min_impurity_decrease,

@@ -3,6 +3,7 @@ from sklearn.ensemble import ExtraTreesClassifier as ERFC_sklearn
 
 from sklearn.ensemble import RandomForestRegressor as RFR_sklearn
 from sklearn.ensemble import ExtraTreesRegressor as ERFR_sklearn
+from sklearn.ensemble import GradientBoostingRegressor as GBRFR_sklearn
 
 from experiments.exp_utils import *
 from utils.constants import GINI, BEST, EXACT, MSE
@@ -14,11 +15,15 @@ from data_structures.wrappers.extremely_random_forest_classifier import (
     ExtremelyRandomForestClassifier as ERFC_ours,
 )
 
+
 from data_structures.wrappers.random_forest_regressor import (
     RandomForestRegressor as RFR_ours,
 )
 from data_structures.wrappers.extremely_random_forest_regressor import (
     ExtremelyRandomForestRegressor as ERFR_ours,
+)
+from data_structures.wrappers.gradient_boosted_random_forest_regressor import (
+    GradientBoostedRandomForestRegressor as GBRFR_ours,
 )
 
 
@@ -150,6 +155,69 @@ def compare_accuracies(
                 random_state=seed,
                 verbose=False,
             )
+        elif compare == "GBRFR":
+            our_model = GBRFR_ours(
+                data=train_data,
+                labels=train_targets,
+                n_estimators=3,
+                max_depth=3,
+                bootstrap=False,  # Override for RFR, since sklearn GBR doesn't support bootstrapping
+                min_samples_split=2,
+                min_impurity_decrease=0,
+                max_leaf_nodes=None,
+                budget=None,
+                criterion=MSE,
+                splitter=BEST,
+                solver=EXACT,
+                with_replacement=False,
+                boosting_lr=0.1,
+                random_state=seed,
+                verbose=False,
+            )
+            their_model = GBRFR_sklearn(
+                n_estimators=3,
+                loss="squared_error",
+                max_depth=3,
+                learning_rate=0.1,
+                criterion="squared_error",
+                min_samples_split=2,
+                min_samples_leaf=1,
+                min_impurity_decrease=0.0,
+                max_features="sqrt",
+                random_state=seed,
+                verbose=False,
+            )
+
+        elif compare == "GBHRFR":
+            # TODO(@motiwari): fill out
+            our_model = ERFR_ours(
+                data=train_data,
+                labels=train_targets,
+                n_estimators=1,
+                max_depth=5,
+                num_bins=None,
+                min_samples_split=2,
+                min_impurity_decrease=0,
+                max_leaf_nodes=None,
+                budget=None,
+                criterion=MSE,
+                splitter=BEST,
+                solver=EXACT,
+                random_state=seed,
+                verbose=False,
+            )
+            their_model = ERFR_sklearn(
+                n_estimators=1,
+                criterion="squared_error",
+                max_depth=5,
+                min_samples_split=2,
+                max_features="auto",
+                min_impurity_decrease=0.0,
+                bootstrap=False,
+                n_jobs=-1,
+                random_state=seed,
+                verbose=False,
+            )
         else:
             raise NotImplementedError("Need to decide what models to compare")
 
@@ -166,7 +234,12 @@ def compare_accuracies(
             )
             their_train_acc = np.mean(their_model.predict(train_data) == train_targets)
             their_test_acc = np.mean(their_model.predict(test_data) == test_targets)
-        elif compare == "RFR" or compare == "ERFR" or compare == "HRFR":
+        elif (
+            compare == "RFR"
+            or compare == "ERFR"
+            or compare == "GBRFR"
+            or compare == "GBHRFR"
+        ):
             is_classification = False
             our_train_acc = np.mean(
                 (our_model.predict_batch(train_data) - train_targets) ** 2
@@ -226,7 +299,7 @@ def main():
     # RandomForestClassifier -- DONE
     # ExtremelyRandomizedForestClassifier -- DONE
 
-    # RandomForestRegressor
+    # RandomForestRegressor -- DONE
     # ExtremelyRandomizedForestRegressor -- DONE
     # GradientBoostingRegressor
     # HistGradientBoostingRegressor
@@ -264,25 +337,36 @@ def main():
 
     # Regression
     train_data, train_targets, test_data, test_targets = load_housing()
-
     # Subsample the data because training on 20k points (the full housing dataset) takes too long for RFR
-    train_data_subsampled = train_data[:5000]
-    train_targets_subsampled = train_targets[:5000]
-    print("Performing Experiment: Random Forest Regression")
+    train_data_subsampled = train_data[:1000]
+    train_targets_subsampled = train_targets[:1000]
+
+    # print("Performing Experiment: Random Forest Regression")
+    # print(
+    #     compare_accuracies(
+    #         "RFR",
+    #         train_data_subsampled,
+    #         train_targets_subsampled,
+    #         test_data,
+    #         test_targets,
+    #     )
+    # )
+
+    # print("Performing Experiment: Extremely Random Forest Regression")
+    # print(
+    #     compare_accuracies("ERFR", train_data, train_targets, test_data, test_targets)
+    # )
+
+    print("Performing Experiment: Gradient Boosted Random Forest Regression")
     print(
         compare_accuracies(
-            "RFR",
+            "GBRFR",
             train_data_subsampled,
             train_targets_subsampled,
             test_data,
             test_targets,
         )
     )
-
-    # print("Performing Experiment: Extremely Random Forest Regression")
-    # print(
-    #     compare_accuracies("ERFR", train_data, train_targets, test_data, test_targets)
-    # )
 
 
 if __name__ == "__main__":
