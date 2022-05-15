@@ -45,5 +45,9 @@ DEFAULT_GRAD_SMOOTHING_VAL = 1e-5
 # For randomness
 MAX_SEED = 2 ** 31
 
-# MSE estimation
+# For MSE estimation
 KURTOSIS = 3  # normal distribution has kurtosis = 3
+
+# Models for speedup comparison
+CLASSIFICATION_MODELS = ["ERFC", "HRFC", "HRPC"]
+REGRESSION_MODELS = ["ERFR", "GBERFR", "HRFR", "GBHRFR", "HRPR", "GBHRPR"]

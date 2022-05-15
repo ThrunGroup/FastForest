@@ -2,6 +2,7 @@ import time
 from typing import Any, Tuple
 
 from experiments.exp_utils import *
+from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
 from utils.constants import GINI, BEST, EXACT, MAB, MSE
 
 from mnist import MNIST
@@ -147,6 +148,22 @@ def compare_runtimes(
                 random_state=seed,
                 verbose=False,
             )
+        elif compare == "ERFC":
+            raise NotImplementedError("Need to decide what models to compare")
+        elif compare == "HRPC":
+            raise NotImplementedError("Need to decide what models to compare")
+        elif compare == "ERFR":
+            raise NotImplementedError("Need to decide what models to compare")
+        elif compare == "GBERFR":
+            raise NotImplementedError("Need to decide what models to compare")
+        elif compare == "HRFR":
+            raise NotImplementedError("Need to decide what models to compare")
+        elif compare == "GBHRFR":
+            raise NotImplementedError("Need to decide what models to compare")
+        elif compare == "HRPR":
+            raise NotImplementedError("Need to decide what models to compare")
+        elif compare == "GBHRPR":
+            raise NotImplementedError("Need to decide what models to compare")
         else:
             raise NotImplementedError("Need to decide what models to compare")
 
@@ -163,7 +180,7 @@ def compare_runtimes(
         print("Theirs fitted", their_runtime)
         print()
 
-        if compare == "RFC" or compare == "ERFC" or compare == "HRFC":
+        if compare in CLASSIFICATION_MODELS:
             our_train_acc = np.mean(
                 our_model.predict_batch(train_data)[0] == train_targets
             )
@@ -176,6 +193,10 @@ def compare_runtimes(
             their_test_acc = np.mean(
                 their_model.predict_batch(test_data)[0] == test_targets
             )
+        elif compare in REGRESSION_MODELS:
+            raise NotImplementedError("Need to decide what models to compare")
+        else:
+            raise Exception("Invalid model choice.")
 
         print("(Ours) Train accuracy:", our_train_acc)
         print("(Ours) Test accuracy:", our_test_acc)
