@@ -1,5 +1,7 @@
 import time
 from typing import Any, Tuple
+import cProfile
+import pstats
 
 from experiments.exp_utils import *
 from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
@@ -455,11 +457,23 @@ def compare_runtimes(
             "sklearn" not in their_model.__module__
         ), "Cannot use sklearn models for runtime comparisons"
 
+        our_prof = cProfile.Profile()
+        our_prof.enable()
         our_runtime = time_measured_fit(our_model)
+        our_prof.disable()
+        our_stats = pstats.Stats(our_prof).strip_dirs().sort_stats("tottime")
+        our_stats.dump_stats("our_profile")
+
         our_train_times.append(our_runtime)
         print("Ours fitted", our_runtime)
 
+        their_prof = cProfile.Profile()
+        their_prof.enable()
         their_runtime = time_measured_fit(their_model)
+        their_prof.disable()
+        their_stats = pstats.Stats(their_prof).strip_dirs().sort_stats("tottime")
+        their_stats.dump_stats("their_profile")
+
         their_train_times.append(their_runtime)
         print("Theirs fitted", their_runtime)
         print()
@@ -622,9 +636,9 @@ def main():
     #     test_data,
     #     test_targets,
     # )
-    # compare_runtimes(
-    #     "HRFR", train_data_subsampled, train_targets_subsampled, test_data, test_targets
-    # )
+    compare_runtimes(
+        "HRFR", train_data_subsampled, train_targets_subsampled, test_data, test_targets
+    )
     # compare_runtimes(
     #     "GBHRFR",
     #     train_data_subsampled,
@@ -635,13 +649,13 @@ def main():
     # compare_runtimes(
     #     "HRPR", train_data_subsampled, train_targets_subsampled, test_data, test_targets
     # )
-    compare_runtimes(
-        "GBHRPR",
-        train_data_subsampled,
-        train_targets_subsampled,
-        test_data,
-        test_targets,
-    )
+    # compare_runtimes(
+    #     "GBHRPR",
+    #     train_data_subsampled,
+    #     train_targets_subsampled,
+    #     test_data,
+    #     test_targets,
+    # )
 
 
 if __name__ == "__main__":
