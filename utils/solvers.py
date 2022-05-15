@@ -304,6 +304,7 @@ def solve_mab(
     if impurity_measure == "":
         impurity_measure = GINI if is_classification else MSE
 
+    print("Number of arms:", B * F)
     candidates = np.array(list(itertools.product(range(F), range(B))))
     estimates = np.empty((F, B))
     lcbs = np.empty((F, B))
