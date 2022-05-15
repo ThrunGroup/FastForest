@@ -102,8 +102,11 @@ def solve_exactly(
         assert (
             num_bins is None
         ), "When using Extremely Random Forests, please pass num_bins=None explicitly. If you want to set a custom \
-            number of Extremely Random bins, please update callsites and remove this assertion."
-        B = math.ceil(np.sqrt(F))
+                            number of Extremely Random bins, please update callsites and remove this assertion."
+        if is_classification:
+            B = math.ceil(np.sqrt(F))
+        else:
+            B = F
     else:
         B = num_bins
 
@@ -287,8 +290,11 @@ def solve_mab(
         assert (
             num_bins is None
         ), "When using Extremely Random Forests, please pass num_bins=None explicitly. If you want to set a custom \
-            number of Extremely Random bins, please update callsites and remove this assertion."
-        B = math.ceil(np.sqrt(F))
+                    number of Extremely Random bins, please update callsites and remove this assertion."
+        if is_classification:
+            B = math.ceil(np.sqrt(F))
+        else:
+            B = F
     else:
         B = num_bins
 

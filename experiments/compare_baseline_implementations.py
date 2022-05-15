@@ -148,7 +148,7 @@ def compare_accuracies(
                 bootstrap=False,
                 n_jobs=-1,
                 random_state=seed,
-                verbose=0,
+                verbose=False,
             )
         else:
             raise NotImplementedError("Need to decide what models to compare")
@@ -157,6 +157,7 @@ def compare_accuracies(
         their_model.fit(train_data, train_targets)
 
         if compare == "RFC" or compare == "ERFC" or compare == "HRFC":
+            is_classification = True
             our_train_acc = np.mean(
                 our_model.predict_batch(train_data)[0] == train_targets
             )
@@ -166,6 +167,7 @@ def compare_accuracies(
             their_train_acc = np.mean(their_model.predict(train_data) == train_targets)
             their_test_acc = np.mean(their_model.predict(test_data) == test_targets)
         elif compare == "RFR" or compare == "ERFR" or compare == "HRFR":
+            is_classification = False
             our_train_acc = np.mean(
                 (our_model.predict_batch(train_data) - train_targets) ** 2
             )
@@ -179,11 +181,12 @@ def compare_accuracies(
                 (their_model.predict(test_data) - test_targets) ** 2
             )
 
+        metric = "accuracy" if is_classification else "MSE"
         print("Trial", seed)
-        print("(Ours) Train accuracy:", our_train_acc)
-        print("(Ours) Test accuracy:", our_test_acc)
-        print("(Theirs) Train accuracy:", their_train_acc)
-        print("(Theirs) Test accuracy:", their_test_acc)
+        print(f"(Ours) Train {metric}:", our_train_acc)
+        print(f"(Ours) Test {metric}:", our_test_acc)
+        print(f"(Theirs) Train {metric}:", their_train_acc)
+        print(f"(Theirs) Test {metric}:", their_test_acc)
         print("-" * 30)
 
         our_train_accs.append(our_train_acc)
@@ -243,19 +246,19 @@ def main():
     # VotingRegressor
 
     # Classification
-    # pca_train_vecs, train_labels, pca_test_vecs, test_labels, classes = load_pca_ng()
+    pca_train_vecs, train_labels, pca_test_vecs, test_labels, classes = load_pca_ng()
     # print("Performing Experiment: Random Forest Classifier")
     # print(
     #     compare_accuracies(
     #         "RFC", pca_train_vecs, train_labels, pca_test_vecs, test_labels
     #     )
     # )
-    # print("Performing Experiment: Extremely Random Forest Classifier")
-    # print(
-    #     compare_accuracies(
-    #         "ERFC", pca_train_vecs, train_labels, pca_test_vecs, test_labels
-    #     )
-    # )
+    print("Performing Experiment: Extremely Random Forest Classifier")
+    print(
+        compare_accuracies(
+            "ERFC", pca_train_vecs, train_labels, pca_test_vecs, test_labels
+        )
+    )
 
     # Regression
     train_data, train_targets, test_data, test_targets = load_housing()
