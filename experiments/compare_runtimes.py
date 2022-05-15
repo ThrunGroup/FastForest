@@ -110,6 +110,7 @@ def compare_runtimes(
     test_data: np.ndarray = None,
     test_targets: np.ndarray = None,
     num_seeds: int = 1,
+    predict: bool = True,
     run_theirs: bool = True,
     profile_name: str = "profile",
 ) -> bool:
@@ -486,56 +487,66 @@ def compare_runtimes(
             our_train_acc = np.mean(
                 our_model.predict_batch(train_data)[0] == train_targets
             )
-            our_test_acc = np.mean(
-                our_model.predict_batch(test_data)[0] == test_targets
-            )
+            if predict:
+                our_test_acc = np.mean(
+                    our_model.predict_batch(test_data)[0] == test_targets
+                )
             if run_theirs:
                 their_train_acc = np.mean(
                     their_model.predict_batch(train_data)[0] == train_targets
                 )
-                their_test_acc = np.mean(
-                    their_model.predict_batch(test_data)[0] == test_targets
-                )
+                if predict:
+                    their_test_acc = np.mean(
+                        their_model.predict_batch(test_data)[0] == test_targets
+                    )
         elif compare in REGRESSION_MODELS:
             is_classification = False
             our_train_acc = np.mean(
                 (our_model.predict_batch(train_data) - train_targets) ** 2
             )
-            our_test_acc = np.mean(
-                (our_model.predict_batch(test_data) - test_targets) ** 2
-            )
+            if predict:
+                our_test_acc = np.mean(
+                    (our_model.predict_batch(test_data) - test_targets) ** 2
+                )
             if run_theirs:
                 their_train_acc = np.mean(
                     (their_model.predict_batch(train_data) - train_targets) ** 2
                 )
-                their_test_acc = np.mean(
-                    (their_model.predict_batch(test_data) - test_targets) ** 2
-                )
+                if predict:
+                    their_test_acc = np.mean(
+                        (their_model.predict_batch(test_data) - test_targets) ** 2
+                    )
         else:
             raise Exception("Invalid model choice.")
 
         metric = "accuracy" if is_classification else "MSE"
         print(f"(Ours) Train {metric}:", our_train_acc)
-        print(f"(Ours) Test {metric}:", our_test_acc)
+        our_train_accs.append(our_train_acc)
+        if predict:
+            print(f"(Ours) Test {metric}:", our_test_acc)
+            our_test_accs.append(our_test_acc)
         print("*" * 30)
         print("(Ours) Runtime:", our_runtime)
-        our_train_accs.append(our_train_acc)
-        our_test_accs.append(our_test_acc)
+        print("(Ours) Num queries:", our_model.num_queries)
+
         if run_theirs:
             print(f"(Theirs) Train {metric}:", their_train_acc)
-            print(f"(Theirs) Test {metric}:", their_test_acc)
+            their_train_accs.append(their_train_acc)
+            if predict:
+                print(f"(Theirs) Test {metric}:", their_test_acc)
+                their_test_accs.append(their_test_acc)
             print("-" * 30)
             print("(Theirs) Runtime:", their_runtime)
-            their_train_accs.append(their_train_acc)
-            their_test_accs.append(their_test_acc)
+
         print("/" * 30)
 
     # For accuracies
     our_avg_train = np.mean(our_train_accs)
     our_std_train = np.std(our_train_accs)
 
-    our_avg_test = np.mean(our_test_accs)
-    our_std_test = np.std(our_test_accs)
+    if predict:
+        our_avg_test = np.mean(our_test_accs)
+        our_std_test = np.std(our_test_accs)
 
     # For runtimes
     our_avg_train_time = np.mean(our_train_times)
@@ -545,8 +556,9 @@ def compare_runtimes(
         their_avg_train = np.mean(their_train_accs)
         their_std_train = np.std(their_train_accs)
 
-        their_avg_test = np.mean(their_test_accs)
-        their_std_test = np.std(their_test_accs)
+        if predict:
+            their_avg_test = np.mean(their_test_accs)
+            their_std_test = np.std(their_test_accs)
 
         their_avg_train_time = np.mean(their_train_times)
         their_std_train_time = np.std(their_train_times)
@@ -557,12 +569,12 @@ def compare_runtimes(
         overlap if run_theirs else None,
         our_avg_train,
         our_std_train,
-        our_avg_test,
-        our_std_test,
+        our_avg_test if predict else None,
+        our_std_test if predict else None,
         their_avg_train if run_theirs else None,
         their_std_train if run_theirs else None,
-        their_avg_test if run_theirs else None,
-        their_std_test if run_theirs else None,
+        their_avg_test if run_theirs and predict else None,
+        their_std_test if run_theirs and predict else None,
         our_avg_train_time,
         our_std_train_time,
         their_avg_train_time if run_theirs else None,
@@ -618,47 +630,6 @@ def main():
     test_images = np.array(test_images)
     test_labels = np.array(test_labels)
 
-    for C_SUBSAMPLE_SIZE in [10000, 20000, 40000, 80000, 160000, 320000]:
-        np.random.seed(0)
-        idcs = np.random.choice(60000, size=C_SUBSAMPLE_SIZE, replace=True)
-        train_images_subsampled = np.array(train_images)[idcs]
-        train_labels_subsampled = np.array(train_labels)[idcs]
-
-        compare_runtimes(
-            "HRFC",
-            train_images_subsampled,
-            train_labels_subsampled,
-            test_images,
-            test_labels,
-            run_theirs=False,
-            profile_name="HRFC_" + str(C_SUBSAMPLE_SIZE) + "_profile",
-        )
-
-        # compare_runtimes(
-        #     "ERFC",
-        #     train_images_subsampled,
-        #     train_labels_subsampled,
-        #     test_images,
-        #     test_labels,
-        #     run_theirs=False,
-        #     profile_name="ERFC_" + str(C_SUBSAMPLE_SIZE) + "_profile",
-        # )
-        #
-        # compare_runtimes(
-        #     "HRPC",
-        #     train_images_subsampled,
-        #     train_labels_subsampled,
-        #     test_images,
-        #     test_labels,
-        #     run_theirs=False,
-        #     profile_name="HRPC_" + str(C_SUBSAMPLE_SIZE) + "_profile",
-        # )
-
-    ##################################
-    ##################################
-    ##################################
-    ##################################
-    ##################################
     # compare_runtimes("HRFC", train_images, train_labels, test_images, test_labels)
     # compare_runtimes("ERFC", train_images, train_labels, test_images, test_labels)
     # compare_runtimes("HRPC", train_images, train_labels, test_images, test_labels)
