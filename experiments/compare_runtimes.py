@@ -609,15 +609,41 @@ def main():
     ############### Regression
     train_data, train_targets, test_data, test_targets = load_housing()
     # Subsample the data because training on 20k points (the full housing dataset) takes too long for RFR
-    train_data_subsampled = train_data[:3000]
-    train_targets_subsampled = train_targets[:3000]
+    SUBSAMPLE_SIZE = 3000
+    train_data_subsampled = train_data[:SUBSAMPLE_SIZE]
+    train_targets_subsampled = train_targets[:SUBSAMPLE_SIZE]
+    print(len(train_data_subsampled), len(train_targets_subsampled))
 
-    # compare_runtimes("ERFR", train_data, train_targets, test_data, test_targets)
-    # compare_runtimes("GBERFR", train_data, train_targets, test_data, test_targets)
-    # compare_runtimes("HRFR", train_data, train_targets, test_data, test_targets)
-    # compare_runtimes("GBHRFR", train_data, train_targets, test_data, test_targets)
-    # compare_runtimes("HRPR", train_data, train_targets, test_data, test_targets)
-    compare_runtimes("GBHRPR", train_data, train_targets, test_data, test_targets)
+    compare_runtimes(
+        "ERFR", train_data_subsampled, train_targets_subsampled, test_data, test_targets
+    )
+    # compare_runtimes(
+    #     "GBERFR",
+    #     train_data_subsampled,
+    #     train_targets_subsampled,
+    #     test_data,
+    #     test_targets,
+    # )
+    # compare_runtimes(
+    #     "HRFR", train_data_subsampled, train_targets_subsampled, test_data, test_targets
+    # )
+    # compare_runtimes(
+    #     "GBHRFR",
+    #     train_data_subsampled,
+    #     train_targets_subsampled,
+    #     test_data,
+    #     test_targets,
+    # )
+    # compare_runtimes(
+    #     "HRPR", train_data_subsampled, train_targets_subsampled, test_data, test_targets
+    # )
+    # compare_runtimes(
+    #     "GBHRPR",
+    #     train_data_subsampled,
+    #     train_targets_subsampled,
+    #     test_data,
+    #     test_targets,
+    # )
 
 
 if __name__ == "__main__":
