@@ -428,6 +428,7 @@ def solve_mab(
     best_feature = best_split[0]
     best_value = histograms[best_feature].bin_edges[best_split[1]]
     best_reduction = estimates[best_split]
+    print("Best reduction:", best_reduction)
 
     # Uncomment when debugging
     # if verify_reduction(
