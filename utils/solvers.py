@@ -1,6 +1,7 @@
 import math
 import itertools
 import numpy as np
+import random
 
 from typing import List, Tuple, DefaultDict
 from collections import defaultdict
@@ -257,7 +258,7 @@ def solve_mab(
     is_classification: bool = True,
     impurity_measure: str = GINI,
     min_impurity_reduction: float = 0,
-    epsilon=0.0,
+    epsilon=0.10,
     with_replacement: bool = False,
 ) -> Tuple[int, float, float, int]:
     """
@@ -414,12 +415,16 @@ def solve_mab(
             (lcbs < ucbs.min()) & (exact_mask == 0) & (lcbs < min_impurity_reduction)
         )
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
+        tied_arms_condition = np.where((ucbs < (1 - epsilon) * estimates.min()))
+        tied_arms = np.array(list(zip(tied_arms_condition[0], tied_arms_condition[1])))
+        candidates = filter_tied_arms(candidates, tied_arms, F)
         round_count += 1
 
-    best_split = zip(
+    best_splits = zip(
         np.where(estimates == np.nanmin(estimates))[0],
         np.where(estimates == np.nanmin(estimates))[1],
-    ).__next__()  # Get first element
+    )
+    best_split = random.choice(list(best_splits))
     best_feature = best_split[0]
     best_value = histograms[best_feature].bin_edges[best_split[1]]
     best_reduction = estimates[best_split]
@@ -435,3 +440,23 @@ def solve_mab(
         return best_feature, best_value, best_reduction, total_queries
     else:
         return total_queries
+
+
+def filter_tied_arms(candidates: np.ndarray, tied_arms, F):
+    """
+    Removed the tied_arms from the candidates. Assumes first index corresponds to feature and second corresponds to bin.
+
+    :param candidates:
+    :param tied_arms:
+    :return:
+    """
+    cand_flattened_indices = [
+        F * candidate[0] + candidate[1] for candidate in candidates
+    ]
+    tied_flattened_indices = [F * tied[0] + tied[1] for tied in tied_arms]
+
+    filtered_cand_indices = np.setdiff1d(cand_flattened_indices, tied_flattened_indices)
+    filtered_candidates = np.array(
+        [[f_c_ind // F, f_c_ind % F] for f_c_ind in filtered_cand_indices]
+    )
+    return filtered_candidates
