@@ -339,6 +339,7 @@ def solve_mab(
         # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
         if with_replacement:
+            raise Exception("Did you really want to sample with replacement?")
             exact_accesses = np.where(
                 (num_samples + batch_size >= N) & (exact_mask == 0)
             )
@@ -381,6 +382,7 @@ def solve_mab(
             candidates[:, 1],
         )
         # NOTE: cb_delta contains a value for EVERY arm, even non-candidates, so need [accesses]
+
         (
             estimates[accesses],
             cb_delta[accesses],
