@@ -258,7 +258,7 @@ def solve_mab(
     is_classification: bool = True,
     impurity_measure: str = GINI,
     min_impurity_reduction: float = 0,
-    epsilon=0.10,
+    epsilon=0.30,
     with_replacement: bool = False,
 ) -> Tuple[int, float, float, int]:
     """
@@ -429,6 +429,7 @@ def solve_mab(
     best_value = histograms[best_feature].bin_edges[best_split[1]]
     best_reduction = estimates[best_split]
     print("Best reduction:", best_reduction)
+    print("Round count:", round_count)
 
     # Uncomment when debugging
     # if verify_reduction(
@@ -438,7 +439,7 @@ def solve_mab(
 
     # Only return the split if it would indeed lower the impurity
     if best_reduction < min_impurity_reduction:
-        return best_feature, best_value, best_reduction, total_queries
+        return best_feature, best_value, best_reduction, int(np.sum(num_samples))
     else:
         return total_queries
 
