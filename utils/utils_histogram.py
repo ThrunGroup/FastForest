@@ -8,9 +8,12 @@ def welford_variance_calc(
     """
     if var1 == 0:
         return var2
+    elif var2 == 0:
+        return var1
+
     n = n1 + n2
     delta = mean1 - mean2
     M1 = n1 * var1
     M2 = n2 * var2
-    M = M1 + M2 + delta ** 2 * (n1 + n2) / n
+    M = M1 + M2 + (delta ** 2) * (n1 * n2) / n
     return M / n

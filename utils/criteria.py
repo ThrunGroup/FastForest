@@ -7,7 +7,9 @@ from utils.constants import GINI, ENTROPY, VARIANCE, MSE, KURTOSIS
 
 
 def get_gini(
-    counts: np.ndarray, ret_var: bool = False, pop_size: int = None,
+    counts: np.ndarray,
+    ret_var: bool = False,
+    pop_size: int = None,
 ) -> Union[Tuple[float, float], float]:
     """
     Compute the Gini impurity for a given node, where the node is represented by the number of counts of each class
@@ -18,7 +20,7 @@ def get_gini(
     :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
     :return: the Gini impurity of the node, as well as its estimated variance if ret_var
     """
-    n = np.sum(counts)
+    n = np.sum(counts, dtype=np.int64)
     if n == 0:
         if ret_var:
             return 0, 0
@@ -57,7 +59,7 @@ def get_entropy(
     :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
     :return: the entropy impurity of the node, as well as its estimated variance if ret_var
     """
-    n = np.sum(counts)
+    n = np.sum(counts, dtype=np.int64)
     if n == 0:
         if ret_var:
             return 0, 0
@@ -100,7 +102,7 @@ def get_variance(
     :return: the variance of the node, as well as its estimated variance if ret_var
     """
     raise NotImplementedError("Not implemented until we do regression trees")
-    n = np.sum(counts)
+    n = np.sum(counts, dtype=np.int64)
     if n == 0:
         if ret_var:
             return 0, 0
@@ -121,7 +123,9 @@ def get_variance(
 
 
 def get_mse(
-    args: np.ndarray, ret_var: bool = False, pop_size: int = None,
+    args: np.ndarray,
+    ret_var: bool = False,
+    pop_size: int = None,
 ) -> Union[Tuple[float, float], float]:
     """
     Compute the MSE for a given node, where the node is represented by the pile of all target values. Also Compute the
@@ -134,7 +138,9 @@ def get_mse(
     """
     n = args[0]
     second_moment = args[2]
-    fourth_moment = 3 * second_moment ** 2  # see https://en.wikipedia.org/wiki/Kurtosis#Pearson_moments
+    fourth_moment = (
+        3 * second_moment ** 2
+    )  # see https://en.wikipedia.org/wiki/Kurtosis#Pearson_moments
 
     if n <= 1:
         if ret_var:
@@ -238,16 +244,18 @@ def get_impurity_reductions(
     V_impurities_right = np.zeros(b)
 
     if is_classification:
-        n = int(np.sum(h.left[0, :]) + np.sum(h.right[0, :]))
+        n = int(
+            np.sum(h.left[0, :], dtype=np.int64) + np.sum(h.right[0, :], dtype=np.int64)
+        )
     else:
-        n = int(h.left_pile[0][0] + h.right_pile[0][0])
+        n = int(h.left_pile[0][0]) + int(h.right_pile[0][0])
     for i in range(b):
         b_idx = bin_edge_idcs[i]
 
         # Impurity is weighted by population of each node during a split
         if is_classification:
-            left_weight = int(np.sum(h.left[b_idx, :]))
-            right_weight = int(np.sum(h.right[b_idx, :]))
+            left_weight = int(np.sum(h.left[b_idx, :], dtype=np.int64))
+            right_weight = int(np.sum(h.right[b_idx, :], dtype=np.int64))
         else:
             left_weight = int(h.left_pile[b_idx][0])
             right_weight = int(h.right_pile[b_idx][0])
