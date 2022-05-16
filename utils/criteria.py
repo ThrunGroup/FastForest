@@ -239,7 +239,7 @@ def get_impurity_reductions(
     V_impurities_right = np.zeros(b)
 
     if is_classification:
-        n = np.sum(h.left[0, :]) + np.sum(h.right[0, :])
+        n = int(np.sum(h.left[0, :]) + np.sum(h.right[0, :]))
     else:
         n = len(h.left_pile[0]) + len(h.right_pile[0])
     for i in range(b):
@@ -247,8 +247,8 @@ def get_impurity_reductions(
 
         # Impurity is weighted by population of each node during a split
         if is_classification:
-            left_weight = np.sum(h.left[b_idx, :])
-            right_weight = np.sum(h.right[b_idx, :])
+            left_weight = int(np.sum(h.left[b_idx, :]))
+            right_weight = int(np.sum(h.right[b_idx, :]))
         else:
             left_weight = len(h.left_pile[b_idx])
             right_weight = len(h.right_pile[b_idx])

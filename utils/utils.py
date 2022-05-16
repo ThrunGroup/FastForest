@@ -238,4 +238,7 @@ def empty_histograms(histograms: List[Histogram], arms: Tuple[np.ndarray, np.nda
     for idx in range(len(arms[0])):
         f = arms[0][idx]
         b = arms[1][idx]
-        histograms[f].empty_samples([b])
+        h = histograms[f]
+        h.empty_samples(
+            range(h.num_bins)
+        )  # Since we don't obviate bins in arms, even though they are not candidates
