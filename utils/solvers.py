@@ -2,6 +2,7 @@ import math
 import itertools
 import numpy as np
 import random
+import ipdb
 
 from typing import List, Tuple, DefaultDict
 from collections import defaultdict
@@ -191,6 +192,8 @@ def sample_targets(
     :return: impurity_reduction and its variance of accesses
     """
     # TODO(@motiwari): Samples all bin edges for a given feature, should only sample those under consideration.
+
+    ipdb.set_trace()
     feature_idcs, bin_edge_idcs = arms
     f2bin_dict = defaultdict(
         list
@@ -200,6 +203,7 @@ def sample_targets(
         bin_edge = bin_edge_idcs[idx]
         f2bin_dict[feature].append(bin_edge)
 
+    ipdb.set_trace()
     # NOTE: impurity_reductions and cb_deltas are smaller subsets than the original
     impurity_reductions = np.array([], dtype=float)
     cb_deltas = np.array([], dtype=float)
@@ -227,7 +231,7 @@ def sample_targets(
     num_queries = len(sample_idcs)  # May be less than batch_size due to truncation
     samples = data[sample_idcs]
     sample_labels = labels[sample_idcs]
-
+    ipdb.set_trace()
     for f_idx, f in enumerate(f2bin_dict):
         h: Histogram = histograms[f]
         h.add(samples, sample_labels)  # This is where the labels are used
@@ -341,7 +345,7 @@ def solve_mab(
         # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
         if with_replacement:
-            raise Exception("Did you really want to sample with replacement?")
+            # raise Exception("Did you really want to sample with replacement?")
             exact_accesses = np.where(
                 (num_samples + batch_size >= N) & (exact_mask == 0)
             )

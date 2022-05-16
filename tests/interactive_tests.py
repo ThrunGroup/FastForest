@@ -5,6 +5,18 @@ from data_structures.tree_classifier import TreeClassifier
 from data_structures.wrappers.random_forest_classifier import RandomForestClassifier
 import utils.utils
 
+import matplotlib.pyplot as plt
+import numpy as np
+import random
+
+from sklearn.tree import DecisionTreeRegressor, plot_tree, export_text
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.datasets import load_diabetes
+
+from data_structures.tree_regressor import TreeRegressor
+from data_structures.forest_regressor import ForestRegressor
+from utils.constants import SQRT, EXACT, MAB
+
 
 def test_zero_budget_tree_iris() -> None:
     iris = sklearn.datasets.load_iris()
@@ -58,7 +70,56 @@ def test_wrapper_forest_iris() -> None:
     print("Accuracy of wrapper:", (acc / len(data)))
 
 
+def test_tree_diabetes(
+    seed: int = 1,
+    verbose: bool = False,
+    with_replacement: bool = False,
+    solver: str = MAB,
+    print_sklearn: bool = False,
+):
+    if verbose:
+        print("--DT experiment with diabetes dataset--")
+    np.random.seed(seed)
+    random.seed(seed)
+    diabetes = load_diabetes()
+    data, labels = diabetes.data, diabetes.target
+    if print_sklearn:
+        DT = DecisionTreeRegressor(max_depth=6, random_state=seed)
+        DT.fit(data, labels)
+        print("-Sklearn")
+        if verbose:
+            print(export_text(DT))
+            plot_tree(DT)
+            plt.show()
+        mse = np.sum(np.square(DT.predict(data) - labels)) / len(data)
+        print(f"MSE is {mse}\n")
+
+    tree = TreeRegressor(
+        data,
+        labels,
+        max_depth=6,
+        verbose=verbose,
+        random_state=seed,
+        solver=solver,
+        bin_type="",
+        with_replacement=with_replacement,
+    )
+    tree.fit()
+    if verbose:
+        tree.tree_print()
+    mse = np.sum(np.square(tree.predict_batch(data) - labels)) / len(data)
+    if verbose:
+        print("-FastTree")
+        print(f"Seed : {seed}")
+        print(f"Solver: {solver}")
+        print(f"Sample with replacement: {with_replacement}")
+        print(f"MSE is {mse}")
+        print(f"num_queries is {tree.num_queries}\n")
+    return tree.num_queries, mse
+
+
 if __name__ == "__main__":
-    test_zero_budget_tree_iris()
-    test_increasing_budget_tree_iris()
-    test_wrapper_forest_iris()
+    # test_zero_budget_tree_iris()
+    # test_increasing_budget_tree_iris()
+    # test_wrapper_forest_iris()
+    test_tree_diabetes()
