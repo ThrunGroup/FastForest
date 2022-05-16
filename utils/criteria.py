@@ -247,8 +247,8 @@ def get_impurity_reductions(
 
         # Impurity is weighted by population of each node during a split
         if is_classification:
-            left_weight = np.sum(h.left[b_idx, :])
-            right_weight = np.sum(h.right[b_idx, :])
+            left_weight = int(np.sum(h.left[b_idx, :]))
+            right_weight = int(np.sum(h.right[b_idx, :]))
         else:
             left_weight = len(h.left_pile[b_idx])
             right_weight = len(h.right_pile[b_idx])

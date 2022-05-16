@@ -93,8 +93,8 @@ class Histogram:
         :param bin_idcs: Bin indices we want to empty
         """
         if self.is_classification:
-            self.left[bin_idcs, :] = np.zeros(len(self.classes), dtype=np.int32)
-            self.right[bin_idcs, :] = np.zeros(len(self.classes), dtype=np.int32)
+            self.left[bin_idcs, :] = np.zeros(len(self.classes), dtype=np.int64)
+            self.right[bin_idcs, :] = np.zeros(len(self.classes), dtype=np.int64)
         else:
             for bin_idx in bin_idcs:
                 self.left_pile[bin_idx] = []
