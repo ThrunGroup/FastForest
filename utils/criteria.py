@@ -3,7 +3,7 @@ import scipy
 import numpy as np
 
 from data_structures.histogram import Histogram
-from utils.constants import GINI, ENTROPY, VARIANCE, MSE
+from utils.constants import GINI, ENTROPY, VARIANCE, MSE, KURTOSIS
 
 
 def get_gini(
@@ -121,26 +121,25 @@ def get_variance(
 
 
 def get_mse(
-    targets_pile: List, ret_var: bool = False, pop_size: int = None,
+    args: np.ndarray, ret_var: bool = False, pop_size: int = None,
 ) -> Union[Tuple[float, float], float]:
     """
     Compute the MSE for a given node, where the node is represented by the pile of all target values. Also Compute the
     confidence bound of our estimation by using Hoeffding's inequality for bounded values
 
-    :param targets_pile: An array of all target values in the node
+    :param args: args = (number of samples, mean of samples, variance of samples)
     :param ret_var: Whether to return the variance of the estimate
     :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
     :return: the mse(variance) of the node, as well as its estimated variance if ret_var
     """
-    assert len(np.array(targets_pile).shape) == 1, "Invalid pile of target values"
-    n = len(targets_pile)
+    n = args[0]
+    second_moment = args[2]
+    fourth_moment = 3 * second_moment ** 2  # see https://en.wikipedia.org/wiki/Kurtosis#Pearson_moments
+
     if n <= 1:
         if ret_var:
             return 0, 0
         return 0
-    second_moment = float(scipy.stats.moment(targets_pile, 2))
-    # Todo: Have to put unbiased estimation of fourth central moment of population
-    fourth_moment = float(scipy.stats.moment(targets_pile, 4))
 
     if pop_size == n:
         if ret_var:
@@ -151,6 +150,7 @@ def get_mse(
     )  # 2nd central moment is mse with mean as a predicted value and use Bessel's correction
 
     if pop_size is not None and pop_size > 3:
+        assert pop_size >= n, "Sample size is greater than population size"
         # Todo: Add a formula when pop_size is equal to 3.
         N = pop_size
         c1 = (
@@ -167,7 +167,7 @@ def get_mse(
         )
         # Use the formula of the variance of sample variance when sampled with replacement, see
         # https://www.asasrms.org/Proceedings/y2008/Files/300992.pdf#page=2
-        V_mse = c1 * fourth_moment + c3 * (estimated_mse ** 2)
+        V_mse = c1 * fourth_moment + c3 * (second_moment ** 2)
 
         # Derive myself with reference to
         # https://stats.stackexchange.com/questions/5158/explanation-of-finite-population-correction-factor
@@ -182,8 +182,7 @@ def get_mse(
             # This variance comes from the variance of sample variance, see
             # https://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance
             # Use sample variance as an estimation of population variance.
-            V_mse = (fourth_moment - (estimated_mse ** 2) * (n - 3) / (n - 1)) / n
-
+            V_mse = (fourth_moment - (second_moment ** 2) * (n - 3) / (n - 1)) / n
     if ret_var:
         return estimated_mse, V_mse
     return estimated_mse
@@ -239,9 +238,9 @@ def get_impurity_reductions(
     V_impurities_right = np.zeros(b)
 
     if is_classification:
-        n = np.sum(h.left[0, :]) + np.sum(h.right[0, :])
+        n = int(np.sum(h.left[0, :]) + np.sum(h.right[0, :]))
     else:
-        n = len(h.left_pile[0]) + len(h.right_pile[0])
+        n = int(h.left_pile[0][0] + h.right_pile[0][0])
     for i in range(b):
         b_idx = bin_edge_idcs[i]
 
@@ -250,8 +249,8 @@ def get_impurity_reductions(
             left_weight = int(np.sum(h.left[b_idx, :]))
             right_weight = int(np.sum(h.right[b_idx, :]))
         else:
-            left_weight = len(h.left_pile[b_idx])
-            right_weight = len(h.right_pile[b_idx])
+            left_weight = int(h.left_pile[b_idx][0])
+            right_weight = int(h.right_pile[b_idx][0])
 
         # Population of left and right node is approximated by left_weight and right_weight
         left_size = None if pop_size is None else int(left_weight * pop_size / n)
@@ -286,7 +285,7 @@ def get_impurity_reductions(
         )
     else:
         impurity_curr, V_impurity_curr = get_impurity(
-            h.left_pile[0] + h.right_pile[0], ret_var=True, pop_size=pop_size
+            h.curr_pile, ret_var=True, pop_size=pop_size
         )
     impurity_curr = float(impurity_curr)
     V_impurity_curr = float(V_impurity_curr)
