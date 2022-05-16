@@ -1,6 +1,7 @@
 import math
 import itertools
 import numpy as np
+import random
 
 from typing import List, Tuple, DefaultDict
 from collections import defaultdict
@@ -17,7 +18,14 @@ from utils.constants import (
     RANDOM,
 )
 from utils.criteria import get_impurity_reductions
-from utils.utils import type_check, class_to_idx, counts_of_labels, make_histograms, empty_histograms
+from utils.utils import (
+    type_check,
+    class_to_idx,
+    counts_of_labels,
+    make_histograms,
+    empty_histograms,
+)
+
 from data_structures.histogram import Histogram
 
 type_check()
@@ -96,8 +104,11 @@ def solve_exactly(
         assert (
             num_bins is None
         ), "When using Extremely Random Forests, please pass num_bins=None explicitly. If you want to set a custom \
-            number of Extremely Random bins, please update callsites and remove this assertion."
-        B = math.ceil(np.sqrt(F))
+                            number of Extremely Random bins, please update callsites and remove this assertion."
+        if is_classification:
+            B = math.ceil(np.sqrt(F))
+        else:
+            B = F
     else:
         B = num_bins
 
@@ -181,11 +192,13 @@ def sample_targets(
     :return: impurity_reduction and its variance of accesses
     """
     # TODO(@motiwari): Samples all bin edges for a given feature, should only sample those under consideration.
+
     feature_idcs, bin_edge_idcs = arms
     f2bin_dict = defaultdict(
         list
     )  # f2bin_dict[i] contains bin indices list of ith feature
     for idx in range(len(bin_edge_idcs)):
+        # Get the corresponding feature index for this bin index in the list of (feature_idcs, bin_idcs) pairs
         feature = feature_idcs[idx]
         bin_edge = bin_edge_idcs[idx]
         f2bin_dict[feature].append(bin_edge)
@@ -198,15 +211,15 @@ def sample_targets(
     with_replacement = population_idcs is None
     initial_pop_size = None if population_idcs is None else N
     if with_replacement:  # Sample with replacement
-        sample_idcs = (
-            np.arange(N)
-            if N <= batch_size
-            else np.random.choice(N, size=batch_size, replace=True)
-        )
+        if N <= batch_size:
+            sample_idcs = np.arange(N, dtype=np.int64)
+            initial_pop_size = N  # Since we're sampling all the samples
+        else:
+            sample_idcs = np.random.choice(N, size=batch_size, replace=True)
     else:
         M = len(population_idcs)
         idcs = (
-            np.arange(M)
+            np.arange(M, dtype=np.int64)
             if batch_size >= M
             else np.random.choice(M, batch_size, replace=False)
         )
@@ -217,7 +230,6 @@ def sample_targets(
     num_queries = len(sample_idcs)  # May be less than batch_size due to truncation
     samples = data[sample_idcs]
     sample_labels = labels[sample_idcs]
-
     for f_idx, f in enumerate(f2bin_dict):
         h: Histogram = histograms[f]
         h.add(samples, sample_labels)  # This is where the labels are used
@@ -248,6 +260,7 @@ def solve_mab(
     is_classification: bool = True,
     impurity_measure: str = GINI,
     min_impurity_reduction: float = 0,
+    epsilon=0.00,
     with_replacement: bool = False,
 ) -> Tuple[int, float, float, int]:
     """
@@ -281,22 +294,26 @@ def solve_mab(
         assert (
             num_bins is None
         ), "When using Extremely Random Forests, please pass num_bins=None explicitly. If you want to set a custom \
-            number of Extremely Random bins, please update callsites and remove this assertion."
-        B = math.ceil(np.sqrt(F))
+                    number of Extremely Random bins, please update callsites and remove this assertion."
+        if is_classification:
+            B = math.ceil(np.sqrt(F))
+        else:
+            B = F
     else:
         B = num_bins
 
     batch_size = BATCH_SIZE
     round_count = 0
-    population_idcs = None if with_replacement is True else np.arange(N)
+    population_idcs = None if with_replacement is True else np.arange(N, dtype=np.int64)
     if impurity_measure == "":
         impurity_measure = GINI if is_classification else MSE
 
+    print("Number of arms:", B * F)
     candidates = np.array(list(itertools.product(range(F), range(B))))
     estimates = np.empty((F, B))
     lcbs = np.empty((F, B))
     ucbs = np.empty((F, B))
-    num_samples = np.zeros((F, B))
+    num_samples = np.zeros((F, B), dtype=np.int64)
     exact_mask = np.zeros((F, B))
     cb_delta = np.zeros((F, B))
 
@@ -316,9 +333,8 @@ def solve_mab(
     if len(not_considered_idcs) > 0:
         not_considered_access = (not_considered_idcs[:, 0], not_considered_idcs[:, 1])
         exact_mask[not_considered_access] = 1
-        lcbs[not_considered_access] = ucbs[not_considered_access] = estimates[
-            not_considered_access
-        ] = float("inf")
+        ucbs[not_considered_access] = estimates[not_considered_access] = float("inf")
+        lcbs[not_considered_access] = -float("inf")
         candidates = considered_idcs
 
     total_queries = 0
@@ -327,6 +343,7 @@ def solve_mab(
         # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
         if with_replacement:
+            # raise Exception("Did you really want to sample with replacement?")
             exact_accesses = np.where(
                 (num_samples + batch_size >= N) & (exact_mask == 0)
             )
@@ -369,6 +386,7 @@ def solve_mab(
             candidates[:, 1],
         )
         # NOTE: cb_delta contains a value for EVERY arm, even non-candidates, so need [accesses]
+
         (
             estimates[accesses],
             cb_delta[accesses],
@@ -395,17 +413,25 @@ def solve_mab(
 
         # TODO(@motiwari): Can't use nanmin here -- why?
         # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
-        cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
+        cand_condition = np.where(
+            (lcbs < ucbs.min()) & (exact_mask == 0) & (lcbs < min_impurity_reduction)
+        )
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
+        tied_arms_condition = np.where((ucbs < (1 - epsilon) * estimates.min()))
+        tied_arms = np.array(list(zip(tied_arms_condition[0], tied_arms_condition[1])))
+        candidates = filter_tied_arms(candidates, tied_arms, F, B)
         round_count += 1
 
-    best_split = zip(
+    best_splits = zip(
         np.where(estimates == np.nanmin(estimates))[0],
         np.where(estimates == np.nanmin(estimates))[1],
-    ).__next__()  # Get first element
+    )
+    best_split = random.choice(list(best_splits))
     best_feature = best_split[0]
     best_value = histograms[best_feature].bin_edges[best_split[1]]
     best_reduction = estimates[best_split]
+    print("Best reduction:", best_reduction)
+    print("Round count:", round_count)
 
     # Uncomment when debugging
     # if verify_reduction(
@@ -415,6 +441,26 @@ def solve_mab(
 
     # Only return the split if it would indeed lower the impurity
     if best_reduction < min_impurity_reduction:
-        return best_feature, best_value, best_reduction, total_queries
+        return best_feature, best_value, best_reduction, int(np.sum(num_samples))
     else:
         return total_queries
+
+
+def filter_tied_arms(candidates: np.ndarray, tied_arms, F, B):
+    """
+    Removed the tied_arms from the candidates. Assumes first index corresponds to feature and second corresponds to bin.
+
+    :param candidates:
+    :param tied_arms:
+    :return:
+    """
+    cand_flattened_indices = [
+        B * candidate[0] + candidate[1] for candidate in candidates
+    ]
+    tied_flattened_indices = [B * tied[0] + tied[1] for tied in tied_arms]
+
+    filtered_cand_indices = np.setdiff1d(cand_flattened_indices, tied_flattened_indices)
+    filtered_candidates = np.array(
+        [[f_c_ind // B, f_c_ind % B] for f_c_ind in filtered_cand_indices]
+    )
+    return filtered_candidates

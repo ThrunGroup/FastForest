@@ -3,6 +3,7 @@ BATCH_SIZE = 100
 CONF_MULTIPLIER = 1
 TOLERANCE = -1e-1
 BUFFER = 1000
+DEFAULT_MIN_IMPURITY_DECREASE = 5e-3
 
 # Datasets
 IRIS = "IRIS"
@@ -44,3 +45,10 @@ DEFAULT_GRAD_SMOOTHING_VAL = 1e-5
 
 # For randomness
 MAX_SEED = 2 ** 31
+
+# For MSE estimation
+KURTOSIS = 3  # normal distribution has kurtosis = 3
+
+# Models for speedup comparison
+CLASSIFICATION_MODELS = ["ERFC", "HRFC", "HRPC"]
+REGRESSION_MODELS = ["ERFR", "GBERFR", "HRFR", "GBHRFR", "HRPR", "GBHRPR"]

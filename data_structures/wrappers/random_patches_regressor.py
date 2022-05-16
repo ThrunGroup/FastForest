@@ -44,7 +44,7 @@ class RandomPatchesRegressor(ForestRegressor):
         data_idcs = np.random.choice(N, math.ceil(alpha_N * N), replace=False)
         feature_idcs = np.random.choice(F, math.ceil(alpha_F * F), replace=False)
 
-        self.data = data[data_idcs, feature_idcs]
+        self.data = data[data_idcs][:, feature_idcs]
         self.labels = labels[data_idcs]
         super().__init__(
             data=self.data,  # Fixed

@@ -9,9 +9,11 @@ from utils.utils import set_seed
 
 class TestReplacement(unittest.TestCase):
     def test_tree_diabetes(self):
-        seed = 0
+        seed = 3
         set_seed(seed)
-        num_with, mse_with = test_tree_diabetes(seed=seed, with_replacement=True)
+        num_with, mse_with = test_tree_diabetes(
+            seed=seed, with_replacement=True, print_sklearn=True
+        )
         num_without, mse_without = test_tree_diabetes(seed=seed, with_replacement=False)
         num_exact, mse_exact = test_tree_diabetes(seed=seed, solver=EXACT)
         self.assertTrue(num_without <= num_exact and 1 - mse_with / mse_without < 0.04)

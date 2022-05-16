@@ -66,7 +66,7 @@ def counts_of_labels(class_dict: dict, labels: np.ndarray) -> np.ndarray:
     :return: array of counts of each class label, indexed by class index
     """
     classes = np.unique(labels)
-    counts = np.zeros(len(class_dict))
+    counts = np.zeros(len(class_dict), dtype=np.int64)
     for class_ in classes:
         class_idx = class_dict[class_]
         counts[class_idx] = count_occurrence(class_, labels)
@@ -238,4 +238,8 @@ def empty_histograms(histograms: List[Histogram], arms: Tuple[np.ndarray, np.nda
     for idx in range(len(arms[0])):
         f = arms[0][idx]
         b = arms[1][idx]
-        histograms[f].empty_samples([b])
+        histogram = histograms[f]
+        # Since we don't obviate bins in arms, even though they are not candidates
+        # Todo: change this if we obviate bins later
+        histogram.empty_samples(range(histogram.num_bins))
+
