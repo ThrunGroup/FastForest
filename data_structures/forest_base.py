@@ -11,6 +11,7 @@ from utils.constants import (
     MAX_SEED,
     DEFAULT_NUM_BINS,
     DEFAULT_REGRESSOR_LOSS,
+    DEFAULT_MIN_IMPURITY_DECREASE,
 )
 from utils.utils import data_to_discrete, set_seed
 from utils.boosting import get_next_targets
@@ -33,7 +34,7 @@ class ForestBase(ABC):
         feature_subsampling: str = None,
         tree_global_feature_subsampling: bool = False,
         min_samples_split: int = 2,
-        min_impurity_decrease: float = 0,
+        min_impurity_decrease: float = DEFAULT_MIN_IMPURITY_DECREASE,
         max_leaf_nodes: int = None,
         bin_type: str = LINEAR,
         num_bins: int = DEFAULT_NUM_BINS,

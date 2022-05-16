@@ -12,7 +12,15 @@ from utils.utils import (
     choose_features,
     remap_discrete_features,
 )
-from utils.constants import MAB, LINEAR, BEST, DEPTH, GINI, DEFAULT_NUM_BINS
+from utils.constants import (
+    MAB,
+    LINEAR,
+    BEST,
+    DEPTH,
+    GINI,
+    DEFAULT_NUM_BINS,
+    DEFAULT_MIN_IMPURITY_DECREASE,
+)
 
 
 class TreeBase(ABC):
@@ -30,7 +38,7 @@ class TreeBase(ABC):
         feature_subsampling: Union[str, int] = None,
         tree_global_feature_subsampling: bool = False,
         min_samples_split: int = 2,
-        min_impurity_decrease: float = -1e-6,
+        min_impurity_decrease: float = DEFAULT_MIN_IMPURITY_DECREASE,
         max_leaf_nodes: int = None,
         discrete_features: DefaultDict = defaultdict(list),
         bin_type: str = LINEAR,
