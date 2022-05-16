@@ -8,7 +8,7 @@ from sklearn.datasets import load_diabetes
 
 from data_structures.tree_regressor import TreeRegressor
 from data_structures.forest_regressor import ForestRegressor
-from utils.constants import SQRT, EXACT, MAB
+from utils.constants import SQRT, EXACT, MAB, LINEAR, IDENTITY
 
 
 def test_tree_diabetes(
@@ -25,7 +25,7 @@ def test_tree_diabetes(
     diabetes = load_diabetes()
     data, labels = diabetes.data, diabetes.target
     if print_sklearn:
-        DT = DecisionTreeRegressor(max_depth=6, random_state=seed)
+        DT = DecisionTreeRegressor(max_depth=7, random_state=seed)
         DT.fit(data, labels)
         print("-Sklearn")
         if verbose:
@@ -34,15 +34,15 @@ def test_tree_diabetes(
             plt.show()
         mse = np.sum(np.square(DT.predict(data) - labels)) / len(data)
         print(f"MSE is {mse}\n")
-
+    bin_type = IDENTITY if solver == EXACT else LINEAR
     tree = TreeRegressor(
         data,
         labels,
-        max_depth=6,
+        max_depth=7,
         verbose=verbose,
         random_state=seed,
         solver=solver,
-        bin_type="",
+        bin_type=bin_type,
         with_replacement=with_replacement,
     )
     tree.fit()

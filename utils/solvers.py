@@ -205,14 +205,14 @@ def sample_targets(
     initial_pop_size = None if population_idcs is None else N
     if with_replacement:  # Sample with replacement
         if N <= batch_size:
-            sample_idcs = np.arange(N)
+            sample_idcs = np.arange(N, dtype=np.int64)
             initial_pop_size = N  # Since we're sampling all the samples
         else:
             sample_idcs = np.random.choice(N, size=batch_size, replace=True)
     else:
         M = len(population_idcs)
         idcs = (
-            np.arange(M)
+            np.arange(M, dtype=np.int64)
             if batch_size >= M
             else np.random.choice(M, batch_size, replace=False)
         )
@@ -294,7 +294,7 @@ def solve_mab(
 
     batch_size = BATCH_SIZE
     round_count = 0
-    population_idcs = None if with_replacement is True else np.arange(N)
+    population_idcs = None if with_replacement is True else np.arange(N, dtype=np.int64)
     if impurity_measure == "":
         impurity_measure = GINI if is_classification else MSE
 
@@ -302,7 +302,7 @@ def solve_mab(
     estimates = np.empty((F, B))
     lcbs = np.empty((F, B))
     ucbs = np.empty((F, B))
-    num_samples = np.zeros((F, B))
+    num_samples = np.zeros((F, B), dtype=np.int64)
     exact_mask = np.zeros((F, B))
     cb_delta = np.zeros((F, B))
 
@@ -322,9 +322,8 @@ def solve_mab(
     if len(not_considered_idcs) > 0:
         not_considered_access = (not_considered_idcs[:, 0], not_considered_idcs[:, 1])
         exact_mask[not_considered_access] = 1
-        lcbs[not_considered_access] = ucbs[not_considered_access] = estimates[
-            not_considered_access
-        ] = float("inf")
+        ucbs[not_considered_access] = estimates[not_considered_access] = float("inf")
+        lcbs[not_considered_access] = -float("inf")
         candidates = considered_idcs
 
     total_queries = 0
