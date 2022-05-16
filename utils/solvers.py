@@ -257,6 +257,7 @@ def solve_mab(
     is_classification: bool = True,
     impurity_measure: str = GINI,
     min_impurity_reduction: float = 0,
+    epsilon=0.0,
     with_replacement: bool = False,
 ) -> Tuple[int, float, float, int]:
     """
@@ -409,7 +410,9 @@ def solve_mab(
 
         # TODO(@motiwari): Can't use nanmin here -- why?
         # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
-        cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
+        cand_condition = np.where(
+            (lcbs < ucbs.min()) & (exact_mask == 0) & (lcbs < min_impurity_reduction)
+        )
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
         round_count += 1
 
