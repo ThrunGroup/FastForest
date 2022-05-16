@@ -197,6 +197,7 @@ def sample_targets(
         list
     )  # f2bin_dict[i] contains bin indices list of ith feature
     for idx in range(len(bin_edge_idcs)):
+        # Get the corresponding feature index for this bin index in the list of (feature_idcs, bin_idcs) pairs
         feature = feature_idcs[idx]
         bin_edge = bin_edge_idcs[idx]
         f2bin_dict[feature].append(bin_edge)
@@ -417,7 +418,7 @@ def solve_mab(
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
         tied_arms_condition = np.where((ucbs < (1 - epsilon) * estimates.min()))
         tied_arms = np.array(list(zip(tied_arms_condition[0], tied_arms_condition[1])))
-        candidates = filter_tied_arms(candidates, tied_arms, F)
+        candidates = filter_tied_arms(candidates, tied_arms, F, B)
         round_count += 1
 
     best_splits = zip(
@@ -444,7 +445,7 @@ def solve_mab(
         return total_queries
 
 
-def filter_tied_arms(candidates: np.ndarray, tied_arms, F):
+def filter_tied_arms(candidates: np.ndarray, tied_arms, F, B):
     """
     Removed the tied_arms from the candidates. Assumes first index corresponds to feature and second corresponds to bin.
 
@@ -453,12 +454,12 @@ def filter_tied_arms(candidates: np.ndarray, tied_arms, F):
     :return:
     """
     cand_flattened_indices = [
-        F * candidate[0] + candidate[1] for candidate in candidates
+        B * candidate[0] + candidate[1] for candidate in candidates
     ]
-    tied_flattened_indices = [F * tied[0] + tied[1] for tied in tied_arms]
+    tied_flattened_indices = [B * tied[0] + tied[1] for tied in tied_arms]
 
     filtered_cand_indices = np.setdiff1d(cand_flattened_indices, tied_flattened_indices)
     filtered_candidates = np.array(
-        [[f_c_ind // F, f_c_ind % F] for f_c_ind in filtered_cand_indices]
+        [[f_c_ind // B, f_c_ind % B] for f_c_ind in filtered_cand_indices]
     )
     return filtered_candidates

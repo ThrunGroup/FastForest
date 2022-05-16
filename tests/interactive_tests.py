@@ -15,7 +15,7 @@ from sklearn.datasets import load_diabetes
 
 from data_structures.tree_regressor import TreeRegressor
 from data_structures.forest_regressor import ForestRegressor
-from utils.constants import SQRT, EXACT, MAB
+from utils.constants import SQRT, EXACT, MAB, LINEAR
 
 
 def test_zero_budget_tree_iris() -> None:
@@ -101,7 +101,7 @@ def test_tree_diabetes(
         verbose=verbose,
         random_state=seed,
         solver=solver,
-        bin_type="",
+        bin_type=LINEAR,
         with_replacement=with_replacement,
     )
     tree.fit()
