@@ -259,7 +259,7 @@ def solve_mab(
     is_classification: bool = True,
     impurity_measure: str = GINI,
     min_impurity_reduction: float = 0,
-    epsilon=0.30,
+    epsilon=0.00,
     with_replacement: bool = False,
 ) -> Tuple[int, float, float, int]:
     """
