@@ -322,9 +322,8 @@ def solve_mab(
     if len(not_considered_idcs) > 0:
         not_considered_access = (not_considered_idcs[:, 0], not_considered_idcs[:, 1])
         exact_mask[not_considered_access] = 1
-        lcbs[not_considered_access] = ucbs[not_considered_access] = estimates[
-            not_considered_access
-        ] = float("inf")
+        ucbs[not_considered_access] = estimates[not_considered_access] = float("inf")
+        lcbs[not_considered_access] = -float("inf")
         candidates = considered_idcs
 
     total_queries = 0
