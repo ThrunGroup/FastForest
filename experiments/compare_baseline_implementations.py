@@ -1,13 +1,9 @@
-"""
 from sklearn.ensemble import RandomForestClassifier as RFC_sklearn
 from sklearn.ensemble import ExtraTreesClassifier as ERFC_sklearn
 
 from sklearn.ensemble import RandomForestRegressor as RFR_sklearn
 from sklearn.ensemble import ExtraTreesRegressor as ERFR_sklearn
-<<<<<<< HEAD
-=======
 from sklearn.ensemble import GradientBoostingRegressor as GBRFR_sklearn
->>>>>>> 41917fd2520e2d6f4042324d3c3ecc070f3c6cd2
 
 from experiments.exp_utils import *
 from utils.constants import GINI, BEST, EXACT, MSE
@@ -19,22 +15,16 @@ from data_structures.wrappers.extremely_random_forest_classifier import (
     ExtremelyRandomForestClassifier as ERFC_ours,
 )
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 41917fd2520e2d6f4042324d3c3ecc070f3c6cd2
 from data_structures.wrappers.random_forest_regressor import (
     RandomForestRegressor as RFR_ours,
 )
 from data_structures.wrappers.extremely_random_forest_regressor import (
     ExtremelyRandomForestRegressor as ERFR_ours,
 )
-<<<<<<< HEAD
-=======
 from data_structures.wrappers.gradient_boosted_random_forest_regressor import (
     GradientBoostedRandomForestRegressor as GBRFR_ours,
 )
->>>>>>> 41917fd2520e2d6f4042324d3c3ecc070f3c6cd2
 
 
 def compare_accuracies(
@@ -112,13 +102,8 @@ def compare_accuracies(
             our_model = RFR_ours(
                 data=train_data,
                 labels=train_targets,
-<<<<<<< HEAD
-                n_estimators=5,
-                max_depth=5,
-=======
                 n_estimators=1,
                 max_depth=3,
->>>>>>> 41917fd2520e2d6f4042324d3c3ecc070f3c6cd2
                 min_samples_split=2,
                 min_impurity_decrease=0,
                 max_leaf_nodes=None,
@@ -130,15 +115,9 @@ def compare_accuracies(
                 verbose=False,
             )
             their_model = RFR_sklearn(
-<<<<<<< HEAD
-                n_estimators=5,
-                criterion="squared_error",
-                max_depth=5,
-=======
                 n_estimators=1,
                 criterion="squared_error",
                 max_depth=3,
->>>>>>> 41917fd2520e2d6f4042324d3c3ecc070f3c6cd2
                 min_samples_split=2,
                 max_leaf_nodes=None,
                 min_impurity_decrease=0.0,
@@ -174,9 +153,6 @@ def compare_accuracies(
                 bootstrap=False,
                 n_jobs=-1,
                 random_state=seed,
-<<<<<<< HEAD
-                verbose=0,
-=======
                 verbose=False,
             )
         elif compare == "GBRFR":
@@ -241,7 +217,6 @@ def compare_accuracies(
                 n_jobs=-1,
                 random_state=seed,
                 verbose=False,
->>>>>>> 41917fd2520e2d6f4042324d3c3ecc070f3c6cd2
             )
         else:
             raise NotImplementedError("Need to decide what models to compare")
@@ -249,12 +224,8 @@ def compare_accuracies(
         our_model.fit()
         their_model.fit(train_data, train_targets)
 
-<<<<<<< HEAD
-        if compare == "RFC" or compare == "ERFC" or compare == "HRFC":
-=======
         if compare == "RFC" or compare == "ERFC":
             is_classification = True
->>>>>>> 41917fd2520e2d6f4042324d3c3ecc070f3c6cd2
             our_train_acc = np.mean(
                 our_model.predict_batch(train_data)[0] == train_targets
             )
@@ -263,9 +234,6 @@ def compare_accuracies(
             )
             their_train_acc = np.mean(their_model.predict(train_data) == train_targets)
             their_test_acc = np.mean(their_model.predict(test_data) == test_targets)
-<<<<<<< HEAD
-        elif compare == "RFR" or compare == "ERFR" or compare == "HRFR":
-=======
         elif (
             compare == "RFR"
             or compare == "ERFR"
@@ -273,7 +241,6 @@ def compare_accuracies(
             or compare == "GBHRFR"
         ):
             is_classification = False
->>>>>>> 41917fd2520e2d6f4042324d3c3ecc070f3c6cd2
             our_train_acc = np.mean(
                 (our_model.predict_batch(train_data) - train_targets) ** 2
             )
@@ -287,20 +254,12 @@ def compare_accuracies(
                 (their_model.predict(test_data) - test_targets) ** 2
             )
 
-<<<<<<< HEAD
-        print("Trial", seed)
-        print("(Ours) Train accuracy:", our_train_acc)
-        print("(Ours) Test accuracy:", our_test_acc)
-        print("(Theirs) Train accuracy:", their_train_acc)
-        print("(Theirs) Test accuracy:", their_test_acc)
-=======
         metric = "accuracy" if is_classification else "MSE"
         print("Trial", seed)
         print(f"(Ours) Train {metric}:", our_train_acc)
         print(f"(Ours) Test {metric}:", our_test_acc)
         print(f"(Theirs) Train {metric}:", their_train_acc)
         print(f"(Theirs) Test {metric}:", their_test_acc)
->>>>>>> 41917fd2520e2d6f4042324d3c3ecc070f3c6cd2
         print("-" * 30)
 
         our_train_accs.append(our_train_acc)
@@ -338,14 +297,9 @@ def compare_accuracies(
 def main():
     # To Compare:
     # RandomForestClassifier -- DONE
-<<<<<<< HEAD
-    # RandomForestRegressor
-    # ExtremelyRandomizedForestClassifier -- DONE
-=======
     # ExtremelyRandomizedForestClassifier -- DONE
 
     # RandomForestRegressor -- DONE
->>>>>>> 41917fd2520e2d6f4042324d3c3ecc070f3c6cd2
     # ExtremelyRandomizedForestRegressor -- DONE
     # GradientBoostingRegressor
     # HistGradientBoostingRegressor
@@ -373,10 +327,7 @@ def main():
     #         "RFC", pca_train_vecs, train_labels, pca_test_vecs, test_labels
     #     )
     # )
-<<<<<<< HEAD
-=======
 
->>>>>>> 41917fd2520e2d6f4042324d3c3ecc070f3c6cd2
     # print("Performing Experiment: Extremely Random Forest Classifier")
     # print(
     #     compare_accuracies(
@@ -386,13 +337,6 @@ def main():
 
     # Regression
     train_data, train_targets, test_data, test_targets = load_housing()
-<<<<<<< HEAD
-    # print("Performing Experiment: Random Forest Regression")
-    # print(compare_accuracies("RFR", train_data, train_targets, test_data, test_targets))
-    print("Performing Experiment: Extremely Random Forest Regression")
-    print(
-        compare_accuracies("ERFR", train_data, train_targets, test_data, test_targets)
-=======
     # Subsample the data because training on 20k points (the full housing dataset) takes too long for RFR
     train_data_subsampled = train_data[:1000]
     train_targets_subsampled = train_targets[:1000]
@@ -422,9 +366,8 @@ def main():
             test_data,
             test_targets,
         )
->>>>>>> 41917fd2520e2d6f4042324d3c3ecc070f3c6cd2
     )
-"""
+
 
 if __name__ == "__main__":
     main()

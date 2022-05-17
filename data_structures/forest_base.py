@@ -53,6 +53,10 @@ class ForestBase(ABC):
         self.org_targets = labels
         self.new_targets = labels
 
+        # min, max feature values that we can index into when making histograms.
+        self.min_feature_vals = np.min(a, axis=0)
+        self.max_feature_vals = np.max(a, axis=0)
+
         # self.curr_data and self.curr_targets are the data, targets that are used to fit the current tree.
         # These attributes may be smaller than the original dataset size if self.bootstrap is true.
         self.curr_data = None
