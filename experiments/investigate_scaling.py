@@ -21,8 +21,15 @@ def main():
         # 1000,
         # 5000,
         # 10000,
+        # 15000,
         # 20000,
+        # 25000,
+        # 30000,
+        # 35000,
         # 40000,
+        # 45000,
+        # 50000,
+        # 55000,
         # 60000,
         # 80000,
         # 160000,
@@ -32,6 +39,7 @@ def main():
     ]:
         print("\n\n")
         pp = pprint.PrettyPrinter(indent=2)
+
         pp.pprint(
             compare_runtimes(
                 "HRFC",
@@ -40,13 +48,14 @@ def main():
                 test_data=None,
                 test_targets=None,
                 starting_seed=100,
-                num_seeds=5,
+                num_seeds=10,
                 predict=False,
                 run_theirs=False,
                 profile_name="HRFC_" + str(C_SUBSAMPLE_SIZE) + "_profile_",
                 C_SUBSAMPLE_SIZE=C_SUBSAMPLE_SIZE,
             )
         )
+        print("Results for ", C_SUBSAMPLE_SIZE, " above")
 
         # compare_runtimes(
         #     "ERFC",
