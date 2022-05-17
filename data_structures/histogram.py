@@ -94,6 +94,7 @@ class Histogram:
         Empty the samples stored in bins
 
         :param bin_idcs: Bin indices we want to empty
+        :param is_curr_empty: Whether to empty curr
         """
         if self.is_classification:
             self.left[bin_idcs, :] = np.zeros(len(self.classes), dtype=np.int64)

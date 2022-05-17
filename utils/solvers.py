@@ -16,7 +16,6 @@ from utils.constants import (
     BATCH_SIZE,
     DEFAULT_NUM_BINS,
     RANDOM,
-    MAX_BUDGET,
 )
 from utils.criteria import get_impurity_reductions
 from utils.utils import (

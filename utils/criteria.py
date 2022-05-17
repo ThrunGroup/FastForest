@@ -14,7 +14,6 @@ def get_gini(
     """
     Compute the Gini impurity for a given node, where the node is represented by the number of counts of each class
     label. The Gini impurity is equal to 1 - sum_{i=1}^k (p_i^2)
-
     :param counts: 1d array of counts where ith element is the number of counts on the ith class(label).
     :param ret_var: Whether to return the variance of the estimate
     :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
@@ -53,7 +52,6 @@ def get_entropy(
     """
     Compute the entropy impurity for a given node, where the node is represented by the number of counts of each class
     label. The entropy impurity is equal to - sum{i=1}^k (p_i * log_2 p_i)
-
     :param counts: 1d array of counts where ith element is the number of counts on the ith class(label)
     :param ret_var: Whether to return the variance of the estimate
     :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
@@ -96,7 +94,6 @@ def get_variance(
     """
     Compute the variance for a given node, where the node is represented by the number of counts of each class
     label.
-
     :param counts: 1d array of counts where ith element is the number of counts on the ith class(label)
     :param ret_var: Whether to return the variance of the estimate
     :return: the variance of the node, as well as its estimated variance if ret_var
@@ -130,7 +127,6 @@ def get_mse(
     """
     Compute the MSE for a given node, where the node is represented by the pile of all target values. Also Compute the
     confidence bound of our estimation by using Hoeffding's inequality for bounded values
-
     :param args: args = (number of samples, mean of samples, variance of samples)
     :param ret_var: Whether to return the variance of the estimate
     :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
@@ -146,48 +142,6 @@ def get_mse(
         if ret_var:
             return 0, 0
         return 0
-
-    if pop_size == n:
-        if ret_var:
-            return second_moment, 0
-        return second_moment
-    estimated_mse = (
-        second_moment * n / (n - 1)
-    )  # 2nd central moment is mse with mean as a predicted value and use Bessel's correction
-
-    if pop_size is not None and pop_size > 3:
-        # Todo: Add a formula when pop_size is equal to 3.
-        N = pop_size
-        c1 = (
-            N
-            * (N - n)
-            * (N * n - N - n - 1)
-            / (n * (n - 1) * (N - 1) * (N - 2) * (N - 3))
-        )
-        c3 = -(
-            N
-            * (N - n)
-            * ((N ** 2) * n - 3 * n - 3 * (N ** 2) + 6 * N - 3)
-            / (n * (n - 1) * ((N - 1) ** 2) * (N - 2) * (N - 3))
-        )
-        # Use the formula of the variance of sample variance when sampled with replacement, see
-        # https://www.asasrms.org/Proceedings/y2008/Files/300992.pdf#page=2
-        V_mse = c1 * fourth_moment + c3 * (estimated_mse ** 2)
-
-        # Derive myself with reference to
-        # https://stats.stackexchange.com/questions/5158/explanation-of-finite-population-correction-factor
-        estimated_mse = estimated_mse * (pop_size - 1) / pop_size
-    else:
-        if n == 2:
-            # This variance comes from the variance of sample variance, see
-            # https://math.stackexchange.com/questions/72975/variance-of-sample-variance
-            # Use sample variance as an estimation of population variance.
-            V_mse = (fourth_moment + estimated_mse ** 2) / 2
-        else:
-            # This variance comes from the variance of sample variance, see
-            # https://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance
-            # Use sample variance as an estimation of population variance.
-            V_mse = (fourth_moment - (estimated_mse ** 2) * (n - 3) / (n - 1)) / n
 
     if pop_size == n:
         if ret_var:
@@ -231,7 +185,6 @@ def get_mse(
             # https://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance
             # Use sample variance as an estimation of population variance.
             V_mse = (fourth_moment - (second_moment ** 2) * (n - 3) / (n - 1)) / n
-
     if ret_var:
         return estimated_mse, V_mse
     return estimated_mse
@@ -264,9 +217,7 @@ def get_impurity_reductions(
     """
     Given a histogram of counts for each bin, compute the impurity reductions if we were to split a node on any of the
     histogram's bin edges.
-
     Impurity is measured either by Gini index or entropy
-
     :param is_classification: Whether the problem is a classification problem(True) or a regression problem(False)
     :returns: Impurity reduction when splitting node by bins in bin_edge_idcs
     :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.

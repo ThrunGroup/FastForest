@@ -18,7 +18,6 @@ from utils.constants import (
     GINI,
     LINEAR,
     DEFAULT_NUM_BINS,
-    MAX_BUDGET,
 )
 
 type_check()
