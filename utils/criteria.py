@@ -14,6 +14,7 @@ def get_gini(
     """
     Compute the Gini impurity for a given node, where the node is represented by the number of counts of each class
     label. The Gini impurity is equal to 1 - sum_{i=1}^k (p_i^2)
+
     :param counts: 1d array of counts where ith element is the number of counts on the ith class(label).
     :param ret_var: Whether to return the variance of the estimate
     :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
@@ -52,6 +53,7 @@ def get_entropy(
     """
     Compute the entropy impurity for a given node, where the node is represented by the number of counts of each class
     label. The entropy impurity is equal to - sum{i=1}^k (p_i * log_2 p_i)
+
     :param counts: 1d array of counts where ith element is the number of counts on the ith class(label)
     :param ret_var: Whether to return the variance of the estimate
     :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
@@ -94,6 +96,7 @@ def get_variance(
     """
     Compute the variance for a given node, where the node is represented by the number of counts of each class
     label.
+
     :param counts: 1d array of counts where ith element is the number of counts on the ith class(label)
     :param ret_var: Whether to return the variance of the estimate
     :return: the variance of the node, as well as its estimated variance if ret_var
@@ -127,6 +130,7 @@ def get_mse(
     """
     Compute the MSE for a given node, where the node is represented by the pile of all target values. Also Compute the
     confidence bound of our estimation by using Hoeffding's inequality for bounded values
+
     :param args: args = (number of samples, mean of samples, variance of samples)
     :param ret_var: Whether to return the variance of the estimate
     :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
@@ -216,8 +220,8 @@ def get_impurity_reductions(
 ) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
     """
     Given a histogram of counts for each bin, compute the impurity reductions if we were to split a node on any of the
-    histogram's bin edges.
-    Impurity is measured either by Gini index or entropy
+    histogram's bin edges. Impurity is measured either by Gini index or entropy
+
     :param is_classification: Whether the problem is a classification problem(True) or a regression problem(False)
     :returns: Impurity reduction when splitting node by bins in bin_edge_idcs
     :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
