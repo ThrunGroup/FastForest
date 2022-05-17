@@ -94,8 +94,15 @@ def data_to_discrete(data: np.ndarray, n: int) -> DefaultDict:
     """
     discrete_dict = defaultdict(list)
     for feature_idx in range(len(data[0])):
-        unique_fvals = np.unique(data[:, feature_idx])
-        if len(unique_fvals) <= n:  # If not, "feature_idx"th feature is not discrete
+        unique_fvals = set([])
+        is_discrete = True
+        # Use for loop to avoid unnecessary computations to sort all feature values if the features are not discrete.
+        for feature_val in data[:, feature_idx]:
+            unique_fvals.add(feature_val)
+            if len(unique_fvals) > 10:  # If satisfied, "feature_idx"th feature is not discrete
+                is_discrete = False
+                break
+        if is_discrete:
             discrete_dict[feature_idx] = unique_fvals
     return discrete_dict
 
@@ -118,12 +125,12 @@ def choose_bin_type(D: int, N: int, B: int) -> str:
 
 
 def make_histograms(
-    is_classification: bool,
-    data: np.ndarray,
-    labels: np.ndarray,
-    discrete_bins_dict: DefaultDict,
-    binning_type: str = "",
-    num_bins: int = DEFAULT_NUM_BINS,
+        is_classification: bool,
+        data: np.ndarray,
+        labels: np.ndarray,
+        discrete_bins_dict: DefaultDict,
+        binning_type: str = "",
+        num_bins: int = DEFAULT_NUM_BINS,
 ) -> Tuple[List[Histogram], List, List]:
     """
     Choose a bin type and number of bins, and make a histogram. Add it to histograms list. Also, filter
@@ -158,7 +165,7 @@ def make_histograms(
         if bin_type == DISCRETE:
             num_bins = D
             assert (
-                len(discrete_bins_dict[f_idx]) > 0
+                    len(discrete_bins_dict[f_idx]) > 0
             ), "discrete_bins_dict[f_idx] is empty"
         elif bin_type == IDENTITY:
             num_bins = N

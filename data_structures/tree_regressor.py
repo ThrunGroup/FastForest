@@ -15,9 +15,9 @@ class TreeRegressor(TreeBase, Regressor):
 
     def __init__(
         self,
-        data: np.ndarray,
-        labels: np.ndarray,
-        max_depth: int,
+        data: np.ndarray = None,
+        labels: np.ndarray = None,
+        max_depth: int = 100,
         feature_subsampling: Union[str, int] = None,
         tree_global_feature_subsampling: bool = False,
         min_samples_split: int = 2,
@@ -33,6 +33,7 @@ class TreeRegressor(TreeBase, Regressor):
         random_state: int = 0,
         with_replacement: bool = False,
         verbose: bool = False,
+        use_discrete: bool = False,
     ):
         super().__init__(
             data=data,
@@ -54,4 +55,5 @@ class TreeRegressor(TreeBase, Regressor):
             random_state=random_state,
             with_replacement=with_replacement,
             verbose=verbose,
+            use_discrete = use_discrete,
         )

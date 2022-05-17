@@ -15,10 +15,10 @@ class TreeClassifier(TreeBase, Classifier):
 
     def __init__(
         self,
-        data: np.ndarray,
-        labels: np.ndarray,
-        max_depth: int,
-        classes: dict,
+        data: np.ndarray = None,
+        labels: np.ndarray = None,
+        max_depth: int = 100,
+        classes: dict = None,
         feature_subsampling: Union[str, int] = None,
         tree_global_feature_subsampling: bool = False,
         min_samples_split: int = 2,
@@ -34,7 +34,9 @@ class TreeClassifier(TreeBase, Classifier):
         random_state: int = 0,
         with_replacement: bool = False,
         verbose: bool = False,
+        use_discrete: bool = False,
     ):
+        assert classes is not None, "classes dictionary isn't defined"
         self.classes = classes  # dict from class name to class index
         self.idx_to_class = {value: key for key, value in classes.items()}
 
@@ -59,4 +61,5 @@ class TreeClassifier(TreeBase, Classifier):
             random_state=random_state,
             with_replacement=with_replacement,
             verbose=verbose,
+            use_discrete=use_discrete,
         )

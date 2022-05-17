@@ -33,6 +33,7 @@ class ForestRegressor(ForestBase, Regressor):
         verbose: bool = False,
         boosting: bool = False,
         boosting_lr: float = None,
+        use_discrete: bool = False,
     ) -> None:
         super().__init__(
             data=data,
@@ -57,4 +58,5 @@ class ForestRegressor(ForestBase, Regressor):
             verbose=verbose,
             boosting=boosting,
             boosting_lr=boosting_lr,
+            use_discrete=use_discrete,
         )
