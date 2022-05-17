@@ -139,6 +139,7 @@ def compare_runtimes(
                 solver=MAB,
                 random_state=seed,
                 verbose=False,
+                with_replacement=True,
             )
             their_model = HRFC(
                 data=train_data,
@@ -154,6 +155,7 @@ def compare_runtimes(
                 solver=EXACT,
                 random_state=seed,
                 verbose=False,
+                with_replacement=True,
             )
         elif compare == "ERFC":
             our_model = ERFC(
