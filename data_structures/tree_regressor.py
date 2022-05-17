@@ -15,6 +15,7 @@ class TreeRegressor(TreeBase, Regressor):
 
     def __init__(
         self,
+        forest: ForestBase,
         data: np.ndarray,
         labels: np.ndarray,
         max_depth: int,
@@ -33,8 +34,10 @@ class TreeRegressor(TreeBase, Regressor):
         random_state: int = 0,
         with_replacement: bool = False,
         verbose: bool = False,
+        permutation: np.ndarray = None,
     ):
         super().__init__(
+            forest=forest,
             data=data,
             labels=labels,
             max_depth=max_depth,
@@ -54,4 +57,5 @@ class TreeRegressor(TreeBase, Regressor):
             random_state=random_state,
             with_replacement=with_replacement,
             verbose=verbose,
+            permutation=permutation,
         )

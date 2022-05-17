@@ -13,10 +13,12 @@ from utils.constants import (
     DEFAULT_REGRESSOR_LOSS,
     DEFAULT_MIN_IMPURITY_DECREASE,
 )
-from utils.utils import data_to_discrete, set_seed
+from utils.utils import data_to_discrete, set_seed, type_check
 from utils.boosting import get_next_targets
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.tree_regressor import TreeRegressor
+
+type_check()
 
 
 class ForestBase(ABC):
@@ -133,6 +135,11 @@ class ForestBase(ABC):
 
         self.trees = []
         self.discrete_features: DefaultDict = data_to_discrete(self.data, n=10)
+
+        N = len(self.data)
+        self.permutation = np.random.shuffle(np.arange(N))
+        self.sampling_idx = 0
+
         for i in range(self.n_estimators):
             if self.remaining_budget is not None and self.remaining_budget <= 0:
                 break
@@ -145,7 +152,6 @@ class ForestBase(ABC):
             self.curr_targets = self.new_targets if self.boosting else self.org_targets
 
             if self.bootstrap:
-                N = len(self.curr_targets)
                 idcs = np.random.choice(N, size=N, replace=True)
                 self.curr_data = self.data[idcs]
                 self.curr_targets = self.curr_targets[idcs]
@@ -160,6 +166,7 @@ class ForestBase(ABC):
 
             if self.is_classification:
                 tree = TreeClassifier(
+                    forest=self,
                     data=self.curr_data,
                     labels=self.curr_targets,
                     max_depth=self.max_depth,
@@ -176,9 +183,12 @@ class ForestBase(ABC):
                     random_state=tree_random_state,
                     with_replacement=self.with_replacement,
                     verbose=self.verbose,
+                    permutation=self.permutation,
+                    sampling_idx=self.sampling_idx,
                 )
             else:
                 tree = TreeRegressor(
+                    forest=self,
                     data=self.curr_data,
                     labels=self.curr_targets,
                     max_depth=self.max_depth,
@@ -194,12 +204,14 @@ class ForestBase(ABC):
                     random_state=tree_random_state,
                     with_replacement=self.with_replacement,
                     verbose=self.verbose,
+                    permutation=self.permutation,
+                    sampling_idx=self.sampling_idx,
                 )
             tree.fit()
             self.trees.append(tree)
 
             if self.boosting:
-                # TODO: currently uses O(n) computation
+                # TODO: currently uses O(n) computation, but should be vectorizable
                 self.new_targets = get_next_targets(
                     loss_type=DEFAULT_REGRESSOR_LOSS,
                     is_classification=self.is_classification,

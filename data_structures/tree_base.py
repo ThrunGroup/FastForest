@@ -11,6 +11,7 @@ from utils.utils import (
     set_seed,
     choose_features,
     remap_discrete_features,
+    type_check,
 )
 from utils.constants import (
     MAB,
@@ -22,6 +23,8 @@ from utils.constants import (
     DEFAULT_MIN_IMPURITY_DECREASE,
 )
 
+type_check()
+
 
 class TreeBase(ABC):
     """
@@ -31,6 +34,7 @@ class TreeBase(ABC):
 
     def __init__(
         self,
+        forest: ForestBase,
         data: np.ndarray,
         labels: np.ndarray,
         max_depth: int,
@@ -51,7 +55,9 @@ class TreeBase(ABC):
         random_state: int = 0,
         with_replacement: bool = False,
         verbose: bool = False,
+        permutation: np.ndarray = None,
     ) -> None:
+        self.forest = forest
         self.data = data  # This is a REFERENCE
         self.labels = labels  # This is a REFERENCE
         assert len(self.data) == len(
@@ -96,6 +102,8 @@ class TreeBase(ABC):
         self.with_replacement = with_replacement
         self.verbose = verbose
 
+        self.permutation = permutation
+
         self.node = Node(
             tree=self,
             parent=None,
@@ -112,6 +120,7 @@ class TreeBase(ABC):
             feature_subsampling=self.feature_subsampling,
             tree_global_feature_subsampling=self.tree_global_feature_subsampling,
             with_replacement=self.with_replacement,
+            permutation=self.permutation,
         )
 
         # These are copied from the link below. We won't need all of them.

@@ -15,6 +15,7 @@ class TreeClassifier(TreeBase, Classifier):
 
     def __init__(
         self,
+        forest: ForestBase,
         data: np.ndarray,
         labels: np.ndarray,
         max_depth: int,
@@ -34,11 +35,13 @@ class TreeClassifier(TreeBase, Classifier):
         random_state: int = 0,
         with_replacement: bool = False,
         verbose: bool = False,
+        permutation: np.ndarray = None,
     ):
         self.classes = classes  # dict from class name to class index
         self.idx_to_class = {value: key for key, value in classes.items()}
 
         super().__init__(
+            forest=forest,
             data=data,
             labels=labels,
             max_depth=max_depth,
@@ -59,4 +62,5 @@ class TreeClassifier(TreeBase, Classifier):
             random_state=random_state,
             with_replacement=with_replacement,
             verbose=verbose,
+            permutation=permutation,
         )

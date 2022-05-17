@@ -27,7 +27,8 @@ def type_check() -> None:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
-        from tree import Tree
+        from data_structures.tree_base import TreeBase
+        from data_structures.forest_base import ForestBase
 
 
 def set_seed(seed: int) -> None:
@@ -242,4 +243,3 @@ def empty_histograms(histograms: List[Histogram], arms: Tuple[np.ndarray, np.nda
         # Since we don't obviate bins in arms, even though they are not candidates
         # Todo: change this if we obviate bins later
         histogram.empty_samples(range(histogram.num_bins))
-

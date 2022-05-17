@@ -76,6 +76,8 @@ def solve_exactly(
     is_classification: bool = True,
     impurity_measure: str = GINI,
     min_impurity_reduction: float = 0,
+    permutation: np.ndarray = None,
+    sampling_idx: int = None,
 ) -> Tuple[int, float, float, int]:
     """
     Find the best feature to split on, as well as the value that feature should be split at, using the canonical (exact)
@@ -138,7 +140,7 @@ def solve_exactly(
         candidates[:, 1],
     )
 
-    estimates[accesses], _cb_delta, num_queries, _ = sample_targets(
+    estimates[accesses], _cb_delta, num_queries, _, num_datapoints = sample_targets(
         is_classification=is_classification,
         data=data,
         labels=labels,
@@ -146,9 +148,12 @@ def solve_exactly(
         histograms=histograms,
         batch_size=N,
         impurity_measure=impurity_measure,
+        permutation=permutation,
+        sampling_idx=sampling_idx,
     )
 
     total_queries = num_queries
+    total_datapoints = num_datapoints
     # TODO(@motiwari): Can't use nanmin here -- why?
     # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
     best_split = zip(
@@ -160,9 +165,9 @@ def solve_exactly(
     best_reduction = estimates[best_split]
 
     if best_reduction < min_impurity_reduction:
-        return best_feature, best_value, best_reduction, total_queries
+        return best_feature, best_value, best_reduction, total_queries, total_datapoints
     else:
-        return total_queries
+        return total_queries, total_datapoints
 
 
 def sample_targets(
@@ -174,6 +179,8 @@ def sample_targets(
     batch_size: int,
     impurity_measure: str = GINI,
     population_idcs: np.ndarray = None,
+    permutation: np.ndarray = None,
+    sampling_idx: int = None,
 ) -> Tuple[np.ndarray, np.ndarray, int, np.ndarray]:
     """
     Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
@@ -217,11 +224,16 @@ def sample_targets(
             sample_idcs = np.random.choice(N, size=batch_size, replace=True)
     else:
         M = len(population_idcs)
-        idcs = (
-            np.arange(M, dtype=np.int64)
-            if batch_size >= M
-            else np.random.choice(M, batch_size, replace=False)
-        )
+        # We are using amortized, forest-global permutation for efficient sampling without replacement
+        if permutation is not None:
+            sample_size = M if batch_size >= M else batch_size
+            idcs = permutation[sampling_idx, sampling_idx + sample_size]
+        else:
+            idcs = (
+                np.arange(M, dtype=np.int64)
+                if batch_size >= M
+                else np.random.choice(M, batch_size, replace=False)
+            )
         sample_idcs = population_idcs[idcs]
         population_idcs = np.delete(
             population_idcs, idcs
@@ -229,11 +241,14 @@ def sample_targets(
 
     samples = data[sample_idcs]
     sample_labels = labels[sample_idcs]
+    num_datapoints = len(sample_idcs)
     num_queries = 0
     for f_idx, f in enumerate(f2bin_dict):
         h: Histogram = histograms[f]
         h.add(samples, sample_labels)  # This is where the labels are used
-        num_queries += len(samples)     # num_queries should be updated per histogram insert
+        num_queries += len(
+            samples
+        )  # num_queries should be updated per histogram insert
 
         # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
         i_r, cb_d = get_impurity_reductions(
@@ -250,7 +265,7 @@ def sample_targets(
         )  # The above fn returns the vars
 
     # TODO(@motiwari): This seems dangerous, because access appears to be a linear index to the array
-    return impurity_reductions, cb_deltas, num_queries, population_idcs
+    return impurity_reductions, cb_deltas, num_queries, population_idcs, num_datapoints
 
 
 def solve_mab(
@@ -265,6 +280,8 @@ def solve_mab(
     epsilon=0.00,
     with_replacement: bool = False,
     budget: int = None,
+    permutation: np.ndarray = None,
+    sampling_idx: int = None,
 ) -> Tuple[int, float, float, int]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
@@ -341,6 +358,7 @@ def solve_mab(
         candidates = considered_idcs
 
     total_queries = 0
+    total_datapoints = 0
     while len(candidates) > 1:
         # If we have already pulled the arms more times than the number of datapoints in the original dataset,
         # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
@@ -352,7 +370,13 @@ def solve_mab(
             )
             if len(exact_accesses[0]) > 0:
                 empty_histograms(histograms, exact_accesses)
-                estimates[exact_accesses], _vars, num_queries, _ = sample_targets(
+                (
+                    estimates[exact_accesses],
+                    _vars,
+                    num_queries,
+                    _,
+                    num_datapoints,
+                ) = sample_targets(
                     is_classification=is_classification,
                     data=data,
                     labels=labels,
@@ -360,6 +384,9 @@ def solve_mab(
                     histograms=histograms,
                     batch_size=N,
                     impurity_measure=impurity_measure,
+                    permutation=permutation,
+                    sampling_idx=sampling_idx
+                    + total_datapoints,  # initial + how many we've used so far
                 )
 
                 # The confidence intervals now only contain a point, since the return has been computed exactly
@@ -371,6 +398,7 @@ def solve_mab(
                 cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
                 candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
                 total_queries += num_queries
+                total_datapoints += num_dataset
 
                 # check that we're still within budget
                 if (budget is not None) and (budget - total_queries <= 0):
@@ -399,6 +427,7 @@ def solve_mab(
             cb_delta[accesses],
             num_queries,
             population_idcs,
+            num_datapoints,
         ) = sample_targets(
             is_classification=is_classification,
             data=data,
@@ -408,9 +437,13 @@ def solve_mab(
             batch_size=batch_size,
             impurity_measure=impurity_measure,
             population_idcs=population_idcs,
+            permutation=permutation,
+            sampling_idx=sampling_idx
+            + total_datapoints,  # initial + how many we've used so far
         )
         num_samples[accesses] += batch_size
         total_queries += num_queries
+        total_datapoints += num_datapoints
         lcbs[accesses] = estimates[accesses] - CONF_MULTIPLIER * cb_delta[accesses]
         ucbs[accesses] = estimates[accesses] + CONF_MULTIPLIER * cb_delta[accesses]
 
@@ -452,9 +485,9 @@ def solve_mab(
 
     # Only return the split if it would indeed lower the impurity
     if best_reduction < min_impurity_reduction:
-        return best_feature, best_value, best_reduction, total_queries
+        return best_feature, best_value, best_reduction, total_queries, total_datapoints
     else:
-        return total_queries
+        return total_queries, total_datapoints
 
 
 def filter_tied_arms(candidates: np.ndarray, tied_arms, F, B):

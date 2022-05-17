@@ -26,7 +26,8 @@ type_check()
 class Node:
     def __init__(
         self,
-        tree: Tree,
+        tree: TreeBase,
+        forest: ForestBase,
         parent: Node,
         data: np.ndarray,
         labels: np.ndarray,
@@ -41,8 +42,10 @@ class Node:
         feature_subsampling: Union[str, int] = None,
         tree_global_feature_subsampling: bool = False,
         with_replacement: bool = False,
+        permutation: np.ndarray = None,
     ) -> None:
         self.tree = tree
+        self.forest = forest
         self.parent = parent  # To allow walking back upwards
         self.data = data  # TODO(@motiwari): Is this a reference or a copy?
         self.labels = labels
@@ -61,6 +64,8 @@ class Node:
         self.tree_global_feature_subsampling = tree_global_feature_subsampling
         self.discrete_features = defaultdict(list)
         self.with_replacement = with_replacement
+        self.permutation = permutation
+        self.delta_sampling_idx = 0
 
         if tree_global_feature_subsampling:
             # Features are chosen at the tree level. Use all of tree's features
@@ -114,6 +119,8 @@ class Node:
                 impurity_measure=self.criterion,
                 with_replacement=self.with_replacement,
                 budget=budget,
+                permutation=self.permutation,
+                sampling_idx=self.forest.sampling_idx,
             )
         elif self.solver == EXACT:
             results = solve_exactly(
@@ -125,6 +132,8 @@ class Node:
                 is_classification=self.is_classification,
                 impurity_measure=self.criterion,
                 # NOTE: not implemented with budget yet
+                permutation=self.permutation,
+                sampling_idx=self.forest.sampling_idx,
             )
         else:
             raise Exception("Invalid solver specified, must be MAB or EXACT")
@@ -132,25 +141,31 @@ class Node:
         # Even if results is None, we should cache the fact that we know that
         self.best_reduction_computed = True
 
-        if type(results) == tuple:  # Found a solution
-            (
-                self.split_feature,
-                self.split_value,
-                self.split_reduction,
-                self.num_queries,
-            ) = results
-            self.split_feature = self.feature_idcs[
-                self.split_feature
-            ]  # Feature index of original dataset
-            self.split_reduction *= self.proportion  # Normalize by number of datapoints
-            if self.verbose:
-                print("Calculated split with", self.num_queries, "queries")
-            return self.split_reduction
+        if type(results) == tuple:
+            if len(results) == 5:  # Found a solution
+                (
+                    self.split_feature,
+                    self.split_value,
+                    self.split_reduction,
+                    self.num_queries,
+                    self.delta_sampling_idx,
+                ) = results
+                self.split_feature = self.feature_idcs[
+                    self.split_feature
+                ]  # Feature index of original dataset
+                self.split_reduction *= (
+                    self.proportion
+                )  # Normalize by number of datapoints
+                if self.verbose:
+                    print("Calculated split with", self.num_queries, "queries")
+                return self.split_reduction
+            elif len(results) == 2:
+                self.num_queries, self.delta_sampling_idx = results
+                if self.verbose:
+                    print("Calculated split with", self.num_queries, "queries")
+            self.forest.sampling_idx += self.delta_sampling_idx
         else:
-            self.num_queries = results
-            if self.verbose:
-                print("Calculated split with", self.num_queries, "queries")
-            self.num_queries = results
+            raise Exception("Solver returned malformed results")
 
     def create_child_node(self, idcs: np.ndarray) -> Node:
         child_data = self.data[idcs]
