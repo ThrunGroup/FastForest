@@ -30,6 +30,8 @@ def main():
                 "HRFC",
                 train_images_subsampled,
                 train_labels_subsampled,
+                starting_seed=fitting_seed,
+                num_seeds=1,
                 predict=False,
                 run_theirs=False,
                 profile_name="HRFC_"

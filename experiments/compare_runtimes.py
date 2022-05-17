@@ -109,6 +109,7 @@ def compare_runtimes(
     train_targets: np.ndarray = None,
     test_data: np.ndarray = None,
     test_targets: np.ndarray = None,
+    starting_seed: int = 0,
     num_seeds: int = 1,
     predict: bool = True,
     run_theirs: bool = True,
@@ -124,6 +125,9 @@ def compare_runtimes(
     their_train_accs = []
     their_test_accs = []
     for seed in range(num_seeds):
+        seed = (
+            seed + starting_seed
+        )  # Does not "skip" any in the loop above, loop condition precomputes range
         if compare == "HRFC":
             our_model = HRFC(
                 data=train_data,
