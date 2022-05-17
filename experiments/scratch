@@ -1,0 +1,89 @@
+Round count: 315
+(Ours) Runtime: 2.938886880874634
+(Ours) Num queries: 41000
+Round count: 350
+(Ours) Runtime: 2.8101892471313477
+(Ours) Num queries: 41800
+Round count: 315
+(Ours) Runtime: 2.9645938873291016
+(Ours) Num queries: 46400
+Round count: 290
+(Ours) Runtime: 3.017627000808716
+(Ours) Num queries: 62100
+Round count: 392
+(Ours) Runtime: 3.0523712635040283
+(Ours) Num queries: 48200
+
+
+
+Round count: 1397
+(Ours) Runtime: 8.850543975830078
+(Ours) Num queries: 150000
+Round count: 1596
+(Ours) Runtime: 9.666428804397583
+(Ours) Num queries: 169600
+Round count: 1542
+(Ours) Runtime: 9.585423231124878
+(Ours) Num queries: 164300
+Round count: 1580
+(Ours) Runtime: 9.054951906204224
+(Ours) Num queries: 165400
+Round count: 1521
+(Ours) Runtime: 9.209668159484863
+(Ours) Num queries: 159200
+
+
+
+
+Round count: 212
+(Ours) Runtime: 11.359038829803467
+(Ours) Num queries: 31600
+Round count: 70
+(Ours) Runtime: 10.573394775390625
+(Ours) Num queries: 17900
+Round count: 158
+(Ours) Runtime: 10.886121988296509
+(Ours) Num queries: 25200
+Round count: 206
+(Ours) Runtime: 11.198681831359863
+(Ours) Num queries: 31800
+Round count: 111
+(Ours) Runtime: 10.517724752426147
+(Ours) Num queries: 32400
+
+
+
+
+Round count: 499
+(Ours) Runtime: 28.20254373550415
+(Ours) Num queries: 98700
+Round count: 492
+(Ours) Runtime: 27.821003198623657
+(Ours) Num queries: 80100
+Round count: 551
+(Ours) Runtime: 29.028828859329224
+(Ours) Num queries: 108900
+Round count: 384
+(Ours) Runtime: 28.81238102912903
+(Ours) Num queries: 105200
+Round count: 567
+(Ours) Runtime: 29.828700065612793
+(Ours) Num queries: 115900
+
+
+
+Round count: 173
+(Ours) Runtime: 50.27732563018799
+(Ours) Num queries: 48700
+Round count: 562
+(Ours) Runtime: 57.5251579284668
+(Ours) Num queries: 130400
+Round count: 538
+(Ours) Runtime: 59.40077805519104
+(Ours) Num queries: 121400
+Round count: 669
+(Ours) Runtime: 63.128122091293335
+(Ours) Num queries: 146100
+Round count: 412
+(Ours) Runtime: 55.59528303146362
+(Ours) Num queries: 94300
