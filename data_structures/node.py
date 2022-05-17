@@ -30,8 +30,11 @@ class Node:
         parent: Node,
         data: np.ndarray,
         labels: np.ndarray,
+
         min_feature_vals: np.ndarray,
         max_feature_vals: np.ndarray,
+        discrete_features: DefaultDict,
+
         depth: int,
         proportion: float,
         is_classification: bool = True,
@@ -63,19 +66,17 @@ class Node:
         self.tree_global_feature_subsampling = tree_global_feature_subsampling
         self.discrete_features = defaultdict(list)
         self.with_replacement = with_replacement
+
+        self.discrete_features = discrete_features
         self.min_feature_vals = min_feature_vals
         self.max_feature_vals = max_feature_vals
 
         if tree_global_feature_subsampling:
             # Features are chosen at the tree level. Use all of tree's features
             self.feature_idcs = self.tree.feature_idcs
-            self.discrete_features = self.tree.discrete_features
         else:
             # The features aren't global to the tree, so we should be resampling the features at every node
             self.feature_idcs = choose_features(data, self.feature_subsampling)
-            self.discrete_features = remap_discrete_features(
-                self.feature_idcs, self.tree.discrete_features
-            )
 
         # NOTE: Do not assume labels are all integers from 0 to num_classes-1
         if is_classification:
@@ -180,6 +181,7 @@ class Node:
             tree_global_feature_subsampling=self.tree_global_feature_subsampling,
             with_replacement=self.with_replacement,
 
+            discrete_features=self.discrete_features,
             min_feature_vals=self.min_feature_vals,
             max_feature_vals=self.max_feature_vals,
         )

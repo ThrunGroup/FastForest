@@ -115,6 +115,7 @@ class TreeBase(ABC):
             tree_global_feature_subsampling=self.tree_global_feature_subsampling,
             with_replacement=self.with_replacement,
 
+            discrete_features=self.discrete_features,
             min_feature_vals=min_feature_vals,
             max_feature_vals=max_feature_vals,
         )
