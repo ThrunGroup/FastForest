@@ -46,7 +46,7 @@ def count_occurrence(class_: np.ndarray, labels: np.ndarray) -> int:
     return len(np.where(labels == class_)[0])
 
 
-def class_to_idx(classes: np.ndarray,) -> dict:
+def class_to_idx(classes: np.ndarray) -> dict:
     """
     Helpful function for generating dictionary that maps class names to class index
     Helper function for function for generating dictionary that maps class names to class index

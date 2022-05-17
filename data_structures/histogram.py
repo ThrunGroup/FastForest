@@ -72,7 +72,7 @@ class Histogram:
             - returns len(bin_edges) + 1 if val is greater than the biggest edge which is ok
               since len(count_bucket) = len(bin_edges) + 1
         """
-        # TODO: shouldn't be creating a histogram for feature with only bin value
+        # TODO: shouldn't be creating a histogram for feature with only one bin value
         # assert (self.max_bin > self.min_bin), "shouldn't be creating a histogram for one bin value"
 
         if self.bin_type == LINEAR:

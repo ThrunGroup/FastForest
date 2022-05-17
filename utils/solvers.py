@@ -25,7 +25,6 @@ from utils.utils import (
     make_histograms,
     empty_histograms,
 )
-
 from data_structures.histogram import Histogram
 
 type_check()
@@ -287,7 +286,6 @@ def solve_mab(
     :param with_replacement: Whether to sample with replacement.
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
-
     N = len(data)
     F = len(data[0])
     if binning_type == IDENTITY:
