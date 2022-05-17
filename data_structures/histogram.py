@@ -59,9 +59,9 @@ class Histogram:
         else:
             # self.left_pile[i], self.right_pile[i] stores [number of previous samples, mean of previous samples,
             # variance of previous samples] that are on the left and right of ith bin
-            self.left_pile = np.zeros((self.num_bins, 3), dtype=np.int64)
-            self.right_pile = np.zeros((self.num_bins, 3), dtype=np.int64)
-            self.curr_pile = np.zeros(3, dtype=np.int64)
+            self.left_pile = np.zeros((self.num_bins, 3))
+            self.right_pile = np.zeros((self.num_bins, 3))
+            self.curr_pile = np.zeros(3)
 
     def get_bin(self, fvals: np.ndarray, bin_edges: np.ndarray) -> np.ndarray:
         """
@@ -100,10 +100,10 @@ class Histogram:
             self.left[bin_idcs, :] = np.zeros(len(self.classes), dtype=np.int64)
             self.right[bin_idcs, :] = np.zeros(len(self.classes), dtype=np.int64)
         else:
-            self.left_pile[bin_idcs, :] = np.zeros(3, dtype=np.int64)
-            self.right_pile[bin_idcs, :] = np.zeros(3, dtype=np.int64)
+            self.left_pile[bin_idcs, :] = np.zeros(3)
+            self.right_pile[bin_idcs, :] = np.zeros(3)
             if is_curr_empty:
-                self.curr_pile = np.zeros(3, dtype=np.int64)
+                self.curr_pile = np.zeros(3)
 
     def add(self, X: np.ndarray, Y: np.ndarray):
         """

@@ -265,6 +265,7 @@ def solve_mab(
     epsilon=0.00,
     with_replacement: bool = False,
     budget: int = None,
+    verbose: bool = False,
 ) -> Tuple[int, float, float, int]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
@@ -311,7 +312,8 @@ def solve_mab(
     if impurity_measure == "":
         impurity_measure = GINI if is_classification else MSE
 
-    print("Number of arms:", B * F)
+    if verbose:
+        print("Number of arms:", B * F)
     candidates = np.array(list(itertools.product(range(F), range(B))))
     estimates = np.empty((F, B))
     lcbs = np.empty((F, B))
@@ -441,8 +443,9 @@ def solve_mab(
     best_feature = best_split[0]
     best_value = histograms[best_feature].bin_edges[best_split[1]]
     best_reduction = estimates[best_split]
-    print("Best reduction:", best_reduction)
-    print("Round count:", round_count)
+    if verbose:
+        print("Best reduction:", best_reduction)
+        print("Round count:", round_count)
 
     # Uncomment when debugging
     # if verify_reduction(
