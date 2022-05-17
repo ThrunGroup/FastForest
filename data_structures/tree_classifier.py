@@ -17,6 +17,8 @@ class TreeClassifier(TreeBase, Classifier):
         self,
         data: np.ndarray,
         labels: np.ndarray,
+        min_feature_vals: np.ndarray,
+        max_feature_vals: np.ndarray,
         max_depth: int,
         classes: dict,
         feature_subsampling: Union[str, int] = None,
@@ -59,4 +61,7 @@ class TreeClassifier(TreeBase, Classifier):
             random_state=random_state,
             with_replacement=with_replacement,
             verbose=verbose,
+
+            min_feature_vals=min_feature_vals,
+            max_feature_vals=max_feature_vals,
         )

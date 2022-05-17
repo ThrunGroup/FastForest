@@ -121,6 +121,8 @@ def make_histograms(
     is_classification: bool,
     data: np.ndarray,
     labels: np.ndarray,
+    min_feature_vals: np.ndarray,
+    max_feature_vals: np.ndarray,
     discrete_bins_dict: DefaultDict,
     binning_type: str = "",
     num_bins: int = DEFAULT_NUM_BINS,
@@ -163,10 +165,10 @@ def make_histograms(
         elif bin_type == IDENTITY:
             num_bins = N
         elif bin_type == LINEAR:
-            min_bin, max_bin = np.min(f_data), np.max(f_data)
+            min_bin, max_bin = min_feature_vals[f_idx], max_feature_vals[f_idx]
             num_bins = B
         elif bin_type == RANDOM:  # For extremely random forests
-            min_bin, max_bin = np.min(f_data), np.max(f_data)
+            min_bin, max_bin = min_feature_vals[f_idx], max_feature_vals[f_idx]
             num_bins = np.sqrt(np.shape(data)[0]).astype(int)
         else:
             NotImplementedError("Invalid choice of bin_type")

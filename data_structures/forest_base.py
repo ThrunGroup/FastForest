@@ -53,6 +53,10 @@ class ForestBase(ABC):
         self.org_targets = labels
         self.new_targets = labels
 
+        # precompute min, max feature values for faster histogram insertion
+        self.min_feature_vals = None
+        self.max_feature_vals = None
+
         # self.curr_data and self.curr_targets are the data, targets that are used to fit the current tree.
         # These attributes may be smaller than the original dataset size if self.bootstrap is true.
         self.curr_data = None
@@ -131,6 +135,10 @@ class ForestBase(ABC):
             self.org_targets = labels
             self.new_targets = labels
 
+        if self.min_feature_vals is None:
+            self.min_feature_vals = np.min(self.data, axis=0)
+            self.max_feature_vals = np.max(self.data, axis=0)
+
         self.trees = []
         self.discrete_features: DefaultDict = data_to_discrete(self.data, n=10)
         for i in range(self.n_estimators):
@@ -176,6 +184,9 @@ class ForestBase(ABC):
                     random_state=tree_random_state,
                     with_replacement=self.with_replacement,
                     verbose=self.verbose,
+
+                    min_feature_vals=self.min_feature_vals,
+                    max_feature_vals=self.max_feature_vals,
                 )
             else:
                 tree = TreeRegressor(
@@ -194,6 +205,9 @@ class ForestBase(ABC):
                     random_state=tree_random_state,
                     with_replacement=self.with_replacement,
                     verbose=self.verbose,
+
+                    min_feature_vals=self.min_feature_vals,
+                    max_feature_vals=self.max_feature_vals,
                 )
             tree.fit()
             self.trees.append(tree)
