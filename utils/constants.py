@@ -3,6 +3,7 @@ BATCH_SIZE = 100
 CONF_MULTIPLIER = 1
 TOLERANCE = -1e-1
 BUFFER = 1000
+DEFAULT_MIN_IMPURITY_DECREASE = 5e-3
 
 # Datasets
 IRIS = "IRIS"
@@ -32,7 +33,7 @@ LINEAR = "LINEAR"
 DISCRETE = "DISCRETE"
 IDENTITY = "IDENTITY"
 RANDOM = "RANDOM"
-DEFAULT_NUM_BINS = 51
+DEFAULT_NUM_BINS = 11
 
 # Feature subsampling
 SQRT = "SQRT"
@@ -45,5 +46,12 @@ DEFAULT_GRAD_SMOOTHING_VAL = 1e-5
 # For randomness
 MAX_SEED = 2 ** 31
 
-# MSE estimation
+# For MSE estimation
 KURTOSIS = 3  # normal distribution has kurtosis = 3
+
+# Models for speedup comparison
+CLASSIFICATION_MODELS = ["ERFC", "HRFC", "HRPC"]
+REGRESSION_MODELS = ["ERFR", "GBERFR", "HRFR", "GBHRFR", "HRPR", "GBHRPR"]
+
+# budget
+MAX_BUDGET = 1000000

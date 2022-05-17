@@ -2,7 +2,7 @@ import numpy as np
 
 from data_structures.forest_base import ForestBase
 from data_structures.regressor import Regressor
-from utils.constants import MAB, LINEAR, GINI, SQRT, BEST, DEFAULT_NUM_BINS
+from utils.constants import MAB, LINEAR, GINI, BEST, DEFAULT_NUM_BINS
 
 
 class ForestRegressor(ForestBase, Regressor):
@@ -32,6 +32,7 @@ class ForestRegressor(ForestBase, Regressor):
         with_replacement: bool = False,
         verbose: bool = False,
         boosting: bool = False,
+        boosting_lr: float = None,
     ) -> None:
         super().__init__(
             data=data,
@@ -55,4 +56,5 @@ class ForestRegressor(ForestBase, Regressor):
             with_replacement=with_replacement,
             verbose=verbose,
             boosting=boosting,
+            boosting_lr=boosting_lr,
         )

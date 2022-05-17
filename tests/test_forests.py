@@ -156,7 +156,7 @@ class ForestTests(unittest.TestCase):
         classes = utils.utils.class_to_idx(classes_arr)
 
         t1 = TreeClassifier(
-            data=data, labels=labels, max_depth=5, classes=classes, budget=50
+            data=data, labels=labels, max_depth=5, classes=classes, budget=500
         )
         t1.fit()
         t1.tree_print()
@@ -165,7 +165,7 @@ class ForestTests(unittest.TestCase):
         print()
         print()
         t2 = TreeClassifier(
-            data=data, labels=labels, max_depth=5, classes=classes, budget=1000
+            data=data, labels=labels, max_depth=5, classes=classes, budget=1500
         )
         t2.fit()
         t2.tree_print()

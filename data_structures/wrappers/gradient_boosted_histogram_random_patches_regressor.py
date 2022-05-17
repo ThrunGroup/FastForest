@@ -5,9 +5,9 @@ from data_structures.forest_regressor import ForestRegressor
 from utils.constants import LINEAR, DEFAULT_NUM_BINS, BEST, EXACT, MSE
 
 
-class HistogramRandomPatchesRegressor(ForestRegressor):
+class GradientBoostedHistogramRandomPatchesRegressor(ForestRegressor):
     """
-    A HistogramRandomPatchesRegressor, which is a ForestRegressor with the following settings with subsampled data and
+    A GradientBoostedHistogramRandomPatchesRegressor, which is a ForestRegressor with the following settings with subsampled data and
     features.
 
     bootstrap: bool = False,
@@ -46,7 +46,7 @@ class HistogramRandomPatchesRegressor(ForestRegressor):
         data_idcs = np.random.choice(N, math.ceil(alpha_N * N), replace=False)
         feature_idcs = np.random.choice(F, math.ceil(alpha_F * F), replace=False)
 
-        self.data = data[data_idcs, feature_idcs]
+        self.data = data[data_idcs][:, feature_idcs]
         self.labels = labels[data_idcs]
         super().__init__(
             data=self.data,  # Fixed

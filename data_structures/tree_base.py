@@ -12,7 +12,15 @@ from utils.utils import (
     choose_features,
     remap_discrete_features,
 )
-from utils.constants import MAB, LINEAR, BEST, DEPTH, GINI, DEFAULT_NUM_BINS
+from utils.constants import (
+    MAB,
+    LINEAR,
+    BEST,
+    DEPTH,
+    GINI,
+    DEFAULT_NUM_BINS,
+    DEFAULT_MIN_IMPURITY_DECREASE,
+)
 
 
 class TreeBase(ABC):
@@ -30,7 +38,7 @@ class TreeBase(ABC):
         feature_subsampling: Union[str, int] = None,
         tree_global_feature_subsampling: bool = False,
         min_samples_split: int = 2,
-        min_impurity_decrease: float = -1e-6,
+        min_impurity_decrease: float = DEFAULT_MIN_IMPURITY_DECREASE,
         max_leaf_nodes: int = None,
         discrete_features: DefaultDict = defaultdict(list),
         bin_type: str = LINEAR,
@@ -46,6 +54,9 @@ class TreeBase(ABC):
     ) -> None:
         self.data = data  # This is a REFERENCE
         self.labels = labels  # This is a REFERENCE
+        assert len(self.data) == len(
+            self.labels
+        ), "Data and labels must have the same size"
         self.max_depth = max_depth
         self.n_data = len(labels)
         if is_classification:
@@ -208,7 +219,7 @@ class TreeBase(ABC):
                     split_already_computed = leaf.best_reduction_computed
                     if self.remaining_budget is None or self.remaining_budget > 0:
                         # Runs solve_mab if not previously computed, which incurs cost!
-                        reduction = leaf.calculate_best_split()
+                        reduction = leaf.calculate_best_split(self.remaining_budget)
                     else:
                         break
                     # don't add queries if best split is already computed
@@ -287,6 +298,9 @@ class TreeBase(ABC):
         :param datapoint: datapoint to fit
         :return: the probabilities of the datapoint being each class label or the mean value of labels
         """
+        assert (
+            len(datapoint.shape) == 1
+        ), "Can only call .predict() directly on a single datapoint"
         node = self.node
         while node.left:
             feature_value = datapoint[node.split_feature]

@@ -46,9 +46,7 @@ def count_occurrence(class_: np.ndarray, labels: np.ndarray) -> int:
     return len(np.where(labels == class_)[0])
 
 
-def class_to_idx(
-    classes: np.ndarray,
-) -> dict:
+def class_to_idx(classes: np.ndarray) -> dict:
     """
     Helpful function for generating dictionary that maps class names to class index
     Helper function for function for generating dictionary that maps class names to class index
@@ -244,3 +242,4 @@ def empty_histograms(histograms: List[Histogram], arms: Tuple[np.ndarray, np.nda
         # Since we don't obviate bins in arms, even though they are not candidates
         # Todo: change this if we obviate bins later
         histogram.empty_samples(range(histogram.num_bins))
+
