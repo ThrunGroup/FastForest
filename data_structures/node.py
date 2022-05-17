@@ -124,7 +124,7 @@ class Node:
                 num_bins=self.num_bins,
                 is_classification=self.is_classification,
                 impurity_measure=self.criterion,
-                # NOT implemented with budget yet
+                # NOTE: not implemented with budget yet
             )
         else:
             raise Exception("Invalid solver specified, must be MAB or EXACT")
