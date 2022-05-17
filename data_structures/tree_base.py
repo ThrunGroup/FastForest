@@ -219,7 +219,7 @@ class TreeBase(ABC):
                     split_already_computed = leaf.best_reduction_computed
                     if self.remaining_budget is None or self.remaining_budget > 0:
                         # Runs solve_mab if not previously computed, which incurs cost!
-                        reduction = leaf.calculate_best_split()
+                        reduction = leaf.calculate_best_split(self.remaining_budget)
                     else:
                         break
                     # don't add queries if best split is already computed

@@ -226,12 +226,15 @@ def sample_targets(
         population_idcs = np.delete(
             population_idcs, idcs
         )  # Delete drawn samples from population
-    num_queries = len(sample_idcs)  # May be less than batch_size due to truncation
+
     samples = data[sample_idcs]
     sample_labels = labels[sample_idcs]
+    num_queries = 0
     for f_idx, f in enumerate(f2bin_dict):
         h: Histogram = histograms[f]
         h.add(samples, sample_labels)  # This is where the labels are used
+        num_queries += len(samples)     # num_queries should be updated per histogram insert
+
         # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
         i_r, cb_d = get_impurity_reductions(
             is_classification=is_classification,
@@ -261,6 +264,7 @@ def solve_mab(
     min_impurity_reduction: float = 0,
     epsilon=0.00,
     with_replacement: bool = False,
+    budget: int = None,
 ) -> Tuple[int, float, float, int]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
@@ -368,6 +372,10 @@ def solve_mab(
                 candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
                 total_queries += num_queries
 
+                # check that we're still within budget
+                if (budget is not None) and (budget - total_queries <= 0):
+                    break
+
                 # None of the CIs overlap with 0. We are confident that there is no possible impurity reduction.
                 if lcbs.min() > 0:
                     break
@@ -406,6 +414,10 @@ def solve_mab(
         lcbs[accesses] = estimates[accesses] - CONF_MULTIPLIER * cb_delta[accesses]
         ucbs[accesses] = estimates[accesses] + CONF_MULTIPLIER * cb_delta[accesses]
 
+        # check that we're still within budget
+        if (budget is not None) and (budget - total_queries <= 0):
+            break
+
         # None of the CIs overlap with 0. We are confident that there is no possible impurity reduction.
         if lcbs.min() > 0:
             break
@@ -440,7 +452,7 @@ def solve_mab(
 
     # Only return the split if it would indeed lower the impurity
     if best_reduction < min_impurity_reduction:
-        return best_feature, best_value, best_reduction, int(np.sum(num_samples))
+        return best_feature, best_value, best_reduction, total_queries
     else:
         return total_queries
 

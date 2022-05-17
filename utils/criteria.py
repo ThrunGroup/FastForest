@@ -220,9 +220,7 @@ def get_impurity_reductions(
 ) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
     """
     Given a histogram of counts for each bin, compute the impurity reductions if we were to split a node on any of the
-    histogram's bin edges.
-
-    Impurity is measured either by Gini index or entropy
+    histogram's bin edges. Impurity is measured either by Gini index or entropy
 
     :param is_classification: Whether the problem is a classification problem(True) or a regression problem(False)
     :returns: Impurity reduction when splitting node by bins in bin_edge_idcs
