@@ -146,7 +146,7 @@ def compare_runtimes(
                 n_estimators=1,
                 max_depth=1,
                 min_samples_split=2,
-                min_impurity_decrease=0,
+                min_impurity_decrease=-0.01,
                 max_leaf_nodes=None,
                 budget=None,
                 criterion=GINI,
