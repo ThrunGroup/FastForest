@@ -107,8 +107,8 @@ def compare_runtimes(
     compare: str = "HRFC",
     full_train_data: np.ndarray = None,
     full_train_targets: np.ndarray = None,
-    full_test_data: np.ndarray = None,
-    full_test_targets: np.ndarray = None,
+    test_data: np.ndarray = None,
+    test_targets: np.ndarray = None,
     starting_seed: int = 0,
     num_seeds: int = 1,
     predict: bool = True,
@@ -134,7 +134,8 @@ def compare_runtimes(
         np.random.seed(seed)
         idcs = np.random.choice(60000, size=C_SUBSAMPLE_SIZE, replace=True)
         train_data = np.array(full_train_data)[idcs]
-        train_targets = np.array(full_train_data)[idcs]
+        train_targets = np.array(full_train_targets)[idcs]
+        # Do not subsample test data
 
         if compare == "HRFC":
             our_model = HRFC(

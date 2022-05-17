@@ -8,12 +8,20 @@ def main():
 
     train_images, train_labels = mndata.load_training()
 
+    # For accuracy comparison. Looks ok
+    # test_images, test_labels = mndata.load_testing()
+    # test_images = np.array(test_images)
+    # test_labels = np.array(test_labels)
+
     for C_SUBSAMPLE_SIZE in [
-        5000,
-        10000,
-        20000,
-        40000,
-        60000,
+        # 100,
+        # 200,
+        # 1000,
+        # 5000,
+        # 10000,
+        # 20000,
+        # 40000,
+        # 60000,
         # 80000,
         # 160000,
         # 320000,
@@ -27,8 +35,8 @@ def main():
                 "HRFC",
                 full_train_data=train_images,
                 full_train_targets=train_labels,
-                full_test_data=None,
-                full_test_targets=None,
+                test_data=None,
+                test_targets=None,
                 starting_seed=100,
                 num_seeds=5,
                 predict=False,
