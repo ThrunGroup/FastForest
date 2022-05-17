@@ -254,7 +254,7 @@ class TreeBase(ABC):
                             reduction = leaf.calculate_best_split(self.remaining_budget)
                         else:
                             break
-                            
+
                     # don't add queries if best split is already computed
                     # add number of queries we made if the best split is NOT already computed
                     if not split_already_computed:
