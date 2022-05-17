@@ -115,10 +115,12 @@ def compare_runtimes(
     run_theirs: bool = True,
     profile_name: str = "profile",
     C_SUBSAMPLE_SIZE: int = 60000,
-) -> bool:
+):  # TODO(@motiwari) add typehint for dict
     # Runtimes
     our_train_times = []
     their_train_times = []
+    our_num_queries = []
+    their_num_queries = []
 
     # For accuracies
     our_train_accs = []
@@ -481,6 +483,7 @@ def compare_runtimes(
         our_stats.dump_stats(profile_name + "_ours_" + str(seed))
 
         our_train_times.append(our_runtime)
+        our_num_queries.append(our_model.num_queries)
         print("Ours fitted", our_runtime)
 
         if run_theirs:
@@ -492,6 +495,7 @@ def compare_runtimes(
             their_stats.dump_stats(profile_name + "_theirs_" + str(seed))
 
             their_train_times.append(their_runtime)
+            their_num_queries.append(their_model.num_queries)
             print("Theirs fitted", their_runtime)
             print()
 
@@ -564,6 +568,8 @@ def compare_runtimes(
     # For runtimes
     our_avg_train_time = np.mean(our_train_times)
     our_std_train_time = np.std(our_train_times)
+    our_avg_num_queries = np.mean(our_num_queries)
+    our_std_num_queries = np.std(our_num_queries)
 
     if run_theirs:
         their_avg_train = np.mean(their_train_accs)
@@ -576,23 +582,30 @@ def compare_runtimes(
         their_avg_train_time = np.mean(their_train_times)
         their_std_train_time = np.std(their_train_times)
 
+        their_avg_num_queries = np.mean(their_num_queries)
+        their_std_num_queries = np.std(their_num_queries)
+
         # See if confidence intervals overlap
         overlap = np.abs(their_avg_test - our_avg_test) < their_std_test + our_std_test
-    return (
-        overlap if run_theirs else None,
-        our_avg_train,
-        our_std_train,
-        our_avg_test if predict else None,
-        our_std_test if predict else None,
-        their_avg_train if run_theirs else None,
-        their_std_train if run_theirs else None,
-        their_avg_test if run_theirs and predict else None,
-        their_std_test if run_theirs and predict else None,
-        our_avg_train_time,
-        our_std_train_time,
-        their_avg_train_time if run_theirs else None,
-        their_std_train_time if run_theirs else None,
-    )
+    return {
+        "overlap": overlap if run_theirs else None,
+        "our_avg_train": our_avg_train,
+        "our_std_train": our_std_train,
+        "our_avg_num_queries": our_avg_num_queries,
+        "our_std_num_queries": our_std_num_queries,
+        "our_avg_test": our_avg_test if predict else None,
+        "our_std_test": our_std_test if predict else None,
+        "their_avg_train": their_avg_train if run_theirs else None,
+        "their_std_train": their_std_train if run_theirs else None,
+        "their_avg_num_queries": their_avg_num_queries if run_theirs else None,
+        "their_std_num_queries": their_std_num_queries if run_theirs else None,
+        "their_avg_test": their_avg_test if run_theirs and predict else None,
+        "their_std_test": their_std_test if run_theirs and predict else None,
+        "our_avg_train_time": our_avg_train_time,
+        "our_std_train_trime": our_std_train_time,
+        "their_avg_train_time": their_avg_train_time if run_theirs else None,
+        "their_std_train_time": their_std_train_time if run_theirs else None,
+    }
 
 
 def main():

@@ -2,6 +2,8 @@ from mnist import MNIST
 
 from experiments.compare_runtimes import *
 
+import pprint
+
 
 def main():
     mndata = MNIST("mnist/")
@@ -29,8 +31,8 @@ def main():
         # 1280000,
     ]:
         print("\n\n")
-
-        print(
+        pp = pprint.PrettyPrinter(indent=2)
+        pp.pprint(
             compare_runtimes(
                 "HRFC",
                 full_train_data=train_images,
