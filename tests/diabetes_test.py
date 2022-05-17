@@ -36,8 +36,9 @@ def test_tree_diabetes(
         print(f"MSE is {mse}\n")
     bin_type = IDENTITY if solver == EXACT else LINEAR
     tree = TreeRegressor(
-        data,
-        labels,
+        forest=None,
+        data=data,
+        labels=labels,
         max_depth=7,
         verbose=verbose,
         random_state=seed,

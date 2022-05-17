@@ -385,8 +385,10 @@ def solve_mab(
                     batch_size=N,
                     impurity_measure=impurity_measure,
                     permutation=permutation,
-                    sampling_idx=sampling_idx
-                    + total_datapoints,  # initial + how many we've used so far
+                    # initial + how many we've used so far
+                    sampling_idx=sampling_idx + total_datapoints
+                    if sampling_idx is not None
+                    else None,
                 )
 
                 # The confidence intervals now only contain a point, since the return has been computed exactly
@@ -398,7 +400,7 @@ def solve_mab(
                 cand_condition = np.where((lcbs < ucbs.min()) & (exact_mask == 0))
                 candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
                 total_queries += num_queries
-                total_datapoints += num_dataset
+                total_datapoints += num_datapoints
 
                 # check that we're still within budget
                 if (budget is not None) and (budget - total_queries <= 0):
@@ -438,8 +440,10 @@ def solve_mab(
             impurity_measure=impurity_measure,
             population_idcs=population_idcs,
             permutation=permutation,
-            sampling_idx=sampling_idx
-            + total_datapoints,  # initial + how many we've used so far
+            # initial + how many we've used so far
+            sampling_idx=sampling_idx + total_datapoints
+            if sampling_idx is not None
+            else None,
         )
         num_samples[accesses] += batch_size
         total_queries += num_queries

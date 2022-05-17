@@ -66,6 +66,7 @@ def test_tree_news(
     classes_arr = np.unique(Y_train)
     classes = utils.utils.class_to_idx(classes_arr)
     tc = TreeClassifier(
+        forest=None,
         data=X_train,
         labels=Y_train,
         max_depth=4,

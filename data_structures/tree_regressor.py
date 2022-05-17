@@ -1,3 +1,7 @@
+from __future__ import (
+    annotations,
+)  # For typechecking, this is somehow important
+
 import numpy as np
 from typing import DefaultDict, Union
 from collections import defaultdict
@@ -15,7 +19,7 @@ class TreeRegressor(TreeBase, Regressor):
 
     def __init__(
         self,
-        forest: ForestBase,
+        forest: Forest,
         data: np.ndarray,
         labels: np.ndarray,
         max_depth: int,

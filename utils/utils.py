@@ -27,8 +27,10 @@ def type_check() -> None:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
-        from data_structures.tree_base import TreeBase
-        from data_structures.forest_base import ForestBase
+        # from data_structures.tree_base import TreeBase
+        # from data_structures.forest_base import ForestBase
+        from tree import Tree
+        from forest import Forest
 
 
 def set_seed(seed: int) -> None:

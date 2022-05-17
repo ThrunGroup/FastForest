@@ -26,8 +26,8 @@ type_check()
 class Node:
     def __init__(
         self,
-        tree: TreeBase,
-        forest: ForestBase,
+        tree: Tree,
+        forest: Forest,
         parent: Node,
         data: np.ndarray,
         labels: np.ndarray,
@@ -120,7 +120,9 @@ class Node:
                 with_replacement=self.with_replacement,
                 budget=budget,
                 permutation=self.permutation,
-                sampling_idx=self.forest.sampling_idx,
+                sampling_idx=self.forest.sampling_idx
+                if self.forest is not None
+                else None,
             )
         elif self.solver == EXACT:
             results = solve_exactly(
@@ -133,7 +135,9 @@ class Node:
                 impurity_measure=self.criterion,
                 # NOTE: not implemented with budget yet
                 permutation=self.permutation,
-                sampling_idx=self.forest.sampling_idx,
+                sampling_idx=self.forest.sampling_idx
+                if self.forest is not None
+                else None,
             )
         else:
             raise Exception("Invalid solver specified, must be MAB or EXACT")
@@ -163,7 +167,9 @@ class Node:
                 self.num_queries, self.delta_sampling_idx = results
                 if self.verbose:
                     print("Calculated split with", self.num_queries, "queries")
-            self.forest.sampling_idx += self.delta_sampling_idx
+
+            if self.forest is not None:
+                self.forest.sampling_idx += self.delta_sampling_idx
         else:
             raise Exception("Solver returned malformed results")
 
@@ -172,6 +178,7 @@ class Node:
         child_labels = self.labels[idcs]
         return Node(
             tree=self.tree,
+            forest=self.forest,
             parent=self,
             data=child_data,
             labels=child_labels,

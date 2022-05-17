@@ -21,6 +21,7 @@ def test_tree_iris2(verbose: bool = False) -> None:
         print("-" * 30)
         print(f"Fitting {print_str} tree")
         t = TreeClassifier(
+            forest=None,
             data=data,
             labels=labels,
             max_depth=5,

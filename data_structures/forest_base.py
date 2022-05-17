@@ -184,7 +184,6 @@ class ForestBase(ABC):
                     with_replacement=self.with_replacement,
                     verbose=self.verbose,
                     permutation=self.permutation,
-                    sampling_idx=self.sampling_idx,
                 )
             else:
                 tree = TreeRegressor(
@@ -205,7 +204,6 @@ class ForestBase(ABC):
                     with_replacement=self.with_replacement,
                     verbose=self.verbose,
                     permutation=self.permutation,
-                    sampling_idx=self.sampling_idx,
                 )
             tree.fit()
             self.trees.append(tree)

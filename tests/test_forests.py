@@ -23,7 +23,10 @@ class ForestTests(unittest.TestCase):
         iris = sklearn.datasets.load_iris()
         data, labels = iris.data, iris.target
         f = RandomForestClassifier(
-            data=data, labels=labels, n_estimators=20, max_depth=5,
+            data=data,
+            labels=labels,
+            n_estimators=20,
+            max_depth=5,
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
@@ -33,7 +36,12 @@ class ForestTests(unittest.TestCase):
     def test_forest_iris(self) -> None:
         iris = sklearn.datasets.load_iris()
         data, labels = iris.data, iris.target
-        f = ForestClassifier(data=data, labels=labels, n_estimators=20, max_depth=5,)
+        f = ForestClassifier(
+            data=data,
+            labels=labels,
+            n_estimators=20,
+            max_depth=5,
+        )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
         print("Accuracy:", (acc / len(data)))
@@ -57,7 +65,12 @@ class ForestTests(unittest.TestCase):
     def test_forest_digits(self) -> None:
         digits = sklearn.datasets.load_digits()
         data, labels = digits.data, digits.target
-        f = ForestClassifier(data=data, labels=labels, n_estimators=10, max_depth=5,)
+        f = ForestClassifier(
+            data=data,
+            labels=labels,
+            n_estimators=10,
+            max_depth=5,
+        )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
         self.assertTrue((acc / len(data)) > 0.80)
@@ -75,7 +88,8 @@ class ForestTests(unittest.TestCase):
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
-        self.assertTrue((acc / len(data)) > 0.84)
+        print("Accuracy:", acc, len(data))
+        self.assertTrue((acc / len(data)) > 0.81)
 
     def test_tree_toy(self, show: bool = False) -> None:
         toy = data_generator.create_data(10000)
@@ -99,7 +113,9 @@ class ForestTests(unittest.TestCase):
         )
 
         print("\n\n=> Tree fitting:")
-        t = TreeClassifier(data, labels, max_depth=3, classes=classes)
+        t = TreeClassifier(
+            forest=None, data=data, labels=labels, max_depth=3, classes=classes
+        )
         t.fit()
         t.tree_print()
 
@@ -111,7 +127,9 @@ class ForestTests(unittest.TestCase):
         ground_truth.ground_truth_tree(
             data=data, labels=labels, max_depth=5, show=False
         )  # Only used for interactively showing decision tree
-        t = TreeClassifier(data=data, labels=labels, max_depth=5, classes=classes)
+        t = TreeClassifier(
+            forest=None, data=data, labels=labels, max_depth=5, classes=classes
+        )
         t.fit()
         t.tree_print()
         print("Number of queries:", t.num_queries)
@@ -126,7 +144,12 @@ class ForestTests(unittest.TestCase):
         classes = utils.utils.class_to_idx(classes_arr)
 
         t = TreeClassifier(
-            data=data, labels=labels, max_depth=5, classes=classes, solver=EXACT
+            forest=None,
+            data=data,
+            labels=labels,
+            max_depth=5,
+            classes=classes,
+            solver=EXACT,
         )
         t.fit()
         t.tree_print()
@@ -141,7 +164,12 @@ class ForestTests(unittest.TestCase):
         classes_arr = np.unique(labels)
         classes = utils.utils.class_to_idx(classes_arr)
         t = TreeClassifier(
-            data=data, labels=labels, max_depth=5, classes=classes, budget=0
+            forest=None,
+            data=data,
+            labels=labels,
+            max_depth=5,
+            classes=classes,
+            budget=0,
         )
         t.fit()
         t.tree_print()
@@ -156,7 +184,12 @@ class ForestTests(unittest.TestCase):
         classes = utils.utils.class_to_idx(classes_arr)
 
         t1 = TreeClassifier(
-            data=data, labels=labels, max_depth=5, classes=classes, budget=500
+            forest=None,
+            data=data,
+            labels=labels,
+            max_depth=5,
+            classes=classes,
+            budget=500,
         )
         t1.fit()
         t1.tree_print()
@@ -165,7 +198,12 @@ class ForestTests(unittest.TestCase):
         print()
         print()
         t2 = TreeClassifier(
-            data=data, labels=labels, max_depth=5, classes=classes, budget=1500
+            forest=None,
+            data=data,
+            labels=labels,
+            max_depth=5,
+            classes=classes,
+            budget=1500,
         )
         t2.fit()
         t2.tree_print()

@@ -1,3 +1,7 @@
+from __future__ import (
+    annotations,
+)  # For typechecking, this is somehow important
+
 import numpy as np
 import math
 
@@ -34,7 +38,7 @@ class TreeBase(ABC):
 
     def __init__(
         self,
-        forest: ForestBase,
+        forest: Forest,
         data: np.ndarray,
         labels: np.ndarray,
         max_depth: int,
@@ -106,6 +110,7 @@ class TreeBase(ABC):
 
         self.node = Node(
             tree=self,
+            forest=forest,
             parent=None,
             data=self.data,  # Root node contains all the data
             labels=self.labels,
