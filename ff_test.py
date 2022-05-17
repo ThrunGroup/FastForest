@@ -5,6 +5,7 @@ from data_structures.forest_classifier import ForestClassifier
 from data_structures.tree_classifier import TreeClassifier
 from utils.utils import class_to_idx
 from utils.constants import LINEAR
+from tests.diabetes_test import test_tree_diabetes
 
 
 def test_tree_iris2(verbose: bool = False) -> None:

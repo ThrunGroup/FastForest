@@ -12,7 +12,14 @@ from utils.utils import (
     choose_features,
     remap_discrete_features,
 )
-from utils.constants import MAB, EXACT, GINI, LINEAR, DEFAULT_NUM_BINS
+from utils.constants import (
+    MAB,
+    EXACT,
+    GINI,
+    LINEAR,
+    DEFAULT_NUM_BINS,
+    MAX_BUDGET,
+)
 
 type_check()
 
@@ -88,7 +95,7 @@ class Node:
         else:
             self.predicted_value = None
 
-    def calculate_best_split(self) -> Union[float, int]:
+    def calculate_best_split(self, budget: int = None) -> Union[float, int]:
         """
         Speculatively calculate the best split
 
@@ -107,6 +114,7 @@ class Node:
                 is_classification=self.is_classification,
                 impurity_measure=self.criterion,
                 with_replacement=self.with_replacement,
+                budget=budget,
             )
         elif self.solver == EXACT:
             results = solve_exactly(
@@ -117,6 +125,7 @@ class Node:
                 num_bins=self.num_bins,
                 is_classification=self.is_classification,
                 impurity_measure=self.criterion,
+                # NOT implemented with budget yet
             )
         else:
             raise Exception("Invalid solver specified, must be MAB or EXACT")

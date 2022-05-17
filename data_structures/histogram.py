@@ -72,6 +72,9 @@ class Histogram:
             - returns len(bin_edges) + 1 if val is greater than the biggest edge which is ok
               since len(count_bucket) = len(bin_edges) + 1
         """
+        # TODO: shouldn't be creating a histogram for feature with only bin value
+        # assert (self.max_bin > self.min_bin), "shouldn't be creating a histogram for one bin value"
+
         if self.bin_type == LINEAR:
             bin_width = (self.max_bin - self.min_bin) / (self.num_bins - 1)
             insert_idcs = (fvals - self.min_bin) / bin_width

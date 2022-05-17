@@ -52,3 +52,6 @@ KURTOSIS = 3  # normal distribution has kurtosis = 3
 # Models for speedup comparison
 CLASSIFICATION_MODELS = ["ERFC", "HRFC", "HRPC"]
 REGRESSION_MODELS = ["ERFR", "GBERFR", "HRFR", "GBHRFR", "HRPR", "GBHRPR"]
+
+# budget
+MAX_BUDGET = 1000000
