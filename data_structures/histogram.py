@@ -3,7 +3,7 @@ import bisect
 import math
 from typing import Any, Tuple
 
-from utils.constants import LINEAR, DISCRETE, IDENTITY, RANDOM, DEFAULT_NUM_BINS
+from utils.constants import LINEAR, IDENTITY, RANDOM, DEFAULT_NUM_BINS
 from utils.utils_histogram import welford_variance_calc
 
 
@@ -43,8 +43,6 @@ class Histogram:
                 self.num_bins = 0
                 return
             self.bin_edges = self.linear_bin()
-        elif self.bin_type == DISCRETE:
-            self.bin_edges = self.discrete_bin()
         elif self.bin_type == IDENTITY:
             self.bin_edges = self.identity_bin()
         elif self.bin_type == RANDOM:
@@ -155,21 +153,6 @@ class Histogram:
         :return: Returns an array of bins with linear spacing
         """
         return np.linspace(self.min_bin, self.max_bin, self.num_bins)
-
-    def discrete_bin(self) -> np.ndarray:
-        """
-        Returns a subset of self.feature_values with constant width. It can be either similar or different
-        to linear bin depending on the distribution of self.feature_values.
-        Ex) self.f_data = [0, 1, 2, 3, 3, 3, 3, 100]
-            self.feature_values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 100]
-            self.num_bins = 5
-            self.linear_bin() = [0, 25, 50, 75, 100]
-            self.discrete_bin() = [0, 2, 4, 6, 8]
-
-        :return: Return a subset array of self.feature_values
-        """
-        width = int(len(self.unique_fvals) / self.num_bins)
-        return np.array([self.unique_fvals[width * i] for i in range(self.num_bins)])
 
     def identity_bin(self) -> np.ndarray:
         """

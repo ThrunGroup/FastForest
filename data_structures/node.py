@@ -10,7 +10,6 @@ from utils.utils import (
     type_check,
     counts_of_labels,
     choose_features,
-    remap_discrete_features,
 )
 from utils.constants import (
     MAB,
@@ -59,19 +58,14 @@ class Node:
         self.criterion = criterion
         self.feature_subsampling = feature_subsampling
         self.tree_global_feature_subsampling = tree_global_feature_subsampling
-        self.discrete_features = defaultdict(list)
         self.with_replacement = with_replacement
 
         if tree_global_feature_subsampling:
             # Features are chosen at the tree level. Use all of tree's features
             self.feature_idcs = self.tree.feature_idcs
-            self.discrete_features = self.tree.discrete_features
         else:
             # The features aren't global to the tree, so we should be resampling the features at every node
             self.feature_idcs = choose_features(data, self.feature_subsampling)
-            self.discrete_features = remap_discrete_features(
-                self.feature_idcs, self.tree.discrete_features
-            )
 
         # NOTE: Do not assume labels are all integers from 0 to num_classes-1
         if is_classification:
@@ -107,7 +101,6 @@ class Node:
             results = solve_mab(
                 data=self.data[:, self.feature_idcs],
                 labels=self.labels,
-                discrete_bins_dict=self.discrete_features,
                 binning_type=self.bin_type,
                 num_bins=self.num_bins,
                 is_classification=self.is_classification,
@@ -119,7 +112,6 @@ class Node:
             results = solve_exactly(
                 data=self.data[:, self.feature_idcs],
                 labels=self.labels,
-                discrete_bins_dict=self.discrete_features,
                 binning_type=self.bin_type,
                 num_bins=self.num_bins,
                 is_classification=self.is_classification,

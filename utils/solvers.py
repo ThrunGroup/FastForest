@@ -70,7 +70,6 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 def solve_exactly(
     data: np.ndarray,
     labels: np.ndarray,
-    discrete_bins_dict: DefaultDict,
     binning_type: str = IDENTITY,
     num_bins: int = DEFAULT_NUM_BINS,
     is_classification: bool = True,
@@ -86,8 +85,7 @@ def solve_exactly(
 
     :param data: Feature set
     :param labels: Labels of datapoints
-    :param discrete_bins_dict: A dictionary of discrete bins
-    :param binning_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
+    :param binning_type: The type of bin to use. There are 2 choices--linear and identity.
     :param num_queries: mutable variable to update the number of datapoints queried
     :param is_classification:  Whether is a classification problem(True) or regression problem(False)
     :param impurity_measure: A name of impurity_measure
@@ -120,7 +118,6 @@ def solve_exactly(
         is_classification=is_classification,
         data=data,
         labels=labels,
-        discrete_bins_dict=discrete_bins_dict,
         binning_type=binning_type,
         num_bins=B,
     )
@@ -256,7 +253,6 @@ def sample_targets(
 def solve_mab(
     data: np.ndarray,
     labels: np.ndarray,
-    discrete_bins_dict: DefaultDict,
     binning_type: str = LINEAR,
     num_bins: int = DEFAULT_NUM_BINS,
     is_classification: bool = True,
@@ -278,8 +274,7 @@ def solve_mab(
 
     :param data: Feature set
     :param labels: Labels of datapoints
-    :param discrete_bins_dict: A dictionary of discrete bins
-    :param binning_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
+    :param binning_type: The type of bin to use. There are 2 choices--linear and identity.
     :param num_queries: mutable variable to update the number of datapoints queried
     :param is_classification:  Whether is a classification problem(True) or regression problem(False)
     :param impurity_measure: A name of impurity_measure
@@ -326,7 +321,6 @@ def solve_mab(
         is_classification=is_classification,
         data=data,
         labels=labels,
-        discrete_bins_dict=discrete_bins_dict,
         binning_type=binning_type,
         num_bins=B,
     )

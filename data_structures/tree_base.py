@@ -7,10 +7,8 @@ from typing import Union, Tuple, DefaultDict
 
 from data_structures.node import Node
 from utils.utils import (
-    data_to_discrete,
     set_seed,
     choose_features,
-    remap_discrete_features,
 )
 from utils.constants import (
     MAB,
@@ -40,7 +38,6 @@ class TreeBase(ABC):
         min_samples_split: int = 2,
         min_impurity_decrease: float = DEFAULT_MIN_IMPURITY_DECREASE,
         max_leaf_nodes: int = None,
-        discrete_features: DefaultDict = defaultdict(list),
         bin_type: str = LINEAR,
         num_bins: int = DEFAULT_NUM_BINS,
         budget: int = None,
@@ -65,18 +62,10 @@ class TreeBase(ABC):
 
         self.feature_subsampling = feature_subsampling
         self.tree_global_feature_subsampling = tree_global_feature_subsampling
-        self.discrete_features = (
-            discrete_features
-            if len(discrete_features) > 0
-            else data_to_discrete(data, n=10)
-        )
 
         if self.tree_global_feature_subsampling:
             # Sample the features randomly once, to be used in the entire tree
             self.feature_idcs = choose_features(data, self.feature_subsampling)
-            self.discrete_features = remap_discrete_features(
-                self.feature_idcs, self.discrete_features
-            )
 
         self.min_samples_split = min_samples_split
         # Make this a small negative number to avoid infinite loop when all leaves are at max_depth

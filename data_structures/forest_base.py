@@ -13,7 +13,7 @@ from utils.constants import (
     DEFAULT_REGRESSOR_LOSS,
     DEFAULT_MIN_IMPURITY_DECREASE,
 )
-from utils.utils import data_to_discrete, set_seed
+from utils.utils import set_seed
 from utils.boosting import get_next_targets
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.tree_regressor import TreeRegressor
@@ -132,7 +132,6 @@ class ForestBase(ABC):
             self.new_targets = labels
 
         self.trees = []
-        self.discrete_features: DefaultDict = data_to_discrete(self.data, n=10)
         for i in range(self.n_estimators):
             if self.remaining_budget is not None and self.remaining_budget <= 0:
                 break
@@ -168,7 +167,6 @@ class ForestBase(ABC):
                     min_samples_split=self.min_samples_split,
                     min_impurity_decrease=self.min_impurity_decrease,
                     max_leaf_nodes=self.max_leaf_nodes,
-                    discrete_features=self.discrete_features,
                     bin_type=self.bin_type,
                     num_bins=self.num_bins,
                     solver=self.solver,
@@ -186,7 +184,6 @@ class ForestBase(ABC):
                     min_samples_split=self.min_samples_split,
                     min_impurity_decrease=self.min_impurity_decrease,
                     max_leaf_nodes=self.max_leaf_nodes,
-                    discrete_features=self.discrete_features,
                     bin_type=self.bin_type,
                     num_bins=self.num_bins,
                     solver=self.solver,
