@@ -105,15 +105,16 @@ def time_measured_fit(
 
 def compare_runtimes(
     compare: str = "HRFC",
-    train_data: np.ndarray = None,
-    train_targets: np.ndarray = None,
-    test_data: np.ndarray = None,
-    test_targets: np.ndarray = None,
+    full_train_data: np.ndarray = None,
+    full_train_targets: np.ndarray = None,
+    full_test_data: np.ndarray = None,
+    full_test_targets: np.ndarray = None,
     starting_seed: int = 0,
     num_seeds: int = 1,
     predict: bool = True,
     run_theirs: bool = True,
     profile_name: str = "profile",
+    C_SUBSAMPLE_SIZE: int = 60000,
 ) -> bool:
     # Runtimes
     our_train_times = []
@@ -128,6 +129,13 @@ def compare_runtimes(
         seed = (
             seed + starting_seed
         )  # Does not "skip" any in the loop above, loop condition precomputes range
+
+        # Subsample data
+        np.random.seed(seed)
+        idcs = np.random.choice(60000, size=C_SUBSAMPLE_SIZE, replace=True)
+        train_data = np.array(full_train_data)[idcs]
+        train_targets = np.array(full_train_data)[idcs]
+
         if compare == "HRFC":
             our_model = HRFC(
                 data=train_data,
@@ -469,7 +477,7 @@ def compare_runtimes(
         our_runtime = time_measured_fit(our_model)
         our_prof.disable()
         our_stats = pstats.Stats(our_prof).strip_dirs().sort_stats("tottime")
-        our_stats.dump_stats(profile_name + "_ours")
+        our_stats.dump_stats(profile_name + "_ours_" + str(seed))
 
         our_train_times.append(our_runtime)
         print("Ours fitted", our_runtime)
@@ -480,7 +488,7 @@ def compare_runtimes(
             their_runtime = time_measured_fit(their_model)
             their_prof.disable()
             their_stats = pstats.Stats(their_prof).strip_dirs().sort_stats("tottime")
-            their_stats.dump_stats(profile_name + "_theirs")
+            their_stats.dump_stats(profile_name + "_theirs_" + str(seed))
 
             their_train_times.append(their_runtime)
             print("Theirs fitted", their_runtime)
