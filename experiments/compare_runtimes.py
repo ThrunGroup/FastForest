@@ -626,6 +626,7 @@ def compare_runtimes(
 
 
 def main():
+    ################## LIST OF MODELS
     # Classification
     ## Extremely Random -- already histogrammed
     # ERFC
@@ -665,24 +666,50 @@ def main():
     # GBRFR
     # GBRPR
 
+    ########################################### PARAMS
     pp = pprint.PrettyPrinter(indent=2)
-    NUM_SEEDS = 5
+    NUM_SEEDS = 2
 
     ############### Regression
-    train_data, train_targets, test_data, test_targets = load_housing()
+    # train_data, train_targets, test_data, test_targets = load_housing()
     # # Subsample the data because training on 20k points (the full housing dataset) takes too long for RFR
+    #
+    # train_data, train_targets = make_huge(train_data, train_targets)
+    # train_data_subsampled = train_data
+    # train_targets_subsampled = train_targets
+    # print(len(train_data_subsampled), len(train_targets_subsampled))
 
-    train_data, train_targets = make_huge(train_data, train_targets)
-    train_data_subsampled = train_data
-    train_targets_subsampled = train_targets
-    print(len(train_data_subsampled), len(train_targets_subsampled))
+    params = {
+        "data_size": 1000000,
+        "n_features": 50,
+        "informative_ratio": 0.06,
+        "seed": 1,
+        "epsilon": 0.01,
+        "use_dynamic_epsilon": False,
+        "use_logarithmic split point": True,
+    }
+
+    n_informative = int(params["n_features"] * params["informative_ratio"])
+    full_data, full_targets = make_regression(
+        250000,
+        n_features=params["n_features"],
+        n_informative=n_informative,
+        random_state=params["seed"],
+    )
+
+    train_test_split = int(0.8 * params["data_size"])
+    train_data = full_data[:train_test_split]
+    train_targets = full_targets[:train_test_split]
+
+    test_data = full_data[train_test_split:]
+    test_targets = full_targets[train_test_split:]
 
     ## Random Forests
     pp.pprint(
         compare_runtimes(
             compare="HRFR",
-            train_data=train_data_subsampled,
-            train_targets=train_targets_subsampled,
+            train_data=train_data,
+            train_targets=train_targets,
             test_data=test_data,
             test_targets=test_targets,
             num_seeds=NUM_SEEDS,
@@ -696,15 +723,15 @@ def main():
     pp.pprint(
         compare_runtimes(
             compare="GBHRFR",
-            train_data=train_data_subsampled,
-            train_targets=train_targets_subsampled,
+            train_data=train_data,
+            train_targets=train_targets,
             test_data=test_data,
             test_targets=test_targets,
             num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
             filename="GBHRFR_dict",
-            verbose=False,
+            verbose=True,
         )
     )
 
@@ -712,30 +739,30 @@ def main():
     pp.pprint(
         compare_runtimes(
             compare="ERFR",
-            train_data=train_data_subsampled,
-            train_targets=train_targets_subsampled,
+            train_data=train_data,
+            train_targets=train_targets,
             test_data=test_data,
             test_targets=test_targets,
             num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
             filename="ERFR_dict",
-            verbose=False,
+            verbose=True,
         )
     )
 
     pp.pprint(
         compare_runtimes(
             compare="GBERFR",
-            train_data=train_data_subsampled,
-            train_targets=train_targets_subsampled,
+            train_data=train_data,
+            train_targets=train_targets,
             test_data=test_data,
             test_targets=test_targets,
             num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
             filename="GBERFR_dict",
-            verbose=False,
+            verbose=True,
         )
     )
 
@@ -743,30 +770,30 @@ def main():
     pp.pprint(
         compare_runtimes(
             compare="HRPR",
-            train_data=train_data_subsampled,
-            train_targets=train_targets_subsampled,
+            train_data=train_data,
+            train_targets=train_targets,
             test_data=test_data,
             test_targets=test_targets,
             num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
             filename="HRPR_dict",
-            verbose=False,
+            verbose=True,
         )
     )
 
     pp.pprint(
         compare_runtimes(
             compare="GBHRPR",
-            train_data=train_data_subsampled,
-            train_targets=train_targets_subsampled,
+            train_data=train_data,
+            train_targets=train_targets,
             test_data=test_data,
             test_targets=test_targets,
             num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
             filename="GBHRPR_dict",
-            verbose=False,
+            verbose=True,
         )
     )
 
@@ -793,6 +820,7 @@ def main():
             predict=True,
             run_theirs=True,
             filename="HRFC_dict",
+            verbose=True,
         )
     )
 
@@ -808,6 +836,7 @@ def main():
             predict=True,
             run_theirs=True,
             filename="ERFC_dict",
+            verbose=True,
         )
     )
 
@@ -823,6 +852,7 @@ def main():
             predict=True,
             run_theirs=True,
             filename="HRPC_dict",
+            verbose=True,
         )
     )
 
