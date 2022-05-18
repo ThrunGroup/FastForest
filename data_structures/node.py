@@ -128,6 +128,7 @@ class Node:
             )
         else:
             raise Exception("Invalid solver specified, must be MAB or EXACT")
+        del self.discrete_features
 
         # Even if results is None, we should cache the fact that we know that
         self.best_reduction_computed = True
