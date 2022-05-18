@@ -4,10 +4,11 @@ import numpy as np
 def main():
     with open("../results_filtered.csv") as fin:
         sizes = []
-        results = np.zeros((14, 20))
+        NUM_SIZES = 30
+        NUM_TRIALS = 20
+        results = np.zeros((NUM_SIZES, NUM_TRIALS))
         size_idx = 0
         rc_idx = 0
-        print(results)
         for line in fin:
             if "Round count:" in line:
                 results[size_idx, rc_idx] = int(line.strip().split()[-1])
@@ -17,7 +18,7 @@ def main():
                 rc_idx = 0
                 sizes.append(int(line.strip().split()[-2]))
 
-    if rc_idx != 9:
+    if results[-1, -1] == 0:
         print("Warning: last row has incomplete results")
 
     print(results)
