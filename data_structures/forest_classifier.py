@@ -33,10 +33,14 @@ class ForestClassifier(ForestBase, Classifier):
         with_replacement: bool = False,
         verbose: bool = False,
         make_discrete: bool = False,
+        classes: dict = None,
     ) -> None:
-        self.classes: dict = class_to_idx(
-            np.unique(labels)
-        )  # a dictionary that maps class name to class index
+        if classes is None:
+            self.classes: dict = class_to_idx(
+                np.unique(labels)
+            )  # a dictionary that maps class name to class index
+        else:
+            self.classes = classes
         self.n_classes = len(self.classes)
         super().__init__(
             data=data,
