@@ -7,7 +7,7 @@ from collections import defaultdict
 import ground_truth
 import utils.utils
 from utils import data_generator
-from utils.constants import EXACT, RANDOM
+from utils.constants import EXACT, MAB, RANDOM
 from data_structures.forest_classifier import ForestClassifier
 from data_structures.forest_regressor import ForestRegressor
 from data_structures.tree_classifier import TreeClassifier
@@ -174,6 +174,68 @@ class ForestTests(unittest.TestCase):
         acc2 = np.sum(t2.predict_batch(data)[0] == labels)
         print(acc1, acc2)
         self.assertTrue(acc1 < acc2)
+
+    def test_same_budget_tree_digits(self) -> None:
+        digits = sklearn.datasets.load_digits()
+        data, labels = digits.data, digits.target
+        classes_arr = np.unique(labels)
+        classes = utils.utils.class_to_idx(classes_arr)
+
+        t1 = TreeClassifier(
+            data=data,
+            labels=labels,
+            max_depth=5,
+            classes=classes,
+            budget=300000,
+            solver=MAB,
+        )
+        t1.fit()
+        acc1 = np.sum(t1.predict_batch(data)[0] == labels)
+
+        t2 = TreeClassifier(
+            data=data,
+            labels=labels,
+            max_depth=5,
+            classes=classes,
+            budget=300000,
+            solver=EXACT,
+        )
+        t2.fit()
+        acc2 = np.sum(t2.predict_batch(data)[0] == labels)
+        self.assertTrue(acc1 > acc2 and t1.num_queries < t2.num_queries)
+
+    def test_same_budget_forest_digits(self) -> None:
+        digits = sklearn.datasets.load_digits()
+        data, labels = digits.data, digits.target
+        f1 = ForestClassifier(
+            data=data,
+            labels=labels,
+            n_estimators=10,
+            max_depth=5,
+            budget=1000000,
+            solver=MAB,
+        )
+        f1.fit()
+        acc1 = np.sum(f1.predict_batch(data)[0] == labels)
+        print("f1 Number of queries:", f1.num_queries)
+        print("f1 accuracy: ", acc1)
+        print("f1 tree length", len(f1.trees))
+        print("\n\n")
+
+        f2 = ForestClassifier(
+            data=data,
+            labels=labels,
+            n_estimators=10,
+            max_depth=5,
+            budget=1000000,
+            solver=EXACT,
+        )
+        f2.fit()
+        acc2 = np.sum(f2.predict_batch(data)[0] == labels)
+        print("f2 Number of queries: ", f2.num_queries)
+        print("f2 accuracy: ", acc2)
+        print("f2 tree length", len(f2.trees))
+        self.assertTrue(acc1 > acc2 and len(f1.trees) <= len(f2.trees))
 
 
 if __name__ == "__main__":
