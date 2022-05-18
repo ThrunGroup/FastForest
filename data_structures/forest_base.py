@@ -54,7 +54,7 @@ class ForestBase(ABC):
         self.org_targets = labels
         self.new_targets = labels
 
-        # this map is only used when bin_type is DISCRETE or "" (which means we choose bin_type per feature)
+        # this map is only used when bin_type is DISCRETE or "" (meaning we choose bin_type per feature)
         self.discrete_features = None
 
         # self.curr_data and self.curr_targets are the data, targets that are used to fit the current tree.
@@ -136,6 +136,7 @@ class ForestBase(ABC):
             self.new_targets = labels
 
         if self.bin_type == DISCRETE or self.bin_type == "":
+            # precompute a global map for discrete features and its values
             self.discrete_features = data_to_discrete(self.data, n=10)
 
         self.trees = []

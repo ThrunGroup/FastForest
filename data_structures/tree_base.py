@@ -65,19 +65,12 @@ class TreeBase(ABC):
 
         self.feature_subsampling = feature_subsampling
         self.tree_global_feature_subsampling = tree_global_feature_subsampling
-        self.discrete_features = (
-            discrete_features
-            if discrete_features is not None and len(discrete_features) > 0
-            else data_to_discrete(data, n=10)
-        )
+        self.discrete_features = discrete_features
 
         if self.tree_global_feature_subsampling:
             # Sample the features randomly once, to be used in the entire tree
             self.feature_idcs = choose_features(data, self.feature_subsampling)
-            self.discrete_features = remap_discrete_features(
-                self.feature_idcs, self.discrete_features
-            )
-
+            
         self.min_samples_split = min_samples_split
         # Make this a small negative number to avoid infinite loop when all leaves are at max_depth
         self.min_impurity_decrease = min_impurity_decrease

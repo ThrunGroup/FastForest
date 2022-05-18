@@ -152,7 +152,8 @@ def make_histograms(
     for f_idx in range(len(data[0])):
         min_bin, max_bin = 0, 0
         f_data = data[:, f_idx]
-        if len(discrete_bins_dict[f_idx]) == 0:
+        unique_fvals = np.array([])
+        if discrete_bins_dict is None or len(discrete_bins_dict[f_idx]) == 0:
             D = float("inf")  # "f_idx"th feature isn't discrete
         else:
             D = len(discrete_bins_dict[f_idx])
@@ -168,6 +169,7 @@ def make_histograms(
                 discrete_bins_dict is not None and
                 len(discrete_bins_dict[f_idx]) > 0
             ), "discrete_bins_dict[f_idx] is empty"
+            unique_fvals = discrete_bins_dict[f_idx]
         elif bin_type == IDENTITY:
             num_bins = N
         elif bin_type == LINEAR:
@@ -182,7 +184,7 @@ def make_histograms(
         histogram = Histogram(
             is_classification=is_classification,
             feature_idx=f_idx,
-            unique_fvals=discrete_bins_dict[f_idx],
+            unique_fvals=unique_fvals,
             f_data=f_data,
             classes=classes,
             num_bins=num_bins,

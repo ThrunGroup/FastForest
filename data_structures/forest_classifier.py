@@ -32,7 +32,6 @@ class ForestClassifier(ForestBase, Classifier):
         random_state: int = 0,
         with_replacement: bool = False,
         verbose: bool = False,
-        
     ) -> None:
         self.classes: dict = class_to_idx(
             np.unique(labels)
