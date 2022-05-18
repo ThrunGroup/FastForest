@@ -113,4 +113,3 @@ if __name__ == "__main__":
     test_forest_diabetes(seed=50, with_replacement=False)
     test_forest_diabetes(seed=50, features_subsampling=SQRT, with_replacement=True)
     test_forest_diabetes(seed=50, features_subsampling=SQRT, with_replacement=False)
-    test_forest_diabetes(boosting=True)

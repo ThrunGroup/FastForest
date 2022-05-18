@@ -1,11 +1,13 @@
 import numpy as np
 from typing import Tuple, DefaultDict, Union
 from abc import ABC
+from collections import defaultdict
 
 from utils.constants import (
     BUFFER,
     MAB,
     LINEAR,
+    IDENTITY,
     GINI,
     BEST,
     MAX_SEED,
@@ -48,6 +50,7 @@ class ForestBase(ABC):
         verbose: bool = False,
         boosting: bool = False,
         boosting_lr: float = None,
+        make_discrete: bool = False,
     ) -> None:
         self.data = data
         self.org_targets = labels
@@ -60,6 +63,10 @@ class ForestBase(ABC):
         self.trees = []
         self.n_estimators = n_estimators
         self.is_classification = is_classification
+        self.make_discrete = make_discrete
+        self.discrete_features = defaultdict(list)
+        if (bin_type == LINEAR) or (bin_type == IDENTITY):
+            self.make_discrete = False
 
         self.max_depth = max_depth
         self.bootstrap = bootstrap
@@ -108,8 +115,9 @@ class ForestBase(ABC):
         self.ccp_alpha = 0.0
         self.max_samples = None
 
+    @staticmethod
     def check_both_or_neither(
-        self, data: np.ndarray = None, labels: np.ndarray = None
+        data: np.ndarray = None, labels: np.ndarray = None
     ) -> bool:
         if data is None:
             if labels is not None:
@@ -133,9 +141,10 @@ class ForestBase(ABC):
             self.data = data
             self.org_targets = labels
             self.new_targets = labels
-
+        if self.make_discrete:
+            self.discrete_features: DefaultDict = data_to_discrete(self.data, n=10)
         self.trees = []
-        self.discrete_features: DefaultDict = data_to_discrete(self.data, n=10)
+
         for i in range(self.n_estimators):
             if self.remaining_budget is not None and self.remaining_budget <= 0:
                 break
@@ -179,6 +188,7 @@ class ForestBase(ABC):
                     random_state=tree_random_state,
                     with_replacement=self.with_replacement,
                     verbose=self.verbose,
+                    make_discrete=False,
                 )
             else:
                 tree = TreeRegressor(
@@ -197,6 +207,7 @@ class ForestBase(ABC):
                     random_state=tree_random_state,
                     with_replacement=self.with_replacement,
                     verbose=self.verbose,
+                    make_discrete=False,
                 )
             tree.fit()
             self.trees.append(tree)
