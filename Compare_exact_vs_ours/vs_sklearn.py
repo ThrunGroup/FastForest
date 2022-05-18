@@ -171,9 +171,6 @@ def compare_models(args):
     print(
         f"num_queries of exact model: {exact_model.num_queries}/ num_queries of our model: {our_model.num_queries}"
     )
-    print(
-        f"depth of exact model: {exact_model.depth}/ depth of our_model: {our_model.depth}"
-    )
 
     # Log the results
     log_dict = {
