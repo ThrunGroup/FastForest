@@ -1,6 +1,5 @@
 import time
 from typing import Any, Tuple
-import cProfile
 import pstats
 
 from experiments.exp_utils import *
@@ -112,7 +111,6 @@ def compare_runtimes(
     num_seeds: int = 1,
     predict: bool = True,
     run_theirs: bool = True,
-    profile_name: str = "profile",
 ) -> bool:
     # Runtimes
     our_train_times = []
@@ -128,8 +126,8 @@ def compare_runtimes(
             our_model = HRFC(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=1,
-                max_depth=1,
+                n_estimators=5,
+                max_depth=5,
                 min_samples_split=2,
                 min_impurity_decrease=0,
                 max_leaf_nodes=None,
@@ -143,8 +141,8 @@ def compare_runtimes(
             their_model = HRFC(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=1,
-                max_depth=1,
+                n_estimators=5,
+                max_depth=5,
                 min_samples_split=2,
                 min_impurity_decrease=0,
                 max_leaf_nodes=None,
@@ -460,24 +458,12 @@ def compare_runtimes(
             "sklearn" not in their_model.__module__
         ), "Cannot use sklearn models for runtime comparisons"
 
-        our_prof = cProfile.Profile()
-        our_prof.enable()
         our_runtime = time_measured_fit(our_model)
-        our_prof.disable()
-        our_stats = pstats.Stats(our_prof).strip_dirs().sort_stats("tottime")
-        our_stats.dump_stats(profile_name + "_ours")
-
         our_train_times.append(our_runtime)
         print("Ours fitted", our_runtime)
 
         if run_theirs:
-            their_prof = cProfile.Profile()
-            their_prof.enable()
             their_runtime = time_measured_fit(their_model)
-            their_prof.disable()
-            their_stats = pstats.Stats(their_prof).strip_dirs().sort_stats("tottime")
-            their_stats.dump_stats(profile_name + "_theirs")
-
             their_train_times.append(their_runtime)
             print("Theirs fitted", their_runtime)
             print()
@@ -630,9 +616,9 @@ def main():
     test_images = np.array(test_images)
     test_labels = np.array(test_labels)
 
-    # compare_runtimes("HRFC", train_images, train_labels, test_images, test_labels)
-    # compare_runtimes("ERFC", train_images, train_labels, test_images, test_labels)
-    # compare_runtimes("HRPC", train_images, train_labels, test_images, test_labels)
+    compare_runtimes("HRFC", train_images, train_labels, test_images, test_labels)
+    compare_runtimes("ERFC", train_images, train_labels, test_images, test_labels)
+    compare_runtimes("HRPC", train_images, train_labels, test_images, test_labels)
 
     ############### Regression
     # train_data, train_targets, test_data, test_targets = load_housing()
