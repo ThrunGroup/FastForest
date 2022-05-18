@@ -137,6 +137,7 @@ def compare_runtimes(
     verbose: bool = False,
 ):  # TODO(@motiwari) add return typehint
     assert filename is not None, "Need to pass filename_prefix"
+    print("\n\n", "Running comparison for:", compare)
 
     # Runtimes
     our_train_times = []
@@ -149,10 +150,10 @@ def compare_runtimes(
     their_test_accs = []
 
     # params
-    default_alpha_N = 0.25
-    default_alpha_F = 0.25
-    default_max_depth = 2
-    default_n_estimators = 3
+    default_alpha_N = 0.5
+    default_alpha_F = 0.5
+    default_max_depth = 5
+    default_n_estimators = 5
     default_min_samples_split = 2
     default_boosting_lr = 0.1
 
@@ -574,26 +575,26 @@ def compare_runtimes(
 
     # For accuracies
     our_avg_train = np.mean(our_train_accs)
-    our_std_train = np.std(our_train_accs)
+    our_std_train = np.std(our_train_accs) / np.sqrt(num_seeds)
 
     if predict:
         our_avg_test = np.mean(our_test_accs)
-        our_std_test = np.std(our_test_accs)
+        our_std_test = np.std(our_test_accs) / np.sqrt(num_seeds)
 
     # For runtimes
     our_avg_train_time = np.mean(our_train_times)
-    our_std_train_time = np.std(our_train_times)
+    our_std_train_time = np.std(our_train_times) / np.sqrt(num_seeds)
 
     if run_theirs:
         their_avg_train = np.mean(their_train_accs)
-        their_std_train = np.std(their_train_accs)
+        their_std_train = np.std(their_train_accs) / np.sqrt(num_seeds)
 
         if predict:
             their_avg_test = np.mean(their_test_accs)
-            their_std_test = np.std(their_test_accs)
+            their_std_test = np.std(their_test_accs) / np.sqrt(num_seeds)
 
         their_avg_train_time = np.mean(their_train_times)
-        their_std_train_time = np.std(their_train_times)
+        their_std_train_time = np.std(their_train_times) / np.sqrt(num_seeds)
 
         # See if confidence intervals overlap
         overlap = np.abs(their_avg_test - our_avg_test) < their_std_test + our_std_test
@@ -691,7 +692,7 @@ def main():
 
     n_informative = int(params["n_features"] * params["informative_ratio"])
     full_data, full_targets = make_regression(
-        250000,
+        params["data_size"],
         n_features=params["n_features"],
         n_informative=n_informative,
         random_state=params["seed"],
