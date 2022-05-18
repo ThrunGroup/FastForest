@@ -128,7 +128,7 @@ def make_histograms(
         is_classification: bool,
         data: np.ndarray,
         labels: np.ndarray,
-        discrete_bins_dict: DefaultDict,
+        discrete_bins_dict: DefaultDict = None,
         binning_type: str = "",
         num_bins: int = DEFAULT_NUM_BINS,
 ) -> Tuple[List[Histogram], List, List]:
@@ -152,10 +152,12 @@ def make_histograms(
     for f_idx in range(len(data[0])):
         min_bin, max_bin = 0, 0
         f_data = data[:, f_idx]
-        if len(discrete_bins_dict[f_idx]) == 0:
-            D = float("inf")  # "f_idx"th feature isn't discrete
-        else:
+        if (discrete_bins_dict is not None) and (len(discrete_bins_dict[f_idx]) != 0):
             D = len(discrete_bins_dict[f_idx])
+            unique_fvals = discrete_bins_dict[f_idx]
+        else:
+            D = float("inf")  # "f_idx"th feature isn't discrete
+            unique_fvals = None
 
         if binning_type == "":
             bin_type = choose_bin_type(D, N, B)
@@ -181,7 +183,7 @@ def make_histograms(
         histogram = Histogram(
             is_classification=is_classification,
             feature_idx=f_idx,
-            unique_fvals=discrete_bins_dict[f_idx],
+            unique_fvals=unique_fvals,
             f_data=f_data,
             classes=classes,
             num_bins=num_bins,
@@ -231,7 +233,7 @@ def remap_discrete_features(feature_idcs, tree_discrete_features: defaultdict(li
     """
     # New discrete_features corresponding to new feature indices
     if len(tree_discrete_features) == 0:
-        return tree_discrete_features
+        return defaultdict(list)
     discrete_features = {}
     for i, feature_idx in enumerate(feature_idcs):
         # Our i-th corresponds to the feature_idx-th discrete feature in the tree.

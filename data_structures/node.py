@@ -59,19 +59,19 @@ class Node:
         self.criterion = criterion
         self.feature_subsampling = feature_subsampling
         self.tree_global_feature_subsampling = tree_global_feature_subsampling
-        self.discrete_features = defaultdict(list)
         self.with_replacement = with_replacement
+        self.discrete_features = self.tree.discrete_features
 
         if tree_global_feature_subsampling:
             # Features are chosen at the tree level. Use all of tree's features
             self.feature_idcs = self.tree.feature_idcs
-            self.discrete_features = self.tree.discrete_features
         else:
             # The features aren't global to the tree, so we should be resampling the features at every node
             self.feature_idcs = choose_features(data, self.feature_subsampling)
-            self.discrete_features = remap_discrete_features(
-                self.feature_idcs, self.tree.discrete_features
-            )
+            if self.tree.discrete_features is not None:
+                self.discrete_features = remap_discrete_features(
+                    self.feature_idcs, self.tree.discrete_features
+                )
 
         # NOTE: Do not assume labels are all integers from 0 to num_classes-1
         if is_classification:

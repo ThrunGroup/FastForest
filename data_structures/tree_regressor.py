@@ -23,7 +23,7 @@ class TreeRegressor(TreeBase, Regressor):
         min_samples_split: int = 2,
         min_impurity_decrease: float = -1e-5,
         max_leaf_nodes: int = None,
-        discrete_features: DefaultDict = defaultdict(list),
+        discrete_features: DefaultDict = None,
         bin_type: str = LINEAR,
         num_bins: int = DEFAULT_NUM_BINS,
         budget: int = None,

@@ -64,7 +64,7 @@ class ForestBase(ABC):
         self.n_estimators = n_estimators
         self.is_classification = is_classification
         self.make_discrete = make_discrete
-        self.discrete_features = defaultdict(list)
+        self.discrete_features = None
         if (bin_type == LINEAR) or (bin_type == IDENTITY):
             self.make_discrete = False
 

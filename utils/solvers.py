@@ -71,7 +71,7 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 def solve_exactly(
     data: np.ndarray,
     labels: np.ndarray,
-    discrete_bins_dict: DefaultDict,
+    discrete_bins_dict: DefaultDict = None,
     binning_type: str = IDENTITY,
     num_bins: int = DEFAULT_NUM_BINS,
     is_classification: bool = True,
@@ -264,7 +264,7 @@ def sample_targets(
 def solve_mab(
     data: np.ndarray,
     labels: np.ndarray,
-    discrete_bins_dict: DefaultDict,
+    discrete_bins_dict: DefaultDict = None,
     binning_type: str = LINEAR,
     num_bins: int = DEFAULT_NUM_BINS,
     is_classification: bool = True,
