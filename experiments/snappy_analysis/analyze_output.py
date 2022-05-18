@@ -2,7 +2,7 @@ import numpy as np
 
 
 def main():
-    with open("../results_filtered.csv") as fin:
+    with open("../with_repl_results_filtered.csv") as fin:
         sizes = []
         NUM_SIZES = 30
         NUM_TRIALS = 20
