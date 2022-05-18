@@ -193,16 +193,21 @@ class Node:
 
             # NOTE: Asymmetry with <= and >
             left_idcs = np.where(self.data[:, self.split_feature] <= self.split_value)
-            self.left = self.create_child_node(left_idcs)
-
             right_idcs = np.where(self.data[:, self.split_feature] > self.split_value)
-            self.right = self.create_child_node(right_idcs)
 
-            # Reset cached prediction values
-            self.prediction_probs = None
-            self.predicted_label = None
-            self.predicted_value = None
-            self.already_split = True
+            if len(left_idcs[0]) == 0 or len(right_idcs[0]) == 0:
+                # Our MAB erroneously identified a split as good, but it actually wasn't and puts all the children on
+                # one side
+                self.already_split = True
+            else:
+                self.left = self.create_child_node(left_idcs)
+                self.right = self.create_child_node(right_idcs)
+
+                # Reset cached prediction values
+                self.prediction_probs = None
+                self.predicted_label = None
+                self.predicted_value = None
+                self.already_split = True
 
     def n_print(self) -> None:
         """

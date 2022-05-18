@@ -254,8 +254,12 @@ class TreeBase(ABC):
                     split_leaf.prediction_probs = None
                     split_leaf.predicted_label = None
 
-                    self.leaves.append(split_leaf.left)
-                    self.leaves.append(split_leaf.right)
+                    # We need to check that the split node actually has children, because in the case the MAB identifies
+                    # a bad arm as negative return when, in fact, it has 0 return and puts all the children on one side,
+                    # the split node won't have any children
+                    if split_leaf.left is not None and split_leaf.right is not None:
+                        self.leaves.append(split_leaf.left)
+                        self.leaves.append(split_leaf.right)
                 else:
                     sufficient_impurity_decrease = False
 

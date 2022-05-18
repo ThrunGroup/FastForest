@@ -18,43 +18,52 @@ from data_structures.forest_regressor import ForestRegressor
 from utils.constants import SQRT, EXACT, MAB, LINEAR
 
 
-def test_tree_iris2(verbose: bool = False) -> None:
-    """
-    Compare tree fitting with different hyperparameters
-    :param verbose: Whether to print how the trees are constructed in details.
-    """
-    iris = datasets.load_iris()
-    data, labels = iris.data, iris.target
-    classes_arr = np.unique(labels)
-    classes = class_to_idx(classes_arr)
-
-    def test_tree(max_leaf_nodes, bin_type, print_str):
-        print("-" * 30)
-        print(f"Fitting {print_str} tree")
-        t = TreeClassifier(
-            data=data,
-            labels=labels,
-            max_depth=5,
-            classes=classes,
-            budget=None,
-            max_leaf_nodes=max_leaf_nodes,
-            bin_type=bin_type,
+def test_forest_diabetes(
+    seed: int = 1,
+    verbose: bool = False,
+    features_subsampling: str = None,
+    solver: str = MAB,
+    with_replacement: bool = False,
+    print_sklearn: bool = False,
+    boosting: bool = False,
+):
+    if verbose:
+        print("--RF experiment with diabetes dataset--")
+    diabetes = load_diabetes()
+    data, labels = diabetes.data, diabetes.target
+    if print_sklearn:
+        max_features = "sqrt" if features_subsampling == SQRT else features_subsampling
+        RF = RandomForestRegressor(
+            n_estimators=10, max_depth=6, max_features=max_features, random_state=seed
         )
-        t.fit()
-        if verbose:
-            t.tree_print()
-        acc = np.sum(t.predict_batch(data)[0] == labels)
-        print("MAB solution Tree Train Accuracy:", acc / len(data))
+        RF.fit(data, labels)
+        print("-sklearn forest")
+        mse = np.sum(np.square(RF.predict(data) - labels)) / len(data)
+        print(f"MSE of sklearn forest is {mse}\n")
 
-    # Depth-first tree
-    test_tree(None, "", "Depth-first splitting")
-
-    # Best-first tree
-    test_tree(32, "", "Best-first splitting")
-
-    # Linear bin tree
-    test_tree(None, LINEAR, "Linear bin splitting")
+    FF = ForestRegressor(
+        n_estimators=10,
+        max_depth=6,
+        verbose=verbose,
+        feature_subsampling=features_subsampling,
+        random_state=seed,
+        with_replacement=with_replacement,
+        bin_type="",
+        solver=solver,
+        boosting=boosting,
+    )
+    FF.fit(data, labels)
+    mse = np.sum(np.square(FF.predict_batch(data) - labels)) / len(data)
+    if verbose:
+        print("-FastForest")
+        print(f"Features subsampling: {features_subsampling}")
+        print(f"Seed : {seed}")
+        print(f"Solver: {solver}")
+        print(f"Sample with replacement: {with_replacement}")
+        print(f"MSE of fastforest is {mse}")
+        print(f"num_queries is {FF.num_queries}\n")
+    return FF.num_queries, mse
 
 
 if __name__ == "__main__":
-    test_tree_iris2()
+    test_forest_diabetes()
