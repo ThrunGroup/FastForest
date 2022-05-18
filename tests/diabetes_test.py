@@ -76,7 +76,7 @@ def test_forest_diabetes(
     if print_sklearn:
         max_features = "sqrt" if features_subsampling == SQRT else features_subsampling
         RF = RandomForestRegressor(
-            n_estimators=10, max_depth=6, max_features=max_features, random_state=seed
+            n_estimators=30, max_depth=10, max_features=max_features, random_state=seed
         )
         RF.fit(data, labels)
         print("-sklearn forest")
@@ -85,7 +85,7 @@ def test_forest_diabetes(
 
     FF = ForestRegressor(
         n_estimators=30,
-        max_depth=6,
+        max_depth=10,
         verbose=verbose,
         feature_subsampling=features_subsampling,
         random_state=seed,
@@ -114,5 +114,23 @@ if __name__ == "__main__":
     # test_tree_diabetes(with_replacement=False)
     # test_forest_diabetes(seed=50, with_replacement=True)
     # test_forest_diabetes(seed=50, with_replacement=False)
-    test_forest_diabetes(seed=50, features_subsampling=SQRT, with_replacement=False, is_precomputed_minmax=True)
-    test_forest_diabetes(seed=50, features_subsampling=SQRT, with_replacement=False, is_precomputed_minmax=False)
+    import time
+
+    start_time = time.time()
+    test_forest_diabetes(
+        seed=50,
+        features_subsampling=SQRT,
+        with_replacement=False,
+        is_precomputed_minmax=True,
+        print_sklearn=True,
+    )
+    print("time taken: ", time.time() - start_time)
+    start_time = time.time()
+    test_forest_diabetes(
+        seed=50,
+        features_subsampling=SQRT,
+        with_replacement=False,
+        is_precomputed_minmax=False,
+        solver=EXACT,
+    )
+    print("time taken: ", time.time() - start_time)

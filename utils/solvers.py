@@ -136,7 +136,9 @@ def sample_targets(
     for f_idx, f in enumerate(f2bin_dict):
         h: Histogram = histograms[f]
         h.add(samples, sample_labels)  # This is where the labels are used
-        num_queries += len(samples)     # num_queries should be updated per histogram insert
+        num_queries += len(
+            samples
+        )  # num_queries should be updated per histogram insert
 
         # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
         i_r, cb_d = get_impurity_reductions(
@@ -154,6 +156,7 @@ def sample_targets(
 
     # TODO(@motiwari): This seems dangerous, because access appears to be a linear index to the array
     return impurity_reductions, cb_deltas, num_queries, population_idcs
+
 
 def solve_exactly(
     data: np.ndarray,
@@ -256,94 +259,6 @@ def solve_exactly(
         return total_queries
 
 
-def sample_targets(
-    is_classification: bool,
-    data: np.ndarray,
-    labels: np.ndarray,
-    arms: Tuple[np.ndarray, np.ndarray],
-    histograms: List[object],
-    batch_size: int,
-    impurity_measure: str = GINI,
-    population_idcs: np.ndarray = None,
-) -> Tuple[np.ndarray, np.ndarray, int, np.ndarray]:
-    """
-    Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
-    their feature values into the (potentially non-empty) histograms and recompute the changes in impurity
-    for each potential bin split
-
-    :param is_classification: Whether is a classification problem(True) or regression problem(False)
-    :param data: input data array with 2 dimensions
-    :param labels: target data array with 1 dimension
-    :param arms: arms we want to consider
-    :param histograms: list of the histograms for ALL feature indices
-    :param batch_size: the number of samples we're going to choose
-    :param impurity_measure: A name of impurity measure
-    :param population_idcs: An array of remaining population indices. If an empty array, sample data with replacement
-    :return: impurity_reduction and its variance of accesses
-    """
-    # TODO(@motiwari): Samples all bin edges for a given feature, should only sample those under consideration.
-
-    feature_idcs, bin_edge_idcs = arms
-    f2bin_dict = defaultdict(
-        list
-    )  # f2bin_dict[i] contains bin indices list of ith feature
-    for idx in range(len(bin_edge_idcs)):
-        # Get the corresponding feature index for this bin index in the list of (feature_idcs, bin_idcs) pairs
-        feature = feature_idcs[idx]
-        bin_edge = bin_edge_idcs[idx]
-        f2bin_dict[feature].append(bin_edge)
-
-    # NOTE: impurity_reductions and cb_deltas are smaller subsets than the original
-    impurity_reductions = np.array([], dtype=float)
-    cb_deltas = np.array([], dtype=float)
-    N = len(data)
-
-    with_replacement = population_idcs is None
-    initial_pop_size = None if population_idcs is None else N
-    if with_replacement:  # Sample with replacement
-        if N <= batch_size:
-            sample_idcs = np.arange(N, dtype=np.int64)
-            initial_pop_size = N  # Since we're sampling all the samples
-        else:
-            sample_idcs = np.random.choice(N, size=batch_size, replace=True)
-    else:
-        M = len(population_idcs)
-        idcs = (
-            np.arange(M, dtype=np.int64)
-            if batch_size >= M
-            else np.random.choice(M, batch_size, replace=False)
-        )
-        sample_idcs = population_idcs[idcs]
-        population_idcs = np.delete(
-            population_idcs, idcs
-        )  # Delete drawn samples from population
-
-    samples = data[sample_idcs]
-    sample_labels = labels[sample_idcs]
-    num_queries = 0
-    for f_idx, f in enumerate(f2bin_dict):
-        h: Histogram = histograms[f]
-        h.add(samples, sample_labels)  # This is where the labels are used
-        num_queries += len(samples)     # num_queries should be updated per histogram insert
-
-        # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
-        i_r, cb_d = get_impurity_reductions(
-            is_classification=is_classification,
-            histogram=h,
-            bin_edge_idcs=f2bin_dict[f],
-            ret_vars=True,
-            impurity_measure=impurity_measure,
-            pop_size=initial_pop_size,
-        )
-        impurity_reductions = np.concatenate([impurity_reductions, i_r])
-        cb_deltas = np.concatenate(
-            [cb_deltas, np.sqrt(cb_d)]
-        )  # The above fn returns the vars
-
-    # TODO(@motiwari): This seems dangerous, because access appears to be a linear index to the array
-    return impurity_reductions, cb_deltas, num_queries, population_idcs
-
-
 def solve_mab(
     data: np.ndarray,
     labels: np.ndarray,
@@ -437,7 +352,7 @@ def solve_mab(
         candidates = considered_idcs
 
     total_queries = 0
-    while len(candidates) > 1:
+    while len(candidates) > 5:
         # If we have already pulled the arms more times than the number of datapoints in the original dataset,
         # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
@@ -520,13 +435,12 @@ def solve_mab(
 
         # TODO(@motiwari): Can't use nanmin here -- why?
         # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
+        tied_arms_condition = np.where((lcbs < (1 - epsilon) * estimates.min()))
+        exact_mask[tied_arms_condition] = 1
         cand_condition = np.where(
-            (lcbs < ucbs.min()) & (exact_mask == 0) & (lcbs < min_impurity_reduction)
+            (exact_mask == 0) & (lcbs < ucbs.min()) & (lcbs < min_impurity_reduction)
         )
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
-        tied_arms_condition = np.where((ucbs < (1 - epsilon) * estimates.min()))
-        tied_arms = np.array(list(zip(tied_arms_condition[0], tied_arms_condition[1])))
-        candidates = filter_tied_arms(candidates, tied_arms, F, B)
         round_count += 1
 
     best_splits = zip(

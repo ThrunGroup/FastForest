@@ -52,6 +52,9 @@ class ForestBase(ABC):
         boosting_lr: float = None,
         make_discrete: bool = False,
         is_precomputed_minmax: bool = False,
+        use_logarithmic_split: bool = False,
+        use_dynamic_epsilon: bool = False,
+        epsilon: float = 0,
     ) -> None:
         self.data = data
         self.org_targets = labels
@@ -104,6 +107,9 @@ class ForestBase(ABC):
                 "Boosting in classification is not supported yet."
             )
         self.boosting_lr = boosting_lr
+        self.use_logarithmic_split = use_logarithmic_split
+        self.use_dynamic_epsilon = use_dynamic_epsilon
+        self.epsilon = epsilon
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
@@ -117,6 +123,7 @@ class ForestBase(ABC):
         self.class_weight = None
         self.ccp_alpha = 0.0
         self.max_samples = None
+
 
     @staticmethod
     def check_both_or_neither(
@@ -149,8 +156,8 @@ class ForestBase(ABC):
             self.discrete_features: DefaultDict = data_to_discrete(self.data, n=10)
 
         if self.is_precomputed_minmax:
-            max_data = data.max(axis=0)
-            min_data = data.min(axis=0)
+            max_data = self.data.max(axis=0)
+            min_data = self.data.min(axis=0)
             self.minmax = [min_data, max_data]
 
         self.trees = []
@@ -200,6 +207,9 @@ class ForestBase(ABC):
                     verbose=self.verbose,
                     make_discrete=False,
                     minmax=self.minmax,
+                    use_logarithmic_split=self.use_logarithmic_split,
+                    use_dynamic_epsilon=self.use_dynamic_epsilon,
+                    epsilon=self.epsilon,
                 )
             else:
                 tree = TreeRegressor(
@@ -220,6 +230,9 @@ class ForestBase(ABC):
                     verbose=self.verbose,
                     make_discrete=False,
                     minmax=self.minmax,
+                    use_logarithmic_split=self.use_logarithmic_split,
+                    use_dynamic_epsilon=self.use_dynamic_epsilon,
+                    epsilon=self.epsilon,
                 )
             tree.fit()
             self.trees.append(tree)

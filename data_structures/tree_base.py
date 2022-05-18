@@ -55,6 +55,9 @@ class TreeBase(ABC):
         verbose: bool = False,
         make_discrete: bool = False,
         minmax: Tuple[np.ndarray, np.ndarray] = None,
+        use_logarithmic_split: bool = False,
+        use_dynamic_epsilon: bool = False,
+        epsilon: float = 0,
     ) -> None:
         self.data = data  # This is a REFERENCE
         self.labels = labels  # This is a REFERENCE
@@ -93,6 +96,9 @@ class TreeBase(ABC):
         set_seed(self.random_state)
         self.with_replacement = with_replacement
         self.verbose = verbose
+        self.use_logarithmic_split = use_logarithmic_split
+        self.use_dynamic_epsilon = use_dynamic_epsilon
+        self.epsilon = epsilon
 
         self.node = Node(
             tree=self,

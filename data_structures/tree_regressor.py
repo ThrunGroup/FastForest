@@ -35,6 +35,9 @@ class TreeRegressor(TreeBase, Regressor):
         verbose: bool = False,
         make_discrete: bool = False,
         minmax: Tuple[np.ndarray, np.ndarray] = None,
+        use_logarithmic_split: bool = False,
+        use_dynamic_epsilon: bool = False,
+        epsilon: float = 0,
     ):
         super().__init__(
             data=data,
@@ -58,4 +61,7 @@ class TreeRegressor(TreeBase, Regressor):
             verbose=verbose,
             make_discrete=make_discrete,
             minmax=minmax,
+            use_logarithmic_split=use_logarithmic_split,
+            use_dynamic_epsilon=use_dynamic_epsilon,
+            epsilon=epsilon,
         )

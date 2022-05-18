@@ -108,6 +108,13 @@ class Node:
         if self.best_reduction_computed:
             return self.split_reduction
 
+        if self.tree.use_logarithmic_split:
+            self.num_bins = int(np.log2(self.n_data))
+        if self.tree.use_dynamic_epsilon:
+            self.epsilon = self.tree.epsilon * np.sqrt(self.depth)
+        else:
+            self.epsilon = self.tree.epsilon
+
         if self.solver == MAB:
             results = solve_mab(
                 data=self.data[:, self.feature_idcs],
@@ -120,6 +127,7 @@ class Node:
                 impurity_measure=self.criterion,
                 with_replacement=self.with_replacement,
                 budget=budget,
+                epsilon=self.epsilon,
             )
         elif self.solver == EXACT:
             results = solve_exactly(
@@ -205,6 +213,7 @@ class Node:
             if len(left_idcs[0]) == 0 or len(right_idcs[0]) == 0:
                 # Our MAB erroneously identified a split as good, but it actually wasn't and puts all the children on
                 # one side
+                raise AttributeError("Wrong split!!")
                 self.already_split = True
             else:
                 self.left = self.create_child_node(left_idcs)
