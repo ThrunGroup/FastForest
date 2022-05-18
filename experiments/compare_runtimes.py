@@ -120,9 +120,10 @@ def compare_runtimes(
     num_seeds: int = 1,
     predict: bool = True,
     run_theirs: bool = True,
-    filename_prefix: str = None,
+    filename: str = None,
+    verbose: bool = False,
 ):  # TODO(@motiwari) add return typehint
-    assert filename_prefix is not None, "Need to pass filename_prefix"
+    assert filename is not None, "Need to pass filename_prefix"
 
     # Runtimes
     our_train_times = []
@@ -527,23 +528,29 @@ def compare_runtimes(
             raise Exception("Invalid model choice.")
 
         metric = "accuracy" if is_classification else "MSE"
-        print(f"(Ours) Train {metric}:", our_train_acc)
+        if verbose:
+            print(f"(Ours) Train {metric}:", our_train_acc)
         our_train_accs.append(our_train_acc)
         if predict:
-            print(f"(Ours) Test {metric}:", our_test_acc)
+            if verbose:
+                print(f"(Ours) Test {metric}:", our_test_acc)
             our_test_accs.append(our_test_acc)
-        print("*" * 30)
-        print("(Ours) Runtime:", our_runtime)
-        print("(Ours) Num queries:", our_model.num_queries)
+        if verbose:
+            print("*" * 30)
+            print("(Ours) Runtime:", our_runtime)
+            print("(Ours) Num queries:", our_model.num_queries)
 
         if run_theirs:
-            print(f"(Theirs) Train {metric}:", their_train_acc)
+            if verbose:
+                print(f"(Theirs) Train {metric}:", their_train_acc)
             their_train_accs.append(their_train_acc)
             if predict:
-                print(f"(Theirs) Test {metric}:", their_test_acc)
+                if verbose:
+                    print(f"(Theirs) Test {metric}:", their_test_acc)
                 their_test_accs.append(their_test_acc)
-            print("-" * 30)
-            print("(Theirs) Runtime:", their_runtime)
+            if verbose:
+                print("-" * 30)
+                print("(Theirs) Runtime:", their_runtime)
 
         print("/" * 30)
 
@@ -594,6 +601,8 @@ def compare_runtimes(
         "their_avg_train_time": their_avg_train_time if run_theirs else None,
         "their_std_train_time": their_std_train_time if run_theirs else None,
     }
+    with open(filename, "w+") as fout:
+        fout.write(str(results))
 
     return results
 
@@ -644,13 +653,15 @@ def main():
     mndata = MNIST("mnist/")
 
     train_images, train_labels = mndata.load_training()
-    train_images = np.array(train_images)
-    train_labels = np.array(train_labels)
+    C_SUBSAMPLE_SIZE = 1000
+    train_images = np.array(train_images)[:C_SUBSAMPLE_SIZE]
+    train_labels = np.array(train_labels)[:C_SUBSAMPLE_SIZE]
 
     test_images, test_labels = mndata.load_testing()
     test_images = np.array(test_images)
     test_labels = np.array(test_labels)
 
+    ## Random Forests
     pp.pprint(
         compare_runtimes(
             compare="HRFC",
@@ -664,6 +675,8 @@ def main():
             filename="HRFC_dict",
         )
     )
+
+    ## Extremely Random Forests
     pp.pprint(
         compare_runtimes(
             compare="ERFC",
@@ -677,6 +690,8 @@ def main():
             filename="ERFC_dict",
         )
     )
+
+    ## Random Patches
     pp.pprint(
         compare_runtimes(
             compare="HRPC",
@@ -692,43 +707,106 @@ def main():
     )
 
     ############### Regression
-    # train_data, train_targets, test_data, test_targets = load_housing()
+    train_data, train_targets, test_data, test_targets = load_housing()
     # # Subsample the data because training on 20k points (the full housing dataset) takes too long for RFR
-    # R_SUBSAMPLE_SIZE = 3000
-    # train_data_subsampled = train_data[:R_SUBSAMPLE_SIZE]
-    # train_targets_subsampled = train_targets[:R_SUBSAMPLE_SIZE]
-    # print(len(train_data_subsampled), len(train_targets_subsampled))
 
-    # compare_runtimes(
-    #     "ERFR", train_data_subsampled, train_targets_subsampled, test_data, test_targets
-    # )
-    # compare_runtimes(
-    #     "GBERFR",
-    #     train_data_subsampled,
-    #     train_targets_subsampled,
-    #     test_data,
-    #     test_targets,
-    # )
-    # compare_runtimes(
-    #     "HRFR", train_data_subsampled, train_targets_subsampled, test_data, test_targets
-    # )
-    # compare_runtimes(
-    #     "GBHRFR",
-    #     train_data_subsampled,
-    #     train_targets_subsampled,
-    #     test_data,
-    #     test_targets,
-    # )
-    # compare_runtimes(
-    #     "HRPR", train_data_subsampled, train_targets_subsampled, test_data, test_targets
-    # )
-    # compare_runtimes(
-    #     "GBHRPR",
-    #     train_data_subsampled,
-    #     train_targets_subsampled,
-    #     test_data,
-    #     test_targets,
-    # )
+    R_SUBSAMPLE_SIZE = 100
+    train_data_subsampled = train_data[:R_SUBSAMPLE_SIZE]
+    train_targets_subsampled = train_targets[:R_SUBSAMPLE_SIZE]
+    print(len(train_data_subsampled), len(train_targets_subsampled))
+
+    ## Random Forests
+    pp.pprint(
+        compare_runtimes(
+            compare="HRFR",
+            train_data=train_data_subsampled,
+            train_targets=train_targets_subsampled,
+            test_data=test_data,
+            test_targets=test_targets,
+            num_seeds=2,
+            predict=True,
+            run_theirs=True,
+            filename="HRFR_dict",
+            verbose=False,
+        )
+    )
+
+    pp.pprint(
+        compare_runtimes(
+            compare="GBHRFR",
+            train_data=train_data_subsampled,
+            train_targets=train_targets_subsampled,
+            test_data=test_data,
+            test_targets=test_targets,
+            num_seeds=2,
+            predict=True,
+            run_theirs=True,
+            filename="GBHRFR_dict",
+            verbose=False,
+        )
+    )
+
+    ## Extremely Random Forests
+    pp.pprint(
+        compare_runtimes(
+            compare="ERFR",
+            train_data=train_data_subsampled,
+            train_targets=train_targets_subsampled,
+            test_data=test_data,
+            test_targets=test_targets,
+            num_seeds=2,
+            predict=True,
+            run_theirs=True,
+            filename="ERFR_dict",
+            verbose=False,
+        )
+    )
+
+    pp.pprint(
+        compare_runtimes(
+            compare="GBERFR",
+            train_data=train_data_subsampled,
+            train_targets=train_targets_subsampled,
+            test_data=test_data,
+            test_targets=test_targets,
+            num_seeds=2,
+            predict=True,
+            run_theirs=True,
+            filename="GBERFR_dict",
+            verbose=False,
+        )
+    )
+
+    ## Random Patches
+    pp.pprint(
+        compare_runtimes(
+            compare="HRPR",
+            train_data=train_data_subsampled,
+            train_targets=train_targets_subsampled,
+            test_data=test_data,
+            test_targets=test_targets,
+            num_seeds=2,
+            predict=True,
+            run_theirs=True,
+            filename="HRPR_dict",
+            verbose=False,
+        )
+    )
+
+    pp.pprint(
+        compare_runtimes(
+            compare="GBHRPR",
+            train_data=train_data_subsampled,
+            train_targets=train_targets_subsampled,
+            test_data=test_data,
+            test_targets=test_targets,
+            num_seeds=2,
+            predict=True,
+            run_theirs=True,
+            filename="GBHRPR_dict",
+            verbose=False,
+        )
+    )
 
 
 if __name__ == "__main__":
