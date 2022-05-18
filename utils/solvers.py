@@ -68,9 +68,97 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
     return TOLERANCE < root_impurity - split_impurity
 
 
+def sample_targets(
+    is_classification: bool,
+    data: np.ndarray,
+    labels: np.ndarray,
+    arms: Tuple[np.ndarray, np.ndarray],
+    histograms: List[object],
+    batch_size: int,
+    impurity_measure: str = GINI,
+    population_idcs: np.ndarray = None,
+) -> Tuple[np.ndarray, np.ndarray, int, np.ndarray]:
+    """
+    Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
+    their feature values into the (potentially non-empty) histograms and recompute the changes in impurity
+    for each potential bin split
+
+    :param is_classification: Whether is a classification problem(True) or regression problem(False)
+    :param data: input data array with 2 dimensions
+    :param labels: target data array with 1 dimension
+    :param arms: arms we want to consider
+    :param histograms: list of the histograms for ALL feature indices
+    :param batch_size: the number of samples we're going to choose
+    :param impurity_measure: A name of impurity measure
+    :param population_idcs: An array of remaining population indices. If an empty array, sample data with replacement
+    :return: impurity_reduction and its variance of accesses
+    """
+    # TODO(@motiwari): Samples all bin edges for a given feature, should only sample those under consideration.
+
+    feature_idcs, bin_edge_idcs = arms
+    f2bin_dict = defaultdict(
+        list
+    )  # f2bin_dict[i] contains bin indices list of ith feature
+    for idx in range(len(bin_edge_idcs)):
+        # Get the corresponding feature index for this bin index in the list of (feature_idcs, bin_idcs) pairs
+        feature = feature_idcs[idx]
+        bin_edge = bin_edge_idcs[idx]
+        f2bin_dict[feature].append(bin_edge)
+
+    # NOTE: impurity_reductions and cb_deltas are smaller subsets than the original
+    impurity_reductions = np.array([], dtype=float)
+    cb_deltas = np.array([], dtype=float)
+    N = len(data)
+
+    with_replacement = population_idcs is None
+    initial_pop_size = None if population_idcs is None else N
+    if with_replacement:  # Sample with replacement
+        if N <= batch_size:
+            sample_idcs = np.arange(N, dtype=np.int64)
+            initial_pop_size = N  # Since we're sampling all the samples
+        else:
+            sample_idcs = np.random.choice(N, size=batch_size, replace=True)
+    else:
+        M = len(population_idcs)
+        idcs = (
+            np.arange(M, dtype=np.int64)
+            if batch_size >= M
+            else np.random.choice(M, batch_size, replace=False)
+        )
+        sample_idcs = population_idcs[idcs]
+        population_idcs = np.delete(
+            population_idcs, idcs
+        )  # Delete drawn samples from population
+
+    samples = data[sample_idcs]
+    sample_labels = labels[sample_idcs]
+    num_queries = 0
+    for f_idx, f in enumerate(f2bin_dict):
+        h: Histogram = histograms[f]
+        h.add(samples, sample_labels)  # This is where the labels are used
+        num_queries += len(samples)     # num_queries should be updated per histogram insert
+
+        # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
+        i_r, cb_d = get_impurity_reductions(
+            is_classification=is_classification,
+            histogram=h,
+            bin_edge_idcs=f2bin_dict[f],
+            ret_vars=True,
+            impurity_measure=impurity_measure,
+            pop_size=initial_pop_size,
+        )
+        impurity_reductions = np.concatenate([impurity_reductions, i_r])
+        cb_deltas = np.concatenate(
+            [cb_deltas, np.sqrt(cb_d)]
+        )  # The above fn returns the vars
+
+    # TODO(@motiwari): This seems dangerous, because access appears to be a linear index to the array
+    return impurity_reductions, cb_deltas, num_queries, population_idcs
+
 def solve_exactly(
     data: np.ndarray,
     labels: np.ndarray,
+    minmax: Tuple[np.ndarray, np.ndarray] = None,
     discrete_bins_dict: DefaultDict = None,
     binning_type: str = IDENTITY,
     num_bins: int = DEFAULT_NUM_BINS,
@@ -87,6 +175,7 @@ def solve_exactly(
 
     :param data: Feature set
     :param labels: Labels of datapoints
+    :param minmax: (minimum array of features, maximum array of features)
     :param discrete_bins_dict: A dictionary of discrete bins
     :param binning_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
     :param num_queries: mutable variable to update the number of datapoints queried
@@ -121,6 +210,7 @@ def solve_exactly(
         is_classification=is_classification,
         data=data,
         labels=labels,
+        minmax=minmax,
         discrete_bins_dict=discrete_bins_dict,
         binning_type=binning_type,
         num_bins=B,
@@ -210,23 +300,18 @@ def sample_targets(
 
     with_replacement = population_idcs is None
     initial_pop_size = None if population_idcs is None else N
-
-    # Make the seed for the rng deterministic based on np's global random seed
-    seed = np.random.randint(MAX_SEED)
-    rng = np.random.default_rng(seed)
-
     if with_replacement:  # Sample with replacement
         if N <= batch_size:
             sample_idcs = np.arange(N, dtype=np.int64)
             initial_pop_size = N  # Since we're sampling all the samples
         else:
-            sample_idcs = rng.choice(N, size=batch_size, replace=True)
+            sample_idcs = np.random.choice(N, size=batch_size, replace=True)
     else:
         M = len(population_idcs)
         idcs = (
             np.arange(M, dtype=np.int64)
             if batch_size >= M
-            else rng.choice(M, batch_size, replace=False)
+            else np.random.choice(M, batch_size, replace=False)
         )
         sample_idcs = population_idcs[idcs]
         population_idcs = np.delete(
@@ -239,9 +324,7 @@ def sample_targets(
     for f_idx, f in enumerate(f2bin_dict):
         h: Histogram = histograms[f]
         h.add(samples, sample_labels)  # This is where the labels are used
-        num_queries += len(
-            samples
-        )  # num_queries should be updated per histogram insert
+        num_queries += len(samples)     # num_queries should be updated per histogram insert
 
         # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
         i_r, cb_d = get_impurity_reductions(
@@ -264,6 +347,7 @@ def sample_targets(
 def solve_mab(
     data: np.ndarray,
     labels: np.ndarray,
+    minmax: Tuple[np.ndarray, np.ndarray] = None,
     discrete_bins_dict: DefaultDict = None,
     binning_type: str = LINEAR,
     num_bins: int = DEFAULT_NUM_BINS,
@@ -287,6 +371,7 @@ def solve_mab(
 
     :param data: Feature set
     :param labels: Labels of datapoints
+    :param minmax: (minimum array of features, maximum array of features).
     :param discrete_bins_dict: A dictionary of discrete bins
     :param binning_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
     :param num_queries: mutable variable to update the number of datapoints queried
@@ -336,6 +421,7 @@ def solve_mab(
         is_classification=is_classification,
         data=data,
         labels=labels,
+        minmax=minmax,
         discrete_bins_dict=discrete_bins_dict,
         binning_type=binning_type,
         num_bins=B,

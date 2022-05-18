@@ -72,6 +72,11 @@ class Node:
                 self.discrete_features = remap_discrete_features(
                     self.feature_idcs, self.tree.discrete_features
                 )
+        # Reindex minmax
+        if self.tree.minmax is not None:
+            self.minmax = (self.tree.minmax[0][self.feature_idcs], self.tree.minmax[1][self.feature_idcs])
+        else:
+            self.minmax = None
 
         # NOTE: Do not assume labels are all integers from 0 to num_classes-1
         if is_classification:
@@ -107,6 +112,7 @@ class Node:
             results = solve_mab(
                 data=self.data[:, self.feature_idcs],
                 labels=self.labels,
+                minmax=self.minmax,
                 discrete_bins_dict=self.discrete_features,
                 binning_type=self.bin_type,
                 num_bins=self.num_bins,
@@ -119,6 +125,7 @@ class Node:
             results = solve_exactly(
                 data=self.data[:, self.feature_idcs],
                 labels=self.labels,
+                minmax=self.minmax,
                 discrete_bins_dict=self.discrete_features,
                 binning_type=self.bin_type,
                 num_bins=self.num_bins,
@@ -128,7 +135,6 @@ class Node:
             )
         else:
             raise Exception("Invalid solver specified, must be MAB or EXACT")
-        del self.discrete_features
 
         # Even if results is None, we should cache the fact that we know that
         self.best_reduction_computed = True

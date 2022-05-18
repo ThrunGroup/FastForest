@@ -54,6 +54,7 @@ class TreeBase(ABC):
         with_replacement: bool = False,
         verbose: bool = False,
         make_discrete: bool = False,
+        minmax: Tuple[np.ndarray, np.ndarray] = None,
     ) -> None:
         self.data = data  # This is a REFERENCE
         self.labels = labels  # This is a REFERENCE
@@ -63,6 +64,7 @@ class TreeBase(ABC):
             self.labels
         ), "Data and labels must have the same size"
         self.max_depth = max_depth
+        self.minmax = minmax  # minmax = (minimum array of features, maximum array of features)
         if is_classification:
             self.classes = classes  # dict from class name to class index
             self.idx_to_class = {value: key for key, value in classes.items()}

@@ -67,6 +67,7 @@ def test_forest_diabetes(
     with_replacement: bool = False,
     print_sklearn: bool = False,
     boosting: bool = False,
+    is_precomputed_minmax: bool = False,
 ):
     if verbose:
         print("--RF experiment with diabetes dataset--")
@@ -83,23 +84,25 @@ def test_forest_diabetes(
         print(f"MSE of sklearn forest is {mse}\n")
 
     FF = ForestRegressor(
-        n_estimators=10,
+        n_estimators=30,
         max_depth=6,
         verbose=verbose,
         feature_subsampling=features_subsampling,
         random_state=seed,
         with_replacement=with_replacement,
-        bin_type="",
+        bin_type=LINEAR,
         solver=solver,
         boosting=boosting,
+        is_precomputed_minmax=is_precomputed_minmax,
     )
     FF.fit(data, labels)
     mse = np.sum(np.square(FF.predict_batch(data) - labels)) / len(data)
-    if verbose:
+    if True:
         print("-FastForest")
         print(f"Features subsampling: {features_subsampling}")
         print(f"Seed : {seed}")
         print(f"Solver: {solver}")
+        print(f"use_precomputed_minmax: {is_precomputed_minmax}")
         print(f"Sample with replacement: {with_replacement}")
         print(f"MSE of fastforest is {mse}")
         print(f"num_queries is {FF.num_queries}\n")
@@ -107,9 +110,9 @@ def test_forest_diabetes(
 
 
 if __name__ == "__main__":
-    test_tree_diabetes(with_replacement=True)
-    test_tree_diabetes(with_replacement=False)
-    test_forest_diabetes(seed=50, with_replacement=True)
-    test_forest_diabetes(seed=50, with_replacement=False)
-    test_forest_diabetes(seed=50, features_subsampling=SQRT, with_replacement=True)
-    test_forest_diabetes(seed=50, features_subsampling=SQRT, with_replacement=False)
+    # test_tree_diabetes(with_replacement=True)
+    # test_tree_diabetes(with_replacement=False)
+    # test_forest_diabetes(seed=50, with_replacement=True)
+    # test_forest_diabetes(seed=50, with_replacement=False)
+    test_forest_diabetes(seed=50, features_subsampling=SQRT, with_replacement=False, is_precomputed_minmax=True)
+    test_forest_diabetes(seed=50, features_subsampling=SQRT, with_replacement=False, is_precomputed_minmax=False)

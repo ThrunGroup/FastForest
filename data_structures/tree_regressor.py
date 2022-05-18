@@ -1,5 +1,5 @@
 import numpy as np
-from typing import DefaultDict, Union
+from typing import DefaultDict, Union, Tuple
 from collections import defaultdict
 
 from data_structures.regressor import Regressor
@@ -34,6 +34,7 @@ class TreeRegressor(TreeBase, Regressor):
         with_replacement: bool = False,
         verbose: bool = False,
         make_discrete: bool = False,
+        minmax: Tuple[np.ndarray, np.ndarray] = None,
     ):
         super().__init__(
             data=data,
@@ -56,4 +57,5 @@ class TreeRegressor(TreeBase, Regressor):
             with_replacement=with_replacement,
             verbose=verbose,
             make_discrete=make_discrete,
+            minmax=minmax,
         )

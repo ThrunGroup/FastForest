@@ -1,5 +1,5 @@
 import numpy as np
-from typing import DefaultDict, Union
+from typing import DefaultDict, Union, Tuple
 from collections import defaultdict
 
 from data_structures.classifier import Classifier
@@ -35,6 +35,7 @@ class TreeClassifier(TreeBase, Classifier):
         with_replacement: bool = False,
         verbose: bool = False,
         make_discrete: bool = False,
+        minmax: Tuple[np.ndarray, np.ndarray] = None,
     ):
         assert classes is not None, "classes dictionary isn't defined"
         self.classes = classes  # dict from class name to class index
@@ -62,4 +63,5 @@ class TreeClassifier(TreeBase, Classifier):
             with_replacement=with_replacement,
             verbose=verbose,
             make_discrete=make_discrete,
+            minmax=minmax
         )

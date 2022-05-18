@@ -93,6 +93,7 @@ class ForestBase(ABC):
         self.rng = np.random.default_rng(self.random_state)
 
         self.with_replacement = with_replacement
+        self.minmax = None
         self.verbose = verbose
 
         self.boosting = boosting
@@ -150,6 +151,7 @@ class ForestBase(ABC):
         if self.is_precomputed_minmax:
             max_data = data.max(axis=0)
             min_data = data.min(axis=0)
+            self.minmax = [min_data, max_data]
 
         self.trees = []
 
@@ -197,6 +199,7 @@ class ForestBase(ABC):
                     with_replacement=self.with_replacement,
                     verbose=self.verbose,
                     make_discrete=False,
+                    minmax=self.minmax,
                 )
             else:
                 tree = TreeRegressor(
@@ -216,6 +219,7 @@ class ForestBase(ABC):
                     with_replacement=self.with_replacement,
                     verbose=self.verbose,
                     make_discrete=False,
+                    minmax=self.minmax,
                 )
             tree.fit()
             self.trees.append(tree)
