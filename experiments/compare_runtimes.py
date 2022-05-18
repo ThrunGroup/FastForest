@@ -7,7 +7,6 @@ import pprint
 
 from sklearn.datasets import load_diabetes, make_classification, make_regression
 
-
 from experiments.exp_utils import *
 from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
 from utils.constants import (
@@ -23,54 +22,26 @@ from utils.constants import (
 from mnist import MNIST
 
 
-# Classification #
+# Classification #########################
 # Vanilla random forest + H + GB + GBH
-from data_structures.wrappers.random_forest_classifier import (
-    RandomForestClassifier as RFC,
-)
 from data_structures.wrappers.histogram_random_forest_classifier import (
     HistogramRandomForestClassifier as HRFC,
-)
-from data_structures.wrappers.gradient_boosted_random_forest_classifier import (
-    GradientBoostedRandomForestClassifier as GBRFC,
-)
-from data_structures.wrappers.gradient_boosted_histogram_random_forest_classifier import (
-    GradientBoostedHistogramRandomForestClassifier as GBHRFC,
 )
 
 # Extremely random forest + GB (already histogrammed)
 from data_structures.wrappers.extremely_random_forest_classifier import (
     ExtremelyRandomForestClassifier as ERFC,
 )
-from data_structures.wrappers.gradient_boosted_extremely_random_forest_classifier import (
-    GradientBoostedExtremelyRandomForestClassifier as GBERFC,
-)
 
 # Random patches + H + GB + GBH
-from data_structures.wrappers.random_patches_classifier import (
-    RandomPatchesClassifier as RPC,
-)
 from data_structures.wrappers.histogram_random_patches_classifier import (
     HistogramRandomPatchesClassifier as HRPC,
 )
-from data_structures.wrappers.gradient_boosted_random_patches_classifier import (
-    GradientBoostedRandomPatchesClassifier as GBRPC,
-)
-from data_structures.wrappers.histogram_random_patches_classifier import (
-    HistogramRandomPatchesClassifier as HBRPC,
-)
 
-
-# Regression #
+# Regression #########################
 # Vanilla random forest + H + GB + GBH
-from data_structures.wrappers.random_forest_regressor import (
-    RandomForestRegressor as RFR,
-)
 from data_structures.wrappers.histogram_random_forest_regressor import (
     HistogramRandomForestRegressor as HRFR,
-)
-from data_structures.wrappers.gradient_boosted_random_forest_regressor import (
-    GradientBoostedRandomForestRegressor as GBRFR,
 )
 from data_structures.wrappers.gradient_boosted_histogram_random_forest_regressor import (
     GradientBoostedHistogramRandomForestRegressor as GBHRFR,
@@ -85,20 +56,11 @@ from data_structures.wrappers.gradient_boosted_extremely_random_forest_regressor
 )
 
 # Random patches + H + GB + GBH
-from data_structures.wrappers.random_patches_regressor import (
-    RandomPatchesRegressor as RPR,
-)
 from data_structures.wrappers.histogram_random_patches_regressor import (
     HistogramRandomPatchesRegressor as HRPR,
 )
-from data_structures.wrappers.gradient_boosted_random_patches_regressor import (
-    GradientBoostedRandomPatchesRegressor as GBRPR,
-)
 from data_structures.wrappers.gradient_boosted_histogram_random_patches_regressor import (
     GradientBoostedHistogramRandomPatchesRegressor as GBHRPR,
-)
-from data_structures.wrappers.histogram_random_patches_regressor import (
-    HistogramRandomPatchesRegressor as HBRPR,
 )
 
 

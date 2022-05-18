@@ -1,12 +1,8 @@
-import cProfile
-import pstats
-
 import time
 from typing import Any
 import pprint
 
 from sklearn.datasets import load_diabetes, make_classification, make_regression
-
 
 from experiments.exp_utils import *
 from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
@@ -23,54 +19,26 @@ from utils.constants import (
 from mnist import MNIST
 
 
-# Classification #
+# Classification #########################
 # Vanilla random forest + H + GB + GBH
-from data_structures.wrappers.random_forest_classifier import (
-    RandomForestClassifier as RFC,
-)
 from data_structures.wrappers.histogram_random_forest_classifier import (
     HistogramRandomForestClassifier as HRFC,
-)
-from data_structures.wrappers.gradient_boosted_random_forest_classifier import (
-    GradientBoostedRandomForestClassifier as GBRFC,
-)
-from data_structures.wrappers.gradient_boosted_histogram_random_forest_classifier import (
-    GradientBoostedHistogramRandomForestClassifier as GBHRFC,
 )
 
 # Extremely random forest + GB (already histogrammed)
 from data_structures.wrappers.extremely_random_forest_classifier import (
     ExtremelyRandomForestClassifier as ERFC,
 )
-from data_structures.wrappers.gradient_boosted_extremely_random_forest_classifier import (
-    GradientBoostedExtremelyRandomForestClassifier as GBERFC,
-)
 
 # Random patches + H + GB + GBH
-from data_structures.wrappers.random_patches_classifier import (
-    RandomPatchesClassifier as RPC,
-)
 from data_structures.wrappers.histogram_random_patches_classifier import (
     HistogramRandomPatchesClassifier as HRPC,
 )
-from data_structures.wrappers.gradient_boosted_random_patches_classifier import (
-    GradientBoostedRandomPatchesClassifier as GBRPC,
-)
-from data_structures.wrappers.histogram_random_patches_classifier import (
-    HistogramRandomPatchesClassifier as HBRPC,
-)
 
-
-# Regression #
+# Regression #########################
 # Vanilla random forest + H + GB + GBH
-from data_structures.wrappers.random_forest_regressor import (
-    RandomForestRegressor as RFR,
-)
 from data_structures.wrappers.histogram_random_forest_regressor import (
     HistogramRandomForestRegressor as HRFR,
-)
-from data_structures.wrappers.gradient_boosted_random_forest_regressor import (
-    GradientBoostedRandomForestRegressor as GBRFR,
 )
 from data_structures.wrappers.gradient_boosted_histogram_random_forest_regressor import (
     GradientBoostedHistogramRandomForestRegressor as GBHRFR,
@@ -85,20 +53,11 @@ from data_structures.wrappers.gradient_boosted_extremely_random_forest_regressor
 )
 
 # Random patches + H + GB + GBH
-from data_structures.wrappers.random_patches_regressor import (
-    RandomPatchesRegressor as RPR,
-)
 from data_structures.wrappers.histogram_random_patches_regressor import (
     HistogramRandomPatchesRegressor as HRPR,
 )
-from data_structures.wrappers.gradient_boosted_random_patches_regressor import (
-    GradientBoostedRandomPatchesRegressor as GBRPR,
-)
 from data_structures.wrappers.gradient_boosted_histogram_random_patches_regressor import (
     GradientBoostedHistogramRandomPatchesRegressor as GBHRPR,
-)
-from data_structures.wrappers.histogram_random_patches_regressor import (
-    HistogramRandomPatchesRegressor as HBRPR,
 )
 
 
@@ -117,9 +76,9 @@ def compare_budgets(
     assert filename is not None, "Need to pass filename_prefix"
     print("\n\n", "Running comparison for:", compare)
 
-    # Runtimes
-    our_train_times = []
-    their_train_times = []
+    # Query counts
+    our_num_queries = []
+    their_num_queries = []
 
     # For accuracies
     our_train_accs = []
@@ -128,10 +87,10 @@ def compare_budgets(
     their_test_accs = []
 
     # params
-    default_alpha_N = 0.5
-    default_alpha_F = 0.5
-    default_max_depth = 5
-    default_n_estimators = 5
+    default_alpha_N = 0.25
+    default_alpha_F = 0.25
+    default_max_depth = 2
+    default_n_estimators = 3
     default_min_samples_split = 2
     default_boosting_lr = 0.1
 
@@ -473,9 +432,14 @@ def compare_budgets(
         ), "Cannot use sklearn models for runtime comparisons"
 
         our_model.fit()
+        our_num_queries.append(our_model.num_queries)
+        print("Ours fitted", our_model.num_queries)
 
         if run_theirs:
             their_model.fit()
+            their_num_queries.append(their_model.num_queries)
+            print("Theirs fitted", their_model.num_queries)
+            print()
 
         if compare in CLASSIFICATION_MODELS:
             is_classification = True
@@ -524,6 +488,7 @@ def compare_budgets(
             our_test_accs.append(our_test_acc)
         if verbose:
             print("*" * 30)
+            print("(Ours) Runtime:", our_runtime)
             print("(Ours) Num queries:", our_model.num_queries)
 
         if run_theirs:
@@ -536,6 +501,7 @@ def compare_budgets(
                 their_test_accs.append(their_test_acc)
             if verbose:
                 print("-" * 30)
+                print("(Theirs) Runtime:", their_runtime)
                 print("(Theirs) Num queries:", their_model.num_queries)
 
         print("/" * 30)
@@ -548,6 +514,13 @@ def compare_budgets(
         our_avg_test = np.mean(our_test_accs)
         our_std_test = np.std(our_test_accs) / np.sqrt(num_seeds)
 
+    # For runtimes
+    our_avg_train_time = np.mean(our_train_times)
+    our_std_train_time = np.std(our_train_times) / np.sqrt(num_seeds)
+
+    our_avg_num_queries = np.mean(our_num_queries)
+    our_std_num_queries = np.std(our_num_queries) / np.sqrt(num_seeds)
+
     if run_theirs:
         their_avg_train = np.mean(their_train_accs)
         their_std_train = np.std(their_train_accs) / np.sqrt(num_seeds)
@@ -558,6 +531,9 @@ def compare_budgets(
 
         their_avg_train_time = np.mean(their_train_times)
         their_std_train_time = np.std(their_train_times) / np.sqrt(num_seeds)
+
+        their_avg_num_queries = np.mean(their_num_queries)
+        their_std_num_queries = np.std(their_num_queries) / np.sqrt(num_seeds)
 
         # See if confidence intervals overlap
         overlap = np.abs(their_avg_test - our_avg_test) < their_std_test + our_std_test
@@ -579,9 +555,15 @@ def compare_budgets(
         "our_train_times": our_train_times,
         "our_avg_train_time": our_avg_train_time,
         "our_std_train_time": our_std_train_time,
+        "our_num_queries": our_num_queries,
+        "our_avg_num_queries": our_avg_num_queries,
+        "our_std_num_queries": our_std_num_queries,
         "their_train_times": their_train_times if run_theirs else None,
         "their_avg_train_time": their_avg_train_time if run_theirs else None,
         "their_std_train_time": their_std_train_time if run_theirs else None,
+        "their_num_queries": their_num_queries if run_theirs else None,
+        "their_avg_num_queries": their_avg_num_queries if run_theirs else None,
+        "their_std_num_queries": their_std_num_queries if run_theirs else None,
     }
     with open(filename, "w+") as fout:
         fout.write(str(results))
@@ -632,7 +614,7 @@ def main():
 
     ########################################### PARAMS
     pp = pprint.PrettyPrinter(indent=2)
-    NUM_SEEDS = 5
+    NUM_SEEDS = 2
 
     ############### Regression
     # train_data, train_targets, test_data, test_targets = load_housing()
@@ -644,7 +626,7 @@ def main():
     # print(len(train_data_subsampled), len(train_targets_subsampled))
 
     params = {
-        "data_size": 1000000,
+        "data_size": 200000,
         "n_features": 50,
         "informative_ratio": 0.06,
         "seed": 1,
@@ -670,7 +652,7 @@ def main():
 
     ## Random Forests
     pp.pprint(
-        compare_runtimes(
+        compare_budgets(
             compare="HRFR",
             train_data=train_data,
             train_targets=train_targets,
@@ -685,7 +667,7 @@ def main():
     )
 
     pp.pprint(
-        compare_runtimes(
+        compare_budgets(
             compare="GBHRFR",
             train_data=train_data,
             train_targets=train_targets,
@@ -701,7 +683,7 @@ def main():
 
     ## Extremely Random Forests
     pp.pprint(
-        compare_runtimes(
+        compare_budgets(
             compare="ERFR",
             train_data=train_data,
             train_targets=train_targets,
@@ -716,7 +698,7 @@ def main():
     )
 
     pp.pprint(
-        compare_runtimes(
+        compare_budgets(
             compare="GBERFR",
             train_data=train_data,
             train_targets=train_targets,
@@ -732,7 +714,7 @@ def main():
 
     ## Random Patches
     pp.pprint(
-        compare_runtimes(
+        compare_budgets(
             compare="HRPR",
             train_data=train_data,
             train_targets=train_targets,
@@ -747,7 +729,7 @@ def main():
     )
 
     pp.pprint(
-        compare_runtimes(
+        compare_budgets(
             compare="GBHRPR",
             train_data=train_data,
             train_targets=train_targets,
@@ -774,7 +756,7 @@ def main():
 
     ## Random Forests
     pp.pprint(
-        compare_runtimes(
+        compare_budgets(
             compare="HRFC",
             train_data=train_images,
             train_targets=train_labels,
@@ -790,7 +772,7 @@ def main():
 
     ## Extremely Random Forests
     pp.pprint(
-        compare_runtimes(
+        compare_budgets(
             compare="ERFC",
             train_data=train_images,
             train_targets=train_labels,
@@ -806,7 +788,7 @@ def main():
 
     ## Random Patches
     pp.pprint(
-        compare_runtimes(
+        compare_budgets(
             compare="HRPC",
             train_data=train_images,
             train_targets=train_labels,
