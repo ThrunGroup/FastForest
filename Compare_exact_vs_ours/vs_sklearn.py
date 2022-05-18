@@ -97,52 +97,52 @@ def compare_models(args):
     elif model == "ForestRegressor":
         exact_model = ForestRegressor
         our_model = ForestRegressor
-    if n_estimators is None:
-        if is_classifier:
-            exact_model = exact_model(
-                data=data,
-                labels=labels,
-                max_depth=max_depth,
-                bin_type=LINEAR,
-                solver=EXACT,
-                with_replacement=with_replacement,
-                min_impurity_decrease=0,
-                max_leaf_nodes=max_leaf_nodes,
-                classes={0: 0, 1: 1},
-            )
-            our_model = our_model(
-                data=data,
-                labels=labels,
-                max_depth=max_depth,
-                bin_type=LINEAR,
-                solver=MAB,
-                with_replacement=with_replacement,
-                min_impurity_decrease=0,
-                max_leaf_nodes=max_leaf_nodes,
-                classes={0: 0, 1: 1},
-            )
-        else:
-            exact_model = exact_model(
-                data=data,
-                labels=labels,
-                max_depth=max_depth,
-                bin_type=LINEAR,
-                solver=EXACT,
-                with_replacement=with_replacement,
-                min_impurity_decrease=0,
-                max_leaf_nodes=max_leaf_nodes,
-            )
-            our_model = our_model(
-                data=data,
-                labels=labels,
-                max_depth=max_depth,
-                bin_type=LINEAR,
-                solver=MAB,
-                with_replacement=with_replacement,
-                min_impurity_decrease=0,
-                max_leaf_nodes=max_leaf_nodes,
-            )
+
+    if is_classifier:
+        exact_model = exact_model(
+            data=data,
+            labels=labels,
+            max_depth=max_depth,
+            bin_type=LINEAR,
+            solver=EXACT,
+            with_replacement=with_replacement,
+            min_impurity_decrease=0,
+            max_leaf_nodes=max_leaf_nodes,
+            classes={0: 0, 1: 1},
+        )
+        our_model = our_model(
+            data=data,
+            labels=labels,
+            max_depth=max_depth,
+            bin_type=LINEAR,
+            solver=MAB,
+            with_replacement=with_replacement,
+            min_impurity_decrease=0,
+            max_leaf_nodes=max_leaf_nodes,
+            classes={0: 0, 1: 1},
+        )
     else:
+        exact_model = exact_model(
+            data=data,
+            labels=labels,
+            max_depth=max_depth,
+            bin_type=LINEAR,
+            solver=EXACT,
+            with_replacement=with_replacement,
+            min_impurity_decrease=0,
+            max_leaf_nodes=max_leaf_nodes,
+        )
+        our_model = our_model(
+            data=data,
+            labels=labels,
+            max_depth=max_depth,
+            bin_type=LINEAR,
+            solver=MAB,
+            with_replacement=with_replacement,
+            min_impurity_decrease=0,
+            max_leaf_nodes=max_leaf_nodes,
+        )
+    if n_estimators is not None:
         exact_model.n_estimators = n_estimators
         our_model.n_estimators = n_estimators
     print("-" * 30)
@@ -197,7 +197,7 @@ def compare_models(args):
 
 """
 args
-0: model name
+0: model_name
 1: data_size
 2: n_features
 3: informative_ratio
@@ -229,10 +229,10 @@ if __name__ == "__main__":
         None,
     ]
     params_to_idx = dict(zip(params_list, range(13)))
-    args1[params_to_idx["model_name"]] = "TreeRegressor"
-    args1[params_to_idx["data_size"]] = 1000000
-    args1[params_to_idx["n_features"]] = 50
-    args1[params_to_idx["informative_ratio"]] = 0.06
+    args1[params_to_idx["model_name"]] = "ForestClassifier"
+    args1[params_to_idx["data_size"]] = 10000
+    args1[params_to_idx["n_features"]] = 30
+    args1[params_to_idx["informative_ratio"]] = 0.1
     args1[params_to_idx["seed"]] = 1
     args1[params_to_idx["max_depth"]] = 2
     args1[params_to_idx["max_leaf_nodes"]] = 100
@@ -240,8 +240,8 @@ if __name__ == "__main__":
     args1[params_to_idx["epsilon"]] = 0.01
     args1[params_to_idx["use_dynamic_epsilon"]] = False
     args1[params_to_idx["use_logarithmic split point"]] = True
-    args1[params_to_idx["is_classifier"]] = False
-    args1[params_to_idx["n_estimators"]] = None  # set to be None if don't use forest.
+    args1[params_to_idx["is_classifier"]] = True
+    args1[params_to_idx["n_estimators"]] = 10  # set to be None if don't use forest.
     compare_models(args1)
 
 # np.random.seed(0)
