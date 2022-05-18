@@ -32,7 +32,7 @@ class ForestClassifier(ForestBase, Classifier):
         random_state: int = 0,
         with_replacement: bool = False,
         verbose: bool = False,
-        use_discrete: bool = False,
+        make_discrete: bool = False,
     ) -> None:
         self.classes: dict = class_to_idx(
             np.unique(labels)
@@ -59,5 +59,5 @@ class ForestClassifier(ForestBase, Classifier):
             random_state=random_state,
             with_replacement=with_replacement,
             verbose=verbose,
-            use_discrete=use_discrete,
+            make_discrete=make_discrete,
         )

@@ -15,6 +15,7 @@ from utils.utils import (
 from utils.constants import (
     MAB,
     LINEAR,
+    IDENTITY,
     BEST,
     DEPTH,
     GINI,
@@ -51,7 +52,7 @@ class TreeBase(ABC):
         random_state: int = 0,
         with_replacement: bool = False,
         verbose: bool = False,
-        use_discrete: bool = False,
+        make_discrete: bool = False,
     ) -> None:
         self.data = data  # This is a REFERENCE
         self.labels = labels  # This is a REFERENCE
@@ -67,15 +68,10 @@ class TreeBase(ABC):
 
         self.feature_subsampling = feature_subsampling
         self.tree_global_feature_subsampling = tree_global_feature_subsampling
-        self.discrete_features = defaultdict(list)
-        self.use_discrete = use_discrete
-
-        if self.tree_global_feature_subsampling:
-            # Sample the features randomly once, to be used in the entire tree
-            self.feature_idcs = choose_features(data, self.feature_subsampling)
-            self.discrete_features = remap_discrete_features(
-                self.feature_idcs, self.discrete_features
-            )
+        self.discrete_features = discrete_features
+        self.make_discrete = make_discrete
+        if (bin_type == LINEAR) or (bin_type == IDENTITY):
+            self.make_discrete = False
 
         self.min_samples_split = min_samples_split
         # Make this a small negative number to avoid infinite loop when all leaves are at max_depth
@@ -176,6 +172,20 @@ class TreeBase(ABC):
             node
         ) and self.check_splittable_impurity(node)
 
+    @staticmethod
+    def check_both_or_neither(
+        data: np.ndarray = None, labels: np.ndarray = None
+    ) -> bool:
+        if data is None:
+            if labels is not None:
+                raise Exception("Need to pass both data and labels to .fit()")
+        else:
+            if labels is None:
+                raise Exception("Need to pass both data and labels to .fit()")
+
+        # Either (data and labels) or (not data and not labels)
+        return True
+
     def fit(self, data: np.ndarray = None, labels: np.ndarray = None) -> None:
         """
         Fit the tree by recursively splitting nodes until the termination condition is reached.
@@ -185,12 +195,21 @@ class TreeBase(ABC):
         :return: None
         """
         # Imitate the structure of fit method of sklearn
+        self.check_both_or_neither(data, labels)
         if data is not None:
             self.data = data
             self.labels = labels
             self.n_data = len(labels)
-        if self.use_discrete:
+
+        if self.make_discrete:
             self.discrete_features = data_to_discrete(self.data, n=10)
+
+        if self.tree_global_feature_subsampling:
+            # Sample the features randomly once, to be used in the entire tree
+            self.feature_idcs = choose_features(self.data, self.feature_subsampling)
+            self.discrete_features = remap_discrete_features(
+                self.feature_idcs, self.discrete_features
+            )
 
         # Best-first tree fitting
         if self.splitter == BEST:

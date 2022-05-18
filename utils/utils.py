@@ -230,6 +230,8 @@ def remap_discrete_features(feature_idcs, tree_discrete_features: defaultdict(li
     :return: the new set of discrete features
     """
     # New discrete_features corresponding to new feature indices
+    if len(tree_discrete_features) == 0:
+        return tree_discrete_features
     discrete_features = {}
     for i, feature_idx in enumerate(feature_idcs):
         # Our i-th corresponds to the feature_idx-th discrete feature in the tree.
