@@ -1,3 +1,6 @@
+import cProfile
+import pstats
+
 import time
 from typing import Any
 import pprint
@@ -99,15 +102,23 @@ from data_structures.wrappers.histogram_random_patches_regressor import (
 
 def time_measured_fit(
     model: Any,
+    compare: str = None,
+    ours_or_theirs: str = None,
+    seed: int = None,
 ) -> float:
     """
     Returns wall clock time of training the model, in seconds.
 
     Has a side effect: trains the model.
     """
+    prof = cProfile.Profile()
+    prof.enable()
     start = time.time()
     model.fit()
     end = time.time()
+    prof.disable()
+    stats = pstats.Stats(prof).strip_dirs().sort_stats("tottime")
+    stats.dump_stats(compare + "_" + ours_or_theirs + "_" + str(seed) + "_profile")
     return end - start
 
 
@@ -480,12 +491,16 @@ def compare_runtimes(
             "sklearn" not in their_model.__module__
         ), "Cannot use sklearn models for runtime comparisons"
 
-        our_runtime = time_measured_fit(our_model)
+        our_runtime = time_measured_fit(
+            model=our_model, compare=compare, ours_or_theirs="ours", seed=seed
+        )
         our_train_times.append(our_runtime)
         print("Ours fitted", our_runtime)
 
         if run_theirs:
-            their_runtime = time_measured_fit(their_model)
+            their_runtime = time_measured_fit(
+                model=their_model, compare=compare, ours_or_theirs="theirs", seed=seed
+            )
             their_train_times.append(their_runtime)
             print("Theirs fitted", their_runtime)
             print()
@@ -551,6 +566,7 @@ def compare_runtimes(
             if verbose:
                 print("-" * 30)
                 print("(Theirs) Runtime:", their_runtime)
+                print("(Theirs) Num queries:", their_model.num_queries)
 
         print("/" * 30)
 
@@ -654,6 +670,7 @@ def main():
     train_data, train_targets, test_data, test_targets = load_housing()
     # # Subsample the data because training on 20k points (the full housing dataset) takes too long for RFR
 
+    train_data, train_targets = make_huge(train_data, train_targets)
     train_data_subsampled = train_data
     train_targets_subsampled = train_targets
     print(len(train_data_subsampled), len(train_targets_subsampled))
@@ -670,7 +687,7 @@ def main():
             predict=True,
             run_theirs=True,
             filename="HRFR_dict",
-            verbose=False,
+            verbose=True,
         )
     )
 
