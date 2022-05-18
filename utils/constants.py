@@ -53,3 +53,5 @@ KURTOSIS = 3  # normal distribution has kurtosis = 3
 CLASSIFICATION_MODELS = ["ERFC", "HRFC", "HRPC"]
 REGRESSION_MODELS = ["ERFR", "GBERFR", "HRFR", "GBHRFR", "HRPR", "GBHRPR"]
 
+# Feature Importance
+JACCARD = "JACCARD"

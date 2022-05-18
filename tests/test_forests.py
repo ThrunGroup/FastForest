@@ -18,7 +18,6 @@ from data_structures.wrappers.random_forest_classifier import RandomForestClassi
 class ForestTests(unittest.TestCase):
     # We can't have an __init__ function due to pytest providing errors about function signatures.
     np.random.seed(0)
-
     def test_wrapper_forest_iris(self) -> None:
         iris = sklearn.datasets.load_iris()
         data, labels = iris.data, iris.target
