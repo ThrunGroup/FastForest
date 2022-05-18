@@ -1,4 +1,3 @@
-import time
 from typing import Any
 import pprint
 
@@ -13,7 +12,6 @@ from utils.constants import (
     MAB,
     MSE,
     DEFAULT_NUM_BINS,
-    DEFAULT_MIN_IMPURITY_DECREASE,
 )
 
 from mnist import MNIST
@@ -89,10 +87,12 @@ def compare_budgets(
     # params
     default_alpha_N = 0.25
     default_alpha_F = 0.25
-    default_max_depth = 2
-    default_n_estimators = 3
+    default_max_depth = 1000000000
+    default_n_estimators = 1000000000
     default_min_samples_split = 2
     default_boosting_lr = 0.1
+    default_budget = 1000000
+    default_min_impurity_decrease = 100
 
     for seed in range(num_seeds):
         if compare == "HRFC":
@@ -102,9 +102,9 @@ def compare_budgets(
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
                 min_samples_split=default_min_samples_split,
-                min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
+                min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
-                budget=None,
+                budget=default_budget,
                 criterion=GINI,
                 splitter=BEST,
                 solver=MAB,
@@ -117,9 +117,9 @@ def compare_budgets(
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
                 min_samples_split=default_min_samples_split,
-                min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
+                min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
-                budget=None,
+                budget=default_budget,
                 criterion=GINI,
                 splitter=BEST,
                 solver=EXACT,
@@ -134,9 +134,9 @@ def compare_budgets(
                 max_depth=default_max_depth,
                 num_bins=None,
                 min_samples_split=default_min_samples_split,
-                min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
+                min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
-                budget=None,
+                budget=default_budget,
                 criterion=GINI,
                 splitter=BEST,
                 solver=MAB,
@@ -151,9 +151,9 @@ def compare_budgets(
                 max_depth=default_max_depth,
                 num_bins=None,
                 min_samples_split=default_min_samples_split,
-                min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
+                min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
-                budget=None,
+                budget=default_budget,
                 criterion=GINI,
                 splitter=BEST,
                 solver=EXACT,
@@ -171,9 +171,9 @@ def compare_budgets(
                 max_depth=default_max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
-                min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
+                min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
-                budget=None,
+                budget=default_budget,
                 criterion=GINI,
                 splitter=BEST,
                 solver=MAB,
@@ -190,9 +190,9 @@ def compare_budgets(
                 max_depth=default_max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
-                min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
+                min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
-                budget=None,
+                budget=default_budget,
                 criterion=GINI,
                 splitter=BEST,
                 solver=EXACT,
@@ -208,9 +208,9 @@ def compare_budgets(
                 max_depth=default_max_depth,
                 num_bins=None,
                 min_samples_split=default_min_samples_split,
-                min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
+                min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
-                budget=None,
+                budget=default_budget,
                 criterion=MSE,
                 splitter=BEST,
                 solver=MAB,
@@ -225,9 +225,9 @@ def compare_budgets(
                 max_depth=default_max_depth,
                 num_bins=None,
                 min_samples_split=default_min_samples_split,
-                min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
+                min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
-                budget=None,
+                budget=default_budget,
                 criterion=MSE,
                 splitter=BEST,
                 solver=EXACT,
@@ -243,9 +243,9 @@ def compare_budgets(
                 max_depth=default_max_depth,
                 num_bins=None,
                 min_samples_split=default_min_samples_split,
-                min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
+                min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
-                budget=None,
+                budget=default_budget,
                 criterion=MSE,
                 splitter=BEST,
                 solver=MAB,
@@ -261,9 +261,9 @@ def compare_budgets(
                 max_depth=default_max_depth,
                 num_bins=None,
                 min_samples_split=default_min_samples_split,
-                min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
+                min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
-                budget=None,
+                budget=default_budget,
                 criterion=MSE,
                 splitter=BEST,
                 solver=EXACT,
@@ -280,9 +280,9 @@ def compare_budgets(
                 max_depth=default_max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
-                min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
+                min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
-                budget=None,
+                budget=default_budget,
                 criterion=MSE,
                 splitter=BEST,
                 solver=MAB,
@@ -297,9 +297,9 @@ def compare_budgets(
                 max_depth=default_max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
-                min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
+                min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
-                budget=None,
+                budget=default_budget,
                 criterion=MSE,
                 splitter=BEST,
                 solver=EXACT,
@@ -315,9 +315,9 @@ def compare_budgets(
                 max_depth=default_max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
-                min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
+                min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
-                budget=None,
+                budget=default_budget,
                 criterion=MSE,
                 splitter=BEST,
                 solver=MAB,
@@ -333,9 +333,9 @@ def compare_budgets(
                 max_depth=default_max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
-                min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
+                min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
-                budget=None,
+                budget=default_budget,
                 criterion=MSE,
                 splitter=BEST,
                 solver=EXACT,
@@ -354,9 +354,9 @@ def compare_budgets(
                 max_depth=default_max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
-                min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
+                min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
-                budget=None,
+                budget=default_budget,
                 criterion=MSE,
                 splitter=BEST,
                 solver=MAB,
@@ -373,9 +373,9 @@ def compare_budgets(
                 max_depth=default_max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
-                min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
+                min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
-                budget=None,
+                budget=default_budget,
                 criterion=MSE,
                 splitter=BEST,
                 solver=EXACT,
@@ -393,9 +393,9 @@ def compare_budgets(
                 max_depth=default_max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
-                min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
+                min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
-                budget=None,
+                budget=default_budget,
                 criterion=MSE,
                 splitter=BEST,
                 solver=MAB,
@@ -413,9 +413,9 @@ def compare_budgets(
                 max_depth=default_max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
-                min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
+                min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
-                budget=None,
+                budget=default_budget,
                 criterion=MSE,
                 splitter=BEST,
                 solver=EXACT,
@@ -488,7 +488,6 @@ def compare_budgets(
             our_test_accs.append(our_test_acc)
         if verbose:
             print("*" * 30)
-            print("(Ours) Runtime:", our_runtime)
             print("(Ours) Num queries:", our_model.num_queries)
 
         if run_theirs:
@@ -501,7 +500,6 @@ def compare_budgets(
                 their_test_accs.append(their_test_acc)
             if verbose:
                 print("-" * 30)
-                print("(Theirs) Runtime:", their_runtime)
                 print("(Theirs) Num queries:", their_model.num_queries)
 
         print("/" * 30)
@@ -514,10 +512,7 @@ def compare_budgets(
         our_avg_test = np.mean(our_test_accs)
         our_std_test = np.std(our_test_accs) / np.sqrt(num_seeds)
 
-    # For runtimes
-    our_avg_train_time = np.mean(our_train_times)
-    our_std_train_time = np.std(our_train_times) / np.sqrt(num_seeds)
-
+    # For queries
     our_avg_num_queries = np.mean(our_num_queries)
     our_std_num_queries = np.std(our_num_queries) / np.sqrt(num_seeds)
 
@@ -528,9 +523,6 @@ def compare_budgets(
         if predict:
             their_avg_test = np.mean(their_test_accs)
             their_std_test = np.std(their_test_accs) / np.sqrt(num_seeds)
-
-        their_avg_train_time = np.mean(their_train_times)
-        their_std_train_time = np.std(their_train_times) / np.sqrt(num_seeds)
 
         their_avg_num_queries = np.mean(their_num_queries)
         their_std_num_queries = np.std(their_num_queries) / np.sqrt(num_seeds)
@@ -552,20 +544,14 @@ def compare_budgets(
         "their_test_accs": their_test_accs if run_theirs and predict else None,
         "their_avg_test": their_avg_test if run_theirs and predict else None,
         "their_std_test": their_std_test if run_theirs and predict else None,
-        "our_train_times": our_train_times,
-        "our_avg_train_time": our_avg_train_time,
-        "our_std_train_time": our_std_train_time,
         "our_num_queries": our_num_queries,
         "our_avg_num_queries": our_avg_num_queries,
         "our_std_num_queries": our_std_num_queries,
-        "their_train_times": their_train_times if run_theirs else None,
-        "their_avg_train_time": their_avg_train_time if run_theirs else None,
-        "their_std_train_time": their_std_train_time if run_theirs else None,
         "their_num_queries": their_num_queries if run_theirs else None,
         "their_avg_num_queries": their_avg_num_queries if run_theirs else None,
         "their_std_num_queries": their_std_num_queries if run_theirs else None,
     }
-    with open(filename, "w+") as fout:
+    with open("budget_" + filename, "w+") as fout:
         fout.write(str(results))
 
     return results
@@ -666,141 +652,141 @@ def main():
         )
     )
 
-    pp.pprint(
-        compare_budgets(
-            compare="GBHRFR",
-            train_data=train_data,
-            train_targets=train_targets,
-            test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="GBHRFR_dict",
-            verbose=True,
-        )
-    )
-
-    ## Extremely Random Forests
-    pp.pprint(
-        compare_budgets(
-            compare="ERFR",
-            train_data=train_data,
-            train_targets=train_targets,
-            test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="ERFR_dict",
-            verbose=True,
-        )
-    )
-
-    pp.pprint(
-        compare_budgets(
-            compare="GBERFR",
-            train_data=train_data,
-            train_targets=train_targets,
-            test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="GBERFR_dict",
-            verbose=True,
-        )
-    )
-
-    ## Random Patches
-    pp.pprint(
-        compare_budgets(
-            compare="HRPR",
-            train_data=train_data,
-            train_targets=train_targets,
-            test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRPR_dict",
-            verbose=True,
-        )
-    )
-
-    pp.pprint(
-        compare_budgets(
-            compare="GBHRPR",
-            train_data=train_data,
-            train_targets=train_targets,
-            test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="GBHRPR_dict",
-            verbose=True,
-        )
-    )
-
-    ############### Classification
-    mndata = MNIST("mnist/")
-
-    train_images, train_labels = mndata.load_training()
-    train_images = np.array(train_images)
-    train_labels = np.array(train_labels)
-
-    test_images, test_labels = mndata.load_testing()
-    test_images = np.array(test_images)
-    test_labels = np.array(test_labels)
-
-    ## Random Forests
-    pp.pprint(
-        compare_budgets(
-            compare="HRFC",
-            train_data=train_images,
-            train_targets=train_labels,
-            test_data=test_images,
-            test_targets=test_labels,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRFC_dict",
-            verbose=True,
-        )
-    )
-
-    ## Extremely Random Forests
-    pp.pprint(
-        compare_budgets(
-            compare="ERFC",
-            train_data=train_images,
-            train_targets=train_labels,
-            test_data=test_images,
-            test_targets=test_labels,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="ERFC_dict",
-            verbose=True,
-        )
-    )
-
-    ## Random Patches
-    pp.pprint(
-        compare_budgets(
-            compare="HRPC",
-            train_data=train_images,
-            train_targets=train_labels,
-            test_data=test_images,
-            test_targets=test_labels,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRPC_dict",
-            verbose=True,
-        )
-    )
+    # pp.pprint(
+    #     compare_budgets(
+    #         compare="GBHRFR",
+    #         train_data=train_data,
+    #         train_targets=train_targets,
+    #         test_data=test_data,
+    #         test_targets=test_targets,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="GBHRFR_dict",
+    #         verbose=True,
+    #     )
+    # )
+    #
+    # ## Extremely Random Forests
+    # pp.pprint(
+    #     compare_budgets(
+    #         compare="ERFR",
+    #         train_data=train_data,
+    #         train_targets=train_targets,
+    #         test_data=test_data,
+    #         test_targets=test_targets,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="ERFR_dict",
+    #         verbose=True,
+    #     )
+    # )
+    #
+    # pp.pprint(
+    #     compare_budgets(
+    #         compare="GBERFR",
+    #         train_data=train_data,
+    #         train_targets=train_targets,
+    #         test_data=test_data,
+    #         test_targets=test_targets,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="GBERFR_dict",
+    #         verbose=True,
+    #     )
+    # )
+    #
+    # ## Random Patches
+    # pp.pprint(
+    #     compare_budgets(
+    #         compare="HRPR",
+    #         train_data=train_data,
+    #         train_targets=train_targets,
+    #         test_data=test_data,
+    #         test_targets=test_targets,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="HRPR_dict",
+    #         verbose=True,
+    #     )
+    # )
+    #
+    # pp.pprint(
+    #     compare_budgets(
+    #         compare="GBHRPR",
+    #         train_data=train_data,
+    #         train_targets=train_targets,
+    #         test_data=test_data,
+    #         test_targets=test_targets,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="GBHRPR_dict",
+    #         verbose=True,
+    #     )
+    # )
+    #
+    # ############### Classification
+    # mndata = MNIST("mnist/")
+    #
+    # train_images, train_labels = mndata.load_training()
+    # train_images = np.array(train_images)
+    # train_labels = np.array(train_labels)
+    #
+    # test_images, test_labels = mndata.load_testing()
+    # test_images = np.array(test_images)
+    # test_labels = np.array(test_labels)
+    #
+    # ## Random Forests
+    # pp.pprint(
+    #     compare_budgets(
+    #         compare="HRFC",
+    #         train_data=train_images,
+    #         train_targets=train_labels,
+    #         test_data=test_images,
+    #         test_targets=test_labels,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="HRFC_dict",
+    #         verbose=True,
+    #     )
+    # )
+    #
+    # ## Extremely Random Forests
+    # pp.pprint(
+    #     compare_budgets(
+    #         compare="ERFC",
+    #         train_data=train_images,
+    #         train_targets=train_labels,
+    #         test_data=test_images,
+    #         test_targets=test_labels,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="ERFC_dict",
+    #         verbose=True,
+    #     )
+    # )
+    #
+    # ## Random Patches
+    # pp.pprint(
+    #     compare_budgets(
+    #         compare="HRPC",
+    #         train_data=train_images,
+    #         train_targets=train_labels,
+    #         test_data=test_images,
+    #         test_targets=test_labels,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="HRPC_dict",
+    #         verbose=True,
+    #     )
+    # )
 
 
 if __name__ == "__main__":

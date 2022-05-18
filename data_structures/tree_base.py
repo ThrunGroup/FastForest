@@ -67,7 +67,9 @@ class TreeBase(ABC):
             self.labels
         ), "Data and labels must have the same size"
         self.max_depth = max_depth
-        self.minmax = minmax  # minmax = (minimum array of features, maximum array of features)
+        self.minmax = (
+            minmax  # minmax = (minimum array of features, maximum array of features)
+        )
         if is_classification:
             self.classes = classes  # dict from class name to class index
             self.idx_to_class = {value: key for key, value in classes.items()}
@@ -216,9 +218,11 @@ class TreeBase(ABC):
         if self.tree_global_feature_subsampling:
             # Sample the features randomly once, to be used in the entire tree
             self.feature_idcs = choose_features(self.data, self.feature_subsampling)
-            self.discrete_features = remap_discrete_features(
-                self.feature_idcs, self.discrete_features
-            ) if self.discrete_features is not None else None
+            self.discrete_features = (
+                remap_discrete_features(self.feature_idcs, self.discrete_features)
+                if self.discrete_features is not None
+                else None
+            )
 
         # Best-first tree fitting
         if self.splitter == BEST:
@@ -256,7 +260,9 @@ class TreeBase(ABC):
                         # Runs solve_mab if not previously computed, which incurs cost!
                         reduction = leaf.calculate_best_split(self.remaining_budget)
                     else:
-                        if self.solver == EXACT and self.remaining_budget < len(leaf.labels) * len(leaf.data[0, :]):
+                        if self.solver == EXACT and self.remaining_budget < len(
+                            leaf.labels
+                        ) * len(leaf.data[0, :]):
                             break
                         elif self.remaining_budget > 0:
                             reduction = leaf.calculate_best_split(self.remaining_budget)

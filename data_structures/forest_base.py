@@ -124,7 +124,6 @@ class ForestBase(ABC):
         self.ccp_alpha = 0.0
         self.max_samples = None
 
-
     @staticmethod
     def check_both_or_neither(
         data: np.ndarray = None, labels: np.ndarray = None
@@ -235,7 +234,11 @@ class ForestBase(ABC):
                     epsilon=self.epsilon,
                 )
             tree.fit()
-            self.trees.append(tree)
+
+            if tree.num_queries > 0:
+                self.trees.append(tree)
+            else:
+                break
 
             if self.boosting:
                 # TODO: currently uses O(n) computation

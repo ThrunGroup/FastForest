@@ -2,7 +2,7 @@
 BATCH_SIZE = 1000
 CONF_MULTIPLIER = 1
 TOLERANCE = -1e-1
-BUFFER = 10000
+BUFFER = 100000
 DEFAULT_MIN_IMPURITY_DECREASE = 5e-3
 
 # Datasets
@@ -52,4 +52,3 @@ KURTOSIS = 3  # normal distribution has kurtosis = 3
 # Models for speedup comparison
 CLASSIFICATION_MODELS = ["ERFC", "HRFC", "HRPC"]
 REGRESSION_MODELS = ["ERFR", "GBERFR", "HRFR", "GBHRFR", "HRPR", "GBHRPR"]
-
