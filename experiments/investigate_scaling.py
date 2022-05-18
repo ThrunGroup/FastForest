@@ -23,7 +23,8 @@ def main():
         print("\n\n")
         for fitting_seed in range(100, 105):
             np.random.seed(fitting_seed)
-            idcs = np.random.choice(60000, size=C_SUBSAMPLE_SIZE, replace=True)
+            rng = np.random.default_rng(fitting_seed)
+            idcs = rng.choice(60000, size=C_SUBSAMPLE_SIZE, replace=True)
             train_images_subsampled = np.array(train_images)[idcs]
             train_labels_subsampled = np.array(train_labels)[idcs]
             compare_runtimes(

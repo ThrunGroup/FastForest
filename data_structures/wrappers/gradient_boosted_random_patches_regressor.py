@@ -42,8 +42,10 @@ class GradientBoostedRandomPatchesRegressor(ForestRegressor):
             raise Exception("Need to pass alpha_N and alpha_F to RP objects")
         N = len(data)
         F = len(data[0])
-        data_idcs = np.random.choice(N, math.ceil(alpha_N * N), replace=False)
-        feature_idcs = np.random.choice(F, math.ceil(alpha_F * F), replace=False)
+
+        rng = np.random.default_rng(random_state)
+        data_idcs = rng.choice(N, math.ceil(alpha_N * N), replace=False)
+        feature_idcs = rng.choice(F, math.ceil(alpha_F * F), replace=False)
 
         self.data = data[data_idcs][:, feature_idcs]
         self.labels = labels[data_idcs]

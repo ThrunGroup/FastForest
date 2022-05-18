@@ -78,8 +78,11 @@ class ForestBase(ABC):
         self.criterion = criterion
         self.splitter = splitter
         self.solver = solver
+
         self.random_state = random_state
         set_seed(self.random_state)
+        self.rng = np.random.default_rng(self.random_state)
+
         self.with_replacement = with_replacement
         self.verbose = verbose
 
@@ -146,7 +149,7 @@ class ForestBase(ABC):
 
             if self.bootstrap:
                 N = len(self.curr_targets)
-                idcs = np.random.choice(N, size=N, replace=True)
+                idcs = self.rng.choice(N, size=N, replace=True)
                 self.curr_data = self.data[idcs]
                 self.curr_targets = self.curr_targets[idcs]
             else:

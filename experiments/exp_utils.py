@@ -60,10 +60,11 @@ def make_huge(pca_train_vecs, train_labels, doublings: int = 4):
 
 
 def load_housing():
-    np.random.seed(0)
-
+    seed = 0
+    np.random.seed(seed)
+    rng = np.random.default_rng(seed)
     data, targets = fetch_california_housing(return_X_y=True)
-    random_idcs = np.random.choice(len(data), size=len(data), replace=False)
+    random_idcs = rng.choice(len(data), size=len(data), replace=False)
     data = data[random_idcs]
     targets = targets[random_idcs]
 
