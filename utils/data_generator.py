@@ -11,7 +11,10 @@ def create_data(N=1000):
     :param N: Dataset size
     :return: dataset
     """
-    y = np.random.choice([0, 1], size=(N))
+    seed = 0
+    np.random.seed(seed)
+    rng = np.random.default_rng(seed)
+    y = rng.choice([0, 1], size=(N))
     X = np.empty((N, 3))
     X[:, 2] = y
     X[:, 0] = np.random.normal(loc=y, scale=0.2, size=N)

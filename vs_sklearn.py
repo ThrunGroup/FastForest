@@ -18,7 +18,9 @@ from data_structures.forest_classifier import ForestClassifier
 from utils.constants import SQRT, EXACT, MAB, LINEAR, IDENTITY
 
 np.random.seed(0)
-data, labels = make_classification(100000, n_informative=5, n_features=200, random_state=0)
+data, labels = make_classification(
+    100000, n_informative=5, n_features=200, random_state=0
+)
 exact_model = DecisionTreeClassifier(max_depth=2)
 # exact_model = TreeClassifier(
 #     data=data,
@@ -38,7 +40,7 @@ our_model = TreeClassifier(
     solver=MAB,
     with_replacement=False,
     classes={0: 0, 1: 1},
-    min_impurity_decrease=0
+    min_impurity_decrease=0,
 )
 start = time.time()
 exact_model.fit(data, labels)
@@ -65,7 +67,7 @@ exact_model = TreeRegressor(
     bin_type=LINEAR,
     solver=EXACT,
     with_replacement=False,
-    min_impurity_decrease=0
+    min_impurity_decrease=0,
 )
 our_model = TreeRegressor(
     data=data,
@@ -87,4 +89,6 @@ mse_our = np.sum(np.square(our_model.predict_batch(data) - labels)) / len(data)
 
 print(f"mse of exact_model: {mse_exact} / mse of our model: {mse_our}")
 print(f"num_queries: {our_model.num_queries}")
-print(np.sum(exact_model.predict_batch(data) == our_model.predict_batch(data)) / len(data))
+print(
+    np.sum(exact_model.predict_batch(data) == our_model.predict_batch(data)) / len(data)
+)

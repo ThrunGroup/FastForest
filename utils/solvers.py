@@ -16,6 +16,7 @@ from utils.constants import (
     BATCH_SIZE,
     DEFAULT_NUM_BINS,
     RANDOM,
+    MAX_SEED,
 )
 from utils.criteria import get_impurity_reductions
 from utils.utils import (
@@ -209,18 +210,23 @@ def sample_targets(
 
     with_replacement = population_idcs is None
     initial_pop_size = None if population_idcs is None else N
+
+    # Make the seed for the rng deterministic based on np's global random seed
+    seed = np.random.randint(MAX_SEED)
+    rng = np.random.default_rng(seed)
+
     if with_replacement:  # Sample with replacement
         if N <= batch_size:
             sample_idcs = np.arange(N, dtype=np.int64)
             initial_pop_size = N  # Since we're sampling all the samples
         else:
-            sample_idcs = np.random.choice(N, size=batch_size, replace=True)
+            sample_idcs = rng.choice(N, size=batch_size, replace=True)
     else:
         M = len(population_idcs)
         idcs = (
             np.arange(M, dtype=np.int64)
             if batch_size >= M
-            else np.random.choice(M, batch_size, replace=False)
+            else rng.choice(M, batch_size, replace=False)
         )
         sample_idcs = population_idcs[idcs]
         population_idcs = np.delete(
@@ -233,7 +239,9 @@ def sample_targets(
     for f_idx, f in enumerate(f2bin_dict):
         h: Histogram = histograms[f]
         h.add(samples, sample_labels)  # This is where the labels are used
-        num_queries += len(samples)     # num_queries should be updated per histogram insert
+        num_queries += len(
+            samples
+        )  # num_queries should be updated per histogram insert
 
         # TODO(@motiwari): Can make this more efficient because a lot of histogram computation is reused across steps
         i_r, cb_d = get_impurity_reductions(
