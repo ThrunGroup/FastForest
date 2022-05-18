@@ -74,7 +74,10 @@ class Node:
                 )
         # Reindex minmax
         if self.tree.minmax is not None:
-            self.minmax = (self.tree.minmax[0][self.feature_idcs], self.tree.minmax[1][self.feature_idcs])
+            self.minmax = (
+                self.tree.minmax[0][self.feature_idcs],
+                self.tree.minmax[1][self.feature_idcs],
+            )
         else:
             self.minmax = None
 

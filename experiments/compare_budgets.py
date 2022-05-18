@@ -70,6 +70,7 @@ def compare_budgets(
     run_theirs: bool = True,
     filename: str = None,
     verbose: bool = False,
+    default_budget: int = None,  # Must be tuned per task
 ):  # TODO(@motiwari) add return typehint
     assert filename is not None, "Need to pass filename_prefix"
     print("\n\n", "Running comparison for:", compare)
@@ -85,14 +86,13 @@ def compare_budgets(
     their_test_accs = []
 
     # params
-    default_alpha_N = 0.25
-    default_alpha_F = 0.25
-    default_max_depth = 1000000000
-    default_n_estimators = 1000000000
+    default_alpha_N = 0.5
+    default_alpha_F = 0.5
+    default_max_depth = 2
+    default_n_estimators = 100
     default_min_samples_split = 2
     default_boosting_lr = 0.1
-    default_budget = 1000000
-    default_min_impurity_decrease = 100
+    default_min_impurity_decrease = 100  # New as opposed to compare_runtimes
 
     for seed in range(num_seeds):
         if compare == "HRFC":
@@ -434,11 +434,13 @@ def compare_budgets(
         our_model.fit()
         our_num_queries.append(our_model.num_queries)
         print("Ours fitted", our_model.num_queries)
+        print("Our Trees", len(our_model.trees))
 
         if run_theirs:
             their_model.fit()
             their_num_queries.append(their_model.num_queries)
             print("Theirs fitted", their_model.num_queries)
+            print("Their Trees", len(their_model.trees))
             print()
 
         if compare in CLASSIFICATION_MODELS:
@@ -611,47 +613,48 @@ def main():
     # train_targets_subsampled = train_targets
     # print(len(train_data_subsampled), len(train_targets_subsampled))
 
-    params = {
-        "data_size": 200000,
-        "n_features": 50,
-        "informative_ratio": 0.06,
-        "seed": 1,
-        "epsilon": 0.01,
-        "use_dynamic_epsilon": False,
-        "use_logarithmic split point": True,
-    }
-
-    n_informative = int(params["n_features"] * params["informative_ratio"])
-    full_data, full_targets = make_regression(
-        params["data_size"],
-        n_features=params["n_features"],
-        n_informative=n_informative,
-        random_state=params["seed"],
-    )
-
-    train_test_split = int(0.8 * params["data_size"])
-    train_data = full_data[:train_test_split]
-    train_targets = full_targets[:train_test_split]
-
-    test_data = full_data[train_test_split:]
-    test_targets = full_targets[train_test_split:]
-
-    ## Random Forests
-    pp.pprint(
-        compare_budgets(
-            compare="HRFR",
-            train_data=train_data,
-            train_targets=train_targets,
-            test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRFR_dict",
-            verbose=True,
-        )
-    )
-
+    # params = {
+    #     "data_size": 10000,
+    #     "n_features": 50,
+    #     "informative_ratio": 0.06,
+    #     "seed": 1,
+    #     "epsilon": 0.01,
+    #     "use_dynamic_epsilon": False,
+    #     "use_logarithmic split point": True,
+    # }
+    #
+    # n_informative = int(params["n_features"] * params["informative_ratio"])
+    # full_data, full_targets = make_regression(
+    #     params["data_size"],
+    #     n_features=params["n_features"],
+    #     n_informative=n_informative,
+    #     random_state=params["seed"],
+    # )
+    #
+    # train_test_split = int(0.8 * params["data_size"])
+    # train_data = full_data[:train_test_split]
+    # train_targets = full_targets[:train_test_split]
+    #
+    # test_data = full_data[train_test_split:]
+    # test_targets = full_targets[train_test_split:]
+    #
+    # ## Random Forests
+    # pp.pprint(
+    #     compare_budgets(
+    #         compare="HRFR",
+    #         train_data=train_data,
+    #         train_targets=train_targets,
+    #         test_data=test_data,
+    #         test_targets=test_targets,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="HRFR_dict",
+    #         verbose=True,
+    #         default_budget=2400000,
+    #     )
+    # )
+    #
     # pp.pprint(
     #     compare_budgets(
     #         compare="GBHRFR",
@@ -664,6 +667,7 @@ def main():
     #         run_theirs=True,
     #         filename="GBHRFR_dict",
     #         verbose=True,
+    #         default_budget=2400000,
     #     )
     # )
     #
@@ -680,6 +684,7 @@ def main():
     #         run_theirs=True,
     #         filename="ERFR_dict",
     #         verbose=True,
+    #         default_budget=2400000,
     #     )
     # )
     #
@@ -695,10 +700,11 @@ def main():
     #         run_theirs=True,
     #         filename="GBERFR_dict",
     #         verbose=True,
+    #         default_budget=2400000,
     #     )
     # )
     #
-    # ## Random Patches
+    # # ## Random Patches
     # pp.pprint(
     #     compare_budgets(
     #         compare="HRPR",
@@ -711,6 +717,7 @@ def main():
     #         run_theirs=True,
     #         filename="HRPR_dict",
     #         verbose=True,
+    #         default_budget=2400000,
     #     )
     # )
     #
@@ -726,67 +733,72 @@ def main():
     #         run_theirs=True,
     #         filename="GBHRPR_dict",
     #         verbose=True,
+    #         default_budget=2400000,
     #     )
     # )
     #
-    # ############### Classification
-    # mndata = MNIST("mnist/")
-    #
-    # train_images, train_labels = mndata.load_training()
-    # train_images = np.array(train_images)
-    # train_labels = np.array(train_labels)
-    #
-    # test_images, test_labels = mndata.load_testing()
-    # test_images = np.array(test_images)
-    # test_labels = np.array(test_labels)
-    #
-    # ## Random Forests
-    # pp.pprint(
-    #     compare_budgets(
-    #         compare="HRFC",
-    #         train_data=train_images,
-    #         train_targets=train_labels,
-    #         test_data=test_images,
-    #         test_targets=test_labels,
-    #         num_seeds=NUM_SEEDS,
-    #         predict=True,
-    #         run_theirs=True,
-    #         filename="HRFC_dict",
-    #         verbose=True,
-    #     )
-    # )
-    #
-    # ## Extremely Random Forests
-    # pp.pprint(
-    #     compare_budgets(
-    #         compare="ERFC",
-    #         train_data=train_images,
-    #         train_targets=train_labels,
-    #         test_data=test_images,
-    #         test_targets=test_labels,
-    #         num_seeds=NUM_SEEDS,
-    #         predict=True,
-    #         run_theirs=True,
-    #         filename="ERFC_dict",
-    #         verbose=True,
-    #     )
-    # )
-    #
-    # ## Random Patches
-    # pp.pprint(
-    #     compare_budgets(
-    #         compare="HRPC",
-    #         train_data=train_images,
-    #         train_targets=train_labels,
-    #         test_data=test_images,
-    #         test_targets=test_labels,
-    #         num_seeds=NUM_SEEDS,
-    #         predict=True,
-    #         run_theirs=True,
-    #         filename="HRPC_dict",
-    #         verbose=True,
-    #     )
-    # )
+    ############### Classification
+    mndata = MNIST("mnist/")
+
+    train_images, train_labels = mndata.load_training()
+    SUBSAMPLE_SIZE = 10000
+    train_images = np.array(train_images)[:SUBSAMPLE_SIZE]
+    train_labels = np.array(train_labels)[:SUBSAMPLE_SIZE]
+
+    test_images, test_labels = mndata.load_testing()
+    test_images = np.array(test_images)
+    test_labels = np.array(test_labels)
+
+    ## Random Forests
+    pp.pprint(
+        compare_budgets(
+            compare="HRFC",
+            train_data=train_images,
+            train_targets=train_labels,
+            test_data=test_images,
+            test_targets=test_labels,
+            num_seeds=NUM_SEEDS,
+            predict=True,
+            run_theirs=True,
+            filename="HRFC_dict",
+            verbose=True,
+            default_budget=7840000 * 1.3,
+        )
+    )
+
+    ## Extremely Random Forests
+    pp.pprint(
+        compare_budgets(
+            compare="ERFC",
+            train_data=train_images,
+            train_targets=train_labels,
+            test_data=test_images,
+            test_targets=test_labels,
+            num_seeds=NUM_SEEDS,
+            predict=True,
+            run_theirs=True,
+            filename="ERFC_dict",
+            verbose=True,
+            default_budget=7840000 * 1.3,
+        )
+    )
+
+    ## Random Patches
+    pp.pprint(
+        compare_budgets(
+            compare="HRPC",
+            train_data=train_images,
+            train_targets=train_labels,
+            test_data=test_images,
+            test_targets=test_labels,
+            num_seeds=NUM_SEEDS,
+            predict=True,
+            run_theirs=True,
+            filename="HRPC_dict",
+            verbose=True,
+            default_budget=7840000 * 1.3,
+        )
+    )
 
 
 if __name__ == "__main__":
