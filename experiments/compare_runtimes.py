@@ -154,6 +154,7 @@ def compare_runtimes(
                 solver=MAB,
                 random_state=seed,
                 verbose=False,
+                with_replacement=True,
             )
             their_model = HRFC(
                 data=train_data,
