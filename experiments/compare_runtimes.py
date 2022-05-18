@@ -5,6 +5,8 @@ import time
 from typing import Any
 import pprint
 
+from sklearn.datasets import load_diabetes, make_classification, make_regression
+
 
 from experiments.exp_utils import *
 from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
@@ -149,8 +151,8 @@ def compare_runtimes(
     # params
     default_alpha_N = 0.25
     default_alpha_F = 0.25
-    default_max_depth = 5
-    default_n_estimators = 5
+    default_max_depth = 2
+    default_n_estimators = 3
     default_min_samples_split = 2
     default_boosting_lr = 0.1
 
