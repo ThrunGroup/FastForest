@@ -70,8 +70,6 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 def solve_exactly(
     data: np.ndarray,
     labels: np.ndarray,
-    min_feature_vals: np.ndarray,
-    max_feature_vals: np.ndarray,
     discrete_bins_dict: DefaultDict,
     binning_type: str = IDENTITY,
     num_bins: int = DEFAULT_NUM_BINS,
@@ -125,8 +123,6 @@ def solve_exactly(
         discrete_bins_dict=discrete_bins_dict,
         binning_type=binning_type,
         num_bins=B,
-        min_feature_vals=min_feature_vals,
-        max_feature_vals=max_feature_vals,
     )
 
     considered_idcs = np.array(considered_idcs)
@@ -260,8 +256,6 @@ def sample_targets(
 def solve_mab(
     data: np.ndarray,
     labels: np.ndarray,
-    min_feature_vals: np.ndarray,
-    max_feature_vals: np.ndarray,
     discrete_bins_dict: DefaultDict,
     binning_type: str = LINEAR,
     num_bins: int = DEFAULT_NUM_BINS,
@@ -337,8 +331,6 @@ def solve_mab(
         discrete_bins_dict=discrete_bins_dict,
         binning_type=binning_type,
         num_bins=B,
-        min_feature_vals=min_feature_vals,
-        max_feature_vals=max_feature_vals,
     )
 
     considered_idcs = np.array(considered_idcs)

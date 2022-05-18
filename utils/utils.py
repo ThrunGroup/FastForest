@@ -13,6 +13,7 @@ from utils.constants import (
     SQRT,
     RANDOM,
     DEFAULT_NUM_BINS,
+    NUM_SAMPLE_DISCRETE,
 )
 
 
@@ -94,9 +95,15 @@ def data_to_discrete(data: np.ndarray, n: int) -> DefaultDict:
     """
     discrete_dict = defaultdict(list)
     for feature_idx in range(len(data[0])):
-        unique_fvals = np.unique(data[:, feature_idx])
-        if len(unique_fvals) <= n:  # If not, "feature_idx"th feature is not discrete
+        samples = np.random.choice(data[:, feature_idx], NUM_SAMPLE_DISCRETE)
+        unique_samples = np.unique(samples)
+
+        if len(unique_samples) <= n:
+            # only do the O(n) computation if you know that the feature is discrete
+            unique_fvals = np.unique(data[:, feature_idx])
             discrete_dict[feature_idx] = unique_fvals
+        else:
+            discrete_dict[feature_idx] = np.array([])
     return discrete_dict
 
 
@@ -121,8 +128,6 @@ def make_histograms(
     is_classification: bool,
     data: np.ndarray,
     labels: np.ndarray,
-    min_feature_vals: np.ndarray,
-    max_feature_vals: np.ndarray,
     discrete_bins_dict: DefaultDict,
     binning_type: str = "",
     num_bins: int = DEFAULT_NUM_BINS,
@@ -165,10 +170,10 @@ def make_histograms(
         elif bin_type == IDENTITY:
             num_bins = N
         elif bin_type == LINEAR:
-            min_bin, max_bin = min_feature_vals[f_idx], max_feature_vals[f_idx]
+            min_bin, max_bin = np.min(f_data), np.max(f_data)
             num_bins = B
         elif bin_type == RANDOM:  # For extremely random forests
-            min_bin, max_bin = min_feature_vals[f_idx], max_feature_vals[f_idx]
+            min_bin, max_bin = np.min(f_data), np.max(f_data)
             num_bins = np.sqrt(np.shape(data)[0]).astype(int)
         else:
             NotImplementedError("Invalid choice of bin_type")

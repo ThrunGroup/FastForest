@@ -30,11 +30,7 @@ class Node:
         parent: Node,
         data: np.ndarray,
         labels: np.ndarray,
-
-        min_feature_vals: np.ndarray,
-        max_feature_vals: np.ndarray,
         discrete_features: DefaultDict,
-
         depth: int,
         proportion: float,
         is_classification: bool = True,
@@ -66,10 +62,7 @@ class Node:
         self.tree_global_feature_subsampling = tree_global_feature_subsampling
         self.discrete_features = defaultdict(list)
         self.with_replacement = with_replacement
-
         self.discrete_features = discrete_features
-        self.min_feature_vals = min_feature_vals
-        self.max_feature_vals = max_feature_vals
 
         if tree_global_feature_subsampling:
             # Features are chosen at the tree level. Use all of tree's features
@@ -119,8 +112,6 @@ class Node:
                 impurity_measure=self.criterion,
                 with_replacement=self.with_replacement,
                 budget=budget,
-                min_feature_vals=self.min_feature_vals,
-                max_feature_vals=self.max_feature_vals,
             )
         elif self.solver == EXACT:
             results = solve_exactly(
@@ -131,8 +122,6 @@ class Node:
                 num_bins=self.num_bins,
                 is_classification=self.is_classification,
                 impurity_measure=self.criterion,
-                min_feature_vals=self.min_feature_vals,
-                max_feature_vals=self.max_feature_vals,
                 # NOT implemented with budget yet
             )
         else:
@@ -180,10 +169,7 @@ class Node:
             feature_subsampling=self.feature_subsampling,
             tree_global_feature_subsampling=self.tree_global_feature_subsampling,
             with_replacement=self.with_replacement,
-
             discrete_features=self.discrete_features,
-            min_feature_vals=self.min_feature_vals,
-            max_feature_vals=self.max_feature_vals,
         )
 
     def split(self) -> None:

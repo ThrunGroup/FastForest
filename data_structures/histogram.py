@@ -39,12 +39,12 @@ class Histogram:
         self.is_classification = is_classification
 
         if self.bin_type == LINEAR:
-            if self.min_bin == max_bin:  # To resolve the case when self.min == self.max
-                self.num_bins = 0
-                return
             self.bin_edges = self.linear_bin()
         elif self.bin_type == DISCRETE:
-            self.bin_edges = self.discrete_bin()
+            if len(self.unique_fvals) == 0:     # To resolve the case when feature is NOT discrete
+                self.bin_edges = self.linear_bin()
+            else:
+                self.bin_edges = self.discrete_bin()
         elif self.bin_type == IDENTITY:
             self.bin_edges = self.identity_bin()
         elif self.bin_type == RANDOM:
@@ -74,8 +74,10 @@ class Histogram:
         """
         # TODO: shouldn't be creating a histogram for feature with only one bin value
         # assert (self.max_bin > self.min_bin), "shouldn't be creating a histogram for one bin value"
-
         if self.bin_type == LINEAR:
+            if self.num_bins == 1 or self.min_bin == self.max_bin:
+                return np.array([0] * len(fvals))
+
             bin_width = (self.max_bin - self.min_bin) / (self.num_bins - 1)
             insert_idcs = (fvals - self.min_bin) / bin_width
             insert_idcs = np.ceil(insert_idcs)
@@ -169,6 +171,7 @@ class Histogram:
         :return: Return a subset array of self.feature_values
         """
         width = int(len(self.unique_fvals) / self.num_bins)
+        # assert(width == 0, "Feature is not discrete. Use linear bins instead.")
         return np.array([self.unique_fvals[width * i] for i in range(self.num_bins)])
 
     def identity_bin(self) -> np.ndarray:

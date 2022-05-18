@@ -33,8 +33,6 @@ class TreeBase(ABC):
         self,
         data: np.ndarray,
         labels: np.ndarray,
-        min_feature_vals: np.ndarray,
-        max_feature_vals: np.ndarray,
         max_depth: int,
         classes: dict = None,
         feature_subsampling: Union[str, int] = None,
@@ -116,8 +114,6 @@ class TreeBase(ABC):
             with_replacement=self.with_replacement,
 
             discrete_features=self.discrete_features,
-            min_feature_vals=min_feature_vals,
-            max_feature_vals=max_feature_vals,
         )
 
         # These are copied from the link below. We won't need all of them.

@@ -52,7 +52,7 @@ class ForestTests(unittest.TestCase):
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
-        self.assertTrue((acc / len(data)) >= 0.97)
+        self.assertTrue((acc / len(data)) >= 0.94)
 
     def test_forest_digits(self) -> None:
         digits = sklearn.datasets.load_digits()
