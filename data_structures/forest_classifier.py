@@ -34,6 +34,7 @@ class ForestClassifier(ForestBase, Classifier):
         verbose: bool = False,
         make_discrete: bool = False,
         classes: dict = None,
+        is_precomputed_minmax: bool = False,
     ) -> None:
         if classes is None:
             self.classes: dict = class_to_idx(
@@ -64,4 +65,5 @@ class ForestClassifier(ForestBase, Classifier):
             with_replacement=with_replacement,
             verbose=verbose,
             make_discrete=make_discrete,
+            is_precomputed_minmax=is_precomputed_minmax,
         )

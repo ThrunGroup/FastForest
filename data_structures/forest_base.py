@@ -51,6 +51,7 @@ class ForestBase(ABC):
         boosting: bool = False,
         boosting_lr: float = None,
         make_discrete: bool = False,
+        is_precomputed_minmax: bool = False,
     ) -> None:
         self.data = data
         self.org_targets = labels
@@ -63,6 +64,7 @@ class ForestBase(ABC):
         self.trees = []
         self.n_estimators = n_estimators
         self.is_classification = is_classification
+        self.is_precomputed_minmax = is_precomputed_minmax
         self.make_discrete = make_discrete
         self.discrete_features = None
         if (bin_type == LINEAR) or (bin_type == IDENTITY):
@@ -141,8 +143,14 @@ class ForestBase(ABC):
             self.data = data
             self.org_targets = labels
             self.new_targets = labels
+
         if self.make_discrete:
             self.discrete_features: DefaultDict = data_to_discrete(self.data, n=10)
+
+        if self.is_precomputed_minmax:
+            max_data = data.max(axis=0)
+            min_data = data.min(axis=0)
+
         self.trees = []
 
         for i in range(self.n_estimators):

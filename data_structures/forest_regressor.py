@@ -34,6 +34,7 @@ class ForestRegressor(ForestBase, Regressor):
         boosting: bool = False,
         boosting_lr: float = None,
         make_discrete: bool = False,
+        is_precomputed_minmax: bool = False,
     ) -> None:
         super().__init__(
             data=data,
@@ -59,4 +60,5 @@ class ForestRegressor(ForestBase, Regressor):
             boosting=boosting,
             boosting_lr=boosting_lr,
             make_discrete=make_discrete,
+            is_precomputed_minmax=is_precomputed_minmax
         )
