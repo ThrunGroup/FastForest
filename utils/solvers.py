@@ -269,7 +269,7 @@ def solve_mab(
     is_classification: bool = True,
     impurity_measure: str = GINI,
     min_impurity_reduction: float = 0,
-    epsilon=0.00,
+    epsilon=0.01,
     with_replacement: bool = False,
     budget: int = None,
     verbose: bool = False,
