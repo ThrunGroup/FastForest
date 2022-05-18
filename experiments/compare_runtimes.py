@@ -648,71 +648,14 @@ def main():
     # GBRPR
 
     pp = pprint.PrettyPrinter(indent=2)
-
-    ############### Classification
-    mndata = MNIST("mnist/")
-
-    train_images, train_labels = mndata.load_training()
-    C_SUBSAMPLE_SIZE = 1000
-    train_images = np.array(train_images)[:C_SUBSAMPLE_SIZE]
-    train_labels = np.array(train_labels)[:C_SUBSAMPLE_SIZE]
-
-    test_images, test_labels = mndata.load_testing()
-    test_images = np.array(test_images)
-    test_labels = np.array(test_labels)
-
-    ## Random Forests
-    pp.pprint(
-        compare_runtimes(
-            compare="HRFC",
-            train_data=train_images,
-            train_targets=train_labels,
-            test_data=test_images,
-            test_targets=test_labels,
-            num_seeds=2,
-            predict=True,
-            run_theirs=True,
-            filename="HRFC_dict",
-        )
-    )
-
-    ## Extremely Random Forests
-    pp.pprint(
-        compare_runtimes(
-            compare="ERFC",
-            train_data=train_images,
-            train_targets=train_labels,
-            test_data=test_images,
-            test_targets=test_labels,
-            num_seeds=2,
-            predict=True,
-            run_theirs=True,
-            filename="ERFC_dict",
-        )
-    )
-
-    ## Random Patches
-    pp.pprint(
-        compare_runtimes(
-            compare="HRPC",
-            train_data=train_images,
-            train_targets=train_labels,
-            test_data=test_images,
-            test_targets=test_labels,
-            num_seeds=1,
-            predict=True,
-            run_theirs=True,
-            filename="HRPC_dict",
-        )
-    )
+    NUM_SEEDS = 5
 
     ############### Regression
     train_data, train_targets, test_data, test_targets = load_housing()
     # # Subsample the data because training on 20k points (the full housing dataset) takes too long for RFR
 
-    R_SUBSAMPLE_SIZE = 100
-    train_data_subsampled = train_data[:R_SUBSAMPLE_SIZE]
-    train_targets_subsampled = train_targets[:R_SUBSAMPLE_SIZE]
+    train_data_subsampled = train_data
+    train_targets_subsampled = train_targets
     print(len(train_data_subsampled), len(train_targets_subsampled))
 
     ## Random Forests
@@ -723,7 +666,7 @@ def main():
             train_targets=train_targets_subsampled,
             test_data=test_data,
             test_targets=test_targets,
-            num_seeds=2,
+            num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
             filename="HRFR_dict",
@@ -738,7 +681,7 @@ def main():
             train_targets=train_targets_subsampled,
             test_data=test_data,
             test_targets=test_targets,
-            num_seeds=2,
+            num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
             filename="GBHRFR_dict",
@@ -754,7 +697,7 @@ def main():
             train_targets=train_targets_subsampled,
             test_data=test_data,
             test_targets=test_targets,
-            num_seeds=2,
+            num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
             filename="ERFR_dict",
@@ -769,7 +712,7 @@ def main():
             train_targets=train_targets_subsampled,
             test_data=test_data,
             test_targets=test_targets,
-            num_seeds=2,
+            num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
             filename="GBERFR_dict",
@@ -785,7 +728,7 @@ def main():
             train_targets=train_targets_subsampled,
             test_data=test_data,
             test_targets=test_targets,
-            num_seeds=2,
+            num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
             filename="HRPR_dict",
@@ -800,11 +743,67 @@ def main():
             train_targets=train_targets_subsampled,
             test_data=test_data,
             test_targets=test_targets,
-            num_seeds=2,
+            num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
             filename="GBHRPR_dict",
             verbose=False,
+        )
+    )
+
+    ############### Classification
+    mndata = MNIST("mnist/")
+
+    train_images, train_labels = mndata.load_training()
+    train_images = np.array(train_images)
+    train_labels = np.array(train_labels)
+
+    test_images, test_labels = mndata.load_testing()
+    test_images = np.array(test_images)
+    test_labels = np.array(test_labels)
+
+    ## Random Forests
+    pp.pprint(
+        compare_runtimes(
+            compare="HRFC",
+            train_data=train_images,
+            train_targets=train_labels,
+            test_data=test_images,
+            test_targets=test_labels,
+            num_seeds=NUM_SEEDS,
+            predict=True,
+            run_theirs=True,
+            filename="HRFC_dict",
+        )
+    )
+
+    ## Extremely Random Forests
+    pp.pprint(
+        compare_runtimes(
+            compare="ERFC",
+            train_data=train_images,
+            train_targets=train_labels,
+            test_data=test_images,
+            test_targets=test_labels,
+            num_seeds=NUM_SEEDS,
+            predict=True,
+            run_theirs=True,
+            filename="ERFC_dict",
+        )
+    )
+
+    ## Random Patches
+    pp.pprint(
+        compare_runtimes(
+            compare="HRPC",
+            train_data=train_images,
+            train_targets=train_labels,
+            test_data=test_images,
+            test_targets=test_labels,
+            num_seeds=NUM_SEEDS,
+            predict=True,
+            run_theirs=True,
+            filename="HRPC_dict",
         )
     )
 
