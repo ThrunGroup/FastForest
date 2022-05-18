@@ -180,9 +180,7 @@ def compare_models(args):
         "time_diff": str(-(exact_time - our_time) / exact_time * 100) + "%",
         "score_diff": str(-(score_exact - score_our) / score_exact * 100) + "%",
         "num_queries_diff": str(
-            -(exact_model.num_queries - our_model.num_queries)
-            / exact_model.num_queries
-            * 100
+            -(exact_model.num_queries - our_model.num_queries) / exact_model.num_queries * 100
         )
         + "%",
     }
@@ -217,7 +215,7 @@ args
 if __name__ == "__main__":
     args1 = [
         "TreeClassifier",
-        100000,
+        20000,
         20,
         1 / 4,
         0,
@@ -232,7 +230,7 @@ if __name__ == "__main__":
     ]
     params_to_idx = dict(zip(params_list, range(13)))
     args1[params_to_idx["model_name"]] = "TreeRegressor"
-    args1[params_to_idx["data_size"]] = 200000
+    args1[params_to_idx["data_size"]] = 1000000
     args1[params_to_idx["n_features"]] = 50
     args1[params_to_idx["informative_ratio"]] = 0.06
     args1[params_to_idx["seed"]] = 1

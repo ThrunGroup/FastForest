@@ -4,6 +4,3 @@ time_diff,score_diff,num_queries_diff,model_name,data_size,n_features,informativ
 -44.37715181660714%,-0.2804612028669405%,-51.4150446758864%,TreeClassifier,20000,20,0.25,0,100,100,False,0.05,False,True,True,
 -88.86098835386245%,-0.0%,-99.85000000000001%,TreeRegressor,1000000,50,0.1,1,2,100,False,0.01,False,True,False,
 -94.2693412717333%,-0.0%,-95.0%,TreeClassifier,30000,50,0.1,1,2,100,False,0.01,False,True,True,
--87.0270649244944%,-0.0%,-99.85000000000001%,TreeRegressor,1000000,50,0.06,1,2,100,False,0.01,False,True,False,
--86.13423860032121%,-0.0%,-99.85000000000001%,TreeRegressor,1000000,50,0.06,1,2,100,False,0.01,False,True,False,
--82.18622772541904%,-0.0%,-99.25%,TreeRegressor,200000,50,0.06,1,2,100,False,0.01,False,True,False,
