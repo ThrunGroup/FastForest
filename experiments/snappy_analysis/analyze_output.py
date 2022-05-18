@@ -2,8 +2,9 @@ import numpy as np
 
 
 def main():
-    with open("../results_filtered.txt") as fin:
-        results = np.zeros((11, 10))
+    with open("../results_filtered.csv") as fin:
+        sizes = []
+        results = np.zeros((6, 20))
         size_idx = 0
         rc_idx = 0
         print(results)
@@ -14,12 +15,17 @@ def main():
             elif "Results for" in line:
                 size_idx += 1
                 rc_idx = 0
+                sizes.append(line.strip().split()[-2])
 
     if rc_idx != 9:
         print("Warning: last row has incomplete results")
 
     print(results)
+    print()
+    print(sizes)
+    print()
     print(np.mean(results, axis=1))
+    print()
     print(np.std(results, axis=1))
 
 
