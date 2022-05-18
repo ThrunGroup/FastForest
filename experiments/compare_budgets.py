@@ -102,29 +102,7 @@ from data_structures.wrappers.histogram_random_patches_regressor import (
 )
 
 
-def time_measured_fit(
-    model: Any,
-    compare: str = None,
-    ours_or_theirs: str = None,
-    seed: int = None,
-) -> float:
-    """
-    Returns wall clock time of training the model, in seconds.
-
-    Has a side effect: trains the model.
-    """
-    prof = cProfile.Profile()
-    prof.enable()
-    start = time.time()
-    model.fit()
-    end = time.time()
-    prof.disable()
-    stats = pstats.Stats(prof).strip_dirs().sort_stats("tottime")
-    stats.dump_stats(compare + "_" + ours_or_theirs + "_" + str(seed) + "_profile")
-    return end - start
-
-
-def compare_runtimes(
+def compare_budgets(
     compare: str = "HRFC",
     train_data: np.ndarray = None,
     train_targets: np.ndarray = None,
@@ -142,8 +120,6 @@ def compare_runtimes(
     # Runtimes
     our_train_times = []
     their_train_times = []
-    our_num_queries = []
-    their_num_queries = []
 
     # For accuracies
     our_train_accs = []
@@ -496,21 +472,10 @@ def compare_runtimes(
             "sklearn" not in their_model.__module__
         ), "Cannot use sklearn models for runtime comparisons"
 
-        our_runtime = time_measured_fit(
-            model=our_model, compare=compare, ours_or_theirs="ours", seed=seed
-        )
-        our_train_times.append(our_runtime)
-        our_num_queries.append(our_model.num_queries)
-        print("Ours fitted", our_runtime)
+        our_model.fit()
 
         if run_theirs:
-            their_runtime = time_measured_fit(
-                model=their_model, compare=compare, ours_or_theirs="theirs", seed=seed
-            )
-            their_train_times.append(their_runtime)
-            their_num_queries.append(their_model.num_queries)
-            print("Theirs fitted", their_runtime)
-            print()
+            their_model.fit()
 
         if compare in CLASSIFICATION_MODELS:
             is_classification = True
@@ -559,7 +524,6 @@ def compare_runtimes(
             our_test_accs.append(our_test_acc)
         if verbose:
             print("*" * 30)
-            print("(Ours) Runtime:", our_runtime)
             print("(Ours) Num queries:", our_model.num_queries)
 
         if run_theirs:
@@ -572,7 +536,6 @@ def compare_runtimes(
                 their_test_accs.append(their_test_acc)
             if verbose:
                 print("-" * 30)
-                print("(Theirs) Runtime:", their_runtime)
                 print("(Theirs) Num queries:", their_model.num_queries)
 
         print("/" * 30)
@@ -585,13 +548,6 @@ def compare_runtimes(
         our_avg_test = np.mean(our_test_accs)
         our_std_test = np.std(our_test_accs) / np.sqrt(num_seeds)
 
-    # For runtimes
-    our_avg_train_time = np.mean(our_train_times)
-    our_std_train_time = np.std(our_train_times) / np.sqrt(num_seeds)
-
-    our_avg_num_queries = np.mean(our_num_queries)
-    our_std_num_queries = np.std(our_num_queries) / np.sqrt(num_seeds)
-
     if run_theirs:
         their_avg_train = np.mean(their_train_accs)
         their_std_train = np.std(their_train_accs) / np.sqrt(num_seeds)
@@ -602,9 +558,6 @@ def compare_runtimes(
 
         their_avg_train_time = np.mean(their_train_times)
         their_std_train_time = np.std(their_train_times) / np.sqrt(num_seeds)
-
-        their_avg_num_queries = np.mean(their_num_queries)
-        their_std_num_queries = np.std(their_num_queries) / np.sqrt(num_seeds)
 
         # See if confidence intervals overlap
         overlap = np.abs(their_avg_test - our_avg_test) < their_std_test + our_std_test
@@ -626,15 +579,9 @@ def compare_runtimes(
         "our_train_times": our_train_times,
         "our_avg_train_time": our_avg_train_time,
         "our_std_train_time": our_std_train_time,
-        "our_num_queries": our_num_queries,
-        "our_avg_num_queries": our_avg_num_queries,
-        "our_std_num_queries": our_std_num_queries,
         "their_train_times": their_train_times if run_theirs else None,
         "their_avg_train_time": their_avg_train_time if run_theirs else None,
         "their_std_train_time": their_std_train_time if run_theirs else None,
-        "their_num_queries": their_num_queries if run_theirs else None,
-        "their_avg_num_queries": their_avg_num_queries if run_theirs else None,
-        "their_std_num_queries": their_std_num_queries if run_theirs else None,
     }
     with open(filename, "w+") as fout:
         fout.write(str(results))
