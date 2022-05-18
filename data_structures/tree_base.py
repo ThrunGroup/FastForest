@@ -67,7 +67,7 @@ class TreeBase(ABC):
         self.tree_global_feature_subsampling = tree_global_feature_subsampling
         self.discrete_features = (
             discrete_features
-            if len(discrete_features) > 0
+            if discrete_features is not None and len(discrete_features) > 0
             else data_to_discrete(data, n=10)
         )
 

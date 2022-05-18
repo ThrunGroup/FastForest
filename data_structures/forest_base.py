@@ -6,6 +6,7 @@ from utils.constants import (
     BUFFER,
     MAB,
     LINEAR,
+    DISCRETE,
     GINI,
     BEST,
     MAX_SEED,
@@ -52,6 +53,9 @@ class ForestBase(ABC):
         self.data = data
         self.org_targets = labels
         self.new_targets = labels
+
+        # this map is only used when bin_type is DISCRETE or "" (which means we choose bin_type per feature)
+        self.discrete_features = None
 
         # self.curr_data and self.curr_targets are the data, targets that are used to fit the current tree.
         # These attributes may be smaller than the original dataset size if self.bootstrap is true.
@@ -131,8 +135,10 @@ class ForestBase(ABC):
             self.org_targets = labels
             self.new_targets = labels
 
+        if self.bin_type == DISCRETE or self.bin_type == "":
+            self.discrete_features = data_to_discrete(self.data, n=10)
+
         self.trees = []
-        self.discrete_features: DefaultDict = data_to_discrete(self.data, n=10)
         for i in range(self.n_estimators):
             if self.remaining_budget is not None and self.remaining_budget <= 0:
                 break

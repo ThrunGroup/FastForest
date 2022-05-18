@@ -165,6 +165,7 @@ def make_histograms(
         if bin_type == DISCRETE:
             num_bins = D
             assert (
+                discrete_bins_dict is not None and
                 len(discrete_bins_dict[f_idx]) > 0
             ), "discrete_bins_dict[f_idx] is empty"
         elif bin_type == IDENTITY:
