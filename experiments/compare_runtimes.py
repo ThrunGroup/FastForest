@@ -128,8 +128,8 @@ def compare_runtimes(
             our_model = HRFC(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=1,
-                max_depth=1,
+                n_estimators=2,
+                max_depth=2,
                 min_samples_split=2,
                 min_impurity_decrease=0,
                 max_leaf_nodes=None,
@@ -139,6 +139,7 @@ def compare_runtimes(
                 solver=MAB,
                 random_state=seed,
                 verbose=False,
+                with_replacement=False,
             )
             their_model = HRFC(
                 data=train_data,

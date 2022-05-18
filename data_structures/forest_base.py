@@ -137,7 +137,7 @@ class ForestBase(ABC):
         self.discrete_features: DefaultDict = data_to_discrete(self.data, n=10)
 
         N = len(self.data)
-        self.permutation = np.random.shuffle(np.arange(N))
+        self.permutation = np.random.permutation(np.arange(N))
         self.sampling_idx = 0
 
         for i in range(self.n_estimators):
@@ -164,6 +164,9 @@ class ForestBase(ABC):
             # forest. For this reason, we need to generate a new sequence of random numbers to seed the trees.
             tree_random_state = np.random.randint(MAX_SEED)
 
+            import ipdb
+
+            ipdb.set_trace()
             if self.is_classification:
                 tree = TreeClassifier(
                     forest=self,

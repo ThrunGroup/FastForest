@@ -9,13 +9,9 @@ def main():
     train_images, train_labels = mndata.load_training()
 
     for C_SUBSAMPLE_SIZE in [
-        80000,
-        160000,
-        320000,
-        640000,
-        1280000,
+        200,
     ]:
-        for fitting_seed in range(100, 105):
+        for fitting_seed in range(100, 101):
             np.random.seed(fitting_seed)
             idcs = np.random.choice(60000, size=C_SUBSAMPLE_SIZE, replace=True)
             train_images_subsampled = np.array(train_images)[idcs]

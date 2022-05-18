@@ -227,7 +227,14 @@ def sample_targets(
         # We are using amortized, forest-global permutation for efficient sampling without replacement
         if permutation is not None:
             sample_size = M if batch_size >= M else batch_size
-            idcs = permutation[sampling_idx, sampling_idx + sample_size]
+
+            s_i = sampling_idx % N
+            si_ss = (sampling_idx + sample_size) % N
+
+            if s_i > si_ss:
+                idcs = np.hstack([permutation[s_i:], permutation[si_ss:]])
+            else:
+                idcs = permutation[s_i:si_ss]
         else:
             idcs = (
                 np.arange(M, dtype=np.int64)
@@ -283,6 +290,9 @@ def solve_mab(
     permutation: np.ndarray = None,
     sampling_idx: int = None,
 ) -> Tuple[int, float, float, int]:
+    import ipdb
+
+    ipdb.set_trace()
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
     that feature should be split at.
