@@ -1,0 +1,1189 @@
+
+
+
+Number of arms: 308
+Best reduction: -0.03702979335442114
+Round count: 199
+Ours fitted 1.3019518852233887
+(Ours) Train accuracy: 0.1946
+******************************
+(Ours) Runtime: 1.3019518852233887
+(Ours) Num queries: 50900
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.037860330051498026
+Round count: 194
+Ours fitted 1.2274770736694336
+(Ours) Train accuracy: 0.1958
+******************************
+(Ours) Runtime: 1.2274770736694336
+(Ours) Num queries: 47400
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.0350980549680171
+Round count: 200
+Ours fitted 1.4166829586029053
+(Ours) Train accuracy: 0.1823
+******************************
+(Ours) Runtime: 1.4166829586029053
+(Ours) Num queries: 66800
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03822165757388474
+Round count: 127
+Ours fitted 1.0342860221862793
+(Ours) Train accuracy: 0.1982
+******************************
+(Ours) Runtime: 1.0342860221862793
+(Ours) Num queries: 39100
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.0365411343114499
+Round count: 173
+Ours fitted 1.2719700336456299
+(Ours) Train accuracy: 0.1996
+******************************
+(Ours) Runtime: 1.2719700336456299
+(Ours) Num queries: 60000
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03541920240986962
+Round count: 151
+Ours fitted 1.0401699542999268
+(Ours) Train accuracy: 0.1983
+******************************
+(Ours) Runtime: 1.0401699542999268
+(Ours) Num queries: 43900
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.037442253796369895
+Round count: 107
+Ours fitted 0.9179840087890625
+(Ours) Train accuracy: 0.199
+******************************
+(Ours) Runtime: 0.9179840087890625
+(Ours) Num queries: 35200
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03921160895911446
+Round count: 141
+Ours fitted 0.8617732524871826
+(Ours) Train accuracy: 0.20585
+******************************
+(Ours) Runtime: 0.8617732524871826
+(Ours) Num queries: 31900
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.030717465996017435
+Round count: 69
+Ours fitted 0.6841621398925781
+(Ours) Train accuracy: 0.18845
+******************************
+(Ours) Runtime: 0.6841621398925781
+(Ours) Num queries: 20700
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.0339621904532974
+Round count: 106
+Ours fitted 0.8712577819824219
+(Ours) Train accuracy: 0.1973
+******************************
+(Ours) Runtime: 0.8712577819824219
+(Ours) Num queries: 33200
+//////////////////////////////
+{ 'our_avg_num_queries': 42910.0,
+  'our_avg_test': None,
+  'our_avg_train': 0.19594,
+  'our_avg_train_time': 1.0627715110778808,
+  'our_std_num_queries': 13154.957240523438,
+  'our_std_test': None,
+  'our_std_train': 0.006143769201394208,
+  'our_std_train_trime': 0.22272427951659415,
+  'overlap': None,
+  'their_avg_num_queries': None,
+  'their_avg_test': None,
+  'their_avg_train': None,
+  'their_avg_train_time': None,
+  'their_std_num_queries': None,
+  'their_std_test': None,
+  'their_std_train': None,
+  'their_std_train_time': None}
+Results for  20000  above
+
+
+
+Number of arms: 308
+Best reduction: -0.03868644409104971
+Round count: 166
+Ours fitted 1.2689971923828125
+(Ours) Train accuracy: 0.200925
+******************************
+(Ours) Runtime: 1.2689971923828125
+(Ours) Num queries: 27500
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.036443567492079554
+Round count: 149
+Ours fitted 1.3035969734191895
+(Ours) Train accuracy: 0.2086
+******************************
+(Ours) Runtime: 1.3035969734191895
+(Ours) Num queries: 26900
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03676004224514806
+Round count: 332
+Ours fitted 2.101383924484253
+(Ours) Train accuracy: 0.1954
+******************************
+(Ours) Runtime: 2.101383924484253
+(Ours) Num queries: 75700
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.033831822264143274
+Round count: 125
+Ours fitted 1.7550199031829834
+(Ours) Train accuracy: 0.1844
+******************************
+(Ours) Runtime: 1.7550199031829834
+(Ours) Num queries: 56600
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03074673009986273
+Round count: 392
+Ours fitted 2.226534843444824
+(Ours) Train accuracy: 0.206325
+******************************
+(Ours) Runtime: 2.226534843444824
+(Ours) Num queries: 86400
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.0354662830857313
+Round count: 351
+Ours fitted 2.186829090118408
+(Ours) Train accuracy: 0.205575
+******************************
+(Ours) Runtime: 2.186829090118408
+(Ours) Num queries: 83000
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03301195590981487
+Round count: 102
+Ours fitted 1.2718350887298584
+(Ours) Train accuracy: 0.194025
+******************************
+(Ours) Runtime: 1.2718350887298584
+(Ours) Num queries: 26200
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03233983550103636
+Round count: 185
+Ours fitted 1.2585771083831787
+(Ours) Train accuracy: 0.193
+******************************
+(Ours) Runtime: 1.2585771083831787
+(Ours) Num queries: 24600
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.031447292875055766
+Round count: 358
+Ours fitted 2.139251232147217
+(Ours) Train accuracy: 0.182675
+******************************
+(Ours) Runtime: 2.139251232147217
+(Ours) Num queries: 78000
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03770308128878197
+Round count: 139
+Ours fitted 1.2950782775878906
+(Ours) Train accuracy: 0.2033
+******************************
+(Ours) Runtime: 1.2950782775878906
+(Ours) Num queries: 25700
+//////////////////////////////
+{ 'our_avg_num_queries': 51060.0,
+  'our_avg_test': None,
+  'our_avg_train': 0.1974225,
+  'our_avg_train_time': 1.6807103633880616,
+  'our_std_num_queries': 25947.49313517589,
+  'our_std_test': None,
+  'our_std_train': 0.008600773584393442,
+  'our_std_train_trime': 0.4186452238456936,
+  'overlap': None,
+  'their_avg_num_queries': None,
+  'their_avg_test': None,
+  'their_avg_train': None,
+  'their_avg_train_time': None,
+  'their_std_num_queries': None,
+  'their_std_test': None,
+  'their_std_train': None,
+  'their_std_train_time': None}
+Results for  40000  above
+
+
+
+Number of arms: 308
+Best reduction: -0.030783145793941147
+Round count: 242
+Ours fitted 10.556504011154175
+(Ours) Train accuracy: 0.187476
+******************************
+(Ours) Runtime: 10.556504011154175
+(Ours) Num queries: 79100
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03636967054445206
+Round count: 302
+Ours fitted 10.558691024780273
+(Ours) Train accuracy: 0.201668
+******************************
+(Ours) Runtime: 10.558691024780273
+(Ours) Num queries: 69800
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.0393248651681094
+Round count: 2163
+Ours fitted 21.993699073791504
+(Ours) Train accuracy: 0.197412
+******************************
+(Ours) Runtime: 21.993699073791504
+(Ours) Num queries: 497800
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03955071921027009
+Round count: 252
+Ours fitted 9.54085397720337
+(Ours) Train accuracy: 0.205144
+******************************
+(Ours) Runtime: 9.54085397720337
+(Ours) Num queries: 44100
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03590902630612547
+Round count: 57
+Ours fitted 8.251109838485718
+(Ours) Train accuracy: 0.187632
+******************************
+(Ours) Runtime: 8.251109838485718
+(Ours) Num queries: 27100
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03279293231685676
+Round count: 233
+Ours fitted 9.613829135894775
+(Ours) Train accuracy: 0.17218
+******************************
+(Ours) Runtime: 9.613829135894775
+(Ours) Num queries: 57600
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03544008260616893
+Round count: 45
+Ours fitted 8.409936904907227
+(Ours) Train accuracy: 0.189272
+******************************
+(Ours) Runtime: 8.409936904907227
+(Ours) Num queries: 15300
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03713849783665846
+Round count: 753
+Ours fitted 13.342824935913086
+(Ours) Train accuracy: 0.201868
+******************************
+(Ours) Runtime: 13.342824935913086
+(Ours) Num queries: 190700
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03884568255844767
+Round count: 1933
+Ours fitted 16.983423948287964
+(Ours) Train accuracy: 0.19718
+******************************
+(Ours) Runtime: 16.983423948287964
+(Ours) Num queries: 204700
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.02884163816500218
+Round count: 2212
+Ours fitted 16.810939073562622
+(Ours) Train accuracy: 0.186816
+******************************
+(Ours) Runtime: 16.810939073562622
+(Ours) Num queries: 230400
+//////////////////////////////
+{ 'our_avg_num_queries': 141660.0,
+  'our_avg_test': None,
+  'our_avg_train': 0.19266480000000002,
+  'our_avg_train_time': 12.606181192398072,
+  'our_std_num_queries': 139943.5400438334,
+  'our_std_test': None,
+  'our_std_train': 0.0093915343666517,
+  'our_std_train_trime': 4.345426168738701,
+  'overlap': None,
+  'their_avg_num_queries': None,
+  'their_avg_test': None,
+  'their_avg_train': None,
+  'their_avg_train_time': None,
+  'their_std_num_queries': None,
+  'their_std_test': None,
+  'their_std_train': None,
+  'their_std_train_time': None}
+Results for  250000  above
+
+
+
+Number of arms: 308
+Best reduction: -0.033988263048738365
+Round count: 1291
+Ours fitted 26.287626028060913
+(Ours) Train accuracy: 0.18114
+******************************
+(Ours) Runtime: 26.287626028060913
+(Ours) Num queries: 323200
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.0351301102794227
+Round count: 91
+Ours fitted 14.316972255706787
+(Ours) Train accuracy: 0.19253
+******************************
+(Ours) Runtime: 14.316972255706787
+(Ours) Num queries: 20800
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.031816252148281765
+Round count: 3996
+Ours fitted 33.28824806213379
+(Ours) Train accuracy: 0.177705
+******************************
+(Ours) Runtime: 33.28824806213379
+(Ours) Num queries: 416400
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.038269524028304636
+Round count: 3993
+Ours fitted 35.262145042419434
+(Ours) Train accuracy: 0.2052275
+******************************
+(Ours) Runtime: 35.262145042419434
+(Ours) Num queries: 425800
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03712679145760556
+Round count: 421
+Ours fitted 17.88869309425354
+(Ours) Train accuracy: 0.1810475
+******************************
+(Ours) Runtime: 17.88869309425354
+(Ours) Num queries: 91200
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.035512899550672494
+Round count: 188
+Ours fitted 15.514307975769043
+(Ours) Train accuracy: 0.1991075
+******************************
+(Ours) Runtime: 15.514307975769043
+(Ours) Num queries: 46800
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.034751719041616
+Round count: 172
+Ours fitted 14.557154893875122
+(Ours) Train accuracy: 0.1927075
+******************************
+(Ours) Runtime: 14.557154893875122
+(Ours) Num queries: 44200
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.036526599214643074
+Round count: 802
+Ours fitted 21.510591983795166
+(Ours) Train accuracy: 0.196135
+******************************
+(Ours) Runtime: 21.510591983795166
+(Ours) Num queries: 200500
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03300079488146013
+Round count: 208
+Ours fitted 15.855986833572388
+(Ours) Train accuracy: 0.1917275
+******************************
+(Ours) Runtime: 15.855986833572388
+(Ours) Num queries: 77100
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.033166097303202635
+Round count: 3677
+Ours fitted 38.09181213378906
+(Ours) Train accuracy: 0.19205
+******************************
+(Ours) Runtime: 38.09181213378906
+(Ours) Num queries: 757500
+//////////////////////////////
+{ 'our_avg_num_queries': 240350.0,
+  'our_avg_test': None,
+  'our_avg_train': 0.19093775000000002,
+  'our_avg_train_time': 23.257353830337525,
+  'our_std_num_queries': 226785.46800886517,
+  'our_std_test': None,
+  'our_std_train': 0.008212185340242878,
+  'our_std_train_trime': 8.810278802017441,
+  'overlap': None,
+  'their_avg_num_queries': None,
+  'their_avg_test': None,
+  'their_avg_train': None,
+  'their_avg_train_time': None,
+  'their_std_num_queries': None,
+  'their_std_test': None,
+  'their_std_train': None,
+  'their_std_train_time': None}
+Results for  400000  above
+
+
+
+Number of arms: 308
+Best reduction: -0.03790558537980382
+Round count: 4461
+Ours fitted 43.11147212982178
+(Ours) Train accuracy: 0.2055511111111111
+******************************
+(Ours) Runtime: 43.11147212982178
+(Ours) Num queries: 463100
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.0333999618353209
+Round count: 261
+Ours fitted 18.942104816436768
+(Ours) Train accuracy: 0.1730288888888889
+******************************
+(Ours) Runtime: 18.942104816436768
+(Ours) Num queries: 79500
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.02529876281261101
+Round count: 2256
+Ours fitted 42.20708203315735
+(Ours) Train accuracy: 0.17227333333333333
+******************************
+(Ours) Runtime: 42.20708203315735
+(Ours) Num queries: 680100
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03489477424270793
+Round count: 1105
+Ours fitted 28.086884021759033
+(Ours) Train accuracy: 0.18429777777777778
+******************************
+(Ours) Runtime: 28.086884021759033
+(Ours) Num queries: 235100
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03940844050976533
+Round count: 3977
+Ours fitted 43.143584966659546
+(Ours) Train accuracy: 0.19822444444444445
+******************************
+(Ours) Runtime: 43.143584966659546
+(Ours) Num queries: 411900
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.037119962307317955
+Round count: 694
+Ours fitted 24.625563859939575
+(Ours) Train accuracy: 0.18707555555555555
+******************************
+(Ours) Runtime: 24.625563859939575
+(Ours) Num queries: 185800
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.036685114088969906
+Round count: 717
+Ours fitted 24.210563898086548
+(Ours) Train accuracy: 0.19633555555555557
+******************************
+(Ours) Runtime: 24.210563898086548
+(Ours) Num queries: 198500
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.037625751058723345
+Round count: 549
+Ours fitted 20.966472864151
+(Ours) Train accuracy: 0.18670444444444445
+******************************
+(Ours) Runtime: 20.966472864151
+(Ours) Num queries: 88100
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.036984764983077456
+Round count: 562
+Ours fitted 21.642938137054443
+(Ours) Train accuracy: 0.18633555555555556
+******************************
+(Ours) Runtime: 21.642938137054443
+(Ours) Num queries: 76300
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.026980026774901855
+Round count: 643
+Ours fitted 22.60011386871338
+(Ours) Train accuracy: 0.19005111111111112
+******************************
+(Ours) Runtime: 22.60011386871338
+(Ours) Num queries: 123000
+//////////////////////////////
+{ 'our_avg_num_queries': 254140.0,
+  'our_avg_test': None,
+  'our_avg_train': 0.18798777777777778,
+  'our_avg_train_time': 28.953678059577943,
+  'our_std_num_queries': 191053.99341547405,
+  'our_std_test': None,
+  'our_std_train': 0.009883015296862828,
+  'our_std_train_trime': 9.366280403718783,
+  'overlap': None,
+  'their_avg_num_queries': None,
+  'their_avg_test': None,
+  'their_avg_train': None,
+  'their_avg_train_time': None,
+  'their_std_num_queries': None,
+  'their_std_test': None,
+  'their_std_train': None,
+  'their_std_train_time': None}
+Results for  450000  above
+
+
+
+Number of arms: 308
+Best reduction: -0.03758164661913865
+Round count: 182
+Ours fitted 18.58547282218933
+(Ours) Train accuracy: 0.19793
+******************************
+(Ours) Runtime: 18.58547282218933
+(Ours) Num queries: 39400
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.036444937532094546
+Round count: 1149
+Ours fitted 32.1713080406189
+(Ours) Train accuracy: 0.18253
+******************************
+(Ours) Runtime: 32.1713080406189
+(Ours) Num queries: 263700
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03622984923072192
+Round count: 297
+Ours fitted 20.45744276046753
+(Ours) Train accuracy: 0.207432
+******************************
+(Ours) Runtime: 20.45744276046753
+(Ours) Num queries: 69400
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.036854207213663615
+Round count: 3967
+Ours fitted 50.92095589637756
+(Ours) Train accuracy: 0.20135
+******************************
+(Ours) Runtime: 50.92095589637756
+(Ours) Num queries: 805500
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03619679964980049
+Round count: 170
+Ours fitted 19.2932550907135
+(Ours) Train accuracy: 0.19529
+******************************
+(Ours) Runtime: 19.2932550907135
+(Ours) Num queries: 31900
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03394515456914893
+Round count: 479
+Ours fitted 23.03168511390686
+(Ours) Train accuracy: 0.189274
+******************************
+(Ours) Runtime: 23.03168511390686
+(Ours) Num queries: 155900
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.029627084681449478
+Round count: 2791
+Ours fitted 46.29699468612671
+(Ours) Train accuracy: 0.194968
+******************************
+(Ours) Runtime: 46.29699468612671
+(Ours) Num queries: 627500
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03490472744286277
+Round count: 347
+Ours fitted 21.848608016967773
+(Ours) Train accuracy: 0.1943
+******************************
+(Ours) Runtime: 21.848608016967773
+(Ours) Num queries: 58900
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03514719998635396
+Round count: 486
+Ours fitted 22.62132978439331
+(Ours) Train accuracy: 0.183508
+******************************
+(Ours) Runtime: 22.62132978439331
+(Ours) Num queries: 94400
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.037763905661544084
+Round count: 296
+Ours fitted 20.95516276359558
+(Ours) Train accuracy: 0.177748
+******************************
+(Ours) Runtime: 20.95516276359558
+(Ours) Num queries: 70800
+//////////////////////////////
+{ 'our_avg_num_queries': 221740.0,
+  'our_avg_test': None,
+  'our_avg_train': 0.19243300000000002,
+  'our_avg_train_time': 27.618221497535707,
+  'our_std_num_queries': 258751.2828953704,
+  'our_std_test': None,
+  'our_std_train': 0.008695560947977998,
+  'our_std_train_trime': 11.128822920636512,
+  'overlap': None,
+  'their_avg_num_queries': None,
+  'their_avg_test': None,
+  'their_avg_train': None,
+  'their_avg_train_time': None,
+  'their_std_num_queries': None,
+  'their_std_test': None,
+  'their_std_train': None,
+  'their_std_train_time': None}
+Results for  500000  above
+
+
+
+Number of arms: 308
+Best reduction: -0.03681002390541921
+Round count: 1019
+Ours fitted 34.638919830322266
+(Ours) Train accuracy: 0.19560727272727274
+******************************
+(Ours) Runtime: 34.638919830322266
+(Ours) Num queries: 316300
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.02940075536561859
+Round count: 505
+Ours fitted 25.86081314086914
+(Ours) Train accuracy: 0.18794363636363637
+******************************
+(Ours) Runtime: 25.86081314086914
+(Ours) Num queries: 115300
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03515863648906348
+Round count: 417
+Ours fitted 23.84259819984436
+(Ours) Train accuracy: 0.20743636363636364
+******************************
+(Ours) Runtime: 23.84259819984436
+(Ours) Num queries: 59100
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03706939483834426
+Round count: 316
+Ours fitted 22.97157907485962
+(Ours) Train accuracy: 0.19941272727272727
+******************************
+(Ours) Runtime: 22.97157907485962
+(Ours) Num queries: 43600
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03666080313609976
+Round count: 372
+Ours fitted 24.042996883392334
+(Ours) Train accuracy: 0.1979090909090909
+******************************
+(Ours) Runtime: 24.042996883392334
+(Ours) Num queries: 77800
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03582342055362031
+Round count: 69
+Ours fitted 19.68309998512268
+(Ours) Train accuracy: 0.1944309090909091
+******************************
+(Ours) Runtime: 19.68309998512268
+(Ours) Num queries: 19400
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03629443054798542
+Round count: 788
+Ours fitted 31.295093059539795
+(Ours) Train accuracy: 0.20179454545454545
+******************************
+(Ours) Runtime: 31.295093059539795
+(Ours) Num queries: 293900
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03933491909569231
+Round count: 4853
+Ours fitted 56.88918399810791
+(Ours) Train accuracy: 0.19796181818181818
+******************************
+(Ours) Runtime: 56.88918399810791
+(Ours) Num queries: 573400
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03152901766285188
+Round count: 1153
+Ours fitted 34.872308015823364
+(Ours) Train accuracy: 0.17747636363636363
+******************************
+(Ours) Runtime: 34.872308015823364
+(Ours) Num queries: 286300
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03341680856259466
+Round count: 151
+Ours fitted 20.681626796722412
+(Ours) Train accuracy: 0.1923
+******************************
+(Ours) Runtime: 20.681626796722412
+(Ours) Num queries: 22300
+//////////////////////////////
+{ 'our_avg_num_queries': 180740.0,
+  'our_avg_test': None,
+  'our_avg_train': 0.19522727272727272,
+  'our_avg_train_time': 29.477821898460387,
+  'our_std_num_queries': 172082.25475045358,
+  'our_std_test': None,
+  'our_std_train': 0.007758044483945427,
+  'our_std_train_trime': 10.490182561333397,
+  'overlap': None,
+  'their_avg_num_queries': None,
+  'their_avg_test': None,
+  'their_avg_train': None,
+  'their_avg_train_time': None,
+  'their_std_num_queries': None,
+  'their_std_test': None,
+  'their_std_train': None,
+  'their_std_train_time': None}
+Results for  550000  above
+
+
+
+Number of arms: 308
+Best reduction: -0.03215634261751521
+Round count: 108
+Ours fitted 23.49433422088623
+(Ours) Train accuracy: 0.19641833333333333
+******************************
+(Ours) Runtime: 23.49433422088623
+(Ours) Num queries: 37900
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.034084601417178506
+Round count: 1109
+Ours fitted 35.899046182632446
+(Ours) Train accuracy: 0.17965666666666666
+******************************
+(Ours) Runtime: 35.899046182632446
+(Ours) Num queries: 149500
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.032297031026533696
+Round count: 189
+Ours fitted 22.96743106842041
+(Ours) Train accuracy: 0.193855
+******************************
+(Ours) Runtime: 22.96743106842041
+(Ours) Num queries: 69900
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.036144564878428986
+Round count: 855
+Ours fitted 33.416661977767944
+(Ours) Train accuracy: 0.183695
+******************************
+(Ours) Runtime: 33.416661977767944
+(Ours) Num queries: 176100
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.037233192618956856
+Round count: 3408
+Ours fitted 65.28052830696106
+(Ours) Train accuracy: 0.197915
+******************************
+(Ours) Runtime: 65.28052830696106
+(Ours) Num queries: 757300
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.036187561311081806
+Round count: 760
+Ours fitted 30.77776789665222
+(Ours) Train accuracy: 0.20658666666666667
+******************************
+(Ours) Runtime: 30.77776789665222
+(Ours) Num queries: 90800
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03704369424768894
+Round count: 190
+Ours fitted 23.708570957183838
+(Ours) Train accuracy: 0.20167333333333334
+******************************
+(Ours) Runtime: 23.708570957183838
+(Ours) Num queries: 37800
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03823529981278073
+Round count: 6000
+Ours fitted 67.98189520835876
+(Ours) Train accuracy: 0.20596333333333333
+******************************
+(Ours) Runtime: 67.98189520835876
+(Ours) Num queries: 625600
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.033184388720137514
+Round count: 230
+Ours fitted 23.80076313018799
+(Ours) Train accuracy: 0.172015
+******************************
+(Ours) Runtime: 23.80076313018799
+(Ours) Num queries: 51200
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.028676357201684377
+Round count: 787
+Ours fitted 32.57165193557739
+(Ours) Train accuracy: 0.188685
+******************************
+(Ours) Runtime: 32.57165193557739
+(Ours) Num queries: 165900
+//////////////////////////////
+{ 'our_avg_num_queries': 216200.0,
+  'our_avg_test': None,
+  'our_avg_train': 0.19264633333333334,
+  'our_avg_train_time': 35.98986508846283,
+  'our_std_num_queries': 244326.80164075329,
+  'our_std_test': None,
+  'our_std_train': 0.0108940887844943,
+  'our_std_train_trime': 15.975103051770665,
+  'overlap': None,
+  'their_avg_num_queries': None,
+  'their_avg_test': None,
+  'their_avg_train': None,
+  'their_avg_train_time': None,
+  'their_std_num_queries': None,
+  'their_std_test': None,
+  'their_std_train': None,
+  'their_std_train_time': None}
+Results for  600000  above
+
+
+
+Number of arms: 308
+Best reduction: -0.03079686738584453
+Round count: 2112
+Ours fitted 61.74039912223816
+(Ours) Train accuracy: 0.18631857142857142
+******************************
+(Ours) Runtime: 61.74039912223816
+(Ours) Num queries: 695700
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03938304320208197
+Round count: 440
+Ours fitted 31.953350067138672
+(Ours) Train accuracy: 0.19345142857142858
+******************************
+(Ours) Runtime: 31.953350067138672
+(Ours) Num queries: 70200
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03666262300960399
+Round count: 190
+Ours fitted 26.359965085983276
+(Ours) Train accuracy: 0.19577857142857144
+******************************
+(Ours) Runtime: 26.359965085983276
+(Ours) Num queries: 44900
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.0346453817231388
+Round count: 4595
+Ours fitted 78.97795915603638
+(Ours) Train accuracy: 0.18227857142857143
+******************************
+(Ours) Runtime: 78.97795915603638
+(Ours) Num queries: 471900
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03659671094295891
+Round count: 1313
+Ours fitted 45.494511127471924
+(Ours) Train accuracy: 0.1995957142857143
+******************************
+(Ours) Runtime: 45.494511127471924
+(Ours) Num queries: 155400
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.02982847977501546
+Round count: 6987
+Ours fitted 93.53640508651733
+(Ours) Train accuracy: 0.1824842857142857
+******************************
+(Ours) Runtime: 93.53640508651733
+(Ours) Num queries: 1184500
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.035128249643432974
+Round count: 2773
+Ours fitted 66.0672779083252
+(Ours) Train accuracy: 0.20661
+******************************
+(Ours) Runtime: 66.0672779083252
+(Ours) Num queries: 585100
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03681323390943103
+Round count: 5402
+Ours fitted 89.14112520217896
+(Ours) Train accuracy: 0.20153
+******************************
+(Ours) Runtime: 89.14112520217896
+(Ours) Num queries: 1087300
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03232385594781062
+Round count: 5096
+Ours fitted 81.23455214500427
+(Ours) Train accuracy: 0.17850857142857143
+******************************
+(Ours) Runtime: 81.23455214500427
+(Ours) Num queries: 536000
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03646927063313665
+Round count: 775
+Ours fitted 36.79236674308777
+(Ours) Train accuracy: 0.19800285714285715
+******************************
+(Ours) Runtime: 36.79236674308777
+(Ours) Num queries: 177400
+//////////////////////////////
+{ 'our_avg_num_queries': 500840.0,
+  'our_avg_test': None,
+  'our_avg_train': 0.19245585714285712,
+  'our_avg_train_time': 61.12979116439819,
+  'our_std_num_queries': 384154.2091400275,
+  'our_std_test': None,
+  'our_std_train': 0.009009220978123083,
+  'our_std_train_trime': 23.40792883312035,
+  'overlap': None,
+  'their_avg_num_queries': None,
+  'their_avg_test': None,
+  'their_avg_train': None,
+  'their_avg_train_time': None,
+  'their_std_num_queries': None,
+  'their_std_test': None,
+  'their_std_train': None,
+  'their_std_train_time': None}
+Results for  700000  above
+
+
+
+Number of arms: 308
+Best reduction: -0.03504526634603877
+Round count: 565
+Ours fitted 39.219637870788574
+(Ours) Train accuracy: 0.18293
+******************************
+(Ours) Runtime: 39.219637870788574
+(Ours) Num queries: 123900
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.030962773321323356
+Round count: 1147
+Ours fitted 48.34777593612671
+(Ours) Train accuracy: 0.19424
+******************************
+(Ours) Runtime: 48.34777593612671
+(Ours) Num queries: 136900
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.035629499499161055
+Round count: 1839
+Ours fitted 60.024187088012695
+(Ours) Train accuracy: 0.1992975
+******************************
+(Ours) Runtime: 60.024187088012695
+(Ours) Num queries: 376800
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03572587892351742
+Round count: 2470
+Ours fitted 69.51985383033752
+(Ours) Train accuracy: 0.20686
+******************************
+(Ours) Runtime: 69.51985383033752
+(Ours) Num queries: 502200
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.034801533082673086
+Round count: 728
+Ours fitted 42.512696743011475
+(Ours) Train accuracy: 0.18477
+******************************
+(Ours) Runtime: 42.512696743011475
+(Ours) Num queries: 122300
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03523385476317065
+Round count: 3929
+Ours fitted 87.82132005691528
+(Ours) Train accuracy: 0.19870625
+******************************
+(Ours) Runtime: 87.82132005691528
+(Ours) Num queries: 803700
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.038097404349410446
+Round count: 329
+Ours fitted 32.66991996765137
+(Ours) Train accuracy: 0.2034525
+******************************
+(Ours) Runtime: 32.66991996765137
+(Ours) Num queries: 43100
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03558752453390701
+Round count: 5443
+Ours fitted 102.19984817504883
+(Ours) Train accuracy: 0.18303125
+******************************
+(Ours) Runtime: 102.19984817504883
+(Ours) Num queries: 1151300
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.032891192795567514
+Round count: 240
+Ours fitted 33.30441331863403
+(Ours) Train accuracy: 0.192325
+******************************
+(Ours) Runtime: 33.30441331863403
+(Ours) Num queries: 77500
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.02883698245099986
+Round count: 2417
+Ours fitted 72.09603810310364
+(Ours) Train accuracy: 0.18872
+******************************
+(Ours) Runtime: 72.09603810310364
+(Ours) Num queries: 697700
+//////////////////////////////
+{ 'our_avg_num_queries': 403540.0,
+  'our_avg_test': None,
+  'our_avg_train': 0.19343325,
+  'our_avg_train_time': 58.771569108963014,
+  'our_std_num_queries': 357891.3807288463,
+  'our_std_test': None,
+  'our_std_train': 0.008127253518255719,
+  'our_std_train_trime': 22.604636968592445,
+  'overlap': None,
+  'their_avg_num_queries': None,
+  'their_avg_test': None,
+  'their_avg_train': None,
+  'their_avg_train_time': None,
+  'their_std_num_queries': None,
+  'their_std_test': None,
+  'their_std_train': None,
+  'their_std_train_time': None}
+Results for  800000  above
+
+
+
+Number of arms: 308
+Best reduction: -0.03834021822340783
+Round count: 8994
+Ours fitted 134.9943070411682
+(Ours) Train accuracy: 0.20649444444444445
+******************************
+(Ours) Runtime: 134.9943070411682
+(Ours) Num queries: 915900
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03662133639668175
+Round count: 482
+Ours fitted 43.22225308418274
+(Ours) Train accuracy: 0.18329555555555554
+******************************
+(Ours) Runtime: 43.22225308418274
+(Ours) Num queries: 148500
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03512706734427107
+Round count: 2532
+Ours fitted 88.40394687652588
+(Ours) Train accuracy: 0.18294222222222223
+******************************
+(Ours) Runtime: 88.40394687652588
+(Ours) Num queries: 510200
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03815011177983929
+Round count: 242
+Ours fitted 36.9577260017395
+(Ours) Train accuracy: 0.20357666666666666
+******************************
+(Ours) Runtime: 36.9577260017395
+(Ours) Num queries: 71200
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.034461976384712045
+Round count: 127
+Ours fitted 33.86890769004822
+(Ours) Train accuracy: 0.18074888888888888
+******************************
+(Ours) Runtime: 33.86890769004822
+(Ours) Num queries: 30700
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03776425089832958
+Round count: 739
+Ours fitted 45.48622417449951
+(Ours) Train accuracy: 0.20355222222222222
+******************************
+(Ours) Runtime: 45.48622417449951
+(Ours) Num queries: 99300
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.029837572324835526
+Round count: 258
+Ours fitted 36.90716814994812
+(Ours) Train accuracy: 0.18534
+******************************
+(Ours) Runtime: 36.90716814994812
+(Ours) Num queries: 48500
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.03844715653159325
+Round count: 8660
+Ours fitted 144.8996160030365
+(Ours) Train accuracy: 0.20643555555555557
+******************************
+(Ours) Runtime: 144.8996160030365
+(Ours) Num queries: 1163500
+//////////////////////////////
+Number of arms: 308
+Best reduction: -0.035439539607563963
+Round count: 581
+Ours fitted 44.46652293205261
