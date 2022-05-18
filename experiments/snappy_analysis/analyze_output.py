@@ -4,7 +4,7 @@ import numpy as np
 def main():
     with open("../results_filtered.csv") as fin:
         sizes = []
-        results = np.zeros((12, 20))
+        results = np.zeros((14, 20))
         size_idx = 0
         rc_idx = 0
         print(results)
