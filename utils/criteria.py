@@ -102,7 +102,7 @@ def get_variance(
     :return: the variance of the node, as well as its estimated variance if ret_var
     """
     raise NotImplementedError("Not implemented until we do regression trees")
-    n = np.sum(counts, dtype=np.int64)
+    n = np.sum(counts)
     if n == 0:
         if ret_var:
             return 0, 0
