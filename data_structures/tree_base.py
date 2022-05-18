@@ -14,6 +14,7 @@ from utils.utils import (
 )
 from utils.constants import (
     MAB,
+    EXACT,
     LINEAR,
     IDENTITY,
     BEST,
@@ -243,11 +244,17 @@ class TreeBase(ABC):
                     # num_queries for the leaf should be updated only if we're not caching
                     # Need to get this before call to .calculate_best_split() below
                     split_already_computed = leaf.best_reduction_computed
-                    if self.remaining_budget is None or self.remaining_budget > 0:
+                    if self.remaining_budget is None:
                         # Runs solve_mab if not previously computed, which incurs cost!
                         reduction = leaf.calculate_best_split(self.remaining_budget)
                     else:
-                        break
+                        if self.solver == EXACT and self.remaining_budget < len(leaf.labels) * len(leaf.data[0, :]):
+                            break
+                        elif self.remaining_budget > 0:
+                            reduction = leaf.calculate_best_split(self.remaining_budget)
+                        else:
+                            break
+                            
                     # don't add queries if best split is already computed
                     # add number of queries we made if the best split is NOT already computed
                     if not split_already_computed:
