@@ -174,7 +174,7 @@ def run_stability_baseline_regression(
     num_trees_per_feature=20,
     feature_subsampling="SQRT",
     epsilon=0.00,
-    best_k_feature=2,
+    best_k_feature=5,
     budget=FOREST_UNIT_BUDGET_REGRESSION,
 ) -> None:
     mab_sim_array = []

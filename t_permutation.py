@@ -99,7 +99,7 @@ def test_stability_with_budget_regression(
     num_trees_per_feature = 20,
     feature_subsampling = "SQRT",
     epsilon = 0.00,
-    best_k_features = 2,
+    best_k_features = 5,
     budget = FOREST_UNIT_BUDGET_REGRESSION,
 ) -> None:
     np.random.seed(seed)
@@ -144,7 +144,6 @@ def test_stability_with_budget_regression(
     else:
         print("EXACT is more stable :((")
 
-    append_dict_as_row(log_filename, log_dict, log_dict.keys())
 
 
 def run_stability_baseline_digits(
@@ -153,7 +152,7 @@ def run_stability_baseline_digits(
     max_depth: int = 3,
     num_forests: int = 5,
     num_trees_per_forest: int = 20,
-    best_k_feature: int = 10,
+    best_k_feature: int = 15,
 ) -> None:
     mab_sim_array = []
     exact_sim_array = []
@@ -269,6 +268,6 @@ def run_stability_baseline_diabetes(
 
 if __name__ == "__main__":
     #test_stability_with_budget_digit(0)
-    #test_stability_with_budget_regression(0)
-    run_stability_baseline_digits(0)
+    test_stability_with_budget_regression(0)
+    #run_stability_baseline_digits(0)
     #run_stability_baseline_diabetes(0)
