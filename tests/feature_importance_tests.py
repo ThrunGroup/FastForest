@@ -110,7 +110,7 @@ def run_stability_baseline_digits(
     num_trials: int = 10,
     max_depth: int = 3,
     num_forests: int = 5,
-    num_trees_per_feature: int = 20,
+    num_trees_per_forest: int = 20,
     best_k_feature: int = 10,
 ) -> None:
     mab_sim_array = []
@@ -128,7 +128,7 @@ def run_stability_baseline_digits(
             labels=labels,
             max_depth=max_depth,
             num_forests=num_forests,
-            num_trees_per_forest=num_trees_per_feature,
+            num_trees_per_forest=num_trees_per_forest,
             budget_per_forest=FOREST_UNIT_BUDGET_DIGIT,
             solver=EXACT,
         )
@@ -140,7 +140,7 @@ def run_stability_baseline_digits(
             labels=labels,
             max_depth=max_depth,
             num_forests=num_forests,
-            num_trees_per_forest=num_trees_per_feature,
+            num_trees_per_forest=num_trees_per_forest,
             budget_per_forest=FOREST_UNIT_BUDGET_DIGIT,
             solver=MAB,
         )
@@ -158,7 +158,6 @@ def run_stability_baseline_digits(
     mab_CI = [m_avg - m_std, m_avg + m_std]
 
     # print results
-    print("exact, mab avgs: ", (e_avg, m_avg))
     print("exact CIs: ", exact_CI)
     print("mab CIs: ", mab_CI)
     assert (
@@ -229,8 +228,8 @@ def run_stability_baseline_regression(
     m_std = np.std(mab_sim_array) / math.sqrt(num_trials)
     mab_CI = [m_avg - m_std, m_avg + m_std]
 
-    print("exact, mab avgs: ", (e_avg, m_avg))
-    print("exact CIs: ", exact_CI)
+    print("exact and mab avg: ", (e_avg, m_avg))
+    print("exact  CI: ", exact_CI)
     print("mab CIs: ", mab_CI)
 
     assert (

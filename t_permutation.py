@@ -154,9 +154,6 @@ def run_stability_baseline_digits(
     num_forests: int = 5,
     num_trees_per_forest: int = 20,
     best_k_feature: int = 10,
-    max_leaf_nodes = None,
-    feature_subsampling = None,
-    epsilon = 0.0
 ) -> None:
     mab_sim_array = []
     exact_sim_array = []
