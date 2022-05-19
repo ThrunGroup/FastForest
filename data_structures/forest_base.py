@@ -212,6 +212,8 @@ class ForestBase(ABC):
             tree.fit()
             if tree.num_queries > 0:
                 self.trees.append(tree)
+            else:
+                break
 
             if self.boosting:
                 # TODO: currently uses O(n) computation
