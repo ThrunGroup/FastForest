@@ -55,6 +55,7 @@ class ForestBase(ABC):
         use_logarithmic_split: bool = False,
         use_dynamic_epsilon: bool = False,
         epsilon: float = 0,
+        oob_score: bool = False,
     ) -> None:
         self.data = data
         self.org_targets = labels
@@ -110,6 +111,8 @@ class ForestBase(ABC):
         self.use_logarithmic_split = use_logarithmic_split
         self.use_dynamic_epsilon = use_dynamic_epsilon
         self.epsilon = epsilon
+        self.oob_score = oob_score
+        assert oob_score is bootstrap, "out of bag score can be used only when bootstrapping"
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
@@ -117,12 +120,21 @@ class ForestBase(ABC):
         self.min_samples_leaf = 1
         self.min_weight_fraction_leaf = 0.0
         self.max_features = None
-        self.oob_score = False
         self.n_jobs = None
         self.warm_start = False
         self.class_weight = None
         self.ccp_alpha = 0.0
         self.max_samples = None
+
+    @staticmethod
+    def get_out_of_bag(bootstrap_idcs, data_size):
+        """
+        Get indices of out of bag samples given bootstrap indices and size of data.
+        """
+        idcs = np.arange(data_size)
+        intersect = np.intersect1d(bootstrap_idcs, idcs)
+        idcs[intersect] = -1
+        return idcs[idcs != -1]
 
     @staticmethod
     def check_both_or_neither(
@@ -159,6 +171,10 @@ class ForestBase(ABC):
             min_data = self.data.min(axis=0)
             self.minmax = [min_data, max_data]
 
+        if self.oob_score:
+            # self.oob_list[i] contains ith tree out of bag samples indices
+            self.oob_list = []
+
         self.trees = []
 
         for i in range(self.n_estimators):
@@ -177,6 +193,8 @@ class ForestBase(ABC):
                 idcs = self.rng.choice(N, size=N, replace=True)
                 self.curr_data = self.data[idcs]
                 self.curr_targets = self.curr_targets[idcs]
+                if self.oob_score:
+                    self.oob_list.append(self.get_out_of_bag(idcs, N))
             else:
                 self.curr_data = self.data
 
@@ -286,3 +304,41 @@ class ForestBase(ABC):
                 for tree_idx, tree in enumerate(self.trees):
                     agg_pred[tree_idx] = tree.predict(datapoint)
                 return float(agg_pred.mean())
+
+    def get_oob_score(self):
+        """
+        Get out of bag score(accuracy/mse) of Forest algorithm.
+        """
+        if self.is_classification and len(self.classes) > 2:
+            raise NotImplementedError(
+                "Not implemented get_oob_score for multi class setting"
+            )
+        # (i,0) element contains the sum of prediction of ith bag sample on out of bag trees and (i, 1) element contains
+        # the number of trees that ith sample is out of bag.
+        oob_score_array = np.zeros((len(self.org_targets), 2))
+
+        for i in range(len(self.trees)):
+            tree = self.trees[i]
+            oob_idcs = self.oob_list[i]
+            if self.is_classification:
+                oob_score_array[oob_idcs, 0] += tree.predict_batch(self.data[oob_idcs])[1][:, 1]
+            else:
+                oob_score_array[oob_idcs, 0] += tree.predict_batch(self.data[oob_idcs])
+            oob_score_array[oob_idcs, 1] += 1
+
+        # filter samples that isn't out of bag from any trees
+        true_oob_idcs = np.where(oob_score_array[:, 1] != 0)[0]
+        true_labels = self.org_targets[true_oob_idcs]
+        oob_score_array = oob_score_array[true_oob_idcs, :]
+        oob_prediction = (
+            oob_score_array[:, 0] / oob_score_array[:, 1]
+        )  # Average the prediction
+        if self.is_classification:
+            oob_prediction[oob_prediction > 0.5] = 1  # majority vote system
+            oob_prediction[oob_prediction <= 0.5] = 0 # majority vote system
+            error = np.sum(true_labels == oob_prediction) / len(true_labels)
+        else:
+            error = np.sum(np.square(true_labels - oob_prediction)) / len(true_labels)
+        return error
+
+

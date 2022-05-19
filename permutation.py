@@ -28,7 +28,7 @@ class PermutationImportance:
         stability_metric: str = JACCARD,
         budget_per_forest: int = None,
     ):
-        assert(num_forests > 1, "we need at least two forests")
+        assert num_forests > 1, "we need at least two forests"
         self.data = data
         self.labels = labels
         self.max_depth = max_depth
