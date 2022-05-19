@@ -33,7 +33,10 @@ def test_contrived_dataset() -> None:
         shuffle=False,
     )
     PI = PermutationImportance(
-        data=X, labels=Y, num_forests=10, num_trees_per_forest=10,
+        data=X,
+        labels=Y,
+        num_forests=10,
+        num_trees_per_forest=10,
     )
     results = PI.get_importance_array()
     print("importance array", results)
@@ -49,6 +52,7 @@ def test_stability_with_budget(seed: int = 0) -> None:
     data, labels = make_regression(100000, n_features=30, n_informative=3)
     num_forests = 5
     num_trees_per_feature = 20
+    best_k_features = 10
     best_k_features = 2
     max_depth = 5
     max_leaf_nodes = 24
@@ -62,8 +66,10 @@ def test_stability_with_budget(seed: int = 0) -> None:
         max_depth=max_depth,
         num_forests=num_forests,
         num_trees_per_forest=num_trees_per_feature,
+        budget_per_forest=FOREST_UNIT_BUDGET_DIGIT,
         budget_per_forest=budget,
         solver=EXACT,
+        #is_classification=False,
         is_classification=False,
         feature_subsampling=feature_subsampling,
         max_leaf_nodes=max_leaf_nodes,
