@@ -45,16 +45,16 @@ def test_stability_with_budget(seed: int = 0) -> None:
     # digits = sklearn.datasets.load_digits()
     # data, labels = digits.data, digits.target
     diabetes = sklearn.datasets.load_diabetes()
-    data, labels = diabetes.data, diabetes.target
-    data, labels = make_regression(10000, n_features=30, n_informative=10)
+    # data, labels = diabetes.data, diabetes.target
+    data, labels = make_regression(100000, n_features=30, n_informative=3)
     num_forests = 5
     num_trees_per_feature = 20
-    best_k_features = 5
-    max_depth = 7
-    max_leaf_nodes = 60
-    feature_subsampling = "SQRT"
-    epsilon = 0.01
-    budget = 6000000
+    best_k_features = 2
+    max_depth = 5
+    max_leaf_nodes = 24
+    feature_subsampling = None
+    epsilon = 0.00
+    budget = 5000000
     PI_exact = PermutationImportance(
         seed=seed,
         data=data,

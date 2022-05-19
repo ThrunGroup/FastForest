@@ -194,6 +194,7 @@ class PermutationImportance:
         """
         N = len(imp_data)
         F = len(imp_data[0])
+        assert F > best_k_features, "Feature subset size should be less than feature dimension"
 
         # preprocess data
         best_idcs = np.argsort(-imp_data)[:, :best_k_features]
@@ -211,14 +212,14 @@ class PermutationImportance:
         d_bar = np.sum(np.where(best_idcs >= 0, 1, 0)) / N
         numer = c_var/F
         denom = d_bar * (1 - d_bar/F) / F
-        print(numer, denom)
+        # print(numer, denom)
         return 1 - numer/denom
 
     def run_baseline(self, best_k_features: int = None) -> float:
         imp_matrix = self.get_importance_array()
-        #print("this is importance array: \n", imp_matrix)
-        #print("this is importance array indices: \n", np.argsort(-imp_matrix))
-        #print("\n\n")
+        print("this is importance array: \n", imp_matrix)
+        print("this is importance array indices: \n", np.argsort(-imp_matrix))
+        # print("\n\n")
         if best_k_features is None:
             return self.get_stability_pairwise(imp_matrix)
         else:
