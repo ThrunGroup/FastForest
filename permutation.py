@@ -163,5 +163,9 @@ class PermutationImportance:
                 )
         return 2.0 * stability / (length * (length - 1))
 
+    def run_baseline(self) -> float:
+        imp_matrix = self.get_importance_array()
+        return self.get_stability(imp_matrix)
+
 
 
