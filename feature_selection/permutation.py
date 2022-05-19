@@ -2,13 +2,15 @@ import sklearn.datasets
 import numpy as np
 import math
 from scipy.stats import rankdata
+from typing import Union, List
 
 from data_structures.forest_classifier import ForestClassifier
 from data_structures.forest_regressor import ForestRegressor
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.tree_regressor import TreeRegressor
 from utils.utils import class_to_idx
-from utils.constants import MAB, EXACT, MIN_IMPORTANCE, JACCARD, SPEARMAN, KUNCHEVA
+from utils.constants import MAB, EXACT, MIN_IMPORTANCE, JACCARD, SPEARMAN, KUNCHEVA, MAX_SEED
+from utils.utils import set_seed
 
 
 class PermutationImportance:
@@ -30,7 +32,8 @@ class PermutationImportance:
         budget_per_forest: int = None,
     ):
         assert num_forests > 1, "we need at least two forests"
-        np.random.seed(seed)
+        set_seed(seed)
+        self.rng = np.random.default_rng(seed)
         self.data = data
         self.labels = labels
         self.max_depth = max_depth
@@ -40,7 +43,8 @@ class PermutationImportance:
         self.is_classification = is_classification
         self.solver = solver
         self.stability_metric = stability_metric
-        self.forests = []
+        self.forests: List[Union[ForestRegressor, ForestClassifier]] = []
+        self.is_train = False
 
     def train_forest(self, seed: int) -> None:
         """
@@ -56,6 +60,7 @@ class PermutationImportance:
                 solver=self.solver,
                 budget=self.budget_per_forest,
                 bootstrap=True,
+                oob_score=True,
             )
         else:
             forest = ForestRegressor(
@@ -67,6 +72,7 @@ class PermutationImportance:
                 solver=self.solver,
                 budget=self.budget_per_forest,
                 bootstrap=True,
+                oob_score=True,
             )
         forest.fit()
         print("number of trees: ", len(forest.trees))
@@ -79,7 +85,8 @@ class PermutationImportance:
         """
         for i in range(self.num_forests):
             print("training forest: ", i+1)
-            self.train_forest(i)
+            seed = self.rng.integers(0, MAX_SEED)
+            self.train_forest(seed)
 
     def compute_importance_vec(self, forest_idx: int) -> np.ndarray:
         """
@@ -88,6 +95,7 @@ class PermutationImportance:
 
         :return: sorted array of indices
         """
+        assert self.is_train, "Forest isn't trained"
         importance_vec = []
         forest = self.forests[forest_idx]
         num_trees = len(forest.trees)   # number of trees depends on the budget
@@ -95,15 +103,8 @@ class PermutationImportance:
 
         model_score = np.sum(forest.predict_batch(data_copy)[0] == self.labels)
         for feature_idx in range(len(data_copy[0])):
-            c_score = 0
-            for tree_idx in range(num_trees):
-                if feature_idx == 64: import ipdb; ipdb.set_trace()
-                np.random.shuffle(data_copy[:, feature_idx])  # shuffles in-place
-                tree = forest.trees[tree_idx]
-                c_score += np.sum(tree.predict_batch(data_copy)[0] == self.labels)
-            avg_c_score = c_score / num_trees
-            # importance_vec.append(model_score - avg_c_score)
-            importance_vec.append((model_score - avg_c_score)/len(data_copy))
+            self.rng.shuffle(data_copy[:, feature_idx])  # shuffles in-place
+            importance_vec.append((forest.get_oob_score(data_copy)))
         return np.asarray(importance_vec)
 
     def get_importance_array(self) -> np.ndarray:
@@ -113,6 +114,7 @@ class PermutationImportance:
 
         :return: an array of importance vectors.
         """
+        self.is_train = True
         self.train_forests()
         num_forests = len(self.forests)
 
