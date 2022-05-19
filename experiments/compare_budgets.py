@@ -590,7 +590,7 @@ def compare_budgets(
         "their_std_num_queries": their_std_num_queries if run_theirs else None,
         "their_num_trees": their_num_trees if run_theirs else None,
         "their_avg_num_trees": their_avg_num_trees if run_theirs else None,
-        "their_avg_num_trees": their_avg_num_trees if run_theirs else None,
+        "their_std_num_trees": their_std_num_trees if run_theirs else None,
     }
     with open("budget_" + filename, "w+") as fout:
         fout.write(str(results))
