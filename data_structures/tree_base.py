@@ -42,7 +42,7 @@ class TreeBase(ABC):
         min_samples_split: int = 2,
         min_impurity_decrease: float = DEFAULT_MIN_IMPURITY_DECREASE,
         max_leaf_nodes: int = None,
-        discrete_features: DefaultDict = defaultdict(list),
+        discrete_features: DefaultDict = None,
         bin_type: str = LINEAR,
         num_bins: int = DEFAULT_NUM_BINS,
         budget: int = None,
@@ -54,6 +54,10 @@ class TreeBase(ABC):
         with_replacement: bool = False,
         verbose: bool = False,
         make_discrete: bool = False,
+        minmax: Tuple[np.ndarray, np.ndarray] = None,
+        use_logarithmic_split: bool = False,
+        use_dynamic_epsilon: bool = False,
+        epsilon: float = 0,
     ) -> None:
         self.data = data  # This is a REFERENCE
         self.labels = labels  # This is a REFERENCE
@@ -63,6 +67,7 @@ class TreeBase(ABC):
             self.labels
         ), "Data and labels must have the same size"
         self.max_depth = max_depth
+        self.minmax = minmax  # minmax = (minimum array of features, maximum array of features)
         if is_classification:
             self.classes = classes  # dict from class name to class index
             self.idx_to_class = {value: key for key, value in classes.items()}
@@ -91,6 +96,9 @@ class TreeBase(ABC):
         set_seed(self.random_state)
         self.with_replacement = with_replacement
         self.verbose = verbose
+        self.use_logarithmic_split = use_logarithmic_split
+        self.use_dynamic_epsilon = use_dynamic_epsilon
+        self.epsilon = epsilon
 
         self.node = Node(
             tree=self,
@@ -210,7 +218,7 @@ class TreeBase(ABC):
             self.feature_idcs = choose_features(self.data, self.feature_subsampling)
             self.discrete_features = remap_discrete_features(
                 self.feature_idcs, self.discrete_features
-            )
+            ) if self.discrete_features is not None else None
 
         # Best-first tree fitting
         if self.splitter == BEST:
@@ -254,7 +262,7 @@ class TreeBase(ABC):
                             reduction = leaf.calculate_best_split(self.remaining_budget)
                         else:
                             break
-                            
+
                     # don't add queries if best split is already computed
                     # add number of queries we made if the best split is NOT already computed
                     if not split_already_computed:

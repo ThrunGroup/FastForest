@@ -99,7 +99,9 @@ def data_to_discrete(data: np.ndarray, n: int) -> DefaultDict:
         # Use for loop to avoid unnecessary computations to sort all feature values if the features are not discrete.
         for feature_val in data[:, feature_idx]:
             unique_fvals.add(feature_val)
-            if len(unique_fvals) > 10:  # If satisfied, "feature_idx"th feature is not discrete
+            if (
+                len(unique_fvals) > 10
+            ):  # If satisfied, "feature_idx"th feature is not discrete
                 is_discrete = False
                 break
         if is_discrete:
@@ -125,12 +127,13 @@ def choose_bin_type(D: int, N: int, B: int) -> str:
 
 
 def make_histograms(
-        is_classification: bool,
-        data: np.ndarray,
-        labels: np.ndarray,
-        discrete_bins_dict: DefaultDict,
-        binning_type: str = "",
-        num_bins: int = DEFAULT_NUM_BINS,
+    is_classification: bool,
+    data: np.ndarray,
+    labels: np.ndarray,
+    minmax: Tuple[np.ndarray, np.ndarray] = None,
+    discrete_bins_dict: DefaultDict = None,
+    binning_type: str = "",
+    num_bins: int = DEFAULT_NUM_BINS,
 ) -> Tuple[List[Histogram], List, List]:
     """
     Choose a bin type and number of bins, and make a histogram. Add it to histograms list. Also, filter
@@ -139,6 +142,7 @@ def make_histograms(
     :param is_classification:  Whether is a classification problem(True) or a regression problem(False)
     :param data: A 2d-array of input data
     :param labels: An 1d-array of target dat
+    :param minmax: (minimum array of features, maximum array of features).
     :param discrete_bins_dict: A DefaultDict mapping feature index to unique feature values
     :param binning_type: Fixed type of bin which should be one of "linear", "discrete", and "identity"
     :param num_bins: Number of bins
@@ -152,10 +156,12 @@ def make_histograms(
     for f_idx in range(len(data[0])):
         min_bin, max_bin = 0, 0
         f_data = data[:, f_idx]
-        if len(discrete_bins_dict[f_idx]) == 0:
-            D = float("inf")  # "f_idx"th feature isn't discrete
-        else:
+        if (discrete_bins_dict is not None) and (len(discrete_bins_dict[f_idx]) != 0):
             D = len(discrete_bins_dict[f_idx])
+            unique_fvals = discrete_bins_dict[f_idx]
+        else:
+            D = float("inf")  # "f_idx"th feature isn't discrete
+            unique_fvals = None
 
         if binning_type == "":
             bin_type = choose_bin_type(D, N, B)
@@ -165,12 +171,15 @@ def make_histograms(
         if bin_type == DISCRETE:
             num_bins = D
             assert (
-                    len(discrete_bins_dict[f_idx]) > 0
+                len(discrete_bins_dict[f_idx]) > 0
             ), "discrete_bins_dict[f_idx] is empty"
         elif bin_type == IDENTITY:
             num_bins = N
         elif bin_type == LINEAR:
-            min_bin, max_bin = np.min(f_data), np.max(f_data)
+            if minmax is None:
+                min_bin, max_bin = np.min(f_data), np.max(f_data)
+            else:
+                min_bin, max_bin = minmax[0][f_idx], minmax[1][f_idx]
             num_bins = B
         elif bin_type == RANDOM:  # For extremely random forests
             min_bin, max_bin = np.min(f_data), np.max(f_data)
@@ -181,7 +190,7 @@ def make_histograms(
         histogram = Histogram(
             is_classification=is_classification,
             feature_idx=f_idx,
-            unique_fvals=discrete_bins_dict[f_idx],
+            unique_fvals=unique_fvals,
             f_data=f_data,
             classes=classes,
             num_bins=num_bins,
@@ -231,7 +240,7 @@ def remap_discrete_features(feature_idcs, tree_discrete_features: defaultdict(li
     """
     # New discrete_features corresponding to new feature indices
     if len(tree_discrete_features) == 0:
-        return tree_discrete_features
+        return defaultdict(list)
     discrete_features = {}
     for i, feature_idx in enumerate(feature_idcs):
         # Our i-th corresponds to the feature_idx-th discrete feature in the tree.

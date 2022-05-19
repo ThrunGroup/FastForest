@@ -59,19 +59,24 @@ class Node:
         self.criterion = criterion
         self.feature_subsampling = feature_subsampling
         self.tree_global_feature_subsampling = tree_global_feature_subsampling
-        self.discrete_features = defaultdict(list)
         self.with_replacement = with_replacement
+        self.discrete_features = self.tree.discrete_features
 
         if tree_global_feature_subsampling:
             # Features are chosen at the tree level. Use all of tree's features
             self.feature_idcs = self.tree.feature_idcs
-            self.discrete_features = self.tree.discrete_features
         else:
             # The features aren't global to the tree, so we should be resampling the features at every node
             self.feature_idcs = choose_features(data, self.feature_subsampling)
-            self.discrete_features = remap_discrete_features(
-                self.feature_idcs, self.tree.discrete_features
-            )
+            if self.tree.discrete_features is not None:
+                self.discrete_features = remap_discrete_features(
+                    self.feature_idcs, self.tree.discrete_features
+                )
+        # Reindex minmax
+        if self.tree.minmax is not None:
+            self.minmax = (self.tree.minmax[0][self.feature_idcs], self.tree.minmax[1][self.feature_idcs])
+        else:
+            self.minmax = None
 
         # NOTE: Do not assume labels are all integers from 0 to num_classes-1
         if is_classification:
@@ -103,10 +108,18 @@ class Node:
         if self.best_reduction_computed:
             return self.split_reduction
 
+        if self.tree.use_logarithmic_split:
+            self.num_bins = int(np.log2(self.n_data))
+        if self.tree.use_dynamic_epsilon:
+            self.epsilon = self.tree.epsilon * np.sqrt(self.depth)
+        else:
+            self.epsilon = self.tree.epsilon
+
         if self.solver == MAB:
             results = solve_mab(
                 data=self.data[:, self.feature_idcs],
                 labels=self.labels,
+                minmax=self.minmax,
                 discrete_bins_dict=self.discrete_features,
                 binning_type=self.bin_type,
                 num_bins=self.num_bins,
@@ -114,11 +127,13 @@ class Node:
                 impurity_measure=self.criterion,
                 with_replacement=self.with_replacement,
                 budget=budget,
+                epsilon=self.epsilon,
             )
         elif self.solver == EXACT:
             results = solve_exactly(
                 data=self.data[:, self.feature_idcs],
                 labels=self.labels,
+                minmax=self.minmax,
                 discrete_bins_dict=self.discrete_features,
                 binning_type=self.bin_type,
                 num_bins=self.num_bins,
@@ -198,6 +213,7 @@ class Node:
             if len(left_idcs[0]) == 0 or len(right_idcs[0]) == 0:
                 # Our MAB erroneously identified a split as good, but it actually wasn't and puts all the children on
                 # one side
+                raise AttributeError("Wrong split!!")
                 self.already_split = True
             else:
                 self.left = self.create_child_node(left_idcs)

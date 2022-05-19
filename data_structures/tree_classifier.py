@@ -1,5 +1,5 @@
 import numpy as np
-from typing import DefaultDict, Union
+from typing import DefaultDict, Union, Tuple
 from collections import defaultdict
 
 from data_structures.classifier import Classifier
@@ -24,7 +24,7 @@ class TreeClassifier(TreeBase, Classifier):
         min_samples_split: int = 2,
         min_impurity_decrease: float = -1e-6,
         max_leaf_nodes: int = None,
-        discrete_features: DefaultDict = defaultdict(list),
+        discrete_features: DefaultDict = None,
         bin_type: str = LINEAR,
         num_bins: int = DEFAULT_NUM_BINS,
         budget: int = None,
@@ -35,6 +35,10 @@ class TreeClassifier(TreeBase, Classifier):
         with_replacement: bool = False,
         verbose: bool = False,
         make_discrete: bool = False,
+        minmax: Tuple[np.ndarray, np.ndarray] = None,
+        use_logarithmic_split: bool = False,
+        use_dynamic_epsilon: bool = False,
+        epsilon: float = 0,
     ):
         assert classes is not None, "classes dictionary isn't defined"
         self.classes = classes  # dict from class name to class index
@@ -62,4 +66,8 @@ class TreeClassifier(TreeBase, Classifier):
             with_replacement=with_replacement,
             verbose=verbose,
             make_discrete=make_discrete,
+            minmax=minmax,
+            use_logarithmic_split=use_logarithmic_split,
+            use_dynamic_epsilon=use_dynamic_epsilon,
+            epsilon=epsilon,
         )

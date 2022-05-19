@@ -1,5 +1,5 @@
 import numpy as np
-from typing import DefaultDict, Union
+from typing import DefaultDict, Union, Tuple
 from collections import defaultdict
 
 from data_structures.regressor import Regressor
@@ -23,7 +23,7 @@ class TreeRegressor(TreeBase, Regressor):
         min_samples_split: int = 2,
         min_impurity_decrease: float = -1e-5,
         max_leaf_nodes: int = None,
-        discrete_features: DefaultDict = defaultdict(list),
+        discrete_features: DefaultDict = None,
         bin_type: str = LINEAR,
         num_bins: int = DEFAULT_NUM_BINS,
         budget: int = None,
@@ -34,6 +34,10 @@ class TreeRegressor(TreeBase, Regressor):
         with_replacement: bool = False,
         verbose: bool = False,
         make_discrete: bool = False,
+        minmax: Tuple[np.ndarray, np.ndarray] = None,
+        use_logarithmic_split: bool = False,
+        use_dynamic_epsilon: bool = False,
+        epsilon: float = 0,
     ):
         super().__init__(
             data=data,
@@ -56,4 +60,8 @@ class TreeRegressor(TreeBase, Regressor):
             with_replacement=with_replacement,
             verbose=verbose,
             make_discrete=make_discrete,
+            minmax=minmax,
+            use_logarithmic_split=use_logarithmic_split,
+            use_dynamic_epsilon=use_dynamic_epsilon,
+            epsilon=epsilon,
         )
