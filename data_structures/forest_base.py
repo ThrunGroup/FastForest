@@ -112,7 +112,7 @@ class ForestBase(ABC):
         self.use_dynamic_epsilon = use_dynamic_epsilon
         self.epsilon = epsilon
         self.oob_score = oob_score
-        assert oob_score is bootstrap, "out of bag score can be used only when bootstrapping"
+        if oob_score: assert bootstrap, "out of bag score can be used only when bootstrapping"
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
