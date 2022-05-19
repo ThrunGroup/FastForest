@@ -98,7 +98,6 @@ class PermutationImportance:
         assert self.is_train, "Forest isn't trained"
         importance_vec = []
         forest = self.forests[forest_idx]
-        num_trees = len(forest.trees)   # number of trees depends on the budget
         data_copy = np.ndarray.copy(self.data)
 
         model_score = np.sum(forest.predict_batch(data_copy)[0] == self.labels)

@@ -39,10 +39,10 @@ def test_contrived_dataset() -> None:
 
 def test_stability_with_budget(seed: int) -> None:
     np.random.seed(seed)
-    # digits = sklearn.datasets.load_digits()
-    # data, labels = digits.data, digits.target
-    diabetes = sklearn.datasets.load_diabetes()
-    data, labels = diabetes.data, diabetes.target
+    digits = sklearn.datasets.load_digits()
+    data, labels = digits.data, digits.target
+    # diabetes = sklearn.datasets.load_diabetes()
+    # data, labels = diabetes.data, diabetes.target
     print(data.shape)
 
     num_forests = 5
@@ -140,5 +140,5 @@ def run_stability_baseline_digits(
 
 if __name__ == "__main__":
     # test_contrived_dataset()
-    # test_stability_with_budget(0)
-    run_stability_baseline_digits()
+    test_stability_with_budget(0)
+    # run_stability_baseline_digits()
