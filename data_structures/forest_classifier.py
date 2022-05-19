@@ -38,6 +38,7 @@ class ForestClassifier(ForestBase, Classifier):
         use_logarithmic_split: bool = False,
         use_dynamic_epsilon: bool = False,
         epsilon: float = 0,
+        oob_score: bool = False,
     ) -> None:
         if classes is None:
             self.classes: dict = class_to_idx(
@@ -72,4 +73,5 @@ class ForestClassifier(ForestBase, Classifier):
             use_logarithmic_split=use_logarithmic_split,
             use_dynamic_epsilon=use_dynamic_epsilon,
             epsilon=epsilon,
+            oob_score=oob_score,
         )

@@ -38,6 +38,7 @@ class ForestRegressor(ForestBase, Regressor):
         use_logarithmic_split: bool = False,
         use_dynamic_epsilon: bool = False,
         epsilon: float = 0,
+        oob_score: bool = False,
     ) -> None:
         super().__init__(
             data=data,
@@ -67,4 +68,5 @@ class ForestRegressor(ForestBase, Regressor):
             use_logarithmic_split=use_logarithmic_split,
             use_dynamic_epsilon=use_dynamic_epsilon,
             epsilon=epsilon,
+            oob_score=oob_score,
         )
