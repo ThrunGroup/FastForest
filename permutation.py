@@ -110,12 +110,11 @@ class PermutationImportance:
         assert self.is_train, "Forest isn't trained"
         importance_vec = []
         forest = self.forests[forest_idx]
-        data_copy = np.ndarray.copy(self.data)
+        model_score = np.sum(forest.predict_batch(self.data)[0] == self.labels)
 
-        model_score = np.sum(forest.predict_batch(data_copy)[0] == self.labels)
-        for feature_idx in range(len(data_copy[0])):
+        for feature_idx in range(len(self.data[0])):
+            data_copy = np.ndarray.copy(self.data)
             self.rng.shuffle(data_copy[:, feature_idx])  # shuffles in-place
-            model_score = forest.get_oob_score(self.data)
             permutated_model_score = forest.get_oob_score(data_copy)
             importance_vec.append(np.abs(model_score - permutated_model_score))
         return np.asarray(importance_vec)

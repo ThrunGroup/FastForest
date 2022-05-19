@@ -1,60 +1,109 @@
 import sklearn.datasets
 import numpy as np
 import math
-import os
-import pandas as pd
 
 from permutation import PermutationImportance
-from sklearn.datasets import make_classification, make_regression
-from sklearn.model_selection import train_test_split
 from utils.constants import (
-    EXACT,
     MAB,
+    EXACT,
     FOREST_UNIT_BUDGET_DIGIT,
-    JACCARD,
-    SPEARMAN,
-    KUNCHEVA,
     FOREST_UNIT_BUDGET_DIABETES,
+    FOREST_UNIT_BUDGET_REGRESSION,
     MAX_SEED,
 )
-from experiments.heart.fit_heart import append_dict_as_row
 
 
-def test_contrived_dataset() -> None:
-    # contrived dataset where the first three features are most important
-    X, Y = make_classification(
-        n_samples=1000,
-        n_features=10,
-        n_informative=3,
-        n_redundant=0,
-        n_repeated=0,
-        n_classes=2,
-        random_state=0,
-        shuffle=False,
-    )
-    PI = PermutationImportance(
-        data=X, labels=Y, num_forests=10, num_trees_per_forest=10,
-    )
-    results = PI.get_importance_array()
-    print("importance array", results)
-    print("stability", PI.get_stability(results))
-
-
-def test_stability_with_budget(seed: int = 0) -> None:
+def test_stability_with_budget_digit(
+    seed: int,
+    max_depth: int = 3,
+    num_forests: int = 5,
+    num_trees_per_feature: int = 20,
+    best_k_features: int = 10,
+) -> None:
     np.random.seed(seed)
-    # digits = sklearn.datasets.load_digits()
-    # data, labels = digits.data, digits.target
+    digits = sklearn.datasets.load_digits()
+    data, labels = digits.data, digits.target
+
+    exact = PermutationImportance(
+        seed=seed,
+        data=data,
+        labels=labels,
+        max_depth=max_depth,
+        num_forests=num_forests,
+        num_trees_per_forest=num_trees_per_feature,
+        budget_per_forest=FOREST_UNIT_BUDGET_DIGIT,
+        solver=EXACT,
+    )
+    stability_exact = exact.run_baseline(best_k_features)
+
+    mab = PermutationImportance(
+        seed=seed,
+        data=data,
+        labels=labels,
+        max_depth=max_depth,
+        num_forests=num_forests,
+        num_trees_per_forest=num_trees_per_feature,
+        budget_per_forest=FOREST_UNIT_BUDGET_DIGIT,
+        solver=MAB,
+    )
+    stability_mab = mab.run_baseline(best_k_features)
+    print("EXACT STABILITY, MAB STABILITY: ", (stability_exact, stability_mab))
+    assert stability_mab > stability_exact, "MAB is NOT more stable for classification"
+
+
+def test_stability_with_budget_diabetes(
+    seed: int,
+    max_depth: int = 5,
+    num_forests: int = 5,
+    num_trees_per_feature: int = 10,
+    best_k_features: int = 5,
+) -> None:
+    np.random.seed(seed)
     diabetes = sklearn.datasets.load_diabetes()
-    # data, labels = diabetes.data, diabetes.target
-    data, labels = make_regression(100000, n_features=30, n_informative=3)
-    num_forests = 5
-    num_trees_per_feature = 20
-    best_k_features = 2
-    max_depth = 5
-    max_leaf_nodes = 24
-    feature_subsampling = None
-    epsilon = 0.00
-    budget = 5000000
+    data, labels = diabetes.data, diabetes.target
+
+    exact = PermutationImportance(
+        seed=seed,
+        data=data,
+        labels=labels,
+        max_depth=max_depth,
+        num_forests=num_forests,
+        num_trees_per_forest=num_trees_per_feature,
+        budget_per_forest=FOREST_UNIT_BUDGET_DIABETES,
+        solver=EXACT,
+        is_classification=False,
+    )
+    stability_exact = exact.run_baseline(best_k_features)
+
+    mab = PermutationImportance(
+        seed=seed,
+        data=data,
+        labels=labels,
+        max_depth=max_depth,
+        num_forests=num_forests,
+        num_trees_per_forest=num_trees_per_feature,
+        budget_per_forest=FOREST_UNIT_BUDGET_DIABETES,
+        solver=MAB,
+        is_classification=False,
+    )
+    stability_mab = mab.run_baseline(best_k_features)
+    print(stability_exact, stability_mab)
+    assert stability_mab > stability_exact, "MAB is NOT more stable for regression"
+
+
+def test_stability_with_budget_regression(
+    seed: int = 0,
+    max_depth = 5,
+    max_leaf_nodes = 24,
+    num_forests = 5,
+    num_trees_per_feature = 20,
+    feature_subsampling = "SQRT",
+    epsilon = 0.00,
+    best_k_features = 2,
+    budget = FOREST_UNIT_BUDGET_REGRESSION,
+) -> None:
+    np.random.seed(seed)
+    data, labels = sklearn.datasets.make_regression(10000, n_features=100, n_informative=10)
     PI_exact = PermutationImportance(
         seed=seed,
         data=data,
@@ -95,37 +144,22 @@ def test_stability_with_budget(seed: int = 0) -> None:
     else:
         print("EXACT is more stable :((")
 
-    log_dict = {
-        "stability_diff": stability_mab - stability_exact,
-        "dataset": "digits",
-        "budget": FOREST_UNIT_BUDGET_DIGIT,
-        "num_forests": num_forests,
-        "num_trees": num_trees_per_feature,
-        "best_k": best_k_features,
-        "max_depth": max_depth,
-        "max_leaf_nodes": max_leaf_nodes,
-        "feature_subsampling": feature_subsampling,
-        "epsilon": epsilon,
-    }
-    dir_name = "stability_log"
-    log_filename = os.path.join(dir_name, "stability_log.csv")
-    if not os.path.exists(log_filename):
-        os.makedirs(dir_name, exist_ok=True)
-        df = pd.DataFrame(columns=log_dict.keys())
-        df.to_csv(log_filename, index=False)
     append_dict_as_row(log_filename, log_dict, log_dict.keys())
 
 
 def run_stability_baseline_digits(
-    seed: int = 0,
+    seed: int,
     num_trials: int = 10,
-    num_forests: int = 5,
     max_depth: int = 3,
-    num_trees_per_feature: int = 20,
+    num_forests: int = 5,
+    num_trees_per_forest: int = 20,
     best_k_feature: int = 10,
+    max_leaf_nodes = None,
+    feature_subsampling = None,
+    epsilon = 0.0
 ) -> None:
-    exact_sim_array = []
     mab_sim_array = []
+    exact_sim_array = []
     digits = sklearn.datasets.load_digits()
     data, labels = digits.data, digits.target
     rng = np.random.default_rng(seed)
@@ -139,7 +173,7 @@ def run_stability_baseline_digits(
             labels=labels,
             max_depth=max_depth,
             num_forests=num_forests,
-            num_trees_per_forest=num_trees_per_feature,
+            num_trees_per_forest=num_trees_per_forest,
             budget_per_forest=FOREST_UNIT_BUDGET_DIGIT,
             solver=EXACT,
         )
@@ -151,7 +185,7 @@ def run_stability_baseline_digits(
             labels=labels,
             max_depth=max_depth,
             num_forests=num_forests,
-            num_trees_per_forest=num_trees_per_feature,
+            num_trees_per_forest=num_trees_per_forest,
             budget_per_forest=FOREST_UNIT_BUDGET_DIGIT,
             solver=MAB,
         )
@@ -168,12 +202,76 @@ def run_stability_baseline_digits(
     m_std = np.std(mab_sim_array) / math.sqrt(num_trials)
     mab_CI = [m_avg - m_std, m_avg + m_std]
 
-    print("confidence interval for exact: ", exact_CI)
-    print("\n")
-    print("confidence interval for mab: ", mab_CI)
+    # print results
+    print("exact CIs: ", exact_CI)
+    print("mab CIs: ", mab_CI)
+    assert (
+        exact_CI[0] < mab_CI[1]
+    ), "EXACT and MAB have overlapping confidence intervals. This should not be the case."
+
+
+def run_stability_baseline_diabetes(
+    seed: int,
+    num_trials: int = 10,
+    max_depth: int = 3,
+    num_forests: int = 5,
+    num_trees_per_feature: int = 20,
+    best_k_feature: int = 5,
+) -> None:
+    mab_sim_array = []
+    exact_sim_array = []
+    diabetes = sklearn.datasets.load_diabetes()
+    data, labels = diabetes.data, diabetes.target
+    rng = np.random.default_rng(seed)
+
+    for trial in range(num_trials):
+        print("TRIALS NUM: ", trial)
+        exact_seed, mab_seed = rng.integers(0, MAX_SEED), rng.integers(0, MAX_SEED)
+        exact = PermutationImportance(
+            seed=exact_seed,
+            data=data,
+            labels=labels,
+            max_depth=max_depth,
+            num_forests=num_forests,
+            num_trees_per_forest=num_trees_per_feature,
+            budget_per_forest=FOREST_UNIT_BUDGET_DIABETES,
+            solver=EXACT,
+            is_classification=False,
+        )
+        exact_sim_array.append(exact.run_baseline(best_k_feature))
+
+        mab = PermutationImportance(
+            seed=mab_seed,
+            data=data,
+            labels=labels,
+            max_depth=max_depth,
+            num_forests=num_forests,
+            num_trees_per_forest=num_trees_per_feature,
+            budget_per_forest=FOREST_UNIT_BUDGET_DIABETES,
+            solver=EXACT,
+            is_classification=False,
+        )
+        mab_sim_array.append(mab.run_baseline(best_k_feature))
+
+    # compute confidence intervals
+    exact_sim_array = np.asarray(exact_sim_array)
+    e_avg = np.mean(exact_sim_array)
+    e_std = np.std(exact_sim_array) / math.sqrt(num_trials)
+    exact_CI = [e_avg - e_std, e_avg + e_std]
+
+    mab_sim_array = np.asarray(mab_sim_array)
+    m_avg = np.mean(mab_sim_array)
+    m_std = np.std(mab_sim_array) / math.sqrt(num_trials)
+    mab_CI_= [m_avg - m_std, m_avg + m_std]
+    print(exact_CI)
+
+    assert (
+        exact_CI[1] < mab_CI[0]
+    ), "EXACT and MAB have overlapping confidence intervals. This should not be the case."
 
 
 if __name__ == "__main__":
-    # test_contrived_dataset()
-    test_stability_with_budget(2000000)
-    # run_stability_baseline_digits()
+    #test_stability_with_budget_digit(0)
+    #test_stability_with_budget_regression(0)
+    run_stability_baseline_digits(0)
+    #run_stability_baseline_diabetes(0)
