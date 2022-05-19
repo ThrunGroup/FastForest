@@ -2,7 +2,7 @@ import sklearn.datasets
 import numpy as np
 import math
 
-from permutation import PermutationImportance
+from feature_selection.permutation import PermutationImportance
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from utils.constants import (
@@ -15,17 +15,18 @@ from utils.constants import (
 
 
 def test_stability_with_budget_digit(
-        seed: int,
-        max_depth: int = 3,
-        num_forests: int = 5,
-        num_trees_per_feature: int = 20,
-        best_k_features: int = 10,
+    seed: int,
+    max_depth: int = 3,
+    num_forests: int = 5,
+    num_trees_per_feature: int = 20,
+    best_k_features: int = 10,
 ) -> None:
     np.random.seed(seed)
     digits = sklearn.datasets.load_digits()
     data, labels = digits.data, digits.target
 
     exact = PermutationImportance(
+        seed=seed,
         data=data,
         labels=labels,
         max_depth=max_depth,
@@ -37,6 +38,7 @@ def test_stability_with_budget_digit(
     stability_exact = exact.run_baseline(best_k_features)
 
     mab = PermutationImportance(
+        seed=seed,
         data=data,
         labels=labels,
         max_depth=max_depth,
@@ -50,17 +52,18 @@ def test_stability_with_budget_digit(
 
 
 def test_stability_with_budget_diabetes(
-        seed: int,
-        max_depth: int = 3,
-        num_forests: int = 5,
-        num_trees_per_feature: int = 20,
-        best_k_features: int = 5,
+    seed: int,
+    max_depth: int = 3,
+    num_forests: int = 5,
+    num_trees_per_feature: int = 20,
+    best_k_features: int = 5,
 ) -> None:
     np.random.seed(seed)
     diabetes = sklearn.datasets.load_diabetes()
     data, labels = diabetes.data, diabetes.target
 
     exact = PermutationImportance(
+        seed=seed,
         data=data,
         labels=labels,
         max_depth=max_depth,
@@ -73,6 +76,7 @@ def test_stability_with_budget_diabetes(
     stability_exact = exact.run_baseline(best_k_features)
 
     mab = PermutationImportance(
+        seed=seed,
         data=data,
         labels=labels,
         max_depth=max_depth,
@@ -89,7 +93,6 @@ def test_stability_with_budget_diabetes(
 def run_stability_baseline_digits(
     seed: int,
     num_trials: int = 10,
-
     max_depth: int = 3,
     num_forests: int = 5,
     num_trees_per_feature: int = 20,
@@ -140,15 +143,13 @@ def run_stability_baseline_digits(
     mab_CI_lower = m_avg - m_std
 
     assert (
-        exact_CI_upper < mab_CI_lower,
-        "EXACT and MAB have overlapping confidence intervals. This should not be the case."
-    )
+        exact_CI_upper < mab_CI_lower
+    ), "EXACT and MAB have overlapping confidence intervals. This should not be the case."
 
 
 def run_stability_baseline_diabetes(
     seed: int,
     num_trials: int = 10,
-
     max_depth: int = 3,
     num_forests: int = 5,
     num_trees_per_feature: int = 20,
@@ -201,9 +202,8 @@ def run_stability_baseline_diabetes(
     mab_CI_lower = m_avg - m_std
 
     assert (
-        exact_CI_upper < mab_CI_lower,
-        "EXACT and MAB have overlapping confidence intervals. This should not be the case."
-    )
+        exact_CI_upper < mab_CI_lower
+    ), "EXACT and MAB have overlapping confidence intervals. This should not be the case."
 
 
 if __name__ == "__main__":

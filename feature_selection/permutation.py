@@ -30,6 +30,9 @@ class PermutationImportance:
         solver: str = MAB,
         stability_metric: str = JACCARD,
         budget_per_forest: int = None,
+        feature_subsampling: str = None,
+        max_leaf_nodes: int = None,
+        epsilon: float = 0,
     ):
         assert num_forests > 1, "we need at least two forests"
         set_seed(seed)
@@ -45,6 +48,9 @@ class PermutationImportance:
         self.stability_metric = stability_metric
         self.forests: List[Union[ForestRegressor, ForestClassifier]] = []
         self.is_train = False
+        self.feature_subsampling = feature_subsampling
+        self.max_leaf_nodes = max_leaf_nodes
+        self.epsilon = epsilon
 
     def train_forest(self, seed: int) -> None:
         """
@@ -59,6 +65,9 @@ class PermutationImportance:
                 n_estimators=self.num_trees_per_forest,
                 solver=self.solver,
                 budget=self.budget_per_forest,
+                feature_subsampling=self.feature_subsampling,
+                max_leaf_nodes=self.max_leaf_nodes,
+                epsilon=self.epsilon,
                 bootstrap=True,
                 oob_score=True,
             )
@@ -71,6 +80,9 @@ class PermutationImportance:
                 n_estimators=self.num_trees_per_forest,
                 solver=self.solver,
                 budget=self.budget_per_forest,
+                feature_subsampling=self.feature_subsampling,
+                max_leaf_nodes=self.max_leaf_nodes,
+                epsilon=self.epsilon,
                 bootstrap=True,
                 oob_score=True,
             )
@@ -103,7 +115,9 @@ class PermutationImportance:
         model_score = np.sum(forest.predict_batch(data_copy)[0] == self.labels)
         for feature_idx in range(len(data_copy[0])):
             self.rng.shuffle(data_copy[:, feature_idx])  # shuffles in-place
-            importance_vec.append((forest.get_oob_score(data_copy)))
+            model_score = forest.get_oob_score(self.data)
+            permutated_model_score = forest.get_oob_score(data_copy)
+            importance_vec.append(np.abs(model_score - permutated_model_score))
         return np.asarray(importance_vec)
 
     def get_importance_array(self) -> np.ndarray:
@@ -179,6 +193,7 @@ class PermutationImportance:
         """
         N = len(imp_data)
         F = len(imp_data[0])
+        assert F > best_k_features, "Feature subset size should be less than feature dimension"
 
         # preprocess data
         best_idcs = np.argsort(-imp_data)[:, :best_k_features]
@@ -196,14 +211,14 @@ class PermutationImportance:
         d_bar = np.sum(np.where(best_idcs >= 0, 1, 0)) / N
         numer = c_var/F
         denom = d_bar * (1 - d_bar/F) / F
-        print(numer, denom)
+        # print(numer, denom)
         return 1 - numer/denom
 
     def run_baseline(self, best_k_features: int = None) -> float:
         imp_matrix = self.get_importance_array()
-        #print("this is importance array: \n", imp_matrix)
-        #print("this is importance array indices: \n", np.argsort(-imp_matrix))
-        #print("\n\n")
+        # print("this is importance array: \n", imp_matrix)
+        # print("this is importance array indices: \n", np.argsort(-imp_matrix))
+        # print("\n\n")
         if best_k_features is None:
             return self.get_stability_pairwise(imp_matrix)
         else:
