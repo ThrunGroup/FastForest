@@ -641,7 +641,7 @@ def main():
 
     ########################################### PARAMS
     pp = pprint.PrettyPrinter(indent=2)
-    NUM_SEEDS = 5
+    NUM_SEEDS = 20
 
     ############### Regression
     # train_data, train_targets, test_data, test_targets = load_housing()
@@ -653,53 +653,53 @@ def main():
     # print(len(train_data_subsampled), len(train_targets_subsampled))
 
     ############### Classification
-    mndata = MNIST("mnist/")
-
-    train_images, train_labels = mndata.load_training()
-    train_images = np.array(train_images)
-    train_labels = np.array(train_labels)
-
-    SUBSAMPLE_SIZE = 10000  # TODO(@motiwari): Update this?
-    train_images_subsampled = train_images[:SUBSAMPLE_SIZE]
-    train_labels_subsampled = train_labels[:SUBSAMPLE_SIZE]
-
-    test_images, test_labels = mndata.load_testing()
-    test_images = np.array(test_images)
-    test_labels = np.array(test_labels)
-
-    # Random Forests
-    pp.pprint(
-        compare_budgets(
-            compare="HRFC",
-            train_data=train_images_subsampled,
-            train_targets=train_labels_subsampled,
-            original_test_data=test_images,
-            test_targets=test_labels,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRFC_dict",
-            verbose=True,
-            default_budget=int(7840000 * 1.3),
-        )
-    )
-
-    ## Extremely Random Forests
-    pp.pprint(
-        compare_budgets(
-            compare="ERFC",
-            train_data=train_images_subsampled,
-            train_targets=train_labels_subsampled,
-            original_test_data=test_images,
-            test_targets=test_labels,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="ERFC_dict",
-            verbose=True,
-            default_budget=int(7840000 * 1.3),
-        )
-    )
+    # mndata = MNIST("mnist/")
+    #
+    # train_images, train_labels = mndata.load_training()
+    # train_images = np.array(train_images)
+    # train_labels = np.array(train_labels)
+    #
+    # SUBSAMPLE_SIZE = 10000  # TODO(@motiwari): Update this?
+    # train_images_subsampled = train_images[:SUBSAMPLE_SIZE]
+    # train_labels_subsampled = train_labels[:SUBSAMPLE_SIZE]
+    #
+    # test_images, test_labels = mndata.load_testing()
+    # test_images = np.array(test_images)
+    # test_labels = np.array(test_labels)
+    #
+    # # Random Forests
+    # pp.pprint(
+    #     compare_budgets(
+    #         compare="HRFC",
+    #         train_data=train_images_subsampled,
+    #         train_targets=train_labels_subsampled,
+    #         original_test_data=test_images,
+    #         test_targets=test_labels,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="HRFC_dict",
+    #         verbose=True,
+    #         default_budget=int(7840000 * 1.3),
+    #     )
+    # )
+    #
+    # ## Extremely Random Forests
+    # pp.pprint(
+    #     compare_budgets(
+    #         compare="ERFC",
+    #         train_data=train_images_subsampled,
+    #         train_targets=train_labels_subsampled,
+    #         original_test_data=test_images,
+    #         test_targets=test_labels,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="ERFC_dict",
+    #         verbose=True,
+    #         default_budget=int(7840000 * 1.3),
+    #     )
+    # )
 
     ## Random Patches
     # NO LONGER APPLIES, SAVED FOR POSTERITY. BUDGET IS SET TO 100k:
@@ -709,23 +709,23 @@ def main():
     # Unfortunately, using a lot of features increases the risk that we go over budget (because the number of histogram
     # insertions we make scales with F), we for this set of experiments (and this set of experiments ONLY) we increase
     # utils.constants.BUFFER from 100,000 to 1,000,000.
-    pp.pprint(
-        compare_budgets(
-            compare="HRPC",
-            train_data=train_images_subsampled,
-            train_targets=train_labels_subsampled,
-            original_test_data=test_images,
-            test_targets=test_labels,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRPC_dict",
-            verbose=True,
-            default_budget=int(7840000 * 1.3),
-            alpha_N_override=0.25,
-            alpha_F_override=0.15,
-        )
-    )
+    # pp.pprint(
+    #     compare_budgets(
+    #         compare="HRPC",
+    #         train_data=train_images_subsampled,
+    #         train_targets=train_labels_subsampled,
+    #         original_test_data=test_images,
+    #         test_targets=test_labels,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="HRPC_dict",
+    #         verbose=True,
+    #         default_budget=int(7840000 * 1.3),
+    #         alpha_N_override=0.25,
+    #         alpha_F_override=0.15,
+    #     )
+    # )
 
     # sklearn regression dataset
     params = {
@@ -754,9 +754,26 @@ def main():
     test_targets = full_targets[train_test_split:]
 
     ## Random Forests
+    # pp.pprint(
+    #     compare_budgets(
+    #         compare="HRFR",
+    #         train_data=train_data,
+    #         train_targets=train_targets,
+    #         original_test_data=test_data,
+    #         test_targets=test_targets,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="HRFR_dict",
+    #         verbose=True,
+    #         default_budget=2400000 * 10,
+    #     )
+    # )
+
+    ## Random Patches
     pp.pprint(
         compare_budgets(
-            compare="HRFR",
+            compare="HRPR",
             train_data=train_data,
             train_targets=train_targets,
             original_test_data=test_data,
@@ -764,48 +781,31 @@ def main():
             num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
-            filename="HRFR_dict",
+            filename="HRPR_dict",
             verbose=True,
-            default_budget=2400000 * 10,
+            # Divide by 24 for less trees, since only using ~1/4*1/6 of the data
+            default_budget=2400000 * (12 / 24),
+            # depth_override=15,
         )
     )
 
-    ## Random Patches
-    # pp.pprint(
-    #     compare_budgets(
-    #         compare="HRPR",
-    #         train_data=train_data,
-    #         train_targets=train_targets,
-    #         original_test_data=test_data,
-    #         test_targets=test_targets,
-    #         num_seeds=NUM_SEEDS,
-    #         predict=True,
-    #         run_theirs=True,
-    #         filename="HRPR_dict",
-    #         verbose=True,
-    #         # Divide by 24 for less trees, since only using ~1/4*1/6 of the data
-    #         default_budget=2400000 * (12 / 24),
-    #         # depth_override=15,
-    #     )
-    # )
-    #
-    # ## Extremely Random Forests
-    # pp.pprint(
-    #     compare_budgets(
-    #         compare="ERFR",
-    #         train_data=train_data,
-    #         train_targets=train_targets,
-    #         original_test_data=test_data,
-    #         test_targets=test_targets,
-    #         num_seeds=NUM_SEEDS,
-    #         predict=True,
-    #         run_theirs=True,
-    #         filename="ERFR_dict",
-    #         verbose=True,
-    #         default_budget=24000000,
-    #         depth_override=1,
-    #     )
-    # )
+    ## Extremely Random Forests
+    pp.pprint(
+        compare_budgets(
+            compare="ERFR",
+            train_data=train_data,
+            train_targets=train_targets,
+            original_test_data=test_data,
+            test_targets=test_targets,
+            num_seeds=NUM_SEEDS,
+            predict=True,
+            run_theirs=True,
+            filename="ERFR_dict",
+            verbose=True,
+            default_budget=24000000,
+            depth_override=1,
+        )
+    )
 
 
 if __name__ == "__main__":
