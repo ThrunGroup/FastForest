@@ -216,8 +216,8 @@ class PermutationImportance:
 
     def run_baseline(self, best_k_features: int = None) -> float:
         imp_matrix = self.get_importance_array()
-        print("this is importance array: \n", imp_matrix)
-        print("this is importance array indices: \n", np.argsort(-imp_matrix))
+        # print("this is importance array: \n", imp_matrix)
+        # print("this is importance array indices: \n", np.argsort(-imp_matrix))
         # print("\n\n")
         if best_k_features is None:
             return self.get_stability_pairwise(imp_matrix)
