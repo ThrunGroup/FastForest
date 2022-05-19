@@ -625,7 +625,7 @@ def main():
 
     ########################################### PARAMS
     pp = pprint.PrettyPrinter(indent=2)
-    NUM_SEEDS = 5
+    NUM_SEEDS = 20
 
     ############### Regression
     # train_data, train_targets, test_data, test_targets = load_housing()
@@ -663,26 +663,9 @@ def main():
     test_targets = full_targets[train_test_split:]
 
     ## Random Forests
-    pp.pprint(
-        compare_budgets(
-            compare="HRFR",
-            train_data=train_data,
-            train_targets=train_targets,
-            original_test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRFR_dict",
-            verbose=True,
-            default_budget=2400000 * 10,
-        )
-    )
-
-    ## Extremely Random Forests
     # pp.pprint(
     #     compare_budgets(
-    #         compare="ERFR",
+    #         compare="HRFR",
     #         train_data=train_data,
     #         train_targets=train_targets,
     #         original_test_data=test_data,
@@ -690,10 +673,9 @@ def main():
     #         num_seeds=NUM_SEEDS,
     #         predict=True,
     #         run_theirs=True,
-    #         filename="ERFR_dict",
+    #         filename="HRFR_dict",
     #         verbose=True,
-    #         default_budget=24000000,
-    #         depth_override=1,
+    #         default_budget=2400000 * 10,
     #     )
     # )
 
@@ -716,80 +698,98 @@ def main():
         )
     )
 
-    ############### Classification
-    mndata = MNIST("mnist/")
-
-    train_images, train_labels = mndata.load_training()
-    train_images = np.array(train_images)
-    train_labels = np.array(train_labels)
-
-    SUBSAMPLE_SIZE = 10000  # TODO(@motiwari): Update this?
-    train_images_subsampled = train_images[:SUBSAMPLE_SIZE]
-    train_labels_subsampled = train_labels[:SUBSAMPLE_SIZE]
-
-    test_images, test_labels = mndata.load_testing()
-    test_images = np.array(test_images)
-    test_labels = np.array(test_labels)
-
-    # Random Forests
-    pp.pprint(
-        compare_budgets(
-            compare="HRFC",
-            train_data=train_images_subsampled,
-            train_targets=train_labels_subsampled,
-            original_test_data=test_images,
-            test_targets=test_labels,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRFC_dict",
-            verbose=True,
-            default_budget=int(7840000 * 1.3),
-        )
-    )
-
     ## Extremely Random Forests
     pp.pprint(
         compare_budgets(
-            compare="ERFC",
-            train_data=train_images_subsampled,
-            train_targets=train_labels_subsampled,
-            original_test_data=test_images,
-            test_targets=test_labels,
+            compare="ERFR",
+            train_data=train_data,
+            train_targets=train_targets,
+            original_test_data=test_data,
+            test_targets=test_targets,
             num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
-            filename="ERFC_dict",
+            filename="ERFR_dict",
             verbose=True,
-            default_budget=int(7840000 * 1.3),
+            default_budget=24000000,
+            depth_override=1,
         )
     )
 
-    ## Random Patches
-    # NO LONGER APPLIES, SAVED FOR POSTERITY. BUDGET IS SET TO 100k:
-    # HRPC is a special case. The MNIST digits have 784 features, and alpha_F * F =~120 features, roughly 1/6 pixels,
-    # are not enough to learn meaningful models. As such, we have to set alpha_F very high. This makes F jump from a
-    # few dozen (e.g., sqrt(784) = 28) to a few hundred.
-    # Unfortunately, using a lot of features increases the risk that we go over budget (because the number of histogram
-    # insertions we make scales with F), we for this set of experiments (and this set of experiments ONLY) we increase
-    # utils.constants.BUFFER from 100,000 to 1,000,000.
-    pp.pprint(
-        compare_budgets(
-            compare="HRPC",
-            train_data=train_images_subsampled,
-            train_targets=train_labels_subsampled,
-            original_test_data=test_images,
-            test_targets=test_labels,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRPC_dict",
-            verbose=True,
-            default_budget=int(7840000 * 1.3),
-            alpha_N_override=0.25,
-            alpha_F_override=0.15,
-        )
-    )
+    ############### Classification
+    # mndata = MNIST("mnist/")
+    #
+    # train_images, train_labels = mndata.load_training()
+    # train_images = np.array(train_images)
+    # train_labels = np.array(train_labels)
+    #
+    # SUBSAMPLE_SIZE = 10000  # TODO(@motiwari): Update this?
+    # train_images_subsampled = train_images[:SUBSAMPLE_SIZE]
+    # train_labels_subsampled = train_labels[:SUBSAMPLE_SIZE]
+    #
+    # test_images, test_labels = mndata.load_testing()
+    # test_images = np.array(test_images)
+    # test_labels = np.array(test_labels)
+    #
+    # # Random Forests
+    # pp.pprint(
+    #     compare_budgets(
+    #         compare="HRFC",
+    #         train_data=train_images_subsampled,
+    #         train_targets=train_labels_subsampled,
+    #         original_test_data=test_images,
+    #         test_targets=test_labels,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="HRFC_dict",
+    #         verbose=True,
+    #         default_budget=int(7840000 * 1.3),
+    #     )
+    # )
+    #
+    # ## Extremely Random Forests
+    # pp.pprint(
+    #     compare_budgets(
+    #         compare="ERFC",
+    #         train_data=train_images_subsampled,
+    #         train_targets=train_labels_subsampled,
+    #         original_test_data=test_images,
+    #         test_targets=test_labels,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="ERFC_dict",
+    #         verbose=True,
+    #         default_budget=int(7840000 * 1.3),
+    #     )
+    # )
+    #
+    # ## Random Patches
+    # # NO LONGER APPLIES, SAVED FOR POSTERITY. BUDGET IS SET TO 100k:
+    # # HRPC is a special case. The MNIST digits have 784 features, and alpha_F * F =~120 features, roughly 1/6 pixels,
+    # # are not enough to learn meaningful models. As such, we have to set alpha_F very high. This makes F jump from a
+    # # few dozen (e.g., sqrt(784) = 28) to a few hundred.
+    # # Unfortunately, using a lot of features increases the risk that we go over budget (because the number of histogram
+    # # insertions we make scales with F), we for this set of experiments (and this set of experiments ONLY) we increase
+    # # utils.constants.BUFFER from 100,000 to 1,000,000.
+    # pp.pprint(
+    #     compare_budgets(
+    #         compare="HRPC",
+    #         train_data=train_images_subsampled,
+    #         train_targets=train_labels_subsampled,
+    #         original_test_data=test_images,
+    #         test_targets=test_labels,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="HRPC_dict",
+    #         verbose=True,
+    #         default_budget=int(7840000 * 1.3),
+    #         alpha_N_override=0.25,
+    #         alpha_F_override=0.15,
+    #     )
+    # )
 
 
 if __name__ == "__main__":
