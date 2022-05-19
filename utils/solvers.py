@@ -200,9 +200,9 @@ def solve_exactly(
         if is_classification:
             B = math.ceil(np.sqrt(F))
         else:
-            B = math.ceil(
-                np.sqrt(F)
-            )  # TODO(@motiwari): change this back to F after ddl
+            # TODO(@motiwari): change this back to F after ddl
+            # B = math.ceil(np.sqrt(F))
+            B = int(F / 3)
     else:
         B = num_bins
 
@@ -312,9 +312,9 @@ def solve_mab(
         if is_classification:
             B = math.ceil(np.sqrt(F))
         else:
-            B = math.ceil(
-                np.sqrt(F)
-            )  # TODO(@motiwari): change this back to F after ddl
+            # TODO(@motiwari): change this back to F after ddl
+            # B = math.ceil(np.sqrt(F))
+            B = int(F / 3)
     else:
         B = num_bins
 
