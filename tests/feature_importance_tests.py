@@ -54,7 +54,7 @@ def test_stability_with_budget_diabetes(
         max_depth: int = 3,
         num_forests: int = 5,
         num_trees_per_feature: int = 20,
-        best_k_features: int = 10,
+        best_k_features: int = 5,
 ) -> None:
     np.random.seed(seed)
     diabetes = sklearn.datasets.load_diabetes()
@@ -152,7 +152,7 @@ def run_stability_baseline_diabetes(
     max_depth: int = 3,
     num_forests: int = 5,
     num_trees_per_feature: int = 20,
-    best_k_feature: int = 10,
+    best_k_feature: int = 5,
 ) -> None:
     mab_sim_array = []
     exact_sim_array = []
