@@ -64,7 +64,7 @@ def compare_budgets(
     train_data: np.ndarray = None,
     train_targets: np.ndarray = None,
     original_test_data: np.ndarray = None,
-    original_test_targets: np.ndarray = None,
+    test_targets: np.ndarray = None,
     num_seeds: int = 1,
     predict: bool = True,
     run_theirs: bool = True,
@@ -468,7 +468,7 @@ def compare_budgets(
             )
             if predict:
                 our_test_acc = np.mean(
-                    our_model.predict_batch(our_test_data)[0] == original_test_targets
+                    our_model.predict_batch(our_test_data)[0] == test_targets
                 )
             if run_theirs:
                 their_train_acc = np.mean(
@@ -477,8 +477,7 @@ def compare_budgets(
                 )
                 if predict:
                     their_test_acc = np.mean(
-                        their_model.predict_batch(their_test_data)[0]
-                        == original_test_targets
+                        their_model.predict_batch(their_test_data)[0] == test_targets
                     )
         elif compare in REGRESSION_MODELS:
             is_classification = False
@@ -487,8 +486,7 @@ def compare_budgets(
             )
             if predict:
                 our_test_acc = np.mean(
-                    (our_model.predict_batch(our_test_data) - original_test_targets)
-                    ** 2
+                    (our_model.predict_batch(our_test_data) - test_targets) ** 2
                 )
             if run_theirs:
                 their_train_acc = np.mean(
@@ -500,11 +498,7 @@ def compare_budgets(
                 )
                 if predict:
                     their_test_acc = np.mean(
-                        (
-                            their_model.predict_batch(their_test_data)
-                            - original_test_targets
-                        )
-                        ** 2
+                        (their_model.predict_batch(their_test_data) - test_targets) ** 2
                     )
         else:
             raise Exception("Invalid model choice.")
@@ -675,13 +669,13 @@ def main():
             train_data=train_data,
             train_targets=train_targets,
             original_test_data=test_data,
-            original_test_targets=test_targets,
+            test_targets=test_targets,
             num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
             filename="HRFR_dict",
             verbose=True,
-            default_budget=2400000,
+            default_budget=2400000 * 2,
         )
     )
 
@@ -692,7 +686,7 @@ def main():
     #         train_data=train_data,
     #         train_targets=train_targets,
     #         original_test_data=test_data,
-    #         original_test_targets=test_targets,
+    #         test_targets=test_targets,
     #         num_seeds=NUM_SEEDS,
     #         predict=True,
     #         run_theirs=True,
@@ -710,7 +704,7 @@ def main():
             train_data=train_data,
             train_targets=train_targets,
             original_test_data=test_data,
-            original_test_targets=test_targets,
+            test_targets=test_targets,
             num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
@@ -744,7 +738,7 @@ def main():
             train_data=train_images_subsampled,
             train_targets=train_labels_subsampled,
             original_test_data=test_images,
-            original_test_targets=test_labels,
+            test_targets=test_labels,
             num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
@@ -761,7 +755,7 @@ def main():
             train_data=train_images_subsampled,
             train_targets=train_labels_subsampled,
             original_test_data=test_images,
-            original_test_targets=test_labels,
+            test_targets=test_labels,
             num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
@@ -785,7 +779,7 @@ def main():
             train_data=train_images_subsampled,
             train_targets=train_labels_subsampled,
             original_test_data=test_images,
-            original_test_targets=test_labels,
+            test_targets=test_labels,
             num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
