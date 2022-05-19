@@ -665,7 +665,7 @@ def main():
 
     ########################################### PARAMS
     pp = pprint.PrettyPrinter(indent=2)
-    NUM_SEEDS = 5
+    NUM_SEEDS = 1
 
     ############### Regression
     # train_data, train_targets, test_data, test_targets = load_housing()

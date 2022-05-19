@@ -675,7 +675,7 @@ def main():
             run_theirs=True,
             filename="HRFR_dict",
             verbose=True,
-            default_budget=2400000 * 2,
+            default_budget=2400000 * 10,
         )
     )
 
