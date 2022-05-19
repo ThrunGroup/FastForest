@@ -43,20 +43,19 @@ def test_contrived_dataset() -> None:
     print("stability", PI.get_stability(results))
 
 
-def test_stability_with_budget(seed: int = 0) -> None:
+def test_stability_with_budget(seed: int = 1) -> None:
     np.random.seed(seed)
     # digits = sklearn.datasets.load_digits()
     # data, labels = digits.data, digits.target
     diabetes = sklearn.datasets.load_diabetes()
     # data, labels = diabetes.data, diabetes.target
-    data, labels = make_regression(100000, n_features=30, n_informative=3)
+    data, labels = make_regression(100000, n_features=35, n_informative=5)
     num_forests = 5
     num_trees_per_feature = 20
-    best_k_features = 10
-    best_k_features = 2
+    best_k_features = 5
     max_depth = 5
     max_leaf_nodes = 24
-    feature_subsampling = None
+    feature_subsampling = "SQRT"
     epsilon = 0.00
     budget = 5000000
     PI_exact = PermutationImportance(
@@ -66,10 +65,8 @@ def test_stability_with_budget(seed: int = 0) -> None:
         max_depth=max_depth,
         num_forests=num_forests,
         num_trees_per_forest=num_trees_per_feature,
-        budget_per_forest=FOREST_UNIT_BUDGET_DIGIT,
         budget_per_forest=budget,
         solver=EXACT,
-        #is_classification=False,
         is_classification=False,
         feature_subsampling=feature_subsampling,
         max_leaf_nodes=max_leaf_nodes,
@@ -103,7 +100,7 @@ def test_stability_with_budget(seed: int = 0) -> None:
 
     log_dict = {
         "stability_diff": stability_mab - stability_exact,
-        "dataset": "digits",
+        "dataset": "make_regression",
         "budget": FOREST_UNIT_BUDGET_DIGIT,
         "num_forests": num_forests,
         "num_trees": num_trees_per_feature,
@@ -177,6 +174,25 @@ def run_stability_baseline_digits(
     print("confidence interval for exact: ", exact_CI)
     print("\n")
     print("confidence interval for mab: ", mab_CI)
+    log_dict = {
+        "stability_diff": stability_mab - stability_exact,
+        "dataset": "digits",
+        "budget": FOREST_UNIT_BUDGET_DIGIT,
+        "num_forests": num_forests,
+        "num_trees": num_trees_per_feature,
+        "best_k": best_k_features,
+        "max_depth": max_depth,
+        "max_leaf_nodes": max_leaf_nodes,
+        "feature_subsampling": feature_subsampling,
+        "epsilon": epsilon,
+    }
+    dir_name = "stability_log"
+    log_filename = os.path.join(dir_name, "stability_log.csv")
+    if not os.path.exists(log_filename):
+        os.makedirs(dir_name, exist_ok=True)
+        df = pd.DataFrame(columns=log_dict.keys())
+        df.to_csv(log_filename, index=False)
+    append_dict_as_row(log_filename, log_dict, log_dict.keys())
 
 
 if __name__ == "__main__":

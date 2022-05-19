@@ -114,6 +114,7 @@ class ForestBase(ABC):
         self.oob_score = oob_score
         if oob_score:
             assert bootstrap, "out of bag score can be used only when bootstrapping"
+        self.mdg_array = None
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
@@ -306,7 +307,7 @@ class ForestBase(ABC):
                     agg_pred[tree_idx] = tree.predict(datapoint)
                 return float(agg_pred.mean())
 
-    def get_oob_score(self, data=None):
+    def get_oob_score(self, data=None) -> float:
         """
         Get out of bag score(accuracy/mse) of Forest algorithm.
         """
@@ -347,3 +348,25 @@ class ForestBase(ABC):
             oob_prediction = oob_score_array / oob_counts_array
             error = np.sum(np.square(true_labels - oob_prediction/oob_counts_array)) / len(true_labels)
         return error
+
+    def calculate_mdi(self) -> np.ndarray:
+        """
+        Calculate mean decrease in impurity
+        """
+        assert self.tree_global_feature_subsampling is False, "Not implemented"
+        if self.mdg_array is not None:
+            return self.mdg_array
+        self.mdg_array = np.zeros(len(self.data[0]))
+        for tree in self.trees:
+            node = tree.node
+            self.recursive_mdg_helper(node, self.mdg_array)
+        return self.mdg_array
+
+    def recursive_mdi_helper(self, node, mdg_array):
+        if node.split_reduction is not None:
+            mdg_array[node.split_feature] += node.split_reduction
+        if node.left is None:
+            return
+        else:
+            self.recursive_mdg_helper(node.left, mdg_array)
+            self.recursive_mdg_helper(node.right, mdg_array)
