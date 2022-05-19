@@ -30,6 +30,9 @@ class PermutationImportance:
         solver: str = MAB,
         stability_metric: str = JACCARD,
         budget_per_forest: int = None,
+        feature_subsampling: str = None,
+        max_leaf_nodes: int = None,
+        epsilon: float = 0,
     ):
         assert num_forests > 1, "we need at least two forests"
         set_seed(seed)
@@ -45,6 +48,9 @@ class PermutationImportance:
         self.stability_metric = stability_metric
         self.forests: List[Union[ForestRegressor, ForestClassifier]] = []
         self.is_train = False
+        self.feature_subsampling = feature_subsampling
+        self.max_leaf_nodes = max_leaf_nodes
+        self.epsilon = epsilon
 
     def train_forest(self, seed: int) -> None:
         """
@@ -59,6 +65,9 @@ class PermutationImportance:
                 n_estimators=self.num_trees_per_forest,
                 solver=self.solver,
                 budget=self.budget_per_forest,
+                feature_subsampling=self.feature_subsampling,
+                max_leaf_nodes=self.max_leaf_nodes,
+                epsilon=self.epsilon,
                 bootstrap=True,
                 oob_score=True,
             )
@@ -71,6 +80,9 @@ class PermutationImportance:
                 n_estimators=self.num_trees_per_forest,
                 solver=self.solver,
                 budget=self.budget_per_forest,
+                feature_subsampling=self.feature_subsampling,
+                max_leaf_nodes=self.max_leaf_nodes,
+                epsilon=self.epsilon,
                 bootstrap=True,
                 oob_score=True,
             )
@@ -104,7 +116,9 @@ class PermutationImportance:
         model_score = np.sum(forest.predict_batch(data_copy)[0] == self.labels)
         for feature_idx in range(len(data_copy[0])):
             self.rng.shuffle(data_copy[:, feature_idx])  # shuffles in-place
-            importance_vec.append((forest.get_oob_score(data_copy)))
+            model_score = forest.get_oob_score(self.data)
+            permutated_model_score = forest.get_oob_score(data_copy)
+            importance_vec.append(np.abs(model_score - permutated_model_score))
         return np.asarray(importance_vec)
 
     def get_importance_array(self) -> np.ndarray:

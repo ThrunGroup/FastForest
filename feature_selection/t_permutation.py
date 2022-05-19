@@ -1,9 +1,11 @@
 import sklearn.datasets
 import numpy as np
 import math
+import os
+import pandas as pd
 
 from permutation import PermutationImportance
-from sklearn.datasets import make_classification
+from sklearn.datasets import make_classification, make_regression
 from sklearn.model_selection import train_test_split
 from utils.constants import (
     EXACT,
@@ -15,6 +17,7 @@ from utils.constants import (
     FOREST_UNIT_BUDGET_DIABETES,
     MAX_SEED,
 )
+from experiments.heart.fit_heart import append_dict_as_row
 
 
 def test_contrived_dataset() -> None:
@@ -37,40 +40,52 @@ def test_contrived_dataset() -> None:
     print("stability", PI.get_stability(results))
 
 
-def test_stability_with_budget(seed: int) -> None:
+def test_stability_with_budget(seed: int = 0) -> None:
     np.random.seed(seed)
     # digits = sklearn.datasets.load_digits()
     # data, labels = digits.data, digits.target
     diabetes = sklearn.datasets.load_diabetes()
     data, labels = diabetes.data, diabetes.target
-    print(data.shape)
-
+    data, labels = make_regression(10000, n_features=30, n_informative=10)
     num_forests = 5
     num_trees_per_feature = 20
     best_k_features = 5
+    max_depth = 7
+    max_leaf_nodes = 60
+    feature_subsampling = "SQRT"
+    epsilon = 0.01
+    budget = 6000000
     PI_exact = PermutationImportance(
+        seed=seed,
         data=data,
         labels=labels,
-        max_depth=3,
+        max_depth=max_depth,
         num_forests=num_forests,
         num_trees_per_forest=num_trees_per_feature,
-        budget_per_forest=FOREST_UNIT_BUDGET_DIABETES,
+        budget_per_forest=budget,
         solver=EXACT,
         is_classification=False,
+        feature_subsampling=feature_subsampling,
+        max_leaf_nodes=max_leaf_nodes,
+        epsilon=epsilon,
     )
     stability_exact = PI_exact.run_baseline(best_k_features)
     print("stability for exact", stability_exact)
     print("\n\n")
 
     PI_mab = PermutationImportance(
+        seed=seed,
         data=data,
         labels=labels,
-        max_depth=3,
+        max_depth=max_depth,
         num_forests=num_forests,
         num_trees_per_forest=num_trees_per_feature,
-        budget_per_forest=FOREST_UNIT_BUDGET_DIABETES,
+        budget_per_forest=budget,
         solver=MAB,
         is_classification=False,
+        feature_subsampling=feature_subsampling,
+        max_leaf_nodes=max_leaf_nodes,
+        epsilon=epsilon,
     )
     stability_mab = PI_mab.run_baseline(best_k_features)
     print("stability for mab", stability_mab)
@@ -79,6 +94,26 @@ def test_stability_with_budget(seed: int) -> None:
         print("MAB IS MORE STABLE!!!!")
     else:
         print("EXACT is more stable :((")
+
+    log_dict = {
+        "stability_diff": stability_mab - stability_exact,
+        "dataset": "digits",
+        "budget": FOREST_UNIT_BUDGET_DIGIT,
+        "num_forests": num_forests,
+        "num_trees": num_trees_per_feature,
+        "best_k": best_k_features,
+        "max_depth": max_depth,
+        "max_leaf_nodes": max_leaf_nodes,
+        "feature_subsampling": feature_subsampling,
+        "epsilon": epsilon,
+    }
+    dir_name = "feature_selection/stability_log"
+    log_filename = os.path.join(dir_name, "stability_log.csv")
+    if not os.path.exists(log_filename):
+        os.makedirs(dir_name, exist_ok=True)
+        df = pd.DataFrame(columns=log_dict.keys())
+        df.to_csv(log_filename, index=False)
+    append_dict_as_row(log_filename, log_dict, log_dict.keys())
 
 
 def run_stability_baseline_digits(
@@ -140,5 +175,5 @@ def run_stability_baseline_digits(
 
 if __name__ == "__main__":
     # test_contrived_dataset()
-    # test_stability_with_budget(0)
-    run_stability_baseline_digits()
+    test_stability_with_budget(2000000)
+    # run_stability_baseline_digits()

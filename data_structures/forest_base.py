@@ -338,7 +338,7 @@ class ForestBase(ABC):
         # filter samples that isn't out of bag from any trees
         true_oob_idcs = np.where(oob_counts_array != 0)[0]
         true_labels = self.org_targets[true_oob_idcs]
-        oob_score_array = oob_score_array[true_oob_idcs, :]
+        oob_score_array = oob_score_array[true_oob_idcs]
         oob_counts_array = oob_counts_array[true_oob_idcs]
         if self.is_classification:
             oob_prediction = oob_score_array.argmax(axis=1)  # majority vote system
