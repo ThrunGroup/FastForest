@@ -33,6 +33,7 @@ class PermutationImportance:
         feature_subsampling: str = None,
         max_leaf_nodes: int = None,
         epsilon: float = 0,
+        importance_score: str = "impurity"
     ):
         assert num_forests > 1, "we need at least two forests"
         set_seed(seed)
@@ -51,6 +52,7 @@ class PermutationImportance:
         self.feature_subsampling = feature_subsampling
         self.max_leaf_nodes = max_leaf_nodes
         self.epsilon = epsilon
+        self.importance_score = importance_score
 
     def train_forest(self, seed: int) -> None:
         """
@@ -100,7 +102,7 @@ class PermutationImportance:
             seed = self.rng.integers(0, MAX_SEED)
             self.train_forest(seed)
 
-    def compute_importance_vec(self, forest_idx: int, importance_score: str = "permutation") -> np.ndarray:
+    def compute_importance_vec(self, forest_idx: int) -> np.ndarray:
         """
         Compute the importance vector for the forest corresponding to forest_idx.
         Sorts the indices of the feature by relative importance. Assumes that all forests have been trained.
@@ -110,35 +112,34 @@ class PermutationImportance:
         assert self.is_train, "Forest isn't trained"
         importance_vec = []
         forest = self.forests[forest_idx]
-        if importance_score == "permutation":
+        if self.importance_score == "permutation":
             model_score = np.sum(forest.predict_batch(self.data)[0] == self.labels)
             for feature_idx in range(len(self.data[0])):
                 data_copy = np.ndarray.copy(self.data)
                 self.rng.shuffle(data_copy[:, feature_idx])  # shuffles in-place
                 permutated_model_score = forest.get_oob_score(data_copy)
                 importance_vec.append(np.abs(model_score - permutated_model_score))
-        elif importance_score == "impurity":
+        elif self.importance_score == "impurity":
             importance_vec = -forest.calculate_mdi()
         else:
             raise NotImplementedError("importance not implemented")
 
         return np.asarray(importance_vec)
 
-    def get_importance_array(self, importance_score: str = "permutation") -> np.ndarray:
+    def get_importance_array(self) -> np.ndarray:
         """
         Trains all of its forests and computes the importance vector for each of the trained forests.
         This is the main function that an object of this class will call.
 
         :return: an array of importance vectors.
         """
-        importance_score = "impurity"
         self.is_train = True
         self.train_forests()
         num_forests = len(self.forests)
 
         result = np.array([])
         for forest_idx in range(num_forests):
-            imp_vec = self.compute_importance_vec(forest_idx, importance_score)
+            imp_vec = self.compute_importance_vec(forest_idx)
             if len(result) == 0:
                 result = imp_vec    # initialize with the first importance vector
             else:
