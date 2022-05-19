@@ -2,9 +2,7 @@ import sklearn.datasets
 import numpy as np
 import math
 
-from feature_selection.permutation import PermutationImportance
-from sklearn.datasets import make_classification
-from sklearn.model_selection import train_test_split
+from permutation import PermutationImportance
 from utils.constants import (
     MAB,
     EXACT,
@@ -87,6 +85,7 @@ def test_stability_with_budget_diabetes(
         is_classification=False,
     )
     stability_mab = mab.run_baseline(best_k_features)
+    print(stability_exact, stability_mab)
     assert stability_mab > stability_exact, "MAB is NOT more stable for regression"
 
 
@@ -207,7 +206,7 @@ def run_stability_baseline_diabetes(
 
 
 if __name__ == "__main__":
-    test_stability_with_budget_digit(0)
+    # test_stability_with_budget_digit(0)
     test_stability_with_budget_diabetes(0)
-    run_stability_baseline_digits(0)
-    run_stability_baseline_diabetes(0)
+    # run_stability_baseline_digits(0)
+    # run_stability_baseline_diabetes(0)

@@ -113,7 +113,7 @@ def test_stability_with_budget(seed: int = 0) -> None:
         "feature_subsampling": feature_subsampling,
         "epsilon": epsilon,
     }
-    dir_name = "feature_selection/stability_log"
+    dir_name = "stability_log"
     log_filename = os.path.join(dir_name, "stability_log.csv")
     if not os.path.exists(log_filename):
         os.makedirs(dir_name, exist_ok=True)
