@@ -725,20 +725,20 @@ def main():
     )
 
     ## Extremely Random Forests
-    pp.pprint(
-        compare_runtimes(
-            compare="ERFR",
-            train_data=train_data,
-            train_targets=train_targets,
-            test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="ERFR_dict",
-            verbose=True,
-        )
-    )
+    # pp.pprint(
+    #     compare_runtimes(
+    #         compare="ERFR",
+    #         train_data=train_data,
+    #         train_targets=train_targets,
+    #         test_data=test_data,
+    #         test_targets=test_targets,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="ERFR_dict",
+    #         verbose=True,
+    #     )
+    # )
 
     ## Random Patches
     pp.pprint(

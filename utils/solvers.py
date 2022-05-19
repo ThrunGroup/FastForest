@@ -202,7 +202,7 @@ def solve_exactly(
         else:
             # TODO(@motiwari): change this back to F after ddl
             # B = math.ceil(np.sqrt(F))
-            B = int(F / 3)
+            B = F
     else:
         B = num_bins
 
@@ -314,7 +314,8 @@ def solve_mab(
         else:
             # TODO(@motiwari): change this back to F after ddl
             # B = math.ceil(np.sqrt(F))
-            B = int(F / 3)
+            # B = int(F / 3)
+            B = F
     else:
         B = num_bins
 
