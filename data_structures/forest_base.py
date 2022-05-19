@@ -359,7 +359,7 @@ class ForestBase(ABC):
         self.mdg_array = np.zeros(len(self.data[0]))
         for tree in self.trees:
             node = tree.node
-            self.recursive_mdg_helper(node, self.mdg_array)
+            self.recursive_mdi_helper(node, self.mdg_array)
         return self.mdg_array
 
     def recursive_mdi_helper(self, node, mdg_array):
@@ -368,5 +368,5 @@ class ForestBase(ABC):
         if node.left is None:
             return
         else:
-            self.recursive_mdg_helper(node.left, mdg_array)
-            self.recursive_mdg_helper(node.right, mdg_array)
+            self.recursive_mdi_helper(node.left, mdg_array)
+            self.recursive_mdi_helper(node.right, mdg_array)

@@ -118,7 +118,7 @@ class PermutationImportance:
                 permutated_model_score = forest.get_oob_score(data_copy)
                 importance_vec.append(np.abs(model_score - permutated_model_score))
         elif importance_score == "impurity":
-            importance_vec = -forest.calculate_mdg()
+            importance_vec = -forest.calculate_mdi()
         else:
             raise NotImplementedError("importance not implemented")
 
