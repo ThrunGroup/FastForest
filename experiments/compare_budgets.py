@@ -688,7 +688,7 @@ def main():
             run_theirs=True,
             filename="HRPR_dict",
             verbose=True,
-            default_budget=2400000,
+            default_budget=100000,  # Divide by 24 for less trees, since only using ~1/4*1/6 of the data
         )
     )
 
@@ -751,7 +751,8 @@ def main():
             run_theirs=True,
             filename="HRPC_dict",
             verbose=True,
-            default_budget=7840000 * 1.3,
+            # Divide by 24 for less trees, since only using ~1/4*1/6 of the data
+            default_budget=int(7840000 * 1.3 / 24),
         )
     )
 
