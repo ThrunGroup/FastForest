@@ -112,7 +112,8 @@ class ForestBase(ABC):
         self.use_dynamic_epsilon = use_dynamic_epsilon
         self.epsilon = epsilon
         self.oob_score = oob_score
-        if oob_score: assert bootstrap, "out of bag score can be used only when bootstrapping"
+        if oob_score:
+            assert bootstrap, "out of bag score can be used only when bootstrapping"
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
@@ -305,40 +306,44 @@ class ForestBase(ABC):
                     agg_pred[tree_idx] = tree.predict(datapoint)
                 return float(agg_pred.mean())
 
-    def get_oob_score(self):
+    def get_oob_score(self, data=None):
         """
         Get out of bag score(accuracy/mse) of Forest algorithm.
         """
-        if self.is_classification and len(self.classes) > 2:
-            raise NotImplementedError(
-                "Not implemented get_oob_score for multi class setting"
-            )
-        # (i,0) element contains the sum of prediction of ith bag sample on out of bag trees and (i, 1) element contains
-        # the number of trees that ith sample is out of bag.
-        oob_score_array = np.zeros((len(self.org_targets), 2))
+        # if self.is_classification and len(self.classes) > 2:
+        #     raise NotImplementedError(
+        #         "Not implemented get_oob_score for multi class setting"
+        #     )
+        # oob_counts_array counts the occurrence of data points in out of bag samples
+        # oob_score_array is the sum of predicted value of out of bag samples.
+        if data is None:
+            data = self.data
+        oob_counts_array = np.zeros(len(self.org_targets))
+        if self.is_classification:
+            oob_score_array = np.zeros((len(self.org_targets), len(self.classes)))
+        else:
+            oob_score_array = np.zeros((len(self.org_targets)))
 
         for i in range(len(self.trees)):
             tree = self.trees[i]
             oob_idcs = self.oob_list[i]
             if self.is_classification:
-                oob_score_array[oob_idcs, 0] += tree.predict_batch(self.data[oob_idcs])[1][:, 1]
+                oob_score_array[oob_idcs, :] += tree.predict_batch(data[oob_idcs])[
+                    1
+                ]
             else:
-                oob_score_array[oob_idcs, 0] += tree.predict_batch(self.data[oob_idcs])
-            oob_score_array[oob_idcs, 1] += 1
+                oob_score_array[oob_idcs] += tree.predict_batch(data[oob_idcs])
+            oob_counts_array[oob_idcs] += 1
 
         # filter samples that isn't out of bag from any trees
-        true_oob_idcs = np.where(oob_score_array[:, 1] != 0)[0]
+        true_oob_idcs = np.where(oob_counts_array != 0)[0]
         true_labels = self.org_targets[true_oob_idcs]
         oob_score_array = oob_score_array[true_oob_idcs, :]
-        oob_prediction = (
-            oob_score_array[:, 0] / oob_score_array[:, 1]
-        )  # Average the prediction
+        oob_counts_array = oob_counts_array[true_oob_idcs]
         if self.is_classification:
-            oob_prediction[oob_prediction > 0.5] = 1  # majority vote system
-            oob_prediction[oob_prediction <= 0.5] = 0 # majority vote system
+            oob_prediction = oob_score_array.argmax(axis=1)  # majority vote system
             error = np.sum(true_labels == oob_prediction) / len(true_labels)
         else:
-            error = np.sum(np.square(true_labels - oob_prediction)) / len(true_labels)
+            oob_prediction = oob_score_array / oob_counts_array
+            error = np.sum(np.square(true_labels - oob_prediction/oob_counts_array)) / len(true_labels)
         return error
-
-
