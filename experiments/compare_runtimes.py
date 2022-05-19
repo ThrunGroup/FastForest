@@ -114,8 +114,8 @@ def compare_runtimes(
     their_test_accs = []
 
     # params
-    default_alpha_N = 0.5
-    default_alpha_F = 0.5
+    default_alpha_N = 0.25
+    default_alpha_F = 0.15
     default_max_depth = 5
     default_n_estimators = 5
     default_min_samples_split = 2
@@ -658,8 +658,9 @@ def main():
     # train_targets_subsampled = train_targets
     # print(len(train_data_subsampled), len(train_targets_subsampled))
 
+    # sklearn regression dataset
     params = {
-        "data_size": 1000000,
+        "data_size": 200000,
         "n_features": 50,
         "informative_ratio": 0.06,
         "seed": 1,
@@ -699,21 +700,6 @@ def main():
         )
     )
 
-    pp.pprint(
-        compare_runtimes(
-            compare="GBHRFR",
-            train_data=train_data,
-            train_targets=train_targets,
-            test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="GBHRFR_dict",
-            verbose=True,
-        )
-    )
-
     ## Extremely Random Forests
     pp.pprint(
         compare_runtimes(
@@ -730,21 +716,6 @@ def main():
         )
     )
 
-    pp.pprint(
-        compare_runtimes(
-            compare="GBERFR",
-            train_data=train_data,
-            train_targets=train_targets,
-            test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="GBERFR_dict",
-            verbose=True,
-        )
-    )
-
     ## Random Patches
     pp.pprint(
         compare_runtimes(
@@ -757,21 +728,6 @@ def main():
             predict=True,
             run_theirs=True,
             filename="HRPR_dict",
-            verbose=True,
-        )
-    )
-
-    pp.pprint(
-        compare_runtimes(
-            compare="GBHRPR",
-            train_data=train_data,
-            train_targets=train_targets,
-            test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="GBHRPR_dict",
             verbose=True,
         )
     )
