@@ -8,7 +8,7 @@ from data_structures.forest_regressor import ForestRegressor
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.tree_regressor import TreeRegressor
 from utils.utils import class_to_idx
-from utils.constants import MAB, EXACT, JACCARD, SPEARMAN, KUNCHEVA
+from utils.constants import MAB, EXACT, MIN_IMPORTANCE, JACCARD, SPEARMAN, KUNCHEVA
 
 
 class PermutationImportance:
@@ -18,6 +18,7 @@ class PermutationImportance:
     """
     def __init__(
         self,
+        seed: int,
         data: np.ndarray,
         labels: np.ndarray,
         max_depth: int = 5,
@@ -29,6 +30,7 @@ class PermutationImportance:
         budget_per_forest: int = None,
     ):
         assert num_forests > 1, "we need at least two forests"
+        np.random.seed(seed)
         self.data = data
         self.labels = labels
         self.max_depth = max_depth
@@ -40,27 +42,31 @@ class PermutationImportance:
         self.stability_metric = stability_metric
         self.forests = []
 
-    def train_forest(self) -> None:
+    def train_forest(self, seed: int) -> None:
         """
         Trains a forest and adds it to the list of forests
         """
         if self.is_classification:
             forest = ForestClassifier(
+                random_state=seed,
                 data=self.data,
                 labels=self.labels,
                 max_depth=self.max_depth,
                 n_estimators=self.num_trees_per_forest,
                 solver=self.solver,
                 budget=self.budget_per_forest,
+                bootstrap=True,
             )
         else:
             forest = ForestRegressor(
+                random_state=seed,
                 data=self.data,
                 labels=self.labels,
                 max_depth=self.max_depth,
                 n_estimators=self.num_trees_per_forest,
                 solver=self.solver,
                 budget=self.budget_per_forest,
+                bootstrap=True,
             )
         forest.fit()
         print("number of trees: ", len(forest.trees))
@@ -73,7 +79,7 @@ class PermutationImportance:
         """
         for i in range(self.num_forests):
             print("training forest: ", i+1)
-            self.train_forest()
+            self.train_forest(i)
 
     def compute_importance_vec(self, forest_idx: int) -> np.ndarray:
         """
@@ -85,17 +91,19 @@ class PermutationImportance:
         importance_vec = []
         forest = self.forests[forest_idx]
         num_trees = len(forest.trees)   # number of trees depends on the budget
+        data_copy = np.ndarray.copy(self.data)
 
-        model_score = np.sum(forest.predict_batch(self.data)[0] == self.labels)
-        for feature_idx in range(len(self.data[0])):
+        model_score = np.sum(forest.predict_batch(data_copy)[0] == self.labels)
+        for feature_idx in range(len(data_copy[0])):
             c_score = 0
             for tree_idx in range(num_trees):
-                np.random.shuffle(self.data[:, feature_idx])  # shuffles in-place
+                if feature_idx == 64: import ipdb; ipdb.set_trace()
+                np.random.shuffle(data_copy[:, feature_idx])  # shuffles in-place
                 tree = forest.trees[tree_idx]
-                c_score += np.sum(tree.predict_batch(self.data)[0] == self.labels)
+                c_score += np.sum(tree.predict_batch(data_copy)[0] == self.labels)
             avg_c_score = c_score / num_trees
-            importance_vec.append(model_score - avg_c_score)
-            # importance_vec.append((model_score - avg_c_score)/len(self.data))
+            # importance_vec.append(model_score - avg_c_score)
+            importance_vec.append((model_score - avg_c_score)/len(data_copy))
         return np.asarray(importance_vec)
 
     def get_importance_array(self) -> np.ndarray:
@@ -147,7 +155,7 @@ class PermutationImportance:
         else:
             raise NotImplementedError("Use Jaccard similarity.")
 
-    def get_stability(self, imp_data: np.ndarray) -> float:
+    def get_stability_pairwise(self, imp_data: np.ndarray) -> float:
         """
         Find the stability of the importance array using pairwise stability metrics.
         """
@@ -163,9 +171,42 @@ class PermutationImportance:
                 )
         return 2.0 * stability / (length * (length - 1))
 
-    def run_baseline(self) -> float:
+    @staticmethod
+    def get_stability_freq(imp_data: np.ndarray, best_k_features: int) -> float:
+        """
+        Find the stability of the importance array using frequency of feature subsets
+        """
+        N = len(imp_data)
+        F = len(imp_data[0])
+
+        # preprocess data
+        best_idcs = np.argsort(-imp_data)[:, :best_k_features]
+        for i in range(N):
+            top_k_imps = imp_data[i][best_idcs[i]]
+            # zero-out the top k importances that aren't below threshold (default 0.0)
+            best_idcs[i] = np.where(top_k_imps >= MIN_IMPORTANCE, best_idcs[i], -1)
+
+        c_var = 0
+        for i in range(F):
+            freq = np.sum(np.where(best_idcs == i, 1, 0)) / N
+            c_var += N * freq * (1 - freq) / (N - 1)
+
+        # d_bar is the avg number of features selected over N feature sets (default k).
+        d_bar = np.sum(np.where(best_idcs >= 0, 1, 0)) / N
+        numer = c_var/F
+        denom = d_bar * (1 - d_bar/F) / F
+        print(numer, denom)
+        return 1 - numer/denom
+
+    def run_baseline(self, best_k_features: int = None) -> float:
         imp_matrix = self.get_importance_array()
-        return self.get_stability(imp_matrix)
+        #print("this is importance array: \n", imp_matrix)
+        #print("this is importance array indices: \n", np.argsort(-imp_matrix))
+        #print("\n\n")
+        if best_k_features is None:
+            return self.get_stability_pairwise(imp_matrix)
+        else:
+            return self.get_stability_freq(imp_matrix, best_k_features)
 
 
 

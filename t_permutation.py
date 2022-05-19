@@ -1,9 +1,11 @@
 import sklearn.datasets
 import numpy as np
+import math
+
 from permutation import PermutationImportance
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
-from utils.constants import EXACT, MAB, FOREST_UNIT_BUDGET, JACCARD, SPEARMAN, KUNCHEVA
+from utils.constants import EXACT, MAB, FOREST_UNIT_BUDGET_DIGIT, JACCARD, SPEARMAN, KUNCHEVA, FOREST_UNIT_BUDGET_DIABETES
 
 
 def test_contrived_dataset() -> None:
@@ -31,25 +33,26 @@ def test_contrived_dataset() -> None:
 
 def test_stability_with_budget(seed: int) -> None:
     np.random.seed(seed)
-    digits = sklearn.datasets.load_digits()
-    data, labels = digits.data, digits.target
+    #digits = sklearn.datasets.load_digits()
+    #data, labels = digits.data, digits.target
+    diabetes = sklearn.datasets.load_diabetes()
+    data, labels = diabetes.data, diabetes.target
     print(data.shape)
 
-    stability_metric = JACCARD
     num_forests = 5
-    num_trees_per_feature = 30
+    num_trees_per_feature = 20
+    best_k_features = 5
     PI_exact = PermutationImportance(
         data=data,
         labels=labels,
         max_depth=3,
         num_forests=num_forests,
         num_trees_per_forest=num_trees_per_feature,
-        budget_per_forest=FOREST_UNIT_BUDGET,
+        budget_per_forest=FOREST_UNIT_BUDGET_DIABETES,
         solver=EXACT,
-        stability_metric=stability_metric,
+        is_classification=False,
     )
-    res_exact = PI_exact.get_importance_array()
-    stability_exact = PI_exact.get_stability(res_exact)
+    stability_exact = PI_exact.run_baseline(best_k_features)
     print("stability for exact", stability_exact)
     print("\n\n")
 
@@ -59,12 +62,11 @@ def test_stability_with_budget(seed: int) -> None:
         max_depth=3,
         num_forests=num_forests,
         num_trees_per_forest=num_trees_per_feature,
-        budget_per_forest=FOREST_UNIT_BUDGET,
+        budget_per_forest=FOREST_UNIT_BUDGET_DIABETES,
         solver=MAB,
-        stability_metric=stability_metric,
+        is_classification=False,
     )
-    res_mab = PI_mab.get_importance_array()
-    stability_mab = PI_mab.get_stability(res_mab)
+    stability_mab = PI_mab.run_baseline(best_k_features)
     print("stability for mab", stability_mab)
 
     if stability_mab > stability_exact:
@@ -74,12 +76,14 @@ def test_stability_with_budget(seed: int) -> None:
 
 
 def run_stability_baseline_digits(
+        seed: int = 0,
         num_trials: int = 10,
         num_forests: int = 5,
         max_depth: int = 3,
-        num_trees_per_feature: int = 30,
-        stability_metric : str = JACCARD,
+        num_trees_per_feature: int = 20,
+        best_k_feature: int = 10,
 ) -> None:
+    np.random.seed(seed)
     exact_sim_array = []
     mab_sim_array = []
     digits = sklearn.datasets.load_digits()
@@ -88,28 +92,28 @@ def run_stability_baseline_digits(
     for trial in range(num_trials):
         print("TRIALS NUM: ", trial)
         exact = PermutationImportance(
+            seed=trial,
             data=data,
             labels=labels,
             max_depth=max_depth,
             num_forests=num_forests,
             num_trees_per_forest=num_trees_per_feature,
-            budget_per_forest=FOREST_UNIT_BUDGET,
+            budget_per_forest=FOREST_UNIT_BUDGET_DIGIT,
             solver=EXACT,
-            stability_metric=stability_metric,
         )
-        exact_sim_array.append(exact.run_baseline())
+        exact_sim_array.append(exact.run_baseline(best_k_feature))
 
         mab = PermutationImportance(
+            seed=trial,
             data=data,
             labels=labels,
             max_depth=max_depth,
             num_forests=num_forests,
             num_trees_per_forest=num_trees_per_feature,
-            budget_per_forest=FOREST_UNIT_BUDGET,
+            budget_per_forest=FOREST_UNIT_BUDGET_DIGIT,
             solver=MAB,
-            stability_metric=stability_metric,
         )
-        mab_sim_array.append(mab.run_baseline())
+        mab_sim_array.append(mab.run_baseline(best_k_feature))
 
     # compute confidence intervals
     exact_sim_array = np.asarray(exact_sim_array)
@@ -129,7 +133,7 @@ def run_stability_baseline_digits(
 
 if __name__ == "__main__":
     #test_contrived_dataset()
-    #test_stability_with_budget()
+    #test_stability_with_budget(0)
     run_stability_baseline_digits()
     
 
