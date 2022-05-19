@@ -665,7 +665,7 @@ def main():
 
     ########################################### PARAMS
     pp = pprint.PrettyPrinter(indent=2)
-    NUM_SEEDS = 1
+    NUM_SEEDS = 5
 
     ############### Regression
     # train_data, train_targets, test_data, test_targets = load_housing()
@@ -735,20 +735,20 @@ def main():
     # )
 
     ## Random Patches
-    pp.pprint(
-        compare_runtimes(
-            compare="HRPR",
-            train_data=train_data,
-            train_targets=train_targets,
-            original_test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRPR_dict",
-            verbose=True,
-        )
-    )
+    # pp.pprint(
+    #     compare_runtimes(
+    #         compare="HRPR",
+    #         train_data=train_data,
+    #         train_targets=train_targets,
+    #         original_test_data=test_data,
+    #         test_targets=test_targets,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="HRPR_dict",
+    #         verbose=True,
+    #     )
+    # )
 
     ############### Classification
     mndata = MNIST("mnist/")
