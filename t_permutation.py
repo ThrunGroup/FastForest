@@ -33,24 +33,24 @@ def test_contrived_dataset() -> None:
 
 def test_stability_with_budget(seed: int) -> None:
     np.random.seed(seed)
-    #digits = sklearn.datasets.load_digits()
-    #data, labels = digits.data, digits.target
+    digits = sklearn.datasets.load_digits()
+    data, labels = digits.data, digits.target
     diabetes = sklearn.datasets.load_diabetes()
     data, labels = diabetes.data, diabetes.target
     print(data.shape)
 
     num_forests = 5
     num_trees_per_feature = 20
-    best_k_features = 5
+    best_k_features = 10
     PI_exact = PermutationImportance(
         data=data,
         labels=labels,
         max_depth=3,
         num_forests=num_forests,
         num_trees_per_forest=num_trees_per_feature,
-        budget_per_forest=FOREST_UNIT_BUDGET_DIABETES,
+        budget_per_forest=FOREST_UNIT_BUDGET_DIGIT,
         solver=EXACT,
-        is_classification=False,
+        #is_classification=False,
     )
     stability_exact = PI_exact.run_baseline(best_k_features)
     print("stability for exact", stability_exact)
@@ -62,9 +62,9 @@ def test_stability_with_budget(seed: int) -> None:
         max_depth=3,
         num_forests=num_forests,
         num_trees_per_forest=num_trees_per_feature,
-        budget_per_forest=FOREST_UNIT_BUDGET_DIABETES,
+        budget_per_forest=FOREST_UNIT_BUDGET_DIGIT,
         solver=MAB,
-        is_classification=False,
+        #is_classification=False,
     )
     stability_mab = PI_mab.run_baseline(best_k_features)
     print("stability for mab", stability_mab)
