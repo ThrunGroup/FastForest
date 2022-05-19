@@ -114,7 +114,7 @@ def compare_runtimes(
     their_test_accs = []
 
     # params
-    default_alpha_N = 0.25
+    default_alpha_N = 0.75
     default_alpha_F = 0.15
     default_max_depth = 5
     default_n_estimators = 5
