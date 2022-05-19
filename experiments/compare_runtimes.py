@@ -466,14 +466,17 @@ def compare_runtimes(
         print("Ours fitted", our_runtime)
 
         # Need special re-indexing of features for RP classifiers
-        if predict:
-            if "RP" in compare:
-                # THEIR test_data will have a different feature mapping than ours!
-                our_test_data = original_test_data[:, our_model.feature_idcs]
-                their_test_data = original_test_data[:, their_model.feature_idcs]
-            else:
-                our_test_data = original_test_data
-                their_test_data = original_test_data
+        if "RP" in compare:
+            # THEIR test_data will have a different feature mapping than ours!
+            our_test_data = original_test_data[:, our_model.feature_idcs]
+            our_measured_train_data = train_data[:, our_model.feature_idcs]
+            their_test_data = original_test_data[:, their_model.feature_idcs]
+            their_measured_train_data = train_data[:, their_model.feature_idcs]
+        else:
+            our_test_data = original_test_data
+            our_measured_train_data = train_data
+            their_test_data = original_test_data
+            their_measured_train_data = train_data
 
         if run_theirs:
             their_runtime = time_measured_fit(
@@ -487,7 +490,7 @@ def compare_runtimes(
         if compare in CLASSIFICATION_MODELS:
             is_classification = True
             our_train_acc = np.mean(
-                our_model.predict_batch(train_data)[0] == train_targets
+                our_model.predict_batch(our_measured_train_data)[0] == train_targets
             )
             if predict:
                 our_test_acc = np.mean(
@@ -495,7 +498,8 @@ def compare_runtimes(
                 )
             if run_theirs:
                 their_train_acc = np.mean(
-                    their_model.predict_batch(train_data)[0] == train_targets
+                    their_model.predict_batch(their_measured_train_data)[0]
+                    == train_targets
                 )
                 if predict:
                     their_test_acc = np.mean(
@@ -505,7 +509,7 @@ def compare_runtimes(
         elif compare in REGRESSION_MODELS:
             is_classification = False
             our_train_acc = np.mean(
-                (our_model.predict_batch(train_data) - train_targets) ** 2
+                (our_model.predict_batch(our_measured_train_data) - train_targets) ** 2
             )
             if predict:
                 our_test_acc = np.mean(
@@ -514,7 +518,11 @@ def compare_runtimes(
                 )
             if run_theirs:
                 their_train_acc = np.mean(
-                    (their_model.predict_batch(train_data) - train_targets) ** 2
+                    (
+                        their_model.predict_batch(their_measured_train_data)
+                        - train_targets
+                    )
+                    ** 2
                 )
                 if predict:
                     their_test_acc = np.mean(

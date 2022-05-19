@@ -445,10 +445,14 @@ def compare_budgets(
         if "RP" in compare:
             # THEIR test_data will have a different feature mapping than ours!
             our_test_data = original_test_data[:, our_model.feature_idcs]
+            our_measured_train_data = train_data[:, our_model.feature_idcs]
             their_test_data = original_test_data[:, their_model.feature_idcs]
+            their_measured_train_data = train_data[:, their_model.feature_idcs]
         else:
             our_test_data = original_test_data
+            our_measured_train_data = train_data
             their_test_data = original_test_data
+            their_measured_train_data = train_data
 
         if run_theirs:
             their_model.fit()
@@ -460,7 +464,7 @@ def compare_budgets(
         if compare in CLASSIFICATION_MODELS:
             is_classification = True
             our_train_acc = np.mean(
-                our_model.predict_batch(train_data)[0] == train_targets
+                our_model.predict_batch(our_measured_train_data)[0] == train_targets
             )
             if predict:
                 our_test_acc = np.mean(
@@ -468,7 +472,8 @@ def compare_budgets(
                 )
             if run_theirs:
                 their_train_acc = np.mean(
-                    their_model.predict_batch(train_data)[0] == train_targets
+                    their_model.predict_batch(their_measured_train_data)[0]
+                    == train_targets
                 )
                 if predict:
                     their_test_acc = np.mean(
@@ -478,7 +483,7 @@ def compare_budgets(
         elif compare in REGRESSION_MODELS:
             is_classification = False
             our_train_acc = np.mean(
-                (our_model.predict_batch(train_data) - train_targets) ** 2
+                (our_model.predict_batch(our_measured_train_data) - train_targets) ** 2
             )
             if predict:
                 our_test_acc = np.mean(
@@ -487,7 +492,11 @@ def compare_budgets(
                 )
             if run_theirs:
                 their_train_acc = np.mean(
-                    (their_model.predict_batch(train_data) - train_targets) ** 2
+                    (
+                        their_model.predict_batch(their_measured_train_data)
+                        - train_targets
+                    )
+                    ** 2
                 )
                 if predict:
                     their_test_acc = np.mean(
@@ -635,7 +644,7 @@ def main():
 
     # sklearn regression dataset
     params = {
-        "data_size": 20000,  # TODO(@motiwari): Update this?
+        "data_size": 200000,  # TODO(@motiwari): Update this?
         "n_features": 50,
         "informative_ratio": 0.06,
         "seed": 1,
@@ -694,39 +703,39 @@ def main():
     # )
 
     # ## Random Patches
-    # pp.pprint(
-    #     compare_budgets(
-    #         compare="HRPR",
-    #         train_data=train_data,
-    #         train_targets=train_targets,
-    #         original_test_data=test_data,
-    #         original_test_targets=test_targets,
-    #         num_seeds=NUM_SEEDS,
-    #         predict=True,
-    #         run_theirs=True,
-    #         filename="HRPR_dict",
-    #         verbose=True,
-    #         # Divide by 24 for less trees, since only using ~1/4*1/6 of the data
-    #         default_budget=2400000 * (25 / 24),
-    #         depth_override=15,
-    #     )
-    # )
+    pp.pprint(
+        compare_budgets(
+            compare="HRPR",
+            train_data=train_data,
+            train_targets=train_targets,
+            original_test_data=test_data,
+            original_test_targets=test_targets,
+            num_seeds=NUM_SEEDS,
+            predict=True,
+            run_theirs=True,
+            filename="HRPR_dict",
+            verbose=True,
+            # Divide by 24 for less trees, since only using ~1/4*1/6 of the data
+            default_budget=2400000 * (12 / 24),
+            # depth_override=15,
+        )
+    )
 
     ############### Classification
-    mndata = MNIST("mnist/")
-
-    train_images, train_labels = mndata.load_training()
-    train_images = np.array(train_images)
-    train_labels = np.array(train_labels)
-
-    SUBSAMPLE_SIZE = 10000  # TODO(@motiwari): Update this?
-    train_images_subsampled = train_images[:SUBSAMPLE_SIZE]
-    train_labels_subsampled = train_labels[:SUBSAMPLE_SIZE]
-
-    test_images, test_labels = mndata.load_testing()
-    test_images = np.array(test_images)
-    test_labels = np.array(test_labels)
-
+    # mndata = MNIST("mnist/")
+    #
+    # train_images, train_labels = mndata.load_training()
+    # train_images = np.array(train_images)
+    # train_labels = np.array(train_labels)
+    #
+    # SUBSAMPLE_SIZE = 10000  # TODO(@motiwari): Update this?
+    # train_images_subsampled = train_images[:SUBSAMPLE_SIZE]
+    # train_labels_subsampled = train_labels[:SUBSAMPLE_SIZE]
+    #
+    # test_images, test_labels = mndata.load_testing()
+    # test_images = np.array(test_images)
+    # test_labels = np.array(test_labels)
+    #
     # # Random Forests
     # pp.pprint(
     #     compare_budgets(
@@ -770,23 +779,23 @@ def main():
     # Unfortunately, using a lot of features increases the risk that we go over budget (because the number of histogram
     # insertions we make scales with F), we for this set of experiments (and this set of experiments ONLY) we increase
     # utils.constants.BUFFER from 100,000 to 1,000,000.
-    pp.pprint(
-        compare_budgets(
-            compare="HRPC",
-            train_data=train_images_subsampled,
-            train_targets=train_labels_subsampled,
-            original_test_data=test_images,
-            original_test_targets=test_labels,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRPC_dict",
-            verbose=True,
-            default_budget=int(7840000 * 1.3),
-            alpha_N_override=0.25,
-            alpha_F_override=0.15,
-        )
-    )
+    # pp.pprint(
+    #     compare_budgets(
+    #         compare="HRPC",
+    #         train_data=train_images_subsampled,
+    #         train_targets=train_labels_subsampled,
+    #         original_test_data=test_images,
+    #         original_test_targets=test_labels,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="HRPC_dict",
+    #         verbose=True,
+    #         default_budget=int(7840000 * 1.3),
+    #         alpha_N_override=0.25,
+    #         alpha_F_override=0.15,
+    #     )
+    # )
 
 
 if __name__ == "__main__":
