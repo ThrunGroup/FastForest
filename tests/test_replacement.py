@@ -1,6 +1,6 @@
 import unittest
 
-from tests.diabetes_test import test_tree_diabetes
+from diabetes_test import test_tree_diabetes
 from newsgroups_test import test_tree_news
 from utils.constants import EXACT
 from utils.utils import set_seed
