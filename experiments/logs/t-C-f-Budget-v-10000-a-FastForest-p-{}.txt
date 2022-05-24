@@ -1,2 +1,0 @@
-Fixed: Budget 95
-Measured: Metric 250

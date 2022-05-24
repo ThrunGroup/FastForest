@@ -1,6 +1,6 @@
 from mnist import MNIST
 
-from experiments.compare_runtimes import *
+from experiments.runtime_exps.compare_runtimes import *
 
 
 def main():

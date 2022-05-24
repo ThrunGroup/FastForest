@@ -781,7 +781,7 @@ def main():
             num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
-            filename="HRPR_dict",
+            filename="../runtime_exps/HRPR_dict",
             verbose=True,
             # Divide by 24 for less trees, since only using ~1/4*1/6 of the data
             default_budget=2400000 * (12 / 24),
@@ -800,7 +800,7 @@ def main():
             num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
-            filename="ERFR_dict",
+            filename="../runtime_exps/ERFR_dict",
             verbose=True,
             default_budget=24000000,
             depth_override=1,
