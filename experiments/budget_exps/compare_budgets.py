@@ -1,5 +1,6 @@
 from typing import Any
 import pprint
+import os
 
 from sklearn.datasets import load_diabetes, make_classification, make_regression
 
@@ -602,7 +603,7 @@ def main():
     pp = pprint.PrettyPrinter(indent=2)
 
     ############### Classification
-    mndata = MNIST("mnist/")
+    mndata = MNIST(os.path.join("..", "mnist"))
 
     train_images, train_labels = mndata.load_training()
     train_images = np.array(train_images)
