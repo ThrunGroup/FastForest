@@ -295,45 +295,21 @@ def compare_accuracies(
 
 
 def main():
-    # To Compare:
-    # RandomForestClassifier -- DONE
-    # ExtremelyRandomizedForestClassifier -- DONE
-
-    # RandomForestRegressor -- DONE
-    # ExtremelyRandomizedForestRegressor -- DONE
-    # GradientBoostingRegressor
-    # HistGradientBoostingRegressor
-
-    # Exempt:
-    # AdaBoostClassifier
-    # AdaBoostRegressor
-    # GradientBoostingClassifier
-    # HistGradientBoostingClassifier
-    # BaggingClassifier (implied by RFC)
-    # BaggingRegressor (implied by RFR)
-
-    # Exempt (Irrelevant):
-    # IsolationForest
-    # StackingClassifier
-    # StackingRegressor
-    # VotingClassifier
-    # VotingRegressor
-
     # Classification
-    # pca_train_vecs, train_labels, pca_test_vecs, test_labels, classes = load_pca_ng()
-    # print("Performing Experiment: Random Forest Classifier")
-    # print(
-    #     compare_accuracies(
-    #         "RFC", pca_train_vecs, train_labels, pca_test_vecs, test_labels
-    #     )
-    # )
+    pca_train_vecs, train_labels, pca_test_vecs, test_labels, classes = load_pca_ng()
+    print("Performing Experiment: Random Forest Classifier")
+    print(
+        compare_accuracies(
+            "RFC", pca_train_vecs, train_labels, pca_test_vecs, test_labels
+        )
+    )
 
-    # print("Performing Experiment: Extremely Random Forest Classifier")
-    # print(
-    #     compare_accuracies(
-    #         "ERFC", pca_train_vecs, train_labels, pca_test_vecs, test_labels
-    #     )
-    # )
+    print("Performing Experiment: Extremely Random Forest Classifier")
+    print(
+        compare_accuracies(
+            "ERFC", pca_train_vecs, train_labels, pca_test_vecs, test_labels
+        )
+    )
 
     # Regression
     train_data, train_targets, test_data, test_targets = load_housing()
@@ -341,31 +317,20 @@ def main():
     train_data_subsampled = train_data[:1000]
     train_targets_subsampled = train_targets[:1000]
 
-    # print("Performing Experiment: Random Forest Regression")
-    # print(
-    #     compare_accuracies(
-    #         "RFR",
-    #         train_data_subsampled,
-    #         train_targets_subsampled,
-    #         test_data,
-    #         test_targets,
-    #     )
-    # )
-
-    # print("Performing Experiment: Extremely Random Forest Regression")
-    # print(
-    #     compare_accuracies("ERFR", train_data, train_targets, test_data, test_targets)
-    # )
-
-    print("Performing Experiment: Gradient Boosted Random Forest Regression")
+    print("Performing Experiment: Random Forest Regression")
     print(
         compare_accuracies(
-            "GBRFR",
+            "RFR",
             train_data_subsampled,
             train_targets_subsampled,
             test_data,
             test_targets,
         )
+    )
+
+    print("Performing Experiment: Extremely Random Forest Regression")
+    print(
+        compare_accuracies("ERFR", train_data, train_targets, test_data, test_targets)
     )
 
 
