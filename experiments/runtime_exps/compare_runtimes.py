@@ -623,58 +623,16 @@ def compare_runtimes(
 
 
 def main():
-    ################## LIST OF MODELS
-    # Classification
-    ## Extremely Random -- already histogrammed
-    # ERFC
-
-    ## Forest
-    # HRFC
-
-    ## Patches
-    # HRPC
-
-    # Regression
-    ## Extremely Random -- already histogrammed
-    # ERFR
-    # GBERFR
-
-    ## Forest
-    # HRFR
-    # GBHRFR
-
-    ## Patches
-    # HRPR
-    # GBHRPR
-
-    # Not implemented
-    # GBERFC
-    # GBHRFC
-    # GBHRPC
-
-    # Can't because no binning
-    # RFC
-    # RPC
-    # GBRFC (also not implemented)
-    # GBRPC (also not implemented)
-
-    # RFR
-    # RPR
-    # GBRFR
-    # GBRPR
-
-    ########################################### PARAMS
     pp = pprint.PrettyPrinter(indent=2)
-    NUM_SEEDS = 20
 
     ############### Regression
-    # train_data, train_targets, test_data, test_targets = load_housing()
-    # # Subsample the data because training on 20k points (the full housing dataset) takes too long for RFR
-    #
-    # train_data, train_targets = make_huge(train_data, train_targets)
-    # train_data_subsampled = train_data
-    # train_targets_subsampled = train_targets
-    # print(len(train_data_subsampled), len(train_targets_subsampled))
+    train_data, train_targets, test_data, test_targets = load_housing()
+    # Subsample the data because training on 20k points (the full housing dataset) takes too long for RFR
+
+    train_data, train_targets = make_huge(train_data, train_targets)
+    train_data_subsampled = train_data
+    train_targets_subsampled = train_targets
+    print(len(train_data_subsampled), len(train_targets_subsampled))
 
     # sklearn regression dataset
     params = {
@@ -703,38 +661,41 @@ def main():
     test_targets = full_targets[train_test_split:]
 
     ## Random Forests
-    # pp.pprint(
-    #     compare_runtimes(
-    #         compare="HRFR",
-    #         train_data=train_data,
-    #         train_targets=train_targets,
-    #         original_test_data=test_data,
-    #         test_targets=test_targets,
-    #         num_seeds=NUM_SEEDS,
-    #         predict=True,
-    #         run_theirs=True,
-    #         filename="HRFR_dict",
-    #         verbose=True,
-    #     )
-    # )
+    NUM_SEEDS = 5
+    pp.pprint(
+        compare_runtimes(
+            compare="HRFR",
+            train_data=train_data,
+            train_targets=train_targets,
+            original_test_data=test_data,
+            test_targets=test_targets,
+            num_seeds=NUM_SEEDS,
+            predict=True,
+            run_theirs=True,
+            filename="HRFR_dict",
+            verbose=True,
+        )
+    )
 
     ## Random Patches
-    # pp.pprint(
-    #     compare_runtimes(
-    #         compare="HRPR",
-    #         train_data=train_data,
-    #         train_targets=train_targets,
-    #         original_test_data=test_data,
-    #         test_targets=test_targets,
-    #         num_seeds=NUM_SEEDS,
-    #         predict=True,
-    #         run_theirs=True,
-    #         filename="HRPR_dict",
-    #         verbose=True,
-    #     )
-    # )
+    NUM_SEEDS = 20
+    pp.pprint(
+        compare_runtimes(
+            compare="HRPR",
+            train_data=train_data,
+            train_targets=train_targets,
+            original_test_data=test_data,
+            test_targets=test_targets,
+            num_seeds=NUM_SEEDS,
+            predict=True,
+            run_theirs=True,
+            filename="HRPR_dict",
+            verbose=True,
+        )
+    )
 
     ## Extremely Random Forests
+    NUM_SEEDS = 20
     pp.pprint(
         compare_runtimes(
             compare="ERFR",
@@ -751,63 +712,66 @@ def main():
     )
 
     ############### Classification
-    # mndata = MNIST("mnist/")
-    #
-    # train_images, train_labels = mndata.load_training()
-    # train_images = np.array(train_images)
-    # train_labels = np.array(train_labels)
-    #
-    # test_images, test_labels = mndata.load_testing()
-    # test_images = np.array(test_images)
-    # test_labels = np.array(test_labels)
-    #
-    # ## Random Forests
-    # pp.pprint(
-    #     compare_runtimes(
-    #         compare="HRFC",
-    #         train_data=train_images,
-    #         train_targets=train_labels,
-    #         original_test_data=test_images,
-    #         test_targets=test_labels,
-    #         num_seeds=NUM_SEEDS,
-    #         predict=True,
-    #         run_theirs=True,
-    #         filename="HRFC_dict",
-    #         verbose=True,
-    #     )
-    # )
-    #
-    # ## Extremely Random Forests
-    # pp.pprint(
-    #     compare_runtimes(
-    #         compare="ERFC",
-    #         train_data=train_images,
-    #         train_targets=train_labels,
-    #         original_test_data=test_images,
-    #         test_targets=test_labels,
-    #         num_seeds=NUM_SEEDS,
-    #         predict=True,
-    #         run_theirs=True,
-    #         filename="ERFC_dict",
-    #         verbose=True,
-    #     )
-    # )
-    #
-    # ## Random Patches
-    # pp.pprint(
-    #     compare_runtimes(
-    #         compare="HRPC",
-    #         train_data=train_images,
-    #         train_targets=train_labels,
-    #         original_test_data=test_images,
-    #         test_targets=test_labels,
-    #         num_seeds=NUM_SEEDS,
-    #         predict=True,
-    #         run_theirs=True,
-    #         filename="HRPC_dict",
-    #         verbose=True,
-    #     )
-    # )
+    mndata = MNIST("mnist/")
+
+    train_images, train_labels = mndata.load_training()
+    train_images = np.array(train_images)
+    train_labels = np.array(train_labels)
+
+    test_images, test_labels = mndata.load_testing()
+    test_images = np.array(test_images)
+    test_labels = np.array(test_labels)
+
+    ## Random Forests
+    NUM_SEEDS = 5
+    pp.pprint(
+        compare_runtimes(
+            compare="HRFC",
+            train_data=train_images,
+            train_targets=train_labels,
+            original_test_data=test_images,
+            test_targets=test_labels,
+            num_seeds=NUM_SEEDS,
+            predict=True,
+            run_theirs=True,
+            filename="HRFC_dict",
+            verbose=True,
+        )
+    )
+
+    ## Extremely Random Forests
+    NUM_SEEDS = 5
+    pp.pprint(
+        compare_runtimes(
+            compare="ERFC",
+            train_data=train_images,
+            train_targets=train_labels,
+            original_test_data=test_images,
+            test_targets=test_labels,
+            num_seeds=NUM_SEEDS,
+            predict=True,
+            run_theirs=True,
+            filename="ERFC_dict",
+            verbose=True,
+        )
+    )
+
+    ## Random Patches
+    NUM_SEEDS = 5
+    pp.pprint(
+        compare_runtimes(
+            compare="HRPC",
+            train_data=train_images,
+            train_targets=train_labels,
+            original_test_data=test_images,
+            test_targets=test_labels,
+            num_seeds=NUM_SEEDS,
+            predict=True,
+            run_theirs=True,
+            filename="HRPC_dict",
+            verbose=True,
+        )
+    )
 
 
 if __name__ == "__main__":

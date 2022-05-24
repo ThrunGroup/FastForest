@@ -20,5 +20,6 @@ forests, trees, nodes, and histograms.
   (indicating to draw a bootstrap sample of the `n` datapoints for each tree), `feature_subsampling=SQRT`
   (indicating to consider only `sqrt(F)` features of the original `F` features at each node split), etc.
   - the `experiments` subdirectory contains all the code for our core experiments
+    - Include description of each profile
   - the `tests` subdirectory tests that we wrote to verify the correctness of our implementations
   - the `utils` directory contains helper code for training forest-based models
