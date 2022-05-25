@@ -201,7 +201,7 @@ class ForestTests(unittest.TestCase):
         )
         t2.fit()
         acc2 = np.sum(t2.predict_batch(data)[0] == labels)
-        self.assertTrue(acc1 > acc2)
+        self.assertTrue(acc1 > acc2 and t1.num_queries < t2.num_queries)
 
     def test_same_budget_forest_digits(self) -> None:
         digits = sklearn.datasets.load_digits()
@@ -234,7 +234,7 @@ class ForestTests(unittest.TestCase):
         print("f2 Number of queries: ", f2.num_queries)
         print("f2 accuracy: ", acc2)
         print("f2 tree length", len(f2.trees))
-        self.assertTrue(acc1 > acc2 and len(f1.trees) >= len(f2.trees))
+        self.assertTrue(acc1 > acc2 and len(f1.trees) <= len(f2.trees))
 
 
 if __name__ == "__main__":

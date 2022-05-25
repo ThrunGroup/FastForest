@@ -311,10 +311,6 @@ class ForestBase(ABC):
         """
         Get out of bag score(accuracy/mse) of Forest algorithm.
         """
-        # if self.is_classification and len(self.classes) > 2:
-        #     raise NotImplementedError(
-        #         "Not implemented get_oob_score for multi class setting"
-        #     )
         # oob_counts_array counts the occurrence of data points in out of bag samples
         # oob_score_array is the sum of predicted value of out of bag samples.
         if data is None:
@@ -343,11 +339,11 @@ class ForestBase(ABC):
         oob_counts_array = oob_counts_array[true_oob_idcs]
         if self.is_classification:
             oob_prediction = oob_score_array.argmax(axis=1)  # majority vote system
-            error = np.sum(true_labels == oob_prediction) / len(true_labels)
+            score = np.sum(true_labels == oob_prediction) / len(true_labels)
         else:
             oob_prediction = oob_score_array / oob_counts_array
-            error = np.sum(np.square(true_labels - oob_prediction/oob_counts_array)) / len(true_labels)
-        return error
+            score = np.sum(np.square(true_labels - oob_prediction/oob_counts_array)) / len(true_labels)
+        return score
 
     def calculate_mdi(self) -> np.ndarray:
         """

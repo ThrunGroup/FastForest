@@ -18,22 +18,24 @@ class PermutationImportance:
     Class for determining feature importance based on the permutation model in scikit-learn.
     Use this to find an array of size K X F were K is the number of forets and F is the dimension of features.
     """
+
     def __init__(
-        self,
-        seed: int,
-        data: np.ndarray,
-        labels: np.ndarray,
-        max_depth: int = 5,
-        num_forests: int = 5,
-        num_trees_per_forest: int = 10,
-        is_classification: bool = True,
-        solver: str = MAB,
-        stability_metric: str = JACCARD,
-        budget_per_forest: int = None,
-        feature_subsampling: str = None,
-        max_leaf_nodes: int = None,
-        epsilon: float = 0,
-        importance_score: str = "impurity"
+            self,
+            seed: int,
+            data: np.ndarray,
+            labels: np.ndarray,
+            max_depth: int = 5,
+            num_forests: int = 5,
+            num_trees_per_forest: int = 10,
+            is_classification: bool = True,
+            solver: str = MAB,
+            stability_metric: str = JACCARD,
+            budget_per_forest: int = None,
+            feature_subsampling: str = None,
+            max_leaf_nodes: int = None,
+            epsilon: float = 0,
+            importance_score: str = "impurity",
+            verbose: bool = False,
     ):
         assert num_forests > 1, "we need at least two forests"
         set_seed(seed)
@@ -53,6 +55,7 @@ class PermutationImportance:
         self.max_leaf_nodes = max_leaf_nodes
         self.epsilon = epsilon
         self.importance_score = importance_score
+        self.verbose = verbose
 
     def train_forest(self, seed: int) -> None:
         """
@@ -89,8 +92,9 @@ class PermutationImportance:
                 oob_score=True,
             )
         forest.fit()
-        print("number of trees: ", len(forest.trees))
-        print("number of queries: ", forest.num_queries)
+        if self.verbose:
+            print("number of trees: ", len(forest.trees))
+            print("number of queries: ", forest.num_queries)
         self.forests.append(forest)
 
     def train_forests(self) -> None:
@@ -98,7 +102,8 @@ class PermutationImportance:
         Trains all the forests by calling self.train_forest num_forests times.
         """
         for i in range(self.num_forests):
-            print("training forest: ", i+1)
+            if self.verbose:
+                print("training forest: ", i + 1)
             seed = self.rng.integers(0, MAX_SEED)
             self.train_forest(seed)
 
@@ -141,7 +146,7 @@ class PermutationImportance:
         for forest_idx in range(num_forests):
             imp_vec = self.compute_importance_vec(forest_idx)
             if len(result) == 0:
-                result = imp_vec    # initialize with the first importance vector
+                result = imp_vec  # initialize with the first importance vector
             else:
                 result = np.vstack((result, imp_vec))
         return result
@@ -155,7 +160,7 @@ class PermutationImportance:
         length = len(v1_ranks)
         if self.stability_metric == JACCARD:
             for i in range(1, length):
-                sub_v1, sub_v2 = v1_ranks[:i+1], v2_ranks[:i+1]     # compare subsections of array
+                sub_v1, sub_v2 = v1_ranks[:i + 1], v2_ranks[:i + 1]  # compare subsections of array
                 pairwise_stability += len(np.intersect1d(sub_v1, sub_v2)) / len(np.union1d(sub_v1, sub_v2))
             return pairwise_stability / length
 
@@ -167,10 +172,10 @@ class PermutationImportance:
 
         elif self.stability_metric == KUNCHEVA:
             for i in range(1, length):
-                sub_v1, sub_v2 = v1_ranks[:i+1], v2_ranks[:i+1]   # compare subsections of array
+                sub_v1, sub_v2 = v1_ranks[:i + 1], v2_ranks[:i + 1]  # compare subsections of array
                 numer = len(np.intersect1d(sub_v1, sub_v2)) - math.pow(i, 2) / length
                 denom = i - math.pow(i, 2) * length
-                pairwise_stability += numer/denom
+                pairwise_stability += numer / denom
             return pairwise_stability / length
 
         else:
@@ -182,7 +187,7 @@ class PermutationImportance:
         """
         stability = 0
         length = len(imp_data)
-        ranking_maps = rankdata(imp_data, method="dense", axis=1)   # rank 1 is the most important feature!
+        ranking_maps = rankdata(imp_data, method="dense", axis=1)  # rank 1 is the most important feature!
 
         for i in range(length - 1):
             for j in range(i + 1, length):
@@ -213,22 +218,17 @@ class PermutationImportance:
             freq = np.sum(np.where(best_idcs == i, 1, 0)) / N
             c_var += N * freq * (1 - freq) / (N - 1)
 
+        # Use the FS stability formula, see https://www.jmlr.org/papers/volume18/17-514/17-514.pdf#page=13 and
+        # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7938892/.
         # d_bar is the avg number of features selected over N feature sets (default k).
         d_bar = np.sum(np.where(best_idcs >= 0, 1, 0)) / N
-        numer = c_var/F
-        denom = d_bar * (1 - d_bar/F) / F
-        # print(numer, denom)
-        return 1 - numer/denom
+        numer = c_var / F
+        denom = d_bar * (1 - d_bar / F) / F
+        return 1 - numer / denom
 
     def run_baseline(self, best_k_features: int = None) -> float:
         imp_matrix = self.get_importance_array()
-        # print("this is importance array: \n", imp_matrix)
-        # print("this is importance array indices: \n", np.argsort(-imp_matrix))
-        # print("\n\n")
         if best_k_features is None:
             return self.get_stability_pairwise(imp_matrix)
         else:
             return self.get_stability_freq(imp_matrix, best_k_features)
-
-
-

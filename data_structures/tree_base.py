@@ -260,11 +260,7 @@ class TreeBase(ABC):
                         # Runs solve_mab if not previously computed, which incurs cost!
                         reduction = leaf.calculate_best_split(self.remaining_budget)
                     else:
-                        if self.solver == EXACT and self.remaining_budget < len(
-                            leaf.labels
-                        ) * len(leaf.data[0, :]):
-                            break
-                        elif self.remaining_budget > 0:
+                        if self.remaining_budget > 0:
                             reduction = leaf.calculate_best_split(self.remaining_budget)
                         else:
                             break
