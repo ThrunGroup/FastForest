@@ -22,6 +22,7 @@ from utils.constants import (
     GINI,
     DEFAULT_NUM_BINS,
     DEFAULT_MIN_IMPURITY_DECREASE,
+    BATCH_SIZE,
 )
 
 
@@ -58,6 +59,7 @@ class TreeBase(ABC):
         use_logarithmic_split: bool = False,
         use_dynamic_epsilon: bool = False,
         epsilon: float = 0,
+        batch_size: int = BATCH_SIZE,
     ) -> None:
         self.data = data  # This is a REFERENCE
         self.labels = labels  # This is a REFERENCE
@@ -118,6 +120,7 @@ class TreeBase(ABC):
             feature_subsampling=self.feature_subsampling,
             tree_global_feature_subsampling=self.tree_global_feature_subsampling,
             with_replacement=self.with_replacement,
+            batch_size=batch_size,
         )
 
         # These are copied from the link below. We won't need all of them.
@@ -260,11 +263,7 @@ class TreeBase(ABC):
                         # Runs solve_mab if not previously computed, which incurs cost!
                         reduction = leaf.calculate_best_split(self.remaining_budget)
                     else:
-                        if self.solver == EXACT and self.remaining_budget < len(
-                            leaf.labels
-                        ) * len(leaf.data[0, :]):
-                            break
-                        elif self.remaining_budget > 0:
+                        if self.remaining_budget > 0:
                             reduction = leaf.calculate_best_split(self.remaining_budget)
                         else:
                             break

@@ -2,7 +2,7 @@ import numpy as np
 
 from data_structures.forest_base import ForestBase
 from data_structures.classifier import Classifier
-from utils.constants import MAB, LINEAR, GINI, BEST, DEFAULT_NUM_BINS
+from utils.constants import MAB, LINEAR, GINI, BEST, DEFAULT_NUM_BINS, BATCH_SIZE
 from utils.utils import class_to_idx
 
 
@@ -38,6 +38,8 @@ class ForestClassifier(ForestBase, Classifier):
         use_logarithmic_split: bool = False,
         use_dynamic_epsilon: bool = False,
         epsilon: float = 0,
+        oob_score: bool = False,
+        batch_size: int = BATCH_SIZE,
     ) -> None:
         if classes is None:
             self.classes: dict = class_to_idx(
@@ -72,4 +74,6 @@ class ForestClassifier(ForestBase, Classifier):
             use_logarithmic_split=use_logarithmic_split,
             use_dynamic_epsilon=use_dynamic_epsilon,
             epsilon=epsilon,
+            oob_score=oob_score,
+            batch_size=batch_size,
         )

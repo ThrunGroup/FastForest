@@ -1,0 +1,5 @@
+stability_diff,mab stability,is_overlap,dataset,data_size,n_features,n_informative,budget,num_forests,num_trees,best_k,max_depth,max_leaf_nodes,feature_subsampling,epsilon,seed,conf_multiplier,num_trials,lb_exact,ub_exact,lb_mab,ub_mab,f_importance
+0.259259259,0.830246914,FALSE,make_classification,10000,60,5,350000,5,10,6,6,40,SQRT,0.03,123132,1.96,30,0.535710537,0.606264772,0.79968306,0.860810767,impurity
+0.304964539,0.797281324,FALSE,make_regression,10000,100,5,500000,5,10,6,6,40,SQRT,0.03,133,1.96,30,0.439907154,0.544726415,0.784004374,0.810558273,impurity
+0.074271605,0.673283951,FALSE,digits,,,,1000000,5,20,10,3,24,,0,0,1.96,30,0.576836914,0.621187778,0.647633387,0.698934514,permutation
+0.232269504,0.625886525,FALSE,make_regression,10000,100,5,500000,5,10,6,6,40,SQRT,0.03,21234,1.96,30,0.364988084,0.422245959,0.610488182,0.641284868,impurity

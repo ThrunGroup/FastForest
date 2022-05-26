@@ -76,6 +76,7 @@ def test_tree_news(
         solver=solver,
         with_replacement=with_replacement,
         criterion=ENTROPY,
+        batch_size=50,
     )
     tc.fit()
     train_acc = np.mean(tc.predict_batch(X_train)[0] == Y_train)

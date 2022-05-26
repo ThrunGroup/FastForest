@@ -2,7 +2,7 @@ import numpy as np
 
 from data_structures.forest_base import ForestBase
 from data_structures.regressor import Regressor
-from utils.constants import MAB, LINEAR, GINI, BEST, DEFAULT_NUM_BINS
+from utils.constants import MAB, LINEAR, GINI, BEST, DEFAULT_NUM_BINS, BATCH_SIZE
 
 
 class ForestRegressor(ForestBase, Regressor):
@@ -38,6 +38,8 @@ class ForestRegressor(ForestBase, Regressor):
         use_logarithmic_split: bool = False,
         use_dynamic_epsilon: bool = False,
         epsilon: float = 0,
+        oob_score: bool = False,
+        batch_size: int = BATCH_SIZE,
     ) -> None:
         super().__init__(
             data=data,
@@ -67,4 +69,6 @@ class ForestRegressor(ForestBase, Regressor):
             use_logarithmic_split=use_logarithmic_split,
             use_dynamic_epsilon=use_dynamic_epsilon,
             epsilon=epsilon,
+            oob_score=oob_score,
+            batch_size=batch_size,
         )

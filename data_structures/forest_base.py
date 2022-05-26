@@ -14,6 +14,7 @@ from utils.constants import (
     DEFAULT_NUM_BINS,
     DEFAULT_REGRESSOR_LOSS,
     DEFAULT_MIN_IMPURITY_DECREASE,
+    BATCH_SIZE,
 )
 from utils.utils import data_to_discrete, set_seed
 from utils.boosting import get_next_targets
@@ -55,6 +56,8 @@ class ForestBase(ABC):
         use_logarithmic_split: bool = False,
         use_dynamic_epsilon: bool = False,
         epsilon: float = 0,
+        oob_score: bool = False,
+        batch_size: int = BATCH_SIZE,
     ) -> None:
         self.data = data
         self.org_targets = labels
@@ -110,6 +113,11 @@ class ForestBase(ABC):
         self.use_logarithmic_split = use_logarithmic_split
         self.use_dynamic_epsilon = use_dynamic_epsilon
         self.epsilon = epsilon
+        self.oob_score = oob_score
+        if oob_score:
+            assert bootstrap, "out of bag score can be used only when bootstrapping"
+        self.mdg_array = None
+        self.batch_size = batch_size
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
@@ -117,12 +125,21 @@ class ForestBase(ABC):
         self.min_samples_leaf = 1
         self.min_weight_fraction_leaf = 0.0
         self.max_features = None
-        self.oob_score = False
         self.n_jobs = None
         self.warm_start = False
         self.class_weight = None
         self.ccp_alpha = 0.0
         self.max_samples = None
+
+    @staticmethod
+    def get_out_of_bag(bootstrap_idcs, data_size):
+        """
+        Get indices of out of bag samples given bootstrap indices and size of data.
+        """
+        idcs = np.arange(data_size)
+        intersect = np.intersect1d(bootstrap_idcs, idcs)
+        idcs[intersect] = -1
+        return idcs[idcs != -1]
 
     @staticmethod
     def check_both_or_neither(
@@ -159,6 +176,10 @@ class ForestBase(ABC):
             min_data = self.data.min(axis=0)
             self.minmax = [min_data, max_data]
 
+        if self.oob_score:
+            # self.oob_list[i] contains ith tree's out of bag samples indices
+            self.oob_list = []
+
         self.trees = []
 
         for i in range(self.n_estimators):
@@ -177,6 +198,8 @@ class ForestBase(ABC):
                 idcs = self.rng.choice(N, size=N, replace=True)
                 self.curr_data = self.data[idcs]
                 self.curr_targets = self.curr_targets[idcs]
+                if self.oob_score:
+                    self.oob_list.append(self.get_out_of_bag(idcs, N))
             else:
                 self.curr_data = self.data
 
@@ -209,6 +232,7 @@ class ForestBase(ABC):
                     use_logarithmic_split=self.use_logarithmic_split,
                     use_dynamic_epsilon=self.use_dynamic_epsilon,
                     epsilon=self.epsilon,
+                    batch_size=self.batch_size,
                 )
             else:
                 tree = TreeRegressor(
@@ -232,6 +256,7 @@ class ForestBase(ABC):
                     use_logarithmic_split=self.use_logarithmic_split,
                     use_dynamic_epsilon=self.use_dynamic_epsilon,
                     epsilon=self.epsilon,
+                    batch_size=self.batch_size,
                 )
             tree.fit()
 
@@ -286,3 +311,66 @@ class ForestBase(ABC):
                 for tree_idx, tree in enumerate(self.trees):
                     agg_pred[tree_idx] = tree.predict(datapoint)
                 return float(agg_pred.mean())
+
+    def get_oob_score(self, data=None) -> float:
+        """
+        Get out of bag score(accuracy/mse) of Forest algorithm.
+        """
+        # oob_counts_array counts the occurrence of data points in out of bag samples
+        # oob_score_array is the sum of predicted value of out of bag samples.
+        if data is None:
+            data = self.data
+        oob_counts_array = np.zeros(len(self.org_targets))
+        if self.is_classification:
+            oob_score_array = np.zeros((len(self.org_targets), len(self.classes)))
+        else:
+            oob_score_array = np.zeros((len(self.org_targets)))
+
+        for i in range(len(self.trees)):
+            tree = self.trees[i]
+            oob_idcs = self.oob_list[i]
+            if self.is_classification:
+                oob_score_array[oob_idcs, :] += tree.predict_batch(data[oob_idcs])[1]
+            else:
+                oob_score_array[oob_idcs] += tree.predict_batch(data[oob_idcs])
+            oob_counts_array[oob_idcs] += 1
+
+        # filter samples that aren't out of bag from any trees
+        true_oob_idcs = np.where(oob_counts_array != 0)[0]
+        true_labels = self.org_targets[true_oob_idcs]
+        oob_score_array = oob_score_array[true_oob_idcs]
+        oob_counts_array = oob_counts_array[true_oob_idcs]
+        if self.is_classification:
+            oob_prediction = oob_score_array.argmax(axis=1)  # majority vote system
+            score = np.sum(true_labels == oob_prediction) / len(true_labels)
+        else:
+            oob_prediction = oob_score_array / oob_counts_array
+            score = np.sum(
+                np.square(true_labels - oob_prediction / oob_counts_array)
+            ) / len(true_labels)
+        return score
+
+    def calculate_mdi(self) -> np.ndarray:
+        """
+        Calculate mean decrease in impurity
+        """
+        assert self.tree_global_feature_subsampling is False, "Not implemented"
+        if self.mdg_array is not None:
+            return self.mdg_array
+        self.mdg_array = np.zeros(len(self.data[0]))
+        for tree in self.trees:
+            node = tree.node
+            self.recursive_mdi_helper(node, self.mdg_array)
+        return self.mdg_array
+
+    def recursive_mdi_helper(self, node, mdg_array):
+        """
+        Helper function of calculate_mdi function
+        """
+        if node.split_reduction is not None:
+            mdg_array[node.split_feature] += node.split_reduction
+        if node.left is None:
+            return
+        else:
+            self.recursive_mdi_helper(node.left, mdg_array)
+            self.recursive_mdi_helper(node.right, mdg_array)
