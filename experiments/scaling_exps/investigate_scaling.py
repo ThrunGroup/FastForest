@@ -4,7 +4,7 @@ from experiments.runtime_exps.compare_runtimes import *
 
 
 def main():
-    mndata = MNIST("mnist/")
+    mndata = MNIST(os.path.join("..", "mnist"))
 
     train_images, train_labels = mndata.load_training()
 
