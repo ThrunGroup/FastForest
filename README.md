@@ -1,4 +1,4 @@
-# Dear Reviewer
+# Dear Reviewer:
 
 We thank you for your time in reviewing our submission. 
 We understand that you are performing a service to the community.
@@ -26,13 +26,9 @@ forests, trees, nodes, and histograms.
   - `experiments/scaling_exps` contains the scripts (`investigate_scaling.py` and `make_scaling_plot.py`) to reproduce Appendix Figure 1 in Appendix 2 
 - the `tests` subdirectory tests that we wrote to verify the correctness of our implementations
   - `tests/feature_importance_tests.py` is also used to regenerate the results in Table 5
+    -  You can reproduce the results for just Table 5 by running `tests/feature_importance_tests.py`. The results will be stored in the first 4 lines of `tests/stat_test_stability_log/reproduce_stability.csv` file. 
 - the `utils` directory contains helper code for training forest-based models
   - `utils/solvers.py` includes the core implementation of MABSplit in the `solve_mab()` function
   
 # Reproduce the tables
-- To reproduce the results in all the tables, and to reproduce the figure in Appendix 2, run `repro_script.sh`
-  
-    
-  - For table 5: the new results are stored in the first 4 lines of `tests\stat_test
-    stability_log\reproduce_stability.csv` file. You can reproduce the results for just Table 5 by running `tests\
-    feature_importance_tests.py`. 
+- To reproduce the results in all the tables, and to reproduce the figure in Appendix 2, please run `repro_script.sh`. This may take many hours.
