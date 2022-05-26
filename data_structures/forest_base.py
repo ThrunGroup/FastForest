@@ -177,7 +177,7 @@ class ForestBase(ABC):
             self.minmax = [min_data, max_data]
 
         if self.oob_score:
-            # self.oob_list[i] contains ith tree out of bag samples indices
+            # self.oob_list[i] contains ith tree's out of bag samples indices
             self.oob_list = []
 
         self.trees = []
@@ -335,7 +335,7 @@ class ForestBase(ABC):
                 oob_score_array[oob_idcs] += tree.predict_batch(data[oob_idcs])
             oob_counts_array[oob_idcs] += 1
 
-        # filter samples that isn't out of bag from any trees
+        # filter samples that aren't out of bag from any trees
         true_oob_idcs = np.where(oob_counts_array != 0)[0]
         true_labels = self.org_targets[true_oob_idcs]
         oob_score_array = oob_score_array[true_oob_idcs]
@@ -364,6 +364,9 @@ class ForestBase(ABC):
         return self.mdg_array
 
     def recursive_mdi_helper(self, node, mdg_array):
+        """
+        Helper function of calculate_mdi function
+        """
         if node.split_reduction is not None:
             mdg_array[node.split_feature] += node.split_reduction
         if node.left is None:
