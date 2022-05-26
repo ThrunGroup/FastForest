@@ -14,6 +14,7 @@ from utils.constants import (
     DEFAULT_NUM_BINS,
     DEFAULT_REGRESSOR_LOSS,
     DEFAULT_MIN_IMPURITY_DECREASE,
+    BATCH_SIZE,
 )
 from utils.utils import data_to_discrete, set_seed
 from utils.boosting import get_next_targets
@@ -56,6 +57,7 @@ class ForestBase(ABC):
         use_dynamic_epsilon: bool = False,
         epsilon: float = 0,
         oob_score: bool = False,
+        batch_size: int = BATCH_SIZE,
     ) -> None:
         self.data = data
         self.org_targets = labels
@@ -115,6 +117,7 @@ class ForestBase(ABC):
         if oob_score:
             assert bootstrap, "out of bag score can be used only when bootstrapping"
         self.mdg_array = None
+        self.batch_size = batch_size
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
@@ -229,6 +232,7 @@ class ForestBase(ABC):
                     use_logarithmic_split=self.use_logarithmic_split,
                     use_dynamic_epsilon=self.use_dynamic_epsilon,
                     epsilon=self.epsilon,
+                    batch_size=self.batch_size,
                 )
             else:
                 tree = TreeRegressor(
@@ -252,6 +256,7 @@ class ForestBase(ABC):
                     use_logarithmic_split=self.use_logarithmic_split,
                     use_dynamic_epsilon=self.use_dynamic_epsilon,
                     epsilon=self.epsilon,
+                    batch_size=self.batch_size,
                 )
             tree.fit()
 
@@ -325,9 +330,7 @@ class ForestBase(ABC):
             tree = self.trees[i]
             oob_idcs = self.oob_list[i]
             if self.is_classification:
-                oob_score_array[oob_idcs, :] += tree.predict_batch(data[oob_idcs])[
-                    1
-                ]
+                oob_score_array[oob_idcs, :] += tree.predict_batch(data[oob_idcs])[1]
             else:
                 oob_score_array[oob_idcs] += tree.predict_batch(data[oob_idcs])
             oob_counts_array[oob_idcs] += 1
@@ -342,7 +345,9 @@ class ForestBase(ABC):
             score = np.sum(true_labels == oob_prediction) / len(true_labels)
         else:
             oob_prediction = oob_score_array / oob_counts_array
-            score = np.sum(np.square(true_labels - oob_prediction/oob_counts_array)) / len(true_labels)
+            score = np.sum(
+                np.square(true_labels - oob_prediction / oob_counts_array)
+            ) / len(true_labels)
         return score
 
     def calculate_mdi(self) -> np.ndarray:

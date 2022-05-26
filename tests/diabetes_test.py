@@ -44,6 +44,7 @@ def test_tree_diabetes(
         solver=solver,
         bin_type=bin_type,
         with_replacement=with_replacement,
+        batch_size=50,
     )
     tree.fit()
     if verbose:
@@ -94,6 +95,7 @@ def test_forest_diabetes(
         solver=solver,
         boosting=boosting,
         is_precomputed_minmax=is_precomputed_minmax,
+        batch_size=50,
     )
     FF.fit(data, labels)
     mse = np.sum(np.square(FF.predict_batch(data) - labels)) / len(data)

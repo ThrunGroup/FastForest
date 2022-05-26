@@ -18,6 +18,7 @@ from utils.constants import (
     GINI,
     LINEAR,
     DEFAULT_NUM_BINS,
+    BATCH_SIZE,
 )
 
 type_check()
@@ -41,6 +42,7 @@ class Node:
         feature_subsampling: Union[str, int] = None,
         tree_global_feature_subsampling: bool = False,
         with_replacement: bool = False,
+        batch_size: int = BATCH_SIZE,
     ) -> None:
         self.tree = tree
         self.parent = parent  # To allow walking back upwards
@@ -61,6 +63,7 @@ class Node:
         self.tree_global_feature_subsampling = tree_global_feature_subsampling
         self.with_replacement = with_replacement
         self.discrete_features = self.tree.discrete_features
+        self.batch_size = batch_size
 
         if tree_global_feature_subsampling:
             # Features are chosen at the tree level. Use all of tree's features
@@ -131,6 +134,7 @@ class Node:
                 with_replacement=self.with_replacement,
                 budget=budget,
                 epsilon=self.epsilon,
+                batch_size=self.batch_size,
             )
         elif self.solver == EXACT:
             results = solve_exactly(
@@ -189,6 +193,7 @@ class Node:
             feature_subsampling=self.feature_subsampling,
             tree_global_feature_subsampling=self.tree_global_feature_subsampling,
             with_replacement=self.with_replacement,
+            batch_size=self.batch_size,
         )
 
     def split(self) -> None:

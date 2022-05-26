@@ -32,7 +32,7 @@ class ForestTests(unittest.TestCase):
     def test_forest_iris(self) -> None:
         iris = sklearn.datasets.load_iris()
         data, labels = iris.data, iris.target
-        f = ForestClassifier(data=data, labels=labels, n_estimators=20, max_depth=5,)
+        f = ForestClassifier(data=data, labels=labels, n_estimators=20, max_depth=5, batch_size=30,)
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
         print("Accuracy:", (acc / len(data)))
@@ -48,6 +48,7 @@ class ForestTests(unittest.TestCase):
             max_depth=5,
             bin_type=RANDOM,
             num_bins=None,
+            batch_size=30,
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
@@ -71,6 +72,8 @@ class ForestTests(unittest.TestCase):
             max_depth=5,
             bin_type=RANDOM,
             num_bins=None,
+            epsilon=0.0,
+            batch_size=30,
         )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
@@ -94,7 +97,7 @@ class ForestTests(unittest.TestCase):
         # solving MAB
         print(
             "Best arm from solve_mab is: ",
-            utils.solvers.solve_mab(data, labels, empty_discrete_dict),
+            utils.solvers.solve_mab(data, labels, discrete_bins_dict=empty_discrete_dict),
         )
 
         print("\n\n=> Tree fitting:")
@@ -187,6 +190,7 @@ class ForestTests(unittest.TestCase):
             classes=classes,
             budget=300000,
             solver=MAB,
+            batch_size=50,
         )
         t1.fit()
         acc1 = np.sum(t1.predict_batch(data)[0] == labels)
@@ -213,6 +217,7 @@ class ForestTests(unittest.TestCase):
             max_depth=5,
             budget=1000000,
             solver=MAB,
+            batch_size=50,
         )
         f1.fit()
         acc1 = np.sum(f1.predict_batch(data)[0] == labels)
@@ -234,7 +239,7 @@ class ForestTests(unittest.TestCase):
         print("f2 Number of queries: ", f2.num_queries)
         print("f2 accuracy: ", acc2)
         print("f2 tree length", len(f2.trees))
-        self.assertTrue(acc1 > acc2 and len(f1.trees) <= len(f2.trees))
+        self.assertTrue(acc1 > acc2 and len(f1.trees) >= len(f2.trees))
 
 
 if __name__ == "__main__":

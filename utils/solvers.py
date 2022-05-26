@@ -275,6 +275,7 @@ def solve_mab(
     with_replacement: bool = False,
     budget: int = None,
     verbose: bool = False,
+    batch_size: int = BATCH_SIZE,
 ) -> Tuple[int, float, float, int]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
@@ -319,7 +320,7 @@ def solve_mab(
     else:
         B = num_bins
 
-    batch_size = BATCH_SIZE
+    batch_size = batch_size
     round_count = 0
     population_idcs = None if with_replacement is True else np.arange(N, dtype=np.int64)
     if impurity_measure == "":
