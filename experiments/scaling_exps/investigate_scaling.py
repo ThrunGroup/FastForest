@@ -38,7 +38,7 @@ def main():
                 train_labels_subsampled,
                 predict=False,
                 run_theirs=False,
-                profile_name="HRFC_"
+                filename="HRFC_"
                 + str(C_SUBSAMPLE_SIZE)
                 + "_profile_"
                 + str(fitting_seed),
