@@ -11,17 +11,22 @@ def main():
     for C_SUBSAMPLE_SIZE in [
         5000,
         10000,
+        15000,
         20000,
+        25000,
+        30000,
+        35000,
         40000,
+        45000,
+        50000,
+        55000,
         60000,
-        # 80000,
-        # 160000,
-        # 320000,
-        # 640000,
-        # 1280000,
+        80000,
+        160000,
+        320000,
     ]:
         print("\n\n")
-        for fitting_seed in range(100, 105):
+        for fitting_seed in range(100, 120):
             np.random.seed(fitting_seed)
             rng = np.random.default_rng(fitting_seed)
             idcs = rng.choice(60000, size=C_SUBSAMPLE_SIZE, replace=True)
