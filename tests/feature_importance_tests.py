@@ -6,12 +6,10 @@ import pandas as pd
 from sklearn.datasets import make_regression, make_classification
 from typing import Tuple
 
-from permutation import PermutationImportance
+from data_structures.permutation import PermutationImportance
 from utils.constants import (
     MAB,
     EXACT,
-    FOREST_UNIT_BUDGET_DIGIT,
-    FOREST_UNIT_BUDGET_DIABETES,
     MAX_SEED,
     t5_l1_args,
     t5_l2_args,
@@ -303,6 +301,8 @@ def reproduce_stability():
         stability_data["ub_mab"],
     )
     epsilon = 1e-4
+    print("=" * 30)
+    print("Reproduce new Table 5\n")
     lb_exact, ub_exact, lb_mab, ub_mab = run_stability_stats_test(**t5_l1_args)
     assert (
         abs(lb_exact_list[0] - lb_exact) < epsilon
@@ -310,7 +310,7 @@ def reproduce_stability():
         and abs(lb_mab_list[0] - lb_mab) < epsilon
         and abs(ub_mab_list[0] - ub_mab) < epsilon
     )
-    print("----Table 5 line 1 is successfully reproduced----")
+    print("Table 5 line 1 is successfully reproduced!")
     print("-"*30)
     lb_exact, ub_exact, lb_mab, ub_mab = run_stability_stats_test(**t5_l2_args)
     assert (
@@ -319,7 +319,7 @@ def reproduce_stability():
         and abs(lb_mab_list[1] - lb_mab) < epsilon
         and abs(ub_mab_list[1] - ub_mab) < epsilon
     )
-    print("---Table 5 line 2 is successfully reproduced---")
+    print("Table 5 line 2 is successfully reproduced!")
     print("-" * 30)
     lb_exact, ub_exact, lb_mab, ub_mab = run_stability_stats_test(**t5_l3_args)
     assert (
@@ -328,7 +328,7 @@ def reproduce_stability():
         and abs(lb_mab_list[2] - lb_mab) < epsilon
         and abs(ub_mab_list[2] - ub_mab) < epsilon
     )
-    print("---Table 5 line 3 is successfully reproduced---")
+    print("Table 5 line 3 is successfully reproduced!")
     print("-" * 30)
     lb_exact, ub_exact, lb_mab, ub_mab = run_stability_stats_test(**t5_l4_args)
     assert (
@@ -337,7 +337,7 @@ def reproduce_stability():
         and abs(lb_mab_list[3] - lb_mab) < epsilon
         and abs(ub_mab_list[3] - ub_mab) < epsilon
     )
-    print("---Table 5 line 4 is successfully reproduced---")
+    print("Table 5 line 4 is successfully reproduced!")
     print("-" * 30)
 
 

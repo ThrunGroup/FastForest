@@ -23,3 +23,12 @@ forests, trees, nodes, and histograms.
     - Include description of each profile
   - the `tests` subdirectory tests that we wrote to verify the correctness of our implementations
   - the `utils` directory contains helper code for training forest-based models
+  
+# Reproduce the tables
+- Run `repro_script.sh`
+  - Note: Due to the minor changes in models after submission, the results described in tables can be different(but the 
+  core message is same).
+    
+  - Table5: the new results are stored in the first 4 lines of `tests\stat_test
+    stability_log\reproduce_stability.csv` file. You can reproduce the results by running `tests\
+    feature_importance_tests.py`. 

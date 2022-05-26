@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from data_structures.classifier import Classifier
 from data_structures.tree_base import TreeBase
-from utils.constants import MAB, LINEAR, GINI, BEST, DEFAULT_NUM_BINS
+from utils.constants import MAB, LINEAR, GINI, BEST, DEFAULT_NUM_BINS, BATCH_SIZE
 
 
 class TreeClassifier(TreeBase, Classifier):
@@ -39,6 +39,7 @@ class TreeClassifier(TreeBase, Classifier):
         use_logarithmic_split: bool = False,
         use_dynamic_epsilon: bool = False,
         epsilon: float = 0,
+        batch_size: int = BATCH_SIZE,
     ):
         assert classes is not None, "classes dictionary isn't defined"
         self.classes = classes  # dict from class name to class index
@@ -70,4 +71,5 @@ class TreeClassifier(TreeBase, Classifier):
             use_logarithmic_split=use_logarithmic_split,
             use_dynamic_epsilon=use_dynamic_epsilon,
             epsilon=epsilon,
+            batch_size=batch_size,
         )
