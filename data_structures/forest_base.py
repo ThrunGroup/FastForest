@@ -51,6 +51,10 @@ class ForestBase(ABC):
         boosting: bool = False,
         boosting_lr: float = None,
         make_discrete: bool = False,
+        is_precomputed_minmax: bool = False,
+        use_logarithmic_split: bool = False,
+        use_dynamic_epsilon: bool = False,
+        epsilon: float = 0,
     ) -> None:
         self.data = data
         self.org_targets = labels
@@ -63,8 +67,9 @@ class ForestBase(ABC):
         self.trees = []
         self.n_estimators = n_estimators
         self.is_classification = is_classification
+        self.is_precomputed_minmax = is_precomputed_minmax
         self.make_discrete = make_discrete
-        self.discrete_features = defaultdict(list)
+        self.discrete_features = None
         if (bin_type == LINEAR) or (bin_type == IDENTITY):
             self.make_discrete = False
 
@@ -91,6 +96,7 @@ class ForestBase(ABC):
         self.rng = np.random.default_rng(self.random_state)
 
         self.with_replacement = with_replacement
+        self.minmax = None
         self.verbose = verbose
 
         self.boosting = boosting
@@ -101,6 +107,9 @@ class ForestBase(ABC):
                 "Boosting in classification is not supported yet."
             )
         self.boosting_lr = boosting_lr
+        self.use_logarithmic_split = use_logarithmic_split
+        self.use_dynamic_epsilon = use_dynamic_epsilon
+        self.epsilon = epsilon
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
@@ -141,8 +150,15 @@ class ForestBase(ABC):
             self.data = data
             self.org_targets = labels
             self.new_targets = labels
+
         if self.make_discrete:
             self.discrete_features: DefaultDict = data_to_discrete(self.data, n=10)
+
+        if self.is_precomputed_minmax:
+            max_data = self.data.max(axis=0)
+            min_data = self.data.min(axis=0)
+            self.minmax = [min_data, max_data]
+
         self.trees = []
 
         for i in range(self.n_estimators):
@@ -189,6 +205,10 @@ class ForestBase(ABC):
                     with_replacement=self.with_replacement,
                     verbose=self.verbose,
                     make_discrete=False,
+                    minmax=self.minmax,
+                    use_logarithmic_split=self.use_logarithmic_split,
+                    use_dynamic_epsilon=self.use_dynamic_epsilon,
+                    epsilon=self.epsilon,
                 )
             else:
                 tree = TreeRegressor(
@@ -208,9 +228,17 @@ class ForestBase(ABC):
                     with_replacement=self.with_replacement,
                     verbose=self.verbose,
                     make_discrete=False,
+                    minmax=self.minmax,
+                    use_logarithmic_split=self.use_logarithmic_split,
+                    use_dynamic_epsilon=self.use_dynamic_epsilon,
+                    epsilon=self.epsilon,
                 )
             tree.fit()
-            self.trees.append(tree)
+
+            if tree.num_queries > 0:
+                self.trees.append(tree)
+            else:
+                break
 
             if self.boosting:
                 # TODO: currently uses O(n) computation

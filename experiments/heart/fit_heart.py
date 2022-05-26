@@ -3,7 +3,7 @@ import numpy as np
 import os
 import wandb
 import random
-import preprocess_heart
+from experiments.heart import preprocess_heart
 import argparse
 
 from csv import DictWriter
@@ -14,7 +14,7 @@ from imblearn.under_sampling import RandomUnderSampler
 from typing import Tuple, Iterable
 
 from utils.constants import FASTFOREST, SKLEARN, HEART
-from data_structures.forest_classifier import Forest
+from data_structures.forest_classifier import ForestClassifier
 
 
 def check_dimension(X: np.ndarray, Y: np.ndarray) -> bool:

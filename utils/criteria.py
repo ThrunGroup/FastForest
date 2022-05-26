@@ -193,6 +193,32 @@ def get_mse(
         return estimated_mse, V_mse
     return estimated_mse
 
+def get_mse_with_chi(
+    args: np.ndarray,
+    ret_var: bool = False,
+    pop_size: int = None,
+) -> Union[Tuple[float, float], float]:
+    """
+    Compute the MSE for a given node, where the node is represented by the pile of all target values. Also Compute the
+    confidence bound of our estimation by using Hoeffding's inequality for bounded values. Assume normal distribution
+    of labels!!
+
+    :param args: args = (number of samples, mean of samples, variance of samples)
+    :param ret_var: Whether to return the variance of the estimate
+    :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
+    :return: the mse(variance) of the node, as well as its estimated variance if ret_var
+    """
+    n = args[0]
+    mean = args[1]
+    if pop_size is None:
+        pop_var = args[2] * n / (n - 1)
+        sample_var = args[2]
+    else:
+        pop_var = args[2] * n / (n - 1) * (pop_size - 1) / pop_size
+        sample_var = args[2]
+
+
+
 
 def get_impurity_fn(impurity_measure: str) -> Callable:
     if impurity_measure == GINI:

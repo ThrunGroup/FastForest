@@ -1,5 +1,4 @@
 import unittest
-import numpy as np
 
 from diabetes_test import test_tree_diabetes
 from newsgroups_test import test_tree_news

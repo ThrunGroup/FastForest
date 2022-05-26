@@ -44,9 +44,11 @@ class RandomPatchesClassifier(ForestClassifier):
 
         rng = np.random.default_rng(random_state)
         data_idcs = rng.choice(N, math.ceil(alpha_N * N), replace=False)
-        feature_idcs = rng.choice(F, math.ceil(alpha_F * F), replace=False)
 
-        self.data = data[data_idcs][:, feature_idcs]
+        # We need to store self.feature_idcs for the custom .predict() function
+        self.feature_idcs = rng.choice(F, math.ceil(alpha_F * F), replace=False)
+
+        self.data = data[data_idcs][:, self.feature_idcs]
         self.labels = labels[data_idcs]
         super().__init__(
             data=self.data,  # Fixed
