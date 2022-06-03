@@ -183,7 +183,7 @@ def make_histograms(
             num_bins = B
         elif bin_type == RANDOM:  # For extremely random forests
             min_bin, max_bin = np.min(f_data), np.max(f_data)
-            num_bins = np.sqrt(np.shape(data)[0]).astype(int)
+            num_bins = B
         else:
             NotImplementedError("Invalid choice of bin_type")
 

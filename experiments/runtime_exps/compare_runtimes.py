@@ -116,7 +116,7 @@ def compare_runtimes(
 
     # params
     default_alpha_N = 0.75
-    default_alpha_F = 0.15
+    default_alpha_F = 0.8
     default_max_depth = 5
     default_n_estimators = 5
     default_min_samples_split = 2

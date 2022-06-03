@@ -441,10 +441,10 @@ def solve_mab(
 
         # TODO(@motiwari): Can't use nanmin here -- why?
         # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
-        tied_arms_condition = np.where((lcbs < (1 - epsilon) * estimates.min()))
-        exact_mask[tied_arms_condition] = 1
+        tied_arms = np.zeros((F, B))
+        tied_arms[np.where((lcbs < (1 - epsilon) * estimates.min()))] = 1
         cand_condition = np.where(
-            (exact_mask == 0) & (lcbs < ucbs.min()) & (lcbs < min_impurity_reduction)
+            (exact_mask == 0) & (lcbs < ucbs.min()) & (lcbs < min_impurity_reduction) & (tied_arms == 0)
         )
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
         round_count += 1
