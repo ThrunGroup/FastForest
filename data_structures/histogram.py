@@ -37,6 +37,7 @@ class Histogram:
         self.max_bin = max_bin
         self.bin_type = bin_type
         self.is_classification = is_classification
+        self.class_to_idx = dict(zip(self.classes, range(len(self.classes))))
 
         if self.bin_type == LINEAR:
             if self.min_bin == max_bin:  # To resolve the case when self.min == self.max
@@ -124,7 +125,6 @@ class Histogram:
             assert len(X) == len(
                 Y
             ), "Error: sample sizes and label sizes must be the same"
-            class_to_idx = np.vectorize(self.classes.index)
             insert_idcs = self.get_bin(feature_values, self.bin_edges).astype("int64")
             new_Y = self.replace_array(
                 Y, self.class_to_idx
@@ -239,3 +239,20 @@ class Histogram:
         new_mean = (num1 * mean1 + num2 * mean2) / new_num
         new_var = welford_variance_calc(num1, mean1, var1, num2, mean2, var2)
         return new_num, new_mean, new_var
+
+    @staticmethod
+    def replace_array(array: np.ndarray, dictionary: dict):
+        """
+        Assume that all the elements of array should be one of the keys of dictionary and they are integers.
+        As all the elements are the keys of dictionary, we can replace them with the values of dictionary.
+        Returns the new replaced array.
+        """
+        # A vectorized way to replace elements, see https://bit.ly/3tk4h64.
+        keys = np.array(list(dictionary.keys()))
+        values = np.array(list(dictionary.values()))
+
+        mapping_ar = np.zeros(
+            keys.max() + 1, dtype=values.dtype
+        )
+        mapping_ar[keys] = values
+        return mapping_ar[array]
