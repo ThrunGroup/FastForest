@@ -441,8 +441,10 @@ def solve_mab(
 
         # TODO(@motiwari): Can't use nanmin here -- why?
         # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
+        min_idx = np.unravel_index(estimates.argmin(), estimates.shape)
         tied_arms = np.zeros((F, B))
-        tied_arms[np.where((lcbs < (1 - epsilon) * estimates.min()))] = 1
+        tied_arms[np.where((lcbs < (1 - epsilon) * estimates[min_idx]))] = 1
+        tied_arms[min_idx] = 0
         cand_condition = np.where(
             (exact_mask == 0) & (lcbs < ucbs.min()) & (lcbs < min_impurity_reduction) & (tied_arms == 0)
         )
