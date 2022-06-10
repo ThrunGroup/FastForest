@@ -115,7 +115,7 @@ class Node:
             return self.split_reduction
 
         if self.tree.use_logarithmic_split:
-            self.num_bins = int(np.log2(self.n_data))
+            self.num_bins = int(np.log2(self.n_data)) + 1
         if self.tree.use_dynamic_epsilon:
             self.epsilon = self.tree.epsilon * np.sqrt(self.depth)
         else:

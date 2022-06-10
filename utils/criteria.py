@@ -10,6 +10,7 @@ def get_gini(
     counts: np.ndarray,
     ret_var: bool = False,
     pop_size: int = None,
+    n: int = None,
 ) -> Union[Tuple[float, float], float]:
     """
     Compute the Gini impurity for a given node, where the node is represented by the number of counts of each class
@@ -18,9 +19,11 @@ def get_gini(
     :param counts: 1d array of counts where ith element is the number of counts on the ith class(label).
     :param ret_var: Whether to return the variance of the estimate
     :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
+    :param n: The sum of counts.
     :return: the Gini impurity of the node, as well as its estimated variance if ret_var
     """
-    n = np.sum(counts, dtype=np.int64)
+    if n is None:
+        n = np.sum(counts, dtype=np.int64)
     if n == 0:
         if ret_var:
             return 0, 0
@@ -46,9 +49,8 @@ def get_gini(
         return float(G), float(V_G)
     return float(G)
 
-
 def get_entropy(
-    counts: np.ndarray, ret_var=False, pop_size: int = None
+    counts: np.ndarray, ret_var=False, pop_size: int = None, n: int = None,
 ) -> Union[Tuple[float, float], float]:
     """
     Compute the entropy impurity for a given node, where the node is represented by the number of counts of each class
@@ -57,9 +59,11 @@ def get_entropy(
     :param counts: 1d array of counts where ith element is the number of counts on the ith class(label)
     :param ret_var: Whether to return the variance of the estimate
     :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
+    :param n: The sum of counts.
     :return: the entropy impurity of the node, as well as its estimated variance if ret_var
     """
-    n = np.sum(counts, dtype=np.int64)
+    if n is None:
+        n = np.sum(counts, dtype=np.int64)
     if n == 0:
         if ret_var:
             return 0, 0
@@ -278,21 +282,21 @@ def get_impurity_reductions(
 
         # Impurity is weighted by population of each node during a split
         if is_classification:
-            left_weight = int(np.sum(h.left[b_idx, :], dtype=np.int64))
-            right_weight = int(np.sum(h.right[b_idx, :], dtype=np.int64))
+            left_sum = int(np.sum(h.left[b_idx, :], dtype=np.int64))
+            right_sum = int(np.sum(h.right[b_idx, :], dtype=np.int64))
         else:
-            left_weight = int(h.left_pile[b_idx][0])
-            right_weight = int(h.right_pile[b_idx][0])
+            left_sum = int(h.left_pile[b_idx][0])
+            right_sum = int(h.right_pile[b_idx][0])
 
         # Population of left and right node is approximated by left_weight and right_weight
-        left_size = None if pop_size is None else int(left_weight * pop_size / n)
-        right_size = None if pop_size is None else int(right_weight * pop_size / n)
-        left_weight /= n
-        right_weight /= n
+        left_size = None if pop_size is None else int(left_sum * pop_size / n)
+        right_size = None if pop_size is None else int(right_sum * pop_size / n)
+        left_weight = left_sum / n
+        right_weight = right_sum / n
         if is_classification:
-            IL, V_IL = get_impurity(h.left[b_idx, :], ret_var=True, pop_size=left_size)
+            IL, V_IL = get_impurity(h.left[b_idx, :], ret_var=True, pop_size=left_size, n=left_sum)
             IR, V_IR = get_impurity(
-                h.right[b_idx, :], ret_var=True, pop_size=right_size
+                h.right[b_idx, :], ret_var=True, pop_size=right_size, n=right_sum
             )
         else:
             IL, V_IL = get_impurity(
