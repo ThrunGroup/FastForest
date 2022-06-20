@@ -261,7 +261,6 @@ def solve_exactly(
 def solve_mab(
     data: np.ndarray,
     labels: np.ndarray,
-    idcs: np.ndarray,
     minmax: Tuple[np.ndarray, np.ndarray] = None,
     discrete_bins_dict: DefaultDict = None,
     binning_type: str = LINEAR,

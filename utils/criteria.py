@@ -1,16 +1,15 @@
 from typing import Tuple, List, Callable, Union
 import scipy
 import numpy as np
+from numba import jit
 
 from data_structures.histogram import Histogram
 from utils.constants import GINI, ENTROPY, VARIANCE, MSE, KURTOSIS
 
 
+@jit
 def get_gini(
-    counts: np.ndarray,
-    ret_var: bool = False,
-    pop_size: int = None,
-    n: int = None,
+    counts: np.ndarray, ret_var: bool = False, pop_size: int = None, n: int = None,
 ) -> Union[Tuple[float, float], float]:
     """
     Compute the Gini impurity for a given node, where the node is represented by the number of counts of each class
@@ -48,6 +47,7 @@ def get_gini(
         V_G = np.dot(dG_dp ** 2, V_p[:-1])
         return float(G), float(V_G)
     return float(G)
+
 
 def get_entropy(
     counts: np.ndarray, ret_var=False, pop_size: int = None, n: int = None,
@@ -127,9 +127,7 @@ def get_variance(
 
 
 def get_mse(
-    args: np.ndarray,
-    ret_var: bool = False,
-    pop_size: int = None,
+    args: np.ndarray, ret_var: bool = False, pop_size: int = None,
 ) -> Union[Tuple[float, float], float]:
     """
     Compute the MSE for a given node, where the node is represented by the pile of all target values. Also Compute the
@@ -197,10 +195,9 @@ def get_mse(
         return estimated_mse, V_mse
     return estimated_mse
 
+
 def get_mse_with_chi(
-    args: np.ndarray,
-    ret_var: bool = False,
-    pop_size: int = None,
+    args: np.ndarray, ret_var: bool = False, pop_size: int = None,
 ) -> Union[Tuple[float, float], float]:
     """
     Compute the MSE for a given node, where the node is represented by the pile of all target values. Also Compute the
@@ -220,8 +217,6 @@ def get_mse_with_chi(
     else:
         pop_var = args[2] * n / (n - 1) * (pop_size - 1) / pop_size
         sample_var = args[2]
-
-
 
 
 def get_impurity_fn(impurity_measure: str) -> Callable:
@@ -294,7 +289,9 @@ def get_impurity_reductions(
         left_weight = left_sum / n
         right_weight = right_sum / n
         if is_classification:
-            IL, V_IL = get_impurity(h.left[b_idx, :], ret_var=True, pop_size=left_size, n=left_sum)
+            IL, V_IL = get_impurity(
+                h.left[b_idx, :], ret_var=True, pop_size=left_size, n=left_sum
+            )
             IR, V_IR = get_impurity(
                 h.right[b_idx, :], ret_var=True, pop_size=right_size, n=right_sum
             )
