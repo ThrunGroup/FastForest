@@ -8,7 +8,7 @@ class GradientBoostedHistogramRandomForestRegressor(ForestRegressor):
     """
     A GradientBoostedHistogramRandomForestRegressor, which is a ForestRegressor with the following settings:
 
-    bootstrap: bool = True,
+    bootstrap: bool = False,
     feature_subsampling: str = SQRT,
     tree_global_feature_subsampling: bool = False,
     bin_type: str = LINEAR,
@@ -46,7 +46,7 @@ class GradientBoostedHistogramRandomForestRegressor(ForestRegressor):
             labels=labels,
             n_estimators=n_estimators,
             max_depth=max_depth,
-            bootstrap=True,  # Fixed
+            bootstrap=False,  # Fixed
             feature_subsampling=None,  # Fixed
             tree_global_feature_subsampling=False,  # Fixed
             min_samples_split=min_samples_split,

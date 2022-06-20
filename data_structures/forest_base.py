@@ -155,6 +155,7 @@ class ForestBase(ABC):
         # Either (data and labels) or (not data and not labels)
         return True
 
+    @profile
     def fit(self, data: np.ndarray = None, labels: np.ndarray = None) -> None:
         """
         Fit the random forest classifier by training trees, where each tree is trained with only a subset of the
@@ -259,19 +260,31 @@ class ForestBase(ABC):
                     batch_size=self.batch_size,
                 )
             tree.fit()
+            # Delete variables that takes unnecessary memory
+            del tree.data, tree.labels
 
-            if tree.num_queries > 0:
+            if (
+                self.remaining_budget is None
+                or -BUFFER < tree.num_queries < self.remaining_budget
+            ):
                 self.trees.append(tree)
             else:
                 break
 
             if self.boosting:
                 # TODO: currently uses O(n) computation
+                boosting_prediction = (
+                    tree.predict_batch(self.curr_data)
+                    if not self.is_classification
+                    else tree.predict_batch(self.curr_data)[0]
+                )
+                if i != 0:
+                    boosting_prediction *= self.boosting_lr
                 self.new_targets = get_next_targets(
                     loss_type=DEFAULT_REGRESSOR_LOSS,
                     is_classification=self.is_classification,
                     targets=self.new_targets,
-                    predictions=self.predict_batch(self.data),
+                    predictions=boosting_prediction,
                 )
 
             # Bookkeeping
@@ -376,10 +389,9 @@ class ForestBase(ABC):
             self.recursive_mdi_helper(node.right, mdg_array)
 
     def reset(self, budget: int = None):
-        self.data = None
-        self.labels = None
+        self.data = self.org_targets = self.curr_targets = None
         self.trees = []
         self.num_queries = 0
         self.budget = budget
         if self.oob_score:
-            self.oob_list=[]
+            self.oob_list = []

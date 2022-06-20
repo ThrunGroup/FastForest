@@ -41,6 +41,7 @@ class ForestClassifier(ForestBase, Classifier):
         oob_score: bool = False,
         batch_size: int = BATCH_SIZE,
     ) -> None:
+        labels = labels.astype(np.int64)
         if classes is None:
             self.classes: dict = class_to_idx(
                 np.unique(labels)

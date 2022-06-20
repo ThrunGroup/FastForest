@@ -1,47 +1,51 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import ast
 from sklearn.linear_model import LinearRegression
 
-sizes = np.array(
-    [
-        5000,
-        10000,
-        15000,
-        20000,
-        25000,
-        30000,
-        35000,
-        40000,
-        45000,
-        50000,
-        55000,
-        60000,
-        80000,
-        160000,
-        320000,
-    ]
-)
-
-counts = np.array(
-    [
-        43.4,
-        80.7,
-        107.8,
-        146.7,
-        154,
-        207.6,
-        218.2,
-        229.9,
-        278.6,
-        275.5,
-        338.1,
-        379.1,
-        347.9,
-        413.2,
-        457.4,
-    ]
-)
-
+# sizes = np.array(
+#     [
+#         5000,
+#         10000,
+#         15000,
+#         20000,
+#         25000,
+#         30000,
+#         35000,
+#         40000,
+#         45000,
+#         50000,
+#         55000,
+#         60000,
+#         80000,
+#         160000,
+#         320000,
+#     ]
+# )
+#
+# counts = np.array(
+#     [
+#         43.4,
+#         80.7,
+#         107.8,
+#         146.7,
+#         154,
+#         207.6,
+#         218.2,
+#         229.9,
+#         278.6,
+#         275.5,
+#         338.1,
+#         379.1,
+#         347.9,
+#         413.2,
+#         457.4,
+#     ]
+# )
+with open("size_to_time_dict", "r+") as fin:
+    size_to_time_dict = ast.literal_eval(fin.read())
+    sizes = sorted(size_to_time_dict.keys())
+    counts = [v for k, v in sizes]
 mean_counts = np.mean(counts)
 
 lr = LinearRegression()

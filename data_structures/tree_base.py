@@ -200,6 +200,7 @@ class TreeBase(ABC):
         # Either (data and labels) or (not data and not labels)
         return True
 
+    @profile
     def fit(self, data: np.ndarray = None, labels: np.ndarray = None) -> None:
         """
         Fit the tree by recursively splitting nodes until the termination condition is reached.

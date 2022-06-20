@@ -1,4 +1,5 @@
 from mnist import MNIST
+import numpy as np
 
 from experiments.runtime_exps.compare_runtimes import *
 
@@ -7,7 +8,7 @@ def main():
     mndata = MNIST(os.path.join("..", "mnist"))
 
     train_images, train_labels = mndata.load_training()
-
+    size_to_time_dict = {}
     for C_SUBSAMPLE_SIZE in [
         5000,
         10000,
@@ -26,13 +27,15 @@ def main():
         320000,
     ]:
         print("\n\n")
-        for fitting_seed in range(100, 120):
+        run_time = .0
+        num_trials = 0
+        for fitting_seed in range(1, 4):
             np.random.seed(fitting_seed)
             rng = np.random.default_rng(fitting_seed)
             idcs = rng.choice(60000, size=C_SUBSAMPLE_SIZE, replace=True)
             train_images_subsampled = np.array(train_images)[idcs]
             train_labels_subsampled = np.array(train_labels)[idcs]
-            compare_runtimes(
+            results = compare_runtimes(
                 "HRFC",
                 train_images_subsampled,
                 train_labels_subsampled,
@@ -43,6 +46,12 @@ def main():
                 + "_profile_"
                 + str(fitting_seed),
             )
+            run_time += np.mean(np.array(results["our_train_times"]))
+            num_trials += 1
+        run_time /= num_trials
+        size_to_time_dict[C_SUBSAMPLE_SIZE] = run_time
+    with open("size_to_time_dict", "w+") as fout:
+        fout.write(str(size_to_time_dict))
 
         # compare_runtimes(
         #     "ERFC",
