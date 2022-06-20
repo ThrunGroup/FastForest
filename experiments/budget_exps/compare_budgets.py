@@ -1,6 +1,7 @@
 from typing import Any
 import pprint
 import os
+import ast
 
 from sklearn.datasets import load_diabetes, make_classification, make_regression
 
@@ -593,9 +594,16 @@ def compare_budgets(
         "their_avg_num_trees": their_avg_num_trees if run_theirs else None,
         "their_std_num_trees": their_std_num_trees if run_theirs else None,
     }
-    with open("budget_" + filename, "w+") as fout:
+    if os.path.exists(filename):
+        with open(filename, 'r+') as fin:
+            prev_results = ast.literal_eval(fin.read())
+            print(f"prev_results: {prev_results}")
+            if prev_results == results:
+                print(f"{filename} is successfully reproduced")
+                return results
+    print(f"Write a new {filename}")
+    with open(filename, "w+") as fout:
         fout.write(str(results))
-
     return results
 
 
@@ -609,7 +617,7 @@ def main():
     train_images = np.array(train_images)
     train_labels = np.array(train_labels)
 
-    SUBSAMPLE_SIZE = 10000  # TODO(@motiwari): Update this?
+    SUBSAMPLE_SIZE = 200000  # TODO(@motiwari): Update this?
     train_images_subsampled = train_images[:SUBSAMPLE_SIZE]
     train_labels_subsampled = train_labels[:SUBSAMPLE_SIZE]
 
@@ -632,6 +640,7 @@ def main():
             filename="HRFC_dict",
             verbose=True,
             default_budget=int(7840000 * 1.3),
+            depth_override=6,
         )
     )
 
@@ -668,8 +677,8 @@ def main():
             filename="HRPC_dict",
             verbose=True,
             default_budget=int(7840000 * 1.3),
-            alpha_N_override=0.25,
-            alpha_F_override=0.15,
+            alpha_N_override=0.8,
+            alpha_F_override=0.5,
         )
     )
 
@@ -714,11 +723,12 @@ def main():
             filename="HRFR_dict",
             verbose=True,
             default_budget=2400000 * 10,
+            depth_override=5,
         )
     )
 
     ## Random Patches
-    NUM_SEEDS = 20
+    NUM_SEEDS = 5
     pp.pprint(
         compare_budgets(
             compare="HRPR",
@@ -733,12 +743,12 @@ def main():
             verbose=True,
             # Divide by 24 for less trees, since only using ~1/4*1/6 of the data
             default_budget=2400000 * (12 / 24),
-            # depth_override=15,
+            depth_override=5,
         )
     )
 
     ## Extremely Random Forests
-    NUM_SEEDS = 20
+    NUM_SEEDS = 5
     pp.pprint(
         compare_budgets(
             compare="ERFR",
@@ -752,7 +762,7 @@ def main():
             filename="../runtime_exps/ERFR_dict",
             verbose=True,
             default_budget=24000000,
-            depth_override=1,
+            depth_override=5,
         )
     )
 

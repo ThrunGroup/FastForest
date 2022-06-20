@@ -5,6 +5,14 @@ import time
 from typing import Any
 import pprint
 import os
+import ast
+
+
+import sys
+
+print(sys.path)
+sys.path.append('C:\\Users\\MSI\\Desktop\\FastForest\\FastForest')
+print(sys.path)
 
 from sklearn.datasets import load_diabetes, make_classification, make_regression
 
@@ -617,6 +625,14 @@ def compare_runtimes(
         "their_avg_num_queries": their_avg_num_queries if run_theirs else None,
         "their_std_num_queries": their_std_num_queries if run_theirs else None,
     }
+    if os.path.exists(filename):
+        with open(filename, 'r+') as fin:
+            prev_results = ast.literal_eval(fin.read())
+            print(f"prev_results: {prev_results}")
+            if prev_results == results:
+                print(f"{filename} is successfully reproduced")
+                return results
+    print(f"Write a new {filename}")
     with open(filename, "w+") as fout:
         fout.write(str(results))
 
@@ -625,7 +641,6 @@ def compare_runtimes(
 
 def main():
     pp = pprint.PrettyPrinter(indent=2)
-
     ############### Regression
     # sklearn regression dataset
     params = {
@@ -653,70 +668,70 @@ def main():
     test_data = full_data[train_test_split:]
     test_targets = full_targets[train_test_split:]
 
-    ## Random Forests
-    NUM_SEEDS = 5
-    pp.pprint(
-        compare_runtimes(
-            compare="HRFR",
-            train_data=train_data,
-            train_targets=train_targets,
-            original_test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRFR_dict",
-            verbose=True,
-        )
-    )
-
-    ## Random Patches
-    NUM_SEEDS = 20
-    pp.pprint(
-        compare_runtimes(
-            compare="HRPR",
-            train_data=train_data,
-            train_targets=train_targets,
-            original_test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRPR_dict",
-            verbose=True,
-        )
-    )
-
-    ## Extremely Random Forests
-    NUM_SEEDS = 20
-    pp.pprint(
-        compare_runtimes(
-            compare="ERFR",
-            train_data=train_data,
-            train_targets=train_targets,
-            original_test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="ERFR_dict",
-            verbose=True,
-        )
-    )
+    # Random Forests
+    # NUM_SEEDS = 5
+    # pp.pprint(
+    #     compare_runtimes(
+    #         compare="HRFR",
+    #         train_data=train_data,
+    #         train_targets=train_targets,
+    #         original_test_data=test_data,
+    #         test_targets=test_targets,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="HRFR_dict",
+    #         verbose=True,
+    #     )
+    # )
+    #
+    # ## Random Patches
+    # NUM_SEEDS = 5
+    # pp.pprint(
+    #     compare_runtimes(
+    #         compare="HRPR",
+    #         train_data=train_data,
+    #         train_targets=train_targets,
+    #         original_test_data=test_data,
+    #         test_targets=test_targets,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="HRPR_dict",
+    #         verbose=True,
+    #     )
+    # )
+    #
+    # ## Extremely Random Forests
+    # NUM_SEEDS = 5
+    # pp.pprint(
+    #     compare_runtimes(
+    #         compare="ERFR",
+    #         train_data=train_data,
+    #         train_targets=train_targets,
+    #         original_test_data=test_data,
+    #         test_targets=test_targets,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="ERFR_dict",
+    #         verbose=True,
+    #     )
+    # )
 
     ############### Classification
     mndata = MNIST(os.path.join("..", "mnist"))
 
     train_images, train_labels = mndata.load_training()
-    train_images = np.array(train_images)[:5000]
-    train_labels = np.array(train_labels)[:5000]
+    train_images = np.repeat(np.array(train_images), 4, axis=0)
+    train_labels = np.repeat(np.array(train_labels), 4, axis=0)
 
     test_images, test_labels = mndata.load_testing()
     test_images = np.array(test_images)
     test_labels = np.array(test_labels)
 
     ## Random Forests
-    NUM_SEEDS = 5
+    NUM_SEEDS = 1
     pp.pprint(
         compare_runtimes(
             compare="HRFC",
@@ -731,7 +746,7 @@ def main():
             verbose=True,
         )
     )
-
+    return
     ## Extremely Random Forests
     NUM_SEEDS = 5
     pp.pprint(
