@@ -67,7 +67,6 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 
     return TOLERANCE < root_impurity - split_impurity
 
-@profile
 def sample_targets(
     is_classification: bool,
     data: np.ndarray,
@@ -157,7 +156,6 @@ def sample_targets(
     # TODO(@motiwari): This seems dangerous, because access appears to be a linear index to the array
     return impurity_reductions, cb_deltas, num_queries, population_idcs
 
-@profile
 def solve_exactly(
     data: np.ndarray,
     labels: np.ndarray,
@@ -260,10 +258,10 @@ def solve_exactly(
     else:
         return total_queries
 
-@profile
 def solve_mab(
     data: np.ndarray,
     labels: np.ndarray,
+    idcs: np.ndarray,
     minmax: Tuple[np.ndarray, np.ndarray] = None,
     discrete_bins_dict: DefaultDict = None,
     binning_type: str = LINEAR,

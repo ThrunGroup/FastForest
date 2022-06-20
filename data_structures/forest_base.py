@@ -155,7 +155,6 @@ class ForestBase(ABC):
         # Either (data and labels) or (not data and not labels)
         return True
 
-    @profile
     def fit(self, data: np.ndarray = None, labels: np.ndarray = None) -> None:
         """
         Fit the random forest classifier by training trees, where each tree is trained with only a subset of the
