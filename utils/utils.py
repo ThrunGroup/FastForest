@@ -2,8 +2,10 @@ import random
 import itertools
 import math
 import numpy as np
+import sys
 from collections import defaultdict
 from typing import DefaultDict, Tuple, List
+from numba import jit
 
 from data_structures.histogram import Histogram
 from utils.constants import (
@@ -260,3 +262,12 @@ def empty_histograms(histograms: List[Histogram], arms: Tuple[np.ndarray, np.nda
         # Since we don't obviate bins in arms, even though they are not candidates
         # Todo: change this if we obviate bins later
         histogram.empty_samples(range(histogram.num_bins))
+
+
+@jit(nopython=True)
+def get_subset_2d(source_array: np.ndarray, row_idcs: np.ndarray, col_idcs: np.ndarray):
+    subset_array = np.empty((len(row_idcs), len(col_idcs)))
+    for i in range(len(row_idcs)):
+        for j in range(len(col_idcs)):
+            subset_array[(i, j)] = source_array[(row_idcs[i], col_idcs[j])]
+    return subset_array

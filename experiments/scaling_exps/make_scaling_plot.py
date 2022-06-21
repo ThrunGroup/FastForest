@@ -44,8 +44,8 @@ from sklearn.linear_model import LinearRegression
 # )
 with open("size_to_time_dict", "r+") as fin:
     size_to_time_dict = ast.literal_eval(fin.read())
-    sizes = sorted(size_to_time_dict.keys())
-    counts = [v for k, v in sizes]
+    sizes = np.array(sorted(size_to_time_dict.keys()))
+    counts = np.array([size_to_time_dict[k] for k in sizes])
 mean_counts = np.mean(counts)
 
 lr = LinearRegression()

@@ -39,6 +39,7 @@ class TreeRegressor(TreeBase, Regressor):
         use_dynamic_epsilon: bool = False,
         epsilon: float = 0,
         batch_size: int = BATCH_SIZE,
+        idcs: np.ndarray = None,
     ):
         super().__init__(
             data=data,
@@ -66,4 +67,5 @@ class TreeRegressor(TreeBase, Regressor):
             use_dynamic_epsilon=use_dynamic_epsilon,
             epsilon=epsilon,
             batch_size=batch_size,
+            idcs=idcs
         )

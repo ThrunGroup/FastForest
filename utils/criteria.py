@@ -1,13 +1,11 @@
 from typing import Tuple, List, Callable, Union
 import scipy
 import numpy as np
-from numba import jit
 
 from data_structures.histogram import Histogram
 from utils.constants import GINI, ENTROPY, VARIANCE, MSE, KURTOSIS
 
 
-@jit
 def get_gini(
     counts: np.ndarray, ret_var: bool = False, pop_size: int = None, n: int = None,
 ) -> Union[Tuple[float, float], float]:
@@ -47,7 +45,6 @@ def get_gini(
         V_G = np.dot(dG_dp ** 2, V_p[:-1])
         return float(G), float(V_G)
     return float(G)
-
 
 def get_entropy(
     counts: np.ndarray, ret_var=False, pop_size: int = None, n: int = None,

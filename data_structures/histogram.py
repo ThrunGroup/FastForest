@@ -126,11 +126,7 @@ class Histogram:
                 Y
             ), "Error: sample sizes and label sizes must be the same"
             insert_idcs = self.get_bin(feature_values, self.bin_edges).astype("int64")
-            new_Y = self.replace_array(
-                Y, self.class_to_idx
-            ) # new_Y is the array of indices of labels
-            # class_to_idx = np.vectorize(self.classes.index)
-            # new_Y = class_to_idx(Y)
+            new_Y = self.replace_array(Y, self.class_to_idx)
             hist = np.zeros_like(self.left)
             for b_idx in range(self.num_bins):
                 """
@@ -140,10 +136,12 @@ class Histogram:
                      _, counts = np.unique(new_Y, return_counts=True)
                      Then, counts = [4,4], but [4, 4, 0] is expected.
                 """
-
                 hist[b_idx] = np.bincount(
                     np.concatenate(
-                        (new_Y[insert_idcs == b_idx], np.array(range(len(self.classes))))
+                        (
+                            new_Y[insert_idcs == b_idx],
+                            np.array(range(len(self.classes))),
+                        )
                     )
                 )
             hist -= 1
@@ -154,13 +152,6 @@ class Histogram:
             for b_idx in range(self.num_bins):
                 self.right[:b_idx] += hist[b_idx]
                 self.left[b_idx:] += hist[b_idx]
-            # for idx, f in enumerate(feature_values):
-            #     y = new_Y[idx]
-            #     insert_idx = insert_idcs[idx]
-            #     # left, right[x, y] gives number of points on the left and right of xth bin of yth class
-            #     self.right[:insert_idx, y] += 1
-            #     self.left[insert_idx:, y] += 1
-
         else:
             assert (
                 len(self.bin_edges)
@@ -251,8 +242,6 @@ class Histogram:
         keys = np.array(list(dictionary.keys()))
         values = np.array(list(dictionary.values()))
 
-        mapping_ar = np.zeros(
-            keys.max() + 1, dtype=values.dtype
-        )
+        mapping_ar = np.zeros(keys.max() + 1, dtype=values.dtype)
         mapping_ar[keys] = values
         return mapping_ar[array]

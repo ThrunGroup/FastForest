@@ -40,6 +40,7 @@ class TreeClassifier(TreeBase, Classifier):
         use_dynamic_epsilon: bool = False,
         epsilon: float = 0,
         batch_size: int = BATCH_SIZE,
+        idcs: np.ndarray = None,
     ):
         assert classes is not None, "classes dictionary isn't defined"
         self.classes = classes  # dict from class name to class index
@@ -72,4 +73,5 @@ class TreeClassifier(TreeBase, Classifier):
             use_dynamic_epsilon=use_dynamic_epsilon,
             epsilon=epsilon,
             batch_size=batch_size,
+            idcs=idcs,
         )

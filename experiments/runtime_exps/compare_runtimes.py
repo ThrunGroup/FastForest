@@ -7,13 +7,6 @@ import pprint
 import os
 import ast
 
-
-import sys
-
-print(sys.path)
-sys.path.append('C:\\Users\\MSI\\Desktop\\FastForest\\FastForest')
-print(sys.path)
-
 from sklearn.datasets import load_diabetes, make_classification, make_regression
 
 from experiments.exp_utils import *

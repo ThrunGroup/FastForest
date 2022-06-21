@@ -60,6 +60,7 @@ class TreeBase(ABC):
         use_dynamic_epsilon: bool = False,
         epsilon: float = 0,
         batch_size: int = BATCH_SIZE,
+        idcs: np.ndarray = None,
     ) -> None:
         self.data = data  # This is a REFERENCE
         self.labels = labels  # This is a REFERENCE
@@ -98,17 +99,19 @@ class TreeBase(ABC):
         self.solver = solver
         self.random_state = random_state
         set_seed(self.random_state)
+        self.rng = np.random.default_rng(random_state)
         self.with_replacement = with_replacement
         self.verbose = verbose
         self.use_logarithmic_split = use_logarithmic_split
         self.use_dynamic_epsilon = use_dynamic_epsilon
         self.epsilon = epsilon
 
+        if idcs is None:
+            idcs = np.arange(self.n_data)
         self.node = Node(
             tree=self,
             parent=None,
-            data=self.data,  # Root node contains all the data
-            labels=self.labels,
+            idcs=idcs,  # Root node contains all the data
             depth=0,
             proportion=1.0,
             bin_type=self.bin_type,
@@ -199,7 +202,6 @@ class TreeBase(ABC):
 
         # Either (data and labels) or (not data and not labels)
         return True
-
     def fit(self, data: np.ndarray = None, labels: np.ndarray = None) -> None:
         """
         Fit the tree by recursively splitting nodes until the termination condition is reached.
