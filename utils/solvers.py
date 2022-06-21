@@ -195,16 +195,15 @@ def solve_exactly(
     if binning_type == IDENTITY:
         B = len(data)
     elif binning_type == RANDOM:
-        assert (
-            num_bins is None
-        ), "When using Extremely Random Forests, please pass num_bins=None explicitly. If you want to set a custom \
-                            number of Extremely Random bins, please update callsites and remove this assertion."
-        if is_classification:
-            B = math.ceil(np.sqrt(F))
+        if num_bins is None:
+            if is_classification:
+                B = math.ceil(np.sqrt(F))
+            else:
+                # TODO(@motiwari): change this back to F after ddl
+                # B = math.ceil(np.sqrt(F))
+                B = F
         else:
-            # TODO(@motiwari): change this back to F after ddl
-            # B = math.ceil(np.sqrt(F))
-            B = F
+            B = num_bins
     else:
         B = num_bins
 

@@ -22,7 +22,7 @@ class ExtremelyRandomForestClassifier(ForestClassifier):
         labels: np.ndarray = None,
         n_estimators: int = 100,
         max_depth: int = None,
-        num_bins: int = None,
+        num_bins: int = 1,
         min_samples_split: int = 2,
         min_impurity_decrease: float = 0,
         max_leaf_nodes: int = None,

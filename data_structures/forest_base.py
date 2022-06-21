@@ -154,6 +154,7 @@ class ForestBase(ABC):
 
         # Either (data and labels) or (not data and not labels)
         return True
+
     def fit(self, data: np.ndarray = None, labels: np.ndarray = None) -> None:
         """
         Fit the random forest classifier by training trees, where each tree is trained with only a subset of the
@@ -196,7 +197,7 @@ class ForestBase(ABC):
                 N = len(self.curr_targets)
                 bootstrap_idcs = self.rng.choice(N, size=N, replace=True)
                 if self.oob_score:
-                    self.oob_list.append(self.get_out_of_bag(idcs, N))
+                    self.oob_list.append(self.get_out_of_bag(bootstrap_idcs, N))
             else:
                 bootstrap_idcs = None
 
@@ -230,7 +231,7 @@ class ForestBase(ABC):
                     use_dynamic_epsilon=self.use_dynamic_epsilon,
                     epsilon=self.epsilon,
                     batch_size=self.batch_size,
-                    idcs=idcs,
+                    idcs=bootstrap_idcs,
                 )
             else:
                 tree = TreeRegressor(
@@ -255,7 +256,7 @@ class ForestBase(ABC):
                     use_dynamic_epsilon=self.use_dynamic_epsilon,
                     epsilon=self.epsilon,
                     batch_size=self.batch_size,
-                    idcs=idcs,
+                    idcs=bootstrap_idcs,
                 )
             tree.fit()
             # Delete variables that takes unnecessary memory
@@ -271,11 +272,13 @@ class ForestBase(ABC):
 
             if self.boosting:
                 # TODO: currently uses O(n) computation
-                curr_data = self.data if bootstrap_idcs is None else self.data[bootstrap_idcs]
+                curr_data = (
+                    self.data if bootstrap_idcs is None else self.data[bootstrap_idcs]
+                )
                 boosting_prediction = (
                     tree.predict_batch(curr_data)
                     if not self.is_classification
-                    else tree.predict_batch(self.data[idcs])[0]
+                    else tree.predict_batch(self.data[bootstrap_idcs])[0]
                 )
                 if i != 0:
                     boosting_prediction *= self.boosting_lr
@@ -287,10 +290,10 @@ class ForestBase(ABC):
                         predictions=boosting_prediction,
                     )
                 else:
-                    self.new_targets[idcs] = get_next_targets(
+                    self.new_targets[bootstrap_idcs] = get_next_targets(
                         loss_type=DEFAULT_REGRESSOR_LOSS,
                         is_classification=self.is_classification,
-                        targets=self.new_targets[idcs],
+                        targets=self.new_targets[bootstrap_idcs],
                         predictions=boosting_prediction,
                     )
 

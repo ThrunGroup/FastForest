@@ -102,8 +102,8 @@ def compare_accuracies(
             our_model = RFR_ours(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=1,
-                max_depth=3,
+                n_estimators=5,
+                max_depth=5,
                 min_samples_split=2,
                 min_impurity_decrease=0,
                 max_leaf_nodes=None,
@@ -115,9 +115,9 @@ def compare_accuracies(
                 verbose=False,
             )
             their_model = RFR_sklearn(
-                n_estimators=1,
-                criterion="squared_error",
-                max_depth=3,
+                n_estimators=5,
+                # criterion="squared_error",
+                max_depth=5,
                 min_samples_split=2,
                 max_leaf_nodes=None,
                 min_impurity_decrease=0.0,
@@ -130,9 +130,9 @@ def compare_accuracies(
             our_model = ERFR_ours(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=1,
+                n_estimators=5,
                 max_depth=5,
-                num_bins=None,
+                num_bins=1,
                 min_samples_split=2,
                 min_impurity_decrease=0,
                 max_leaf_nodes=None,
@@ -144,8 +144,8 @@ def compare_accuracies(
                 verbose=False,
             )
             their_model = ERFR_sklearn(
-                n_estimators=1,
-                criterion="squared_error",
+                n_estimators=5,
+                # criterion="squared_error",
                 max_depth=5,
                 min_samples_split=2,
                 max_features="auto",
@@ -159,8 +159,8 @@ def compare_accuracies(
             our_model = GBRFR_ours(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=3,
-                max_depth=3,
+                n_estimators=5,
+                max_depth=5,
                 bootstrap=False,  # Override for RFR, since sklearn GBR doesn't support bootstrapping
                 min_samples_split=2,
                 min_impurity_decrease=0,
@@ -175,11 +175,11 @@ def compare_accuracies(
                 verbose=False,
             )
             their_model = GBRFR_sklearn(
-                n_estimators=3,
-                loss="squared_error",
-                max_depth=3,
+                n_estimators=5,
+                # loss="squared_error",
+                max_depth=5,
                 learning_rate=0.1,
-                criterion="squared_error",
+                # criterion="squared_error",
                 min_samples_split=2,
                 min_samples_leaf=1,
                 min_impurity_decrease=0.0,
@@ -193,7 +193,7 @@ def compare_accuracies(
             our_model = ERFR_ours(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=1,
+                n_estimators=5,
                 max_depth=5,
                 num_bins=None,
                 min_samples_split=2,
@@ -208,7 +208,7 @@ def compare_accuracies(
             )
             their_model = ERFR_sklearn(
                 n_estimators=1,
-                criterion="squared_error",
+                # criterion="squared_error",
                 max_depth=5,
                 min_samples_split=2,
                 max_features="auto",
@@ -296,37 +296,37 @@ def compare_accuracies(
 
 def main():
     # Classification
-    pca_train_vecs, train_labels, pca_test_vecs, test_labels, classes = load_pca_ng()
-    print("Performing Experiment: Random Forest Classifier")
-    print(
-        compare_accuracies(
-            "RFC", pca_train_vecs, train_labels, pca_test_vecs, test_labels
-        )
-    )
-
-    print("Performing Experiment: Extremely Random Forest Classifier")
-    print(
-        compare_accuracies(
-            "ERFC", pca_train_vecs, train_labels, pca_test_vecs, test_labels
-        )
-    )
+    # pca_train_vecs, train_labels, pca_test_vecs, test_labels, classes = load_pca_ng()
+    # print("Performing Experiment: Random Forest Classifier")
+    # print(
+    #     compare_accuracies(
+    #         "RFC", pca_train_vecs, train_labels, pca_test_vecs, test_labels
+    #     )
+    # )
+    #
+    # print("Performing Experiment: Extremely Random Forest Classifier")
+    # print(
+    #     compare_accuracies(
+    #         "ERFC", pca_train_vecs, train_labels, pca_test_vecs, test_labels
+    #     )
+    # )
 
     # Regression
     train_data, train_targets, test_data, test_targets = load_housing()
     # Subsample the data because training on 20k points (the full housing dataset) takes too long for RFR
     train_data_subsampled = train_data[:1000]
     train_targets_subsampled = train_targets[:1000]
-
-    print("Performing Experiment: Random Forest Regression")
-    print(
-        compare_accuracies(
-            "RFR",
-            train_data_subsampled,
-            train_targets_subsampled,
-            test_data,
-            test_targets,
-        )
-    )
+    #
+    # print("Performing Experiment: Random Forest Regression")
+    # print(
+    #     compare_accuracies(
+    #         "RFR",
+    #         train_data_subsampled,
+    #         train_targets_subsampled,
+    #         test_data,
+    #         test_targets,
+    #     )
+    # )
 
     print("Performing Experiment: Extremely Random Forest Regression")
     print(
