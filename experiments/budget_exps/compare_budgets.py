@@ -92,8 +92,8 @@ def compare_budgets(
     their_test_accs = []
 
     # params
-    default_alpha_N = alpha_N_override if alpha_N_override is not None else 0.25
-    default_alpha_F = alpha_F_override if alpha_F_override is not None else 0.15
+    default_alpha_N = alpha_N_override if alpha_N_override is not None else 0.8
+    default_alpha_F = alpha_F_override if alpha_F_override is not None else 0.6
     # Different from compare_runtimes
     default_max_depth = depth_override if depth_override is not None else 2
     default_n_estimators = 100
@@ -446,18 +446,10 @@ def compare_budgets(
         print("Ours fitted", our_model.num_queries)
         print("Our Trees", len(our_model.trees))
 
-        # Need special re-indexing of features for RP classifiers
-        if "RP" in compare:
-            # THEIR test_data will have a different feature mapping than ours!
-            our_test_data = original_test_data[:, our_model.feature_idcs]
-            our_measured_train_data = train_data[:, our_model.feature_idcs]
-            their_test_data = original_test_data[:, their_model.feature_idcs]
-            their_measured_train_data = train_data[:, their_model.feature_idcs]
-        else:
-            our_test_data = original_test_data
-            our_measured_train_data = train_data
-            their_test_data = original_test_data
-            their_measured_train_data = train_data
+        our_test_data = original_test_data
+        our_measured_train_data = train_data
+        their_test_data = original_test_data
+        their_measured_train_data = train_data
 
         if run_theirs:
             their_model.fit()
@@ -594,13 +586,13 @@ def compare_budgets(
         "their_avg_num_trees": their_avg_num_trees if run_theirs else None,
         "their_std_num_trees": their_std_num_trees if run_theirs else None,
     }
-    if os.path.exists(filename):
-        with open(filename, 'r+') as fin:
-            prev_results = ast.literal_eval(fin.read())
-            print(f"prev_results: {prev_results}")
-            if prev_results == results:
-                print(f"{filename} is successfully reproduced")
-                return results
+    # if os.path.exists(filename):
+    #     with open(filename, 'r+') as fin:
+    #         prev_results = ast.literal_eval(fin.read())
+    #         print(f"prev_results: {prev_results}")
+    #         if prev_results == results:
+    #             print(f"{filename} is successfully reproduced")
+    #             return results
     print(f"Write a new {filename}")
     with open(filename, "w+") as fout:
         fout.write(str(results))
@@ -739,10 +731,10 @@ def main():
             num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
-            filename="../runtime_exps/HRPR_dict",
+            filename="HRPR_dict",
             verbose=True,
             # Divide by 24 for less trees, since only using ~1/4*1/6 of the data
-            default_budget=2400000 * 10,
+            default_budget=2400000 * 2,
             depth_override=5,
         )
     )
@@ -759,9 +751,9 @@ def main():
             num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
-            filename="../runtime_exps/ERFR_dict",
+            filename="ERFR_dict",
             verbose=True,
-            default_budget=24000000,
+            default_budget=2400000 * 5,
             depth_override=5,
         )
     )

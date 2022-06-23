@@ -610,13 +610,13 @@ def compare_runtimes(
         "their_avg_num_queries": their_avg_num_queries if run_theirs else None,
         "their_std_num_queries": their_std_num_queries if run_theirs else None,
     }
-    if os.path.exists(filename):
-        with open(filename, 'r+') as fin:
-            prev_results = ast.literal_eval(fin.read())
-            print(f"prev_results: {prev_results}")
-            if prev_results == results:
-                print(f"{filename} is successfully reproduced")
-                return results
+    # if os.path.exists(filename):
+    #     with open(filename, 'r+') as fin:
+    #         prev_results = ast.literal_eval(fin.read())
+    #         print(f"prev_results: {prev_results}")
+    #         if prev_results == results:
+    #             print(f"{filename} is successfully reproduced")
+    #             return results
     print(f"Write a new {filename}")
     with open(filename, "w+") as fout:
         fout.write(str(results))
