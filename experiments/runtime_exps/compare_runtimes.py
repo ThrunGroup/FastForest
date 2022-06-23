@@ -716,7 +716,7 @@ def main():
     test_labels = np.array(test_labels)
 
     ## Random Forests
-    NUM_SEEDS = 1
+    NUM_SEEDS = 5
     pp.pprint(
         compare_runtimes(
             compare="HRFC",
@@ -731,7 +731,6 @@ def main():
             verbose=True,
         )
     )
-    return
     ## Extremely Random Forests
     NUM_SEEDS = 5
     pp.pprint(

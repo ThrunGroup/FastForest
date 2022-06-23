@@ -141,7 +141,7 @@ def compare_budgets(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=None,
+                num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
@@ -158,7 +158,7 @@ def compare_budgets(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=None,
+                num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
@@ -215,7 +215,7 @@ def compare_budgets(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=None,
+                num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
@@ -232,7 +232,7 @@ def compare_budgets(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=None,
+                num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
@@ -250,7 +250,7 @@ def compare_budgets(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=None,
+                num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
@@ -268,7 +268,7 @@ def compare_budgets(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=None,
+                num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=default_min_impurity_decrease,
                 max_leaf_nodes=None,
@@ -625,7 +625,7 @@ def main():
     test_images = np.array(test_images)
     test_labels = np.array(test_labels)
 
-    # Random Forests
+    ## Random Forests
     NUM_SEEDS = 5
     pp.pprint(
         compare_budgets(
