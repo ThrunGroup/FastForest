@@ -41,28 +41,21 @@ class Node:
         solver: str = MAB,
         verbose: bool = True,
         feature_subsampling: Union[str, int] = None,
-        tree_global_feature_subsampling: bool = False,
         with_replacement: bool = False,
         batch_size: int = BATCH_SIZE,
     ) -> None:
         self.tree = tree
         self.feature_subsampling = feature_subsampling
-        self.tree_global_feature_subsampling = tree_global_feature_subsampling
         # To decrease memory usage and cost for making a copy of large array, we don't pass data array to child node
         # but indices
-        if tree_global_feature_subsampling:
-            # Features are chosen at the tree level. Use all of tree's features
-            self.feature_idcs = self.tree.feature_idcs
-        else:
-            # The features aren't global to the tree, so we should be resampling the features at every node
-            self.feature_idcs = choose_features(
-                self.tree.data, self.feature_subsampling
+        # The features aren't global to the tree, so we should be resampling the features at every node
+        self.feature_idcs = choose_features(
+            self.tree.feature_idcs, self.feature_subsampling, self.tree.rng
+        )
+        if self.tree.discrete_features is not None:
+            self.discrete_features = remap_discrete_features(
+                self.feature_idcs, self.tree.discrete_features
             )
-            if self.tree.discrete_features is not None:
-                self.discrete_features = remap_discrete_features(
-                    self.feature_idcs, self.tree.discrete_features
-                )
-
         self.idcs = idcs
         self.parent = parent  # To allow walking back upward
         self.data = get_subset_2d(self.tree.data, self.idcs, self.feature_idcs)
@@ -142,6 +135,7 @@ class Node:
                 budget=budget,
                 epsilon=self.epsilon,
                 batch_size=self.batch_size,
+                rng=self.tree.rng
             )
         elif self.solver == EXACT:
             results = solve_exactly(
@@ -196,7 +190,6 @@ class Node:
             verbose=self.verbose,
             criterion=self.criterion,
             feature_subsampling=self.feature_subsampling,
-            tree_global_feature_subsampling=self.tree_global_feature_subsampling,
             with_replacement=self.with_replacement,
             batch_size=self.batch_size,
         )

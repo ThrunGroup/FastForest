@@ -161,7 +161,7 @@ def compare_runtimes(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=None,
+                num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
                 max_leaf_nodes=None,
@@ -178,7 +178,7 @@ def compare_runtimes(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=None,
+                num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
                 max_leaf_nodes=None,
@@ -235,7 +235,7 @@ def compare_runtimes(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=None,
+                num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
                 max_leaf_nodes=None,
@@ -252,7 +252,7 @@ def compare_runtimes(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=None,
+                num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
                 max_leaf_nodes=None,
@@ -467,18 +467,10 @@ def compare_runtimes(
         our_num_queries.append(our_model.num_queries)
         print("Ours fitted", our_runtime)
 
-        # Need special re-indexing of features for RP classifiers
-        if "RP" in compare:
-            # THEIR test_data will have a different feature mapping than ours!
-            our_test_data = original_test_data[:, our_model.feature_idcs]
-            our_measured_train_data = train_data[:, our_model.feature_idcs]
-            their_test_data = original_test_data[:, their_model.feature_idcs]
-            their_measured_train_data = train_data[:, their_model.feature_idcs]
-        else:
-            our_test_data = original_test_data
-            our_measured_train_data = train_data
-            their_test_data = original_test_data
-            their_measured_train_data = train_data
+        our_test_data = original_test_data
+        our_measured_train_data = train_data
+        their_test_data = original_test_data
+        their_measured_train_data = train_data
 
         if run_theirs:
             their_runtime = time_measured_fit(
@@ -661,7 +653,7 @@ def main():
     test_data = full_data[train_test_split:]
     test_targets = full_targets[train_test_split:]
 
-    # Random Forests
+    # ##Random Forests
     # NUM_SEEDS = 5
     # pp.pprint(
     #     compare_runtimes(
@@ -735,7 +727,7 @@ def main():
             num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
-            filename="HRFC_dict",
+            filename="..",
             verbose=True,
         )
     )

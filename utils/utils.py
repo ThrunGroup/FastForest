@@ -4,7 +4,7 @@ import math
 import numpy as np
 import sys
 from collections import defaultdict
-from typing import DefaultDict, Tuple, List
+from typing import DefaultDict, Tuple, List, Union
 from numba import jit
 
 from data_structures.histogram import Histogram
@@ -127,7 +127,6 @@ def choose_bin_type(D: int, N: int, B: int) -> str:
         return IDENTITY
     return LINEAR
 
-
 def make_histograms(
     is_classification: bool,
     data: np.ndarray,
@@ -210,25 +209,30 @@ def make_histograms(
     return histograms, not_considered_idcs, considered_idcs
 
 
-def choose_features(data: np.ndarray, feature_subsampling: str):
+def choose_features(
+    feautre_idcs: np.ndarray,
+    feature_subsampling: Union[str, int, float],
+    rng: np.random.Generator = np.random.default_rng(0),
+):
     """
     Choose a random subset of features from all available features.
 
-    :param data: dataset to be fit. Only used for computing the total number of features
+    :param feauture_idcs: feature indices we consider
     :param feature_subsampling: The feature subsampling method; None, SQRT, or int
+    :param rng: numpy random default generator
     :return:
     """
-    F = len(data[0])  # Number of features
+    F = len(feautre_idcs)  # Number of features
     if feature_subsampling is None:
-        return np.arange(F)
+        return feautre_idcs
     elif feature_subsampling == SQRT:
-        return np.random.choice(F, math.ceil(math.sqrt(F)), replace=False)
+        return rng.choice(feautre_idcs, math.ceil(math.sqrt(F)), replace=False)
     elif type(feature_subsampling) == int:
         # If an int, subsample feature_subsampling features.
-        return np.random.choice(F, feature_subsampling, replace=False)
+        return rng.choice(feautre_idcs, feature_subsampling, replace=False)
     elif type(feature_subsampling) == float:
         # If an float, return feature_subsampling*num_features features.
-        return np.random.choice(F, math.ceil(feature_subsampling * F), replace=False)
+        return rng.choice(feautre_idcs, math.ceil(feature_subsampling * F), replace=False)
     else:
         raise NotImplementedError("Invalid type of feature_subsampling")
 

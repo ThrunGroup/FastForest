@@ -10,7 +10,6 @@ class HistogramRandomForestClassifier(ForestClassifier):
 
     bootstrap: bool = True,
     feature_subsampling: str = SQRT,
-    tree_global_feature_subsampling: bool = False,
     bin_type: str = LINEAR,
     num_bins: int = DEFAULT_NUM_BINS, (default value, not fixed)
     solver: str = EXACT (default value, not fixed, but cannot use MAB because there's no binning)
@@ -41,7 +40,6 @@ class HistogramRandomForestClassifier(ForestClassifier):
             max_depth=max_depth,
             bootstrap=True,  # Fixed
             feature_subsampling=SQRT,  # Fixed
-            tree_global_feature_subsampling=False,  # Fixed
             min_samples_split=min_samples_split,
             min_impurity_decrease=min_impurity_decrease,
             max_leaf_nodes=max_leaf_nodes,
@@ -54,4 +52,8 @@ class HistogramRandomForestClassifier(ForestClassifier):
             random_state=random_state,
             with_replacement=with_replacement,
             verbose=verbose,
+            is_precomputed_minmax=True,
+            batch_size=1000,
+            use_logarithmic_split=True,
+            epsilon=0.01
         )

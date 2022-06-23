@@ -12,7 +12,6 @@ class RandomPatchesRegressor(ForestRegressor):
 
     bootstrap: bool = False,
     feature_subsampling: str = None,
-    tree_global_feature_subsampling: bool = True,
     bin_type: str = IDENTITY,
     num_bins: int = None,
     solver: str = EXACT (default value, not fixed)
@@ -55,7 +54,6 @@ class RandomPatchesRegressor(ForestRegressor):
             max_depth=max_depth,
             bootstrap=False,  # Fixed
             feature_subsampling=None,  # Fixed
-            tree_global_feature_subsampling=True,  # Fixed
             min_samples_split=min_samples_split,
             min_impurity_decrease=min_impurity_decrease,
             max_leaf_nodes=max_leaf_nodes,

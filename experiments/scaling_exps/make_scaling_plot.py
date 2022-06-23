@@ -54,7 +54,7 @@ lr.fit(sizes.reshape(-1, 1), counts)
 log_lr = LinearRegression()
 log_lr.fit(np.log10(sizes).reshape(-1, 1), counts)
 
-hashes = np.linspace(5000, 325000, 5000)
+hashes = np.linspace(5000, 1500000, 5000)
 hashes_predict = lr.predict(hashes.reshape(-1, 1))
 hashes_predict_log = log_lr.predict(np.log10(hashes).reshape(-1, 1))
 

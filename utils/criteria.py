@@ -46,6 +46,42 @@ def get_gini(
         return float(G), float(V_G)
     return float(G)
 
+
+def get_gini_vectorize(
+    counts_vec: np.ndarray,
+    ret_var: bool = False,
+    pop_size: np.ndarray = None,
+    n: np.ndarray = None,
+) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
+    """
+    Compute the Gini impurity for a given node, where the node is represented by the number of counts of each class
+    label. The Gini impurity is equal to 1 - sum_{i=1}^k (p_i^2)
+
+    :param counts_vec: 2d array of counts where (i, j)th element is the number of counts on the jth class(label)
+    of ith bin.
+    :param ret_var: Whether to return the variance of the estimate
+    :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
+    :param n: 1d array of the sum of counts for each bin.
+    :return: the Gini impurity of the node, as well as its estimated variance if ret_var
+    """
+    if n is None:
+        n = np.sum(counts_vec, axis=1, dtype=np.int64)
+    p = counts_vec / np.expand_dims(n, axis=1)
+    V_p = p * (1 - p) / np.expand_dims(n, axis=1)
+    if pop_size is not None:
+        V_p *= np.expand_dims((pop_size - n) / (pop_size - 1), axis=1)
+    G = 1 - np.sum(p * p, axis=1)
+    if ret_var:
+        dG_dp = -2 * p[:, :-1] + 2 * np.expand_dims(
+            p[:, -1], axis=1
+        )  # Note: len(dG_dp) is len(p) - 1 since p[-1] is dependent variable on p[:-1]
+        V_G = np.sum(dG_dp ** 2 * V_p[:, :-1], axis=1)
+        G = np.nan_to_num(G, nan=0, posinf=0, neginf=0)
+        V_G = np.nan_to_num(V_G, nan=0, posinf=0, neginf=0)
+        return G, V_G
+    return G
+
+
 def get_entropy(
     counts: np.ndarray, ret_var=False, pop_size: int = None, n: int = None,
 ) -> Union[Tuple[float, float], float]:
@@ -193,6 +229,41 @@ def get_mse(
     return estimated_mse
 
 
+def get_mse_vectorize(
+    args_vec: np.ndarray, ret_var: bool = False, pop_size: int = None,
+) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
+    """
+    Compute the MSE for a given node, where the node is represented by the pile of all target values. Also Compute the
+    confidence bound of our estimation by using Hoeffding's inequality for bounded values
+
+    :param args_vec: args_vec[i] = (number of samples, mean of samples, variance of samples) of ith bin
+    :param ret_var: Whether to return the variance of the estimate
+    :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
+    :return: the mse(variance) of the node, as well as its estimated variance if ret_var
+    """
+    n = args_vec[:, 0]
+    second_moment = args_vec[:, 2]
+    if pop_size is None:
+        estimated_mse = (
+            second_moment * n / (n - 1)
+        )  # 2nd central moment is mse with mean as a predicted value and use Bessel's correction
+    else:
+        estimated_mse = second_moment * np.nan_to_num((n * (pop_size-1)) / ((n-1) * pop_size), nan=1)
+    estimated_fourth_moment = (
+            3 * estimated_mse ** 2
+    )  # see https://en.wikipedia.org/wiki/Kurtosis#Pearson_moments
+
+    # https://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance
+    # Use sample variance as an estimation of population variance.
+    V_mse = (estimated_fourth_moment - (estimated_mse ** 2) * (n - 3) / (n - 1)) / n
+    estimated_mse = np.nan_to_num(estimated_mse, nan=0, posinf=0, neginf=0)
+    V_mse = np.nan_to_num(V_mse, nan=0, posinf=0, neginf=0)
+    if ret_var:
+        V_mse = np.nan_to_num(V_mse, nan=0, posinf=0, neginf=0)
+        return estimated_mse, V_mse
+    return estimated_mse
+
+
 def get_mse_with_chi(
     args: np.ndarray, ret_var: bool = False, pop_size: int = None,
 ) -> Union[Tuple[float, float], float]:
@@ -239,6 +310,7 @@ def get_impurity_reductions(
     ret_vars: bool = False,
     impurity_measure: str = "",
     pop_size: int = None,
+    is_vectorization: bool = True,
 ) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
     """
     Given a histogram of counts for each bin, compute the impurity reductions if we were to split a node on any of the
@@ -249,6 +321,81 @@ def get_impurity_reductions(
     :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
     :returns: Impurity reduction when splitting node by bins in _bin_edge_idcs
     """
+    ### Vectorization
+    if is_vectorization:
+        h = histogram
+        if is_classification:
+            left = h.left[bin_edge_idcs]
+            right = h.right[bin_edge_idcs]
+            left_sum = np.sum(left, axis=1, dtype=np.int64)
+            right_sum = np.sum(right, axis=1, dtype=np.int64)
+            n = left_sum + right_sum
+
+            # Population of left and right node is approximated by left_weight and right_weight
+            left_size = (
+                None if pop_size is None else (left_sum * pop_size / n).astype(np.int64)
+            )
+            right_size = (
+                None
+                if pop_size is None
+                else (right_sum * pop_size / n).astype(np.int64)
+            )
+            left_weight = left_sum / n
+            right_weight = right_sum / n
+
+            left_impurity, left_var = get_gini_vectorize(
+                counts_vec=left, ret_var=True, pop_size=left_size, n=left_sum
+            )
+            right_impurity, right_var = get_gini_vectorize(
+                counts_vec=right, ret_var=True, pop_size=right_size, n=right_sum
+            )
+            curr_impurity, curr_var = get_gini(
+                counts=left[0] + right[0], ret_var=True, pop_size=pop_size
+            )
+
+            left_impurity *= left_weight
+            left_var *= left_weight ** 2
+            right_impurity *= right_weight
+            right_var *= right_weight ** 2
+        else:
+            left = h.left_pile[bin_edge_idcs]
+            right = h.right_pile[bin_edge_idcs]
+            left_sum = left[:, 0]
+            right_sum = right[:, 0]
+            n = left_sum + right_sum
+
+            # Population of left and right node is approximated by left_weight and right_weight
+            left_size = (
+                None if pop_size is None else (left_sum * pop_size / n).astype(np.int32)
+            )
+            right_size = (
+                None
+                if pop_size is None
+                else (right_sum * pop_size / n).astype(np.int32)
+            )
+            left_weight = left_sum / n
+            right_weight = right_sum / n
+
+            left_impurity, left_var = get_mse_vectorize(
+                args_vec=left, ret_var=True, pop_size=left_size
+            )
+            right_impurity, right_var = get_mse_vectorize(
+                args_vec=right, ret_var=True, pop_size=right_size
+            )
+            curr_impurity, curr_var = get_mse(
+                args=h.curr_pile, ret_var=True, pop_size=pop_size
+            )
+
+            left_impurity *= left_weight
+            left_var *= left_weight ** 2
+            right_impurity *= right_weight
+            right_var *= right_weight ** 2
+
+        return (
+            (left_impurity + right_impurity - curr_impurity),
+            (curr_var + left_var + right_var),
+        )
+
     if impurity_measure == "":
         impurity_measure = GINI if is_classification else MSE
     get_impurity = get_impurity_fn(impurity_measure)
@@ -328,4 +475,4 @@ def get_impurity_reductions(
         # Note the last plus because Var(X-Y) = Var(X) + Var(Y) if X, Y are independent (this is an UNDERestimate)
         impurity_vars = V_impurities_left + V_impurities_right + V_impurity_curr
         return impurity_reductions, impurity_vars
-    return impurity_reductions  # Jay: we can change the type of impurity_reductions to Tuple[np.ndarray] whose each array has size 1
+    return impurity_reductions

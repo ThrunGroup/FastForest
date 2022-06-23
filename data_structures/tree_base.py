@@ -31,7 +31,6 @@ class TreeBase(ABC):
     TreeBase class. Contains a node attribute, the root, as well as fitting parameters that are global to the tree (i.e.,
     are used in splitting the nodes). TreeClassifier and TreeRegressor will inherit TreeBase class.
     """
-
     def __init__(
         self,
         data: np.ndarray = None,
@@ -39,7 +38,6 @@ class TreeBase(ABC):
         max_depth: int = 100,
         classes: dict = None,
         feature_subsampling: Union[str, int] = None,
-        tree_global_feature_subsampling: bool = False,
         min_samples_split: int = 2,
         min_impurity_decrease: float = DEFAULT_MIN_IMPURITY_DECREASE,
         max_leaf_nodes: int = None,
@@ -61,6 +59,7 @@ class TreeBase(ABC):
         epsilon: float = 0,
         batch_size: int = BATCH_SIZE,
         idcs: np.ndarray = None,
+        feature_idcs:np.ndarray = None,
     ) -> None:
         self.data = data  # This is a REFERENCE
         self.labels = labels  # This is a REFERENCE
@@ -78,7 +77,6 @@ class TreeBase(ABC):
             self.idx_to_class = {value: key for key, value in classes.items()}
 
         self.feature_subsampling = feature_subsampling
-        self.tree_global_feature_subsampling = tree_global_feature_subsampling
         self.discrete_features = discrete_features
         self.make_discrete = make_discrete
         if (bin_type == LINEAR) or (bin_type == IDENTITY):
@@ -105,6 +103,7 @@ class TreeBase(ABC):
         self.use_logarithmic_split = use_logarithmic_split
         self.use_dynamic_epsilon = use_dynamic_epsilon
         self.epsilon = epsilon
+        self.feature_idcs = feature_idcs if feature_idcs is not None else np.arange(len(self.data[0]))
 
         if idcs is None:
             idcs = np.arange(self.n_data)
@@ -121,7 +120,6 @@ class TreeBase(ABC):
             solver=self.solver,
             criterion=self.criterion,
             feature_subsampling=self.feature_subsampling,
-            tree_global_feature_subsampling=self.tree_global_feature_subsampling,
             with_replacement=self.with_replacement,
             batch_size=batch_size,
         )
@@ -202,7 +200,6 @@ class TreeBase(ABC):
 
         # Either (data and labels) or (not data and not labels)
         return True
-
     def fit(self, data: np.ndarray = None, labels: np.ndarray = None) -> None:
         """
         Fit the tree by recursively splitting nodes until the termination condition is reached.
@@ -220,15 +217,6 @@ class TreeBase(ABC):
 
         if self.make_discrete:
             self.discrete_features = data_to_discrete(self.data, n=10)
-
-        if self.tree_global_feature_subsampling:
-            # Sample the features randomly once, to be used in the entire tree
-            self.feature_idcs = choose_features(self.data, self.feature_subsampling)
-            self.discrete_features = (
-                remap_discrete_features(self.feature_idcs, self.discrete_features)
-                if self.discrete_features is not None
-                else None
-            )
 
         # Best-first tree fitting
         if self.splitter == BEST:

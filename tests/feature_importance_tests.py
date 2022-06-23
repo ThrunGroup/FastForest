@@ -18,6 +18,7 @@ from utils.constants import (
 )
 from experiments.heart.fit_heart import append_dict_as_row
 
+
 def test_stability_with_budget(
     seed: int = 0,
     data_size=10000,
@@ -164,6 +165,7 @@ def run_stability_stats_test(
     verbose: bool = False,
     verbose_test: bool = True,
     is_log: bool = False,
+    csv_log: bool = True,
 ) -> Tuple[float, float, float, float]:
     if data_name is None:
         data_name = (
@@ -280,13 +282,18 @@ def run_stability_stats_test(
             "f_importance": importance_score,
         }
         dir_name = "stat_test_stability_log"
-        file_name = "statistics_log_tables.csv" if file_name is None else file_name
-        log_filename = os.path.join(dir_name, file_name)
-        if not os.path.exists(log_filename):
-            os.makedirs(dir_name, exist_ok=True)
-            df = pd.DataFrame(columns=log_dict.keys())
-            df.to_csv(log_filename, index=False)
-        append_dict_as_row(log_filename, log_dict, log_dict.keys())
+        if csv_log:
+            file_name = "statistics_log_tables.csv" if file_name is None else file_name
+            log_filename = os.path.join(dir_name, file_name)
+            if not os.path.exists(log_filename):
+                os.makedirs(dir_name, exist_ok=True)
+                df = pd.DataFrame(columns=log_dict.keys())
+                df.to_csv(log_filename, index=False)
+            append_dict_as_row(log_filename, log_dict, log_dict.keys())
+        else:
+            with open(file_name, 'w+') as fout:
+                fout.write(str(log_dict))
+
     assert not is_overlap, "Exact and MABs stability overlaps"
     return exact_CI[0], exact_CI[1], mab_CI[0], mab_CI[1]
 
@@ -300,7 +307,7 @@ def reproduce_stability():
         stability_data["lb_mab"],
         stability_data["ub_mab"],
     )
-    epsilon = 1e-4
+    epsilon = 1e-2
     print("=" * 30)
     print("Reproduce new Table 5\n")
     lb_exact, ub_exact, lb_mab, ub_mab = run_stability_stats_test(**t5_l1_args)
@@ -311,7 +318,7 @@ def reproduce_stability():
         and abs(ub_mab_list[0] - ub_mab) < epsilon
     )
     print("Table 5 line 1 is successfully reproduced!")
-    print("-"*30)
+    print("-" * 30)
     lb_exact, ub_exact, lb_mab, ub_mab = run_stability_stats_test(**t5_l2_args)
     assert (
         abs(lb_exact_list[1] - lb_exact) < epsilon
@@ -341,5 +348,31 @@ def reproduce_stability():
     print("-" * 30)
 
 
+def produce_stability():
+    # RF + MID
+    print("=" * 30)
+    print("Reproduce new Table 5\n")
+    lb_exact, ub_exact, lb_mab, ub_mab = run_stability_stats_test(
+        **t5_l1_args, file_name="HRFC+MID_dict", is_log=True, csv_log=False,
+    )
+    print("Table 5 line 1 is successfully produced!")
+    print("-" * 30)
+    lb_exact, ub_exact, lb_mab, ub_mab = run_stability_stats_test(
+        **t5_l2_args, file_name="HRFR+MID_dict", is_log=True, csv_log=False,
+    )
+    print("Table 5 line 2 is successfully produced!")
+    print("-" * 30)
+    lb_exact, ub_exact, lb_mab, ub_mab = run_stability_stats_test(
+        **t5_l3_args, file_name="HRFC+Perm_dict", is_log=True, csv_log=False,
+    )
+    print("Table 5 line 3 is successfully produced!")
+    print("-" * 30)
+    lb_exact, ub_exact, lb_mab, ub_mab = run_stability_stats_test(
+        **t5_l4_args, file_name="HRFR+Perm_dict", is_log=True, csv_log=False,
+    )
+    print("Table 5 line 4 is successfully produced!")
+    print("-" * 30)
+
+
 if __name__ == "__main__":
-    reproduce_stability()
+    produce_stability()

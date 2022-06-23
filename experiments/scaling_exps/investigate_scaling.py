@@ -15,16 +15,16 @@ def main():
     size_to_time_dict = {}
     for C_SUBSAMPLE_SIZE in [
         10000,
-        20000,
-        40000,
         80000,
         160000,
-        240000,
+        320000,
+        640000,
+        1280000,
     ]:
         print("\n\n")
         run_time = .0
         num_trials = 0
-        for fitting_seed in range(1, 5):
+        for fitting_seed in range(0, 5):
             np.random.seed(fitting_seed)
             rng = np.random.default_rng(fitting_seed)
             idcs = rng.choice(60000, size=C_SUBSAMPLE_SIZE, replace=True)

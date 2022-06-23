@@ -742,7 +742,7 @@ def main():
             filename="../runtime_exps/HRPR_dict",
             verbose=True,
             # Divide by 24 for less trees, since only using ~1/4*1/6 of the data
-            default_budget=2400000 * (12 / 24),
+            default_budget=2400000 * 10,
             depth_override=5,
         )
     )

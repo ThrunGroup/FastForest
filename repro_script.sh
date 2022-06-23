@@ -7,9 +7,11 @@ cd experiments/runtime_exps
 cd ../budget_exps
 #python compare_budgets.py
 cd ../scaling_exps
-#python investigate_scaling.py
-#python make_scaling_plots.py
-cd ../..
-#python tests/feature_importance_tests.py
+python investigate_scaling.py
+python make_scaling_plot.py
+cd ../../tests
+python feature_importance_tests.py
 cd experiments/sklearn_exps
 python compare_baseline_implementations.py
+cd ..
+python reproduce_tabels.py

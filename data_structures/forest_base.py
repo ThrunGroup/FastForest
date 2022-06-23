@@ -16,7 +16,7 @@ from utils.constants import (
     DEFAULT_MIN_IMPURITY_DECREASE,
     BATCH_SIZE,
 )
-from utils.utils import data_to_discrete, set_seed
+from utils.utils import data_to_discrete, set_seed, get_subset_2d
 from utils.boosting import get_next_targets
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.tree_regressor import TreeRegressor
@@ -35,7 +35,6 @@ class ForestBase(ABC):
         max_depth: int = None,
         bootstrap: bool = True,
         feature_subsampling: str = None,
-        tree_global_feature_subsampling: bool = False,
         min_samples_split: int = 2,
         min_impurity_decrease: float = DEFAULT_MIN_IMPURITY_DECREASE,
         max_leaf_nodes: int = None,
@@ -58,6 +57,8 @@ class ForestBase(ABC):
         epsilon: float = 0,
         oob_score: bool = False,
         batch_size: int = BATCH_SIZE,
+        alpha_F: float = 1.0,
+        alpha_N: float = 1.0,
     ) -> None:
         self.data = data
         self.org_targets = labels
@@ -79,7 +80,6 @@ class ForestBase(ABC):
         self.max_depth = max_depth
         self.bootstrap = bootstrap
         self.feature_subsampling = feature_subsampling
-        self.tree_global_feature_subsampling = tree_global_feature_subsampling
 
         self.min_samples_split = min_samples_split
         self.min_impurity_decrease = min_impurity_decrease
@@ -118,6 +118,8 @@ class ForestBase(ABC):
             assert bootstrap, "out of bag score can be used only when bootstrapping"
         self.mdg_array = None
         self.batch_size = batch_size
+        self.alpha_N = alpha_N
+        self.alpha_F = alpha_F
 
         # Same parameters as sklearn.ensembleRandomForestClassifier. We won't need all of them.
         # See https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
@@ -154,7 +156,6 @@ class ForestBase(ABC):
 
         # Either (data and labels) or (not data and not labels)
         return True
-
     def fit(self, data: np.ndarray = None, labels: np.ndarray = None) -> None:
         """
         Fit the random forest classifier by training trees, where each tree is trained with only a subset of the
@@ -167,6 +168,8 @@ class ForestBase(ABC):
             self.data = data
             self.org_targets = labels
             self.new_targets = labels
+        N = len(self.data)
+        F = len(self.data[0])
 
         if self.make_discrete:
             self.discrete_features: DefaultDict = data_to_discrete(self.data, n=10)
@@ -183,6 +186,13 @@ class ForestBase(ABC):
         self.trees = []
 
         for i in range(self.n_estimators):
+            if self.alpha_N != 1.0 or self.alpha_F != 1.0:
+                data_subset_idcs = self.rng.choice(N, int(N * self.alpha_N), replace=False)
+                feature_subset_idcs = self.rng.choice(F, int(F * self.alpha_F), replace=False)
+            else:
+                data_subset_idcs = np.arange(N)
+                feature_subset_idcs = np.arange(F)
+
             if self.remaining_budget is not None and self.remaining_budget <= 0:
                 break
 
@@ -194,12 +204,10 @@ class ForestBase(ABC):
             self.curr_targets = self.new_targets if self.boosting else self.org_targets
 
             if self.bootstrap:
-                N = len(self.curr_targets)
-                bootstrap_idcs = self.rng.choice(N, size=N, replace=True)
+                N = len(self.data)
+                data_subset_idcs = self.rng.choice(data_subset_idcs, size=N, replace=True)
                 if self.oob_score:
-                    self.oob_list.append(self.get_out_of_bag(bootstrap_idcs, N))
-            else:
-                bootstrap_idcs = None
+                    self.oob_list.append(self.get_out_of_bag(data_subset_idcs, N))
 
             # NOTE: We cannot just let the tree's random states be forest.random_state + i, because then
             # two forests whose index is off by 1 will have very correlated results (e.g. when running multiple exps),
@@ -231,12 +239,13 @@ class ForestBase(ABC):
                     use_dynamic_epsilon=self.use_dynamic_epsilon,
                     epsilon=self.epsilon,
                     batch_size=self.batch_size,
-                    idcs=bootstrap_idcs,
+                    idcs=data_subset_idcs,
+                    feature_idcs=feature_subset_idcs,
                 )
             else:
                 tree = TreeRegressor(
                     data=self.data,
-                    labels=self.org_targets,
+                    labels=self.curr_targets,
                     max_depth=self.max_depth,
                     budget=self.remaining_budget,
                     min_samples_split=self.min_samples_split,
@@ -256,7 +265,8 @@ class ForestBase(ABC):
                     use_dynamic_epsilon=self.use_dynamic_epsilon,
                     epsilon=self.epsilon,
                     batch_size=self.batch_size,
-                    idcs=bootstrap_idcs,
+                    idcs=data_subset_idcs,
+                    feature_idcs=feature_subset_idcs,
                 )
             tree.fit()
             # Delete variables that takes unnecessary memory
@@ -264,7 +274,7 @@ class ForestBase(ABC):
 
             if (
                 self.remaining_budget is None
-                or -BUFFER < tree.num_queries < self.remaining_budget
+                or 0 < tree.num_queries < self.remaining_budget + BUFFER
             ):
                 self.trees.append(tree)
             else:
@@ -273,16 +283,16 @@ class ForestBase(ABC):
             if self.boosting:
                 # TODO: currently uses O(n) computation
                 curr_data = (
-                    self.data if bootstrap_idcs is None else self.data[bootstrap_idcs]
+                    self.data if data_subset_idcs is None else self.data[data_subset_idcs]
                 )
                 boosting_prediction = (
                     tree.predict_batch(curr_data)
                     if not self.is_classification
-                    else tree.predict_batch(self.data[bootstrap_idcs])[0]
+                    else tree.predict_batch(self.data[data_subset_idcs])[0]
                 )
                 if i != 0:
                     boosting_prediction *= self.boosting_lr
-                if bootstrap_idcs is None:
+                if data_subset_idcs is None:
                     self.new_targets = get_next_targets(
                         loss_type=DEFAULT_REGRESSOR_LOSS,
                         is_classification=self.is_classification,
@@ -290,10 +300,10 @@ class ForestBase(ABC):
                         predictions=boosting_prediction,
                     )
                 else:
-                    self.new_targets[bootstrap_idcs] = get_next_targets(
+                    self.new_targets[data_subset_idcs] = get_next_targets(
                         loss_type=DEFAULT_REGRESSOR_LOSS,
                         is_classification=self.is_classification,
-                        targets=self.new_targets[bootstrap_idcs],
+                        targets=self.new_targets[data_subset_idcs],
                         predictions=boosting_prediction,
                     )
 
@@ -377,7 +387,6 @@ class ForestBase(ABC):
         """
         Calculate mean decrease in impurity
         """
-        assert self.tree_global_feature_subsampling is False, "Not implemented"
         if self.mdg_array is not None:
             return self.mdg_array
         self.mdg_array = np.zeros(len(self.data[0]))

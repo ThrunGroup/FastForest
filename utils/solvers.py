@@ -67,7 +67,6 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
 
     return TOLERANCE < root_impurity - split_impurity
 
-
 def sample_targets(
     is_classification: bool,
     data: np.ndarray,
@@ -159,7 +158,6 @@ def sample_targets(
     # TODO(@motiwari): This seems dangerous, because access appears to be a linear index to the array
     return impurity_reductions, cb_deltas, num_queries, population_idcs
 
-
 def solve_exactly(
     data: np.ndarray,
     labels: np.ndarray,
@@ -186,7 +184,7 @@ def solve_exactly(
     :param num_queries: mutable variable to update the number of datapoints queried
     :param is_classification:  Whether is a classification problem(True) or regression problem(False)
     :param impurity_measure: A name of impurity_measure
-    :param impurity_measure: Minimum impurity reduction beyond which to return a nonempty solution
+    :param min_impurity_reduction: Minimum impurity reduction beyond which to return a nonempty solution
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
     N = len(data)
@@ -194,16 +192,6 @@ def solve_exactly(
 
     if binning_type == IDENTITY:
         B = len(data)
-    elif binning_type == RANDOM:
-        if num_bins is None:
-            if is_classification:
-                B = math.ceil(np.sqrt(F))
-            else:
-                # TODO(@motiwari): change this back to F after ddl
-                # B = math.ceil(np.sqrt(F))
-                B = F
-        else:
-            B = num_bins
     else:
         B = num_bins
 
@@ -243,6 +231,7 @@ def solve_exactly(
         histograms=histograms,
         batch_size=N,
         impurity_measure=impurity_measure,
+        population_idcs=np.arange(len(data)),
     )
 
     total_queries = num_queries
@@ -308,18 +297,6 @@ def solve_mab(
             "You're running solve_mab without histogramming. Did you mean to?"
         )
         B = N
-    elif binning_type == RANDOM:
-        assert (
-            num_bins is None
-        ), "When using Extremely Random Forests, please pass num_bins=None explicitly. If you want to set a custom \
-                    number of Extremely Random bins, please update callsites and remove this assertion."
-        if is_classification:
-            B = math.ceil(np.sqrt(F))
-        else:
-            # TODO(@motiwari): change this back to F after ddl
-            # B = math.ceil(np.sqrt(F))
-            # B = int(F / 3)
-            B = F
     else:
         B = num_bins
 

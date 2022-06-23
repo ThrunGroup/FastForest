@@ -1,14 +1,14 @@
 import numpy as np
 
 from data_structures.forest_regressor import ForestRegressor
-from utils.constants import SQRT, BEST, EXACT, MSE, RANDOM
+from utils.constants import SQRT, BEST, EXACT, MSE, RANDOM, DEFAULT_NUM_BINS
 
 
 class ExtremelyRandomForestRegressor(ForestRegressor):
     """
     A ExtremelyRandomForestRegressor, which is a ForestRegressor with the following settings:
 
-    bootstrap: bool = True,
+    bootstrap: bool = False,
     feature_subsampling: str = SQRT,
     tree_global_feature_subsampling: bool = False,
     bin_type: str = RANDOM,
@@ -22,7 +22,7 @@ class ExtremelyRandomForestRegressor(ForestRegressor):
         labels: np.ndarray = None,
         n_estimators: int = 100,
         max_depth: int = None,
-        num_bins: int = 1,
+        num_bins: int = DEFAULT_NUM_BINS,
         min_samples_split: int = 2,
         min_impurity_decrease: float = 0,
         max_leaf_nodes: int = None,
@@ -40,13 +40,12 @@ class ExtremelyRandomForestRegressor(ForestRegressor):
             n_estimators=n_estimators,
             max_depth=max_depth,
             # https://scikit-learn.org/stable/modules/ensemble.html#extremely-randomized-trees suggests bootstrapping
-            bootstrap=True,  # Fixed
+            bootstrap=False,  # Fixed
             # For ExtraTreesClassifier, feature_subsapling default is SQRT.
             # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html#sklearn.ensemble.ExtraTreesClassifier
             # For ExtraTreesRegressor, feature_subsampling is 'all'
             # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesRegressor.html#sklearn.ensemble.ExtraTreesRegressor
             feature_subsampling=None,  # Fixed
-            tree_global_feature_subsampling=False,  # Fixed
             min_samples_split=min_samples_split,
             min_impurity_decrease=min_impurity_decrease,
             max_leaf_nodes=max_leaf_nodes,
