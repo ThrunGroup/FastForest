@@ -753,7 +753,7 @@ def main():
             run_theirs=True,
             filename="ERFR_dict",
             verbose=True,
-            default_budget=2400000 * 5,
+            default_budget=2400000 * 12,
             depth_override=5,
         )
     )
