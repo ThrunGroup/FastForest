@@ -48,9 +48,9 @@ def bias_variance_analysis(model, is_sklearn: bool=False, num_data=100000, rando
     return noise, bias_square, variance, error, X_test, Y_test
 
 if __name__ == "__main__":
-    model1 = RandomForestRegressor(n_estimators=10, max_leaf_nodes=10, max_features="sqrt")
-    model2 = ForestRegressor(n_estimators=20, max_leaf_nodes=10, feature_subsampling="SQRT", batch_size=30, epsilon=0)
-    model3 = ForestRegressor(n_estimators=10, max_leaf_nodes=10, feature_subsampling="SQRT", solver="EXACT")
+    model1 = RandomForestRegressor(n_estimators=10, max_leaf_nodes=32, max_features="sqrt")
+    model2 = ForestRegressor(n_estimators=20, max_leaf_nodes=32, feature_subsampling="SQRT", batch_size=30, epsilon=0)
+    model3 = ForestRegressor(n_estimators=10, max_leaf_nodes=32, feature_subsampling="SQRT", solver="EXACT")
     models = (("sklearn regressor", model1), ("ff regressor", model2), ("ff regressor exact", model3))
 
 
