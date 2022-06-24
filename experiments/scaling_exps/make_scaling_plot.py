@@ -6,45 +6,6 @@ import sys
 from sklearn.linear_model import LinearRegression
 
 
-# sizes = np.array(
-#     [
-#         5000,
-#         10000,
-#         15000,
-#         20000,
-#         25000,
-#         30000,
-#         35000,
-#         40000,
-#         45000,
-#         50000,
-#         55000,
-#         60000,
-#         80000,
-#         160000,
-#         320000,
-#     ]
-# )
-#
-# counts = np.array(
-#     [
-#         43.4,
-#         80.7,
-#         107.8,
-#         146.7,
-#         154,
-#         207.6,
-#         218.2,
-#         229.9,
-#         278.6,
-#         275.5,
-#         338.1,
-#         379.1,
-#         347.9,
-#         413.2,
-#         457.4,
-#     ]
-# )
 def main(filename="size_to_time_dict"):
     with open(filename, "r+") as fin:
         size_to_time_dict = ast.literal_eval(fin.read())
@@ -83,8 +44,9 @@ def main(filename="size_to_time_dict"):
         color="orange",
         label=f"Logarithmic fit fit, $R^2 = {hashes_log_R2}$",
     )
+    dataset = "Regression" if "regression" in filename else "Classification"
     plt.ylabel("Number of minibatches queried by MABSplit")
-    plt.xlabel("Dataset size")
+    plt.xlabel(f"{dataset}: Dataset size")
     plt.legend(loc="upper left")
     plt.show()
 
