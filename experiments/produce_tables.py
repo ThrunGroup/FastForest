@@ -141,7 +141,7 @@ print_table(header, table3_data)
 # Produce Table4
 dir = "budget_exps"
 filename_list = ["HRFR_dict", "ERFR_dict", "HRPR_dict"]
-header = ["Model", "# trees", "Accuracy"]
+header = ["Model", "# trees", "MSE"]
 table4_data = []
 for filename in filename_list:
     with open(os.path.join(dir, filename), "r") as fin:
