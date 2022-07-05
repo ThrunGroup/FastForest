@@ -42,7 +42,6 @@ class ForestClassifier(ForestBase, Classifier):
         alpha_F: float = 1.0,
         alpha_N: float = 1.0,
     ) -> None:
-        labels = labels.astype(np.int64)
         if classes is None:
             self.classes: dict = class_to_idx(
                 np.unique(labels)

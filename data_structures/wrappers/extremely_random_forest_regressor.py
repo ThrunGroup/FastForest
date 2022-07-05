@@ -39,7 +39,8 @@ class ExtremelyRandomForestRegressor(ForestRegressor):
             labels=labels,
             n_estimators=n_estimators,
             max_depth=max_depth,
-            # https://scikit-learn.org/stable/modules/ensemble.html#extremely-randomized-trees suggests bootstrapping
+            # https://scikit-learn.org/stable/modules/ensemble.html#extremely-randomized-trees doesn't suggest
+            # bootstraping
             bootstrap=False,  # Fixed
             # For ExtraTreesClassifier, feature_subsapling default is SQRT.
             # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html#sklearn.ensemble.ExtraTreesClassifier

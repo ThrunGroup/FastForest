@@ -171,6 +171,9 @@ class ForestBase(ABC):
         N = len(self.data)
         F = len(self.data[0])
 
+        if self.is_classification:
+            labels = labels.astype(np.int32)
+
         if self.make_discrete:
             self.discrete_features: DefaultDict = data_to_discrete(self.data, n=10)
 
@@ -186,7 +189,7 @@ class ForestBase(ABC):
         self.trees = []
 
         for i in range(self.n_estimators):
-            if self.alpha_N != 1.0 or self.alpha_F != 1.0:
+            if self.alpha_N < 1.0 or self.alpha_F < 1.0:
                 data_subset_idcs = self.rng.choice(N, int(N * self.alpha_N), replace=False)
                 feature_subset_idcs = self.rng.choice(F, int(F * self.alpha_F), replace=False)
             else:

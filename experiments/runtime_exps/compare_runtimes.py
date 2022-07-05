@@ -5,11 +5,9 @@ import time
 from typing import Any
 import pprint
 import os
-import ast
-
-from sklearn.datasets import load_diabetes, make_classification, make_regression
 
 from experiments.exp_utils import *
+from experiments.exp_constants import *
 from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
 from utils.constants import (
     GINI,
@@ -19,6 +17,8 @@ from utils.constants import (
     MSE,
     DEFAULT_NUM_BINS,
     DEFAULT_MIN_IMPURITY_DECREASE,
+    DEFAULT_ALPHA_N,
+    DEFAULT_ALPHA_F,
 )
 
 from mnist import MNIST
@@ -116,9 +116,9 @@ def compare_runtimes(
     their_test_accs = []
 
     # params
-    default_alpha_N = 0.75
-    default_alpha_F = 0.8
-    default_max_depth = 5
+    default_alpha_N = RUNTIME_ALPHA_N
+    default_alpha_F = RUNTIME_ALPHA_F
+    default_max_depth = RUNTIME_MAX_DEPTH
     default_n_estimators = 5
     default_min_samples_split = 2
     default_boosting_lr = 0.1
@@ -610,13 +610,6 @@ def compare_runtimes(
         "their_avg_num_queries": their_avg_num_queries if run_theirs else None,
         "their_std_num_queries": their_std_num_queries if run_theirs else None,
     }
-    # if os.path.exists(filename):
-    #     with open(filename, 'r+') as fin:
-    #         prev_results = ast.literal_eval(fin.read())
-    #         print(f"prev_results: {prev_results}")
-    #         if prev_results == results:
-    #             print(f"{filename} is successfully reproduced")
-    #             return results
     print(f"Write a new {filename}")
     with open(filename, "w+") as fout:
         fout.write(str(results))
@@ -653,8 +646,8 @@ def main():
     test_data = full_data[train_test_split:]
     test_targets = full_targets[train_test_split:]
 
-    ##Random Forests
-    NUM_SEEDS = 5
+    ## Random Forests
+    NUM_SEEDS = RUNTIME_NUM_SEEDS
     pp.pprint(
         compare_runtimes(
             compare="HRFR",
@@ -671,7 +664,7 @@ def main():
     )
 
     ## Random Patches
-    NUM_SEEDS = 5
+    NUM_SEEDS = RUNTIME_NUM_SEEDS
     pp.pprint(
         compare_runtimes(
             compare="HRPR",
@@ -688,7 +681,7 @@ def main():
     )
 
     ## Extremely Random Forests
-    NUM_SEEDS = 5
+    NUM_SEEDS = RUNTIME_NUM_SEEDS
     pp.pprint(
         compare_runtimes(
             compare="ERFR",
@@ -716,7 +709,7 @@ def main():
     test_labels = np.array(test_labels)
 
     ## Random Forests
-    NUM_SEEDS = 5
+    NUM_SEEDS = RUNTIME_NUM_SEEDS
     pp.pprint(
         compare_runtimes(
             compare="HRFC",
@@ -727,12 +720,12 @@ def main():
             num_seeds=NUM_SEEDS,
             predict=True,
             run_theirs=True,
-            filename="..",
+            filename="HRFC_dict",
             verbose=True,
         )
     )
     ## Extremely Random Forests
-    NUM_SEEDS = 5
+    NUM_SEEDS = RUNTIME_NUM_SEEDS
     pp.pprint(
         compare_runtimes(
             compare="ERFC",
@@ -749,7 +742,7 @@ def main():
     )
 
     ## Random Patches
-    NUM_SEEDS = 5
+    NUM_SEEDS = RUNTIME_NUM_SEEDS
     pp.pprint(
         compare_runtimes(
             compare="HRPC",

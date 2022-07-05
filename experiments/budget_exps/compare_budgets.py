@@ -6,6 +6,7 @@ import ast
 from sklearn.datasets import load_diabetes, make_classification, make_regression
 
 from experiments.exp_utils import *
+from experiments.exp_constants import *
 from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
 from utils.constants import (
     GINI,
@@ -14,6 +15,9 @@ from utils.constants import (
     MAB,
     MSE,
     DEFAULT_NUM_BINS,
+    DEFAULT_ALPHA_F,
+    DEFAULT_ALPHA_N,
+    SAMPLE_SIZE,
 )
 
 from mnist import MNIST
@@ -92,8 +96,8 @@ def compare_budgets(
     their_test_accs = []
 
     # params
-    default_alpha_N = alpha_N_override if alpha_N_override is not None else 0.8
-    default_alpha_F = alpha_F_override if alpha_F_override is not None else 0.6
+    default_alpha_N = alpha_N_override if alpha_N_override is not None else DEFAULT_ALPHA_N
+    default_alpha_F = alpha_F_override if alpha_F_override is not None else DEFAULT_ALPHA_F
     # Different from compare_runtimes
     default_max_depth = depth_override if depth_override is not None else 2
     default_n_estimators = 100
@@ -586,13 +590,6 @@ def compare_budgets(
         "their_avg_num_trees": their_avg_num_trees if run_theirs else None,
         "their_std_num_trees": their_std_num_trees if run_theirs else None,
     }
-    # if os.path.exists(filename):
-    #     with open(filename, 'r+') as fin:
-    #         prev_results = ast.literal_eval(fin.read())
-    #         print(f"prev_results: {prev_results}")
-    #         if prev_results == results:
-    #             print(f"{filename} is successfully reproduced")
-    #             return results
     print(f"Write a new {filename}")
     with open(filename, "w+") as fout:
         fout.write(str(results))
@@ -609,7 +606,7 @@ def main():
     train_images = np.array(train_images)
     train_labels = np.array(train_labels)
 
-    SUBSAMPLE_SIZE = 200000  # TODO(@motiwari): Update this?
+    SUBSAMPLE_SIZE = BUDGET_SAMPLE_SIZE  # TODO(@motiwari): Update this?
     train_images_subsampled = train_images[:SUBSAMPLE_SIZE]
     train_labels_subsampled = train_labels[:SUBSAMPLE_SIZE]
 
@@ -631,8 +628,8 @@ def main():
             run_theirs=True,
             filename="HRFC_dict",
             verbose=True,
-            default_budget=int(7840000 * 1.3),
-            depth_override=6,
+            default_budget=int(BUDGET_CLASSIFCATION * 1.3),
+            depth_override=BUDGET_MAX_DEPTH + 1,
         )
     )
 
@@ -650,7 +647,7 @@ def main():
             run_theirs=True,
             filename="ERFC_dict",
             verbose=True,
-            default_budget=int(7840000 * 1.3),
+            default_budget=int(BUDGET_CLASSIFCATION * 1.3),
         )
     )
 
@@ -668,9 +665,9 @@ def main():
             run_theirs=True,
             filename="HRPC_dict",
             verbose=True,
-            default_budget=int(7840000 * 1.3),
-            alpha_N_override=0.8,
-            alpha_F_override=0.5,
+            default_budget=int(BUDGET_CLASSIFCATION * 1.3),
+            alpha_N_override=BUDGET_ALPHA_N,
+            alpha_F_override=BUDGET_ALPHA_F,
         )
     )
 
@@ -714,8 +711,8 @@ def main():
             run_theirs=True,
             filename="HRFR_dict",
             verbose=True,
-            default_budget=2400000 * 10,
-            depth_override=5,
+            default_budget=BUDGET_REGRESSION * 10,
+            depth_override=BUDGET_MAX_DEPTH,
         )
     )
 
@@ -734,8 +731,8 @@ def main():
             filename="HRPR_dict",
             verbose=True,
             # Divide by 24 for less trees, since only using ~1/4*1/6 of the data
-            default_budget=2400000 * 2,
-            depth_override=5,
+            default_budget=BUDGET_REGRESSION * 2,
+            depth_override=BUDGET_MAX_DEPTH,
         )
     )
 
@@ -753,8 +750,8 @@ def main():
             run_theirs=True,
             filename="ERFR_dict",
             verbose=True,
-            default_budget=2400000 * 12,
-            depth_override=5,
+            default_budget=BUDGET_REGRESSION * 12,
+            depth_override=BUDGET_MAX_DEPTH,
         )
     )
 

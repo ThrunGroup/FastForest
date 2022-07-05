@@ -17,6 +17,7 @@ from utils.constants import (
     t5_l4_args,
 )
 from experiments.heart.fit_heart import append_dict_as_row
+from experiments.exp_constants import *
 
 
 def test_stability_with_budget(
@@ -291,7 +292,7 @@ def run_stability_stats_test(
                 df.to_csv(log_filename, index=False)
             append_dict_as_row(log_filename, log_dict, log_dict.keys())
         else:
-            with open(file_name, 'w+') as fout:
+            with open(file_name, "w+") as fout:
                 fout.write(str(log_dict))
 
     assert not is_overlap, "Exact and MABs stability overlaps"
@@ -307,7 +308,7 @@ def reproduce_stability():
         stability_data["lb_mab"],
         stability_data["ub_mab"],
     )
-    epsilon = 1e-2
+    epsilon = FI_EPSILON
     print("=" * 30)
     print("Reproduce new Table 5\n")
     lb_exact, ub_exact, lb_mab, ub_mab = run_stability_stats_test(**t5_l1_args)
@@ -352,26 +353,18 @@ def produce_stability():
     # RF + MID
     print("=" * 30)
     print("Reproduce new Table 5\n")
-    lb_exact, ub_exact, lb_mab, ub_mab = run_stability_stats_test(
-        **t5_l1_args, file_name="HRFC+MID_dict", is_log=True, csv_log=False,
-    )
-    print("Table 5 line 1 is successfully produced!")
-    print("-" * 30)
-    lb_exact, ub_exact, lb_mab, ub_mab = run_stability_stats_test(
-        **t5_l2_args, file_name="HRFR+MID_dict", is_log=True, csv_log=False,
-    )
-    print("Table 5 line 2 is successfully produced!")
-    print("-" * 30)
-    lb_exact, ub_exact, lb_mab, ub_mab = run_stability_stats_test(
-        **t5_l3_args, file_name="HRFC+Perm_dict", is_log=True, csv_log=False,
-    )
-    print("Table 5 line 3 is successfully produced!")
-    print("-" * 30)
-    lb_exact, ub_exact, lb_mab, ub_mab = run_stability_stats_test(
-        **t5_l4_args, file_name="HRFR+Perm_dict", is_log=True, csv_log=False,
-    )
-    print("Table 5 line 4 is successfully produced!")
-    print("-" * 30)
+
+    def produce_test(line_idx, args, file_name):
+        run_stability_stats_test(
+            **args, file_name=file_name, is_log=True, csv_log=False
+        )
+        print(f"Table 5 line {line_idx} is successfully produced")
+        print("-" * 30)
+
+    args = [t5_l1_args, t5_l2_args, t5_l3_args, t5_l4_args]
+    file_names = ["HRFC+MID_dict", "HRFR+MID_dict", "HRFC+Perm_dict", "HRFR+Perm_dict"]
+    for idx in range(4):
+        produce_test(idx + 1, args[idx], file_names[idx])
 
 
 if __name__ == "__main__":
