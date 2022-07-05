@@ -50,7 +50,7 @@ class ForestTests(unittest.TestCase):
             n_estimators=20,
             max_depth=5,
             bin_type=RANDOM,
-            num_bins=None,
+            num_bins=10,
             batch_size=30,
         )
         f.fit()
@@ -74,7 +74,7 @@ class ForestTests(unittest.TestCase):
             n_estimators=10,
             max_depth=5,
             bin_type=RANDOM,
-            num_bins=None,
+            num_bins=10,
             epsilon=0.0,
             batch_size=30,
         )
@@ -85,7 +85,7 @@ class ForestTests(unittest.TestCase):
     def test_tree_toy(self, show: bool = False) -> None:
         toy = data_generator.create_data(10000)
         data = toy[:, :-1]
-        labels = toy[:, -1]
+        labels = toy[:, -1].astype(np.int32)
         classes_arr = np.unique(labels)
         classes = utils.utils.class_to_idx(classes_arr)
         print("=> Ground truth:\n")
