@@ -173,7 +173,8 @@ class ForestBase(ABC):
         F = len(self.data[0])
 
         if self.is_classification:
-            labels = labels.astype(np.int32)
+            self.org_targets = self.org_targets.astype(np.int32)
+            self.new_targets = self.new_targets.astype(np.int32)
 
         if self.make_discrete:
             self.discrete_features: DefaultDict = data_to_discrete(self.data, n=10)
