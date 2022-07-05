@@ -248,9 +248,11 @@ def get_mse_vectorize(
             second_moment * n / (n - 1)
         )  # 2nd central moment is mse with mean as a predicted value and use Bessel's correction
     else:
-        estimated_mse = second_moment * np.nan_to_num((n * (pop_size-1)) / ((n-1) * pop_size), nan=1)
+        estimated_mse = second_moment * np.nan_to_num(
+            (n * (pop_size - 1)) / ((n - 1) * pop_size), nan=1
+        )
     estimated_fourth_moment = (
-            3 * estimated_mse ** 2
+        3 * estimated_mse ** 2
     )  # see https://en.wikipedia.org/wiki/Kurtosis#Pearson_moments
 
     # https://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance

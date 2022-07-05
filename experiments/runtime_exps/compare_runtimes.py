@@ -67,10 +67,7 @@ from data_structures.wrappers.gradient_boosted_histogram_random_patches_regresso
 
 
 def time_measured_fit(
-    model: Any,
-    compare: str = None,
-    ours_or_theirs: str = None,
-    seed: int = None,
+    model: Any, compare: str = None, ours_or_theirs: str = None, seed: int = None,
 ) -> float:
     """
     Returns wall clock time of training the model, in seconds.

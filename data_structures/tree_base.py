@@ -31,6 +31,7 @@ class TreeBase(ABC):
     TreeBase class. Contains a node attribute, the root, as well as fitting parameters that are global to the tree (i.e.,
     are used in splitting the nodes). TreeClassifier and TreeRegressor will inherit TreeBase class.
     """
+
     def __init__(
         self,
         data: np.ndarray = None,
@@ -59,7 +60,7 @@ class TreeBase(ABC):
         epsilon: float = 0,
         batch_size: int = BATCH_SIZE,
         idcs: np.ndarray = None,
-        feature_idcs:np.ndarray = None,
+        feature_idcs: np.ndarray = None,
     ) -> None:
         self.data = data  # This is a REFERENCE
         self.labels = labels  # This is a REFERENCE
@@ -103,7 +104,9 @@ class TreeBase(ABC):
         self.use_logarithmic_split = use_logarithmic_split
         self.use_dynamic_epsilon = use_dynamic_epsilon
         self.epsilon = epsilon
-        self.feature_idcs = feature_idcs if feature_idcs is not None else np.arange(len(self.data[0]))
+        self.feature_idcs = (
+            feature_idcs if feature_idcs is not None else np.arange(len(self.data[0]))
+        )
 
         if idcs is None:
             idcs = np.arange(self.n_data)
@@ -200,6 +203,7 @@ class TreeBase(ABC):
 
         # Either (data and labels) or (not data and not labels)
         return True
+
     def fit(self, data: np.ndarray = None, labels: np.ndarray = None) -> None:
         """
         Fit the tree by recursively splitting nodes until the termination condition is reached.

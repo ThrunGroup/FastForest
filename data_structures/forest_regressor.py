@@ -15,7 +15,7 @@ class ForestRegressor(ForestBase, Regressor):
         data: np.ndarray = None,
         labels: np.ndarray = None,
         n_estimators: int = 100,
-        max_depth: int = float('inf'),
+        max_depth: int = float("inf"),
         bootstrap: bool = True,
         feature_subsampling: str = None,
         min_samples_split: int = 2,

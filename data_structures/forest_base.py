@@ -156,6 +156,7 @@ class ForestBase(ABC):
 
         # Either (data and labels) or (not data and not labels)
         return True
+
     def fit(self, data: np.ndarray = None, labels: np.ndarray = None) -> None:
         """
         Fit the random forest classifier by training trees, where each tree is trained with only a subset of the
@@ -190,8 +191,12 @@ class ForestBase(ABC):
 
         for i in range(self.n_estimators):
             if self.alpha_N < 1.0 or self.alpha_F < 1.0:
-                data_subset_idcs = self.rng.choice(N, int(N * self.alpha_N), replace=False)
-                feature_subset_idcs = self.rng.choice(F, int(F * self.alpha_F), replace=False)
+                data_subset_idcs = self.rng.choice(
+                    N, int(N * self.alpha_N), replace=False
+                )
+                feature_subset_idcs = self.rng.choice(
+                    F, int(F * self.alpha_F), replace=False
+                )
             else:
                 data_subset_idcs = np.arange(N)
                 feature_subset_idcs = np.arange(F)
@@ -208,7 +213,9 @@ class ForestBase(ABC):
 
             if self.bootstrap:
                 N = len(self.data)
-                data_subset_idcs = self.rng.choice(data_subset_idcs, size=N, replace=True)
+                data_subset_idcs = self.rng.choice(
+                    data_subset_idcs, size=N, replace=True
+                )
                 if self.oob_score:
                     self.oob_list.append(self.get_out_of_bag(data_subset_idcs, N))
 
@@ -286,7 +293,9 @@ class ForestBase(ABC):
             if self.boosting:
                 # TODO: currently uses O(n) computation
                 curr_data = (
-                    self.data if data_subset_idcs is None else self.data[data_subset_idcs]
+                    self.data
+                    if data_subset_idcs is None
+                    else self.data[data_subset_idcs]
                 )
                 boosting_prediction = (
                     tree.predict_batch(curr_data)

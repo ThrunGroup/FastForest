@@ -135,7 +135,7 @@ class Node:
                 budget=budget,
                 epsilon=self.epsilon,
                 batch_size=self.batch_size,
-                rng=self.tree.rng
+                rng=self.tree.rng,
             )
         elif self.solver == EXACT:
             results = solve_exactly(

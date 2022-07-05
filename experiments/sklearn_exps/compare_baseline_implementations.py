@@ -291,7 +291,7 @@ def compare_accuracies(
         "our_std_train": our_std_train,
         "our_test_accs": our_test_accs,
         "our_avg_test": our_avg_test,
-        "our_std_test": our_std_test ,
+        "our_std_test": our_std_test,
         "their_train_accs": their_train_accs,
         "their_avg_train": their_avg_train,
         "their_std_train": their_std_train,
@@ -301,7 +301,7 @@ def compare_accuracies(
     }
     filename = str(compare) + "_dict"
     if os.path.exists(filename):
-        with open(filename, 'r+') as fin:
+        with open(filename, "r+") as fin:
             prev_results = ast.literal_eval(fin.read())
             print(f"prev_results: {prev_results}")
             if prev_results == results:

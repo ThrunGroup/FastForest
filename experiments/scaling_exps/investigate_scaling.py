@@ -51,10 +51,10 @@ def main(is_classification=True):
                     predict=False,
                     run_theirs=False,
                     filename=model
-                             + "_"
-                             + str(C_SUBSAMPLE_SIZE)
-                             + "_profile_"
-                             + str(fitting_seed),
+                    + "_"
+                    + str(C_SUBSAMPLE_SIZE)
+                    + "_profile_"
+                    + str(fitting_seed),
                 )
                 run_time += np.mean(np.array(results["our_train_times"]))
                 num_trials += 1

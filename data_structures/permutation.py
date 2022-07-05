@@ -9,7 +9,15 @@ from data_structures.forest_regressor import ForestRegressor
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.tree_regressor import TreeRegressor
 from utils.utils import class_to_idx
-from utils.constants import MAB, EXACT, MIN_IMPORTANCE, JACCARD, SPEARMAN, KUNCHEVA, MAX_SEED
+from utils.constants import (
+    MAB,
+    EXACT,
+    MIN_IMPORTANCE,
+    JACCARD,
+    SPEARMAN,
+    KUNCHEVA,
+    MAX_SEED,
+)
 from utils.utils import set_seed
 
 
@@ -20,22 +28,22 @@ class PermutationImportance:
     """
 
     def __init__(
-            self,
-            seed: int,
-            data: np.ndarray,
-            labels: np.ndarray,
-            max_depth: int = 5,
-            num_forests: int = 5,
-            num_trees_per_forest: int = 10,
-            is_classification: bool = True,
-            solver: str = MAB,
-            stability_metric: str = JACCARD,
-            budget_per_forest: int = None,
-            feature_subsampling: str = None,
-            max_leaf_nodes: int = None,
-            epsilon: float = 0,
-            importance_score: str = "impurity",
-            verbose: bool = False,
+        self,
+        seed: int,
+        data: np.ndarray,
+        labels: np.ndarray,
+        max_depth: int = 5,
+        num_forests: int = 5,
+        num_trees_per_forest: int = 10,
+        is_classification: bool = True,
+        solver: str = MAB,
+        stability_metric: str = JACCARD,
+        budget_per_forest: int = None,
+        feature_subsampling: str = None,
+        max_leaf_nodes: int = None,
+        epsilon: float = 0,
+        importance_score: str = "impurity",
+        verbose: bool = False,
     ):
         assert num_forests > 1, "we need at least two forests"
         set_seed(seed)
@@ -151,7 +159,9 @@ class PermutationImportance:
                 result = np.vstack((result, imp_vec))
         return result
 
-    def get_pairwise_stability(self, v1_ranks: np.ndarray, v2_ranks: np.ndarray) -> float:
+    def get_pairwise_stability(
+        self, v1_ranks: np.ndarray, v2_ranks: np.ndarray
+    ) -> float:
         """
         Computes pairwise stability for two importance vectors.
         NOTE: stability is computed with the "ranks" of the features.
@@ -160,8 +170,13 @@ class PermutationImportance:
         length = len(v1_ranks)
         if self.stability_metric == JACCARD:
             for i in range(1, length):
-                sub_v1, sub_v2 = v1_ranks[:i + 1], v2_ranks[:i + 1]  # compare subsections of array
-                pairwise_stability += len(np.intersect1d(sub_v1, sub_v2)) / len(np.union1d(sub_v1, sub_v2))
+                sub_v1, sub_v2 = (
+                    v1_ranks[: i + 1],
+                    v2_ranks[: i + 1],
+                )  # compare subsections of array
+                pairwise_stability += len(np.intersect1d(sub_v1, sub_v2)) / len(
+                    np.union1d(sub_v1, sub_v2)
+                )
             return pairwise_stability / length
 
         elif self.stability_metric == SPEARMAN:
@@ -172,7 +187,10 @@ class PermutationImportance:
 
         elif self.stability_metric == KUNCHEVA:
             for i in range(1, length):
-                sub_v1, sub_v2 = v1_ranks[:i + 1], v2_ranks[:i + 1]  # compare subsections of array
+                sub_v1, sub_v2 = (
+                    v1_ranks[: i + 1],
+                    v2_ranks[: i + 1],
+                )  # compare subsections of array
                 numer = len(np.intersect1d(sub_v1, sub_v2)) - math.pow(i, 2) / length
                 denom = i - math.pow(i, 2) * length
                 pairwise_stability += numer / denom
@@ -187,13 +205,14 @@ class PermutationImportance:
         """
         stability = 0
         length = len(imp_data)
-        ranking_maps = rankdata(imp_data, method="dense", axis=1)  # rank 1 is the most important feature!
+        ranking_maps = rankdata(
+            imp_data, method="dense", axis=1
+        )  # rank 1 is the most important feature!
 
         for i in range(length - 1):
             for j in range(i + 1, length):
                 stability += self.get_pairwise_stability(
-                    v1_ranks=ranking_maps[i],
-                    v2_ranks=ranking_maps[j],
+                    v1_ranks=ranking_maps[i], v2_ranks=ranking_maps[j],
                 )
         return 2.0 * stability / (length * (length - 1))
 
@@ -204,7 +223,9 @@ class PermutationImportance:
         """
         N = len(imp_data)
         F = len(imp_data[0])
-        assert F > best_k_features, "Feature subset size should be less than feature dimension"
+        assert (
+            F > best_k_features
+        ), "Feature subset size should be less than feature dimension"
 
         # preprocess data
         best_idcs = np.argsort(-imp_data)[:, :best_k_features]

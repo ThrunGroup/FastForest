@@ -55,5 +55,5 @@ class HistogramRandomForestClassifier(ForestClassifier):
             is_precomputed_minmax=True,
             batch_size=1000,
             use_logarithmic_split=True,
-            epsilon=0.01
+            epsilon=0.01,
         )

@@ -12,6 +12,7 @@ class Histogram:
     Histogram class that maintains a running histogram of the sampled data
     --> Should have one Histogram for each feature
     """
+
     def __init__(
         self,
         is_classification: bool,
@@ -126,7 +127,9 @@ class Histogram:
             ), "Error: sample sizes and label sizes must be the same"
             insert_idcs = self.get_bin(feature_values, self.bin_edges).astype("int64")
             new_Y = self.replace_array(Y, self.class_to_idx)
-            hist = np.zeros((self.left.shape[0] + 1, self.left.shape[1]), dtype=np.int64)
+            hist = np.zeros(
+                (self.left.shape[0] + 1, self.left.shape[1]), dtype=np.int64
+            )
             for b_idx in range(self.num_bins + 1):
                 """
                  Do concatenation to include all labels when calling np.unique
@@ -148,7 +151,7 @@ class Histogram:
             # cum_sum_from_right = hist.sum(axis=0) - hist.cumsum(axis=0)
             # self.left += cum_sum_from_left
             # self.right[:-1] += cum_sum_from_right[1:]
-            for b_idx in range(self.num_bins+1):
+            for b_idx in range(self.num_bins + 1):
                 self.right[:b_idx] += hist[b_idx]
                 self.left[b_idx:] += hist[b_idx]
         else:

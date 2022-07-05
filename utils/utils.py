@@ -127,6 +127,7 @@ def choose_bin_type(D: int, N: int, B: int) -> str:
         return IDENTITY
     return LINEAR
 
+
 def make_histograms(
     is_classification: bool,
     data: np.ndarray,
@@ -232,7 +233,9 @@ def choose_features(
         return rng.choice(feautre_idcs, feature_subsampling, replace=False)
     elif type(feature_subsampling) == float:
         # If an float, return feature_subsampling*num_features features.
-        return rng.choice(feautre_idcs, math.ceil(feature_subsampling * F), replace=False)
+        return rng.choice(
+            feautre_idcs, math.ceil(feature_subsampling * F), replace=False
+        )
     else:
         raise NotImplementedError("Invalid type of feature_subsampling")
 

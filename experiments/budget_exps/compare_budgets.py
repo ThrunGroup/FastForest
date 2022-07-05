@@ -96,8 +96,12 @@ def compare_budgets(
     their_test_accs = []
 
     # params
-    default_alpha_N = alpha_N_override if alpha_N_override is not None else DEFAULT_ALPHA_N
-    default_alpha_F = alpha_F_override if alpha_F_override is not None else DEFAULT_ALPHA_F
+    default_alpha_N = (
+        alpha_N_override if alpha_N_override is not None else DEFAULT_ALPHA_N
+    )
+    default_alpha_F = (
+        alpha_F_override if alpha_F_override is not None else DEFAULT_ALPHA_F
+    )
     # Different from compare_runtimes
     default_max_depth = depth_override if depth_override is not None else 2
     default_n_estimators = 100

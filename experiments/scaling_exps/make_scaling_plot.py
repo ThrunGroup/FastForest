@@ -26,18 +26,20 @@ def main(filename="size_to_time_dict"):
     counts_predict = lr.predict(sizes.reshape(-1, 1))
     counts_predict_log = log_lr.predict(np.log10(sizes).reshape(-1, 1))
     hashes_R2 = 1 - (
-            ((counts_predict.reshape(-1) - counts) ** 2).sum()
-            / ((mean_counts - counts) ** 2).sum()
+        ((counts_predict.reshape(-1) - counts) ** 2).sum()
+        / ((mean_counts - counts) ** 2).sum()
     )
     hashes_log_R2 = 1 - (
-            ((counts_predict_log.reshape(-1) - counts) ** 2).sum()
-            / ((mean_counts - counts) ** 2).sum()
+        ((counts_predict_log.reshape(-1) - counts) ** 2).sum()
+        / ((mean_counts - counts) ** 2).sum()
     )
 
     print(hashes_R2, hashes_log_R2)
 
     plt.scatter(sizes, counts)
-    plt.plot(hashes, hashes_predict, color="green", label=f"Linear fit, $R^2 = {hashes_R2}$")
+    plt.plot(
+        hashes, hashes_predict, color="green", label=f"Linear fit, $R^2 = {hashes_R2}$"
+    )
     plt.plot(
         hashes,
         hashes_predict_log,

@@ -61,6 +61,7 @@ def write_runtime_data(table_data: List, log_dict: Dict, filename: str):
     table_data.append(theirs_data)
     table_data.append(ours_data)
 
+
 def write_budget_data(table_data: List, log_dict: Dict, filename: str):
     """
     A helper function for producing table 3 and 4 (budget experiments).
@@ -167,13 +168,13 @@ def produce_table5():
                 dataset = "Random Classification"
             avg_stab_ours = (float(log_dict["lb_mab"]) + float(log_dict["ub_mab"])) / 2
             avg_stab_theirs = (
-                                      float(log_dict["lb_exact"]) + float(log_dict["ub_exact"])
-                              ) / 2
+                float(log_dict["lb_exact"]) + float(log_dict["ub_exact"])
+            ) / 2
             std_stab_ours = (
-                    abs(float(log_dict["lb_mab"]) - float(log_dict["ub_mab"])) / 2
+                abs(float(log_dict["lb_mab"]) - float(log_dict["ub_mab"])) / 2
             )
             std_stab_theirs = (
-                    abs(float(log_dict["lb_exact"]) - float(log_dict["ub_exact"])) / 2
+                abs(float(log_dict["lb_exact"]) - float(log_dict["ub_exact"])) / 2
             )
             ours_data = [
                 filename[: filename.find("_")] + " + MABSplit",
