@@ -18,6 +18,7 @@ from data_structures.wrappers.random_forest_classifier import RandomForestClassi
 class ForestTests(unittest.TestCase):
     # We can't have an __init__ function due to pytest providing errors about function signatures.
     np.random.seed(0)
+
     def test_wrapper_forest_iris(self) -> None:
         iris = sklearn.datasets.load_iris()
         data, labels = iris.data, iris.target
@@ -32,7 +33,9 @@ class ForestTests(unittest.TestCase):
     def test_forest_iris(self) -> None:
         iris = sklearn.datasets.load_iris()
         data, labels = iris.data, iris.target
-        f = ForestClassifier(data=data, labels=labels, n_estimators=20, max_depth=5, batch_size=30,)
+        f = ForestClassifier(
+            data=data, labels=labels, n_estimators=20, max_depth=5, batch_size=30,
+        )
         f.fit()
         acc = np.sum(f.predict_batch(data)[0] == labels)
         print("Accuracy:", (acc / len(data)))
@@ -47,7 +50,7 @@ class ForestTests(unittest.TestCase):
             n_estimators=20,
             max_depth=5,
             bin_type=RANDOM,
-            num_bins=None,
+            num_bins=10,
             batch_size=30,
         )
         f.fit()
@@ -71,7 +74,7 @@ class ForestTests(unittest.TestCase):
             n_estimators=10,
             max_depth=5,
             bin_type=RANDOM,
-            num_bins=None,
+            num_bins=10,
             epsilon=0.0,
             batch_size=30,
         )
@@ -82,7 +85,7 @@ class ForestTests(unittest.TestCase):
     def test_tree_toy(self, show: bool = False) -> None:
         toy = data_generator.create_data(10000)
         data = toy[:, :-1]
-        labels = toy[:, -1]
+        labels = toy[:, -1].astype(np.int32)
         classes_arr = np.unique(labels)
         classes = utils.utils.class_to_idx(classes_arr)
         print("=> Ground truth:\n")
@@ -97,7 +100,9 @@ class ForestTests(unittest.TestCase):
         # solving MAB
         print(
             "Best arm from solve_mab is: ",
-            utils.solvers.solve_mab(data, labels, discrete_bins_dict=empty_discrete_dict),
+            utils.solvers.solve_mab(
+                data, labels, discrete_bins_dict=empty_discrete_dict
+            ),
         )
 
         print("\n\n=> Tree fitting:")

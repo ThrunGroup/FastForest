@@ -2,8 +2,10 @@ from __future__ import (
     annotations,
 )  # For typechecking parent: Node, this is somehow important
 import numpy as np
+from numba import jit
 from typing import Union
 from collections import defaultdict
+from utils.utils import get_subset_2d
 
 from utils.solvers import solve_mab, solve_exactly
 from utils.utils import (
@@ -29,8 +31,7 @@ class Node:
         self,
         tree: Tree,
         parent: Node,
-        data: np.ndarray,
-        labels: np.ndarray,
+        idcs: np.ndarray,
         depth: int,
         proportion: float,
         is_classification: bool = True,
@@ -40,15 +41,26 @@ class Node:
         solver: str = MAB,
         verbose: bool = True,
         feature_subsampling: Union[str, int] = None,
-        tree_global_feature_subsampling: bool = False,
         with_replacement: bool = False,
         batch_size: int = BATCH_SIZE,
     ) -> None:
         self.tree = tree
-        self.parent = parent  # To allow walking back upwards
-        self.data = data  # TODO(@motiwari): Is this a reference or a copy?
-        self.labels = labels
-        self.n_data = len(labels)
+        self.feature_subsampling = feature_subsampling
+        # To decrease memory usage and cost for making a copy of large array, we don't pass data array to child node
+        # but indices
+        # The features aren't global to the tree, so we should be resampling the features at every node
+        self.feature_idcs = choose_features(
+            self.tree.feature_idcs, self.feature_subsampling, self.tree.rng
+        )
+        if self.tree.discrete_features is not None:
+            self.discrete_features = remap_discrete_features(
+                self.feature_idcs, self.tree.discrete_features
+            )
+        self.idcs = idcs
+        self.parent = parent  # To allow walking back upward
+        self.data = get_subset_2d(self.tree.data, self.idcs, self.feature_idcs)
+        self.labels = self.tree.labels[idcs]
+        self.n_data = len(self.labels)
         self.bin_type = bin_type
         self.num_bins = num_bins
         self.depth = depth
@@ -59,22 +71,10 @@ class Node:
         self.verbose = verbose
         self.solver = solver
         self.criterion = criterion
-        self.feature_subsampling = feature_subsampling
-        self.tree_global_feature_subsampling = tree_global_feature_subsampling
         self.with_replacement = with_replacement
         self.discrete_features = self.tree.discrete_features
         self.batch_size = batch_size
 
-        if tree_global_feature_subsampling:
-            # Features are chosen at the tree level. Use all of tree's features
-            self.feature_idcs = self.tree.feature_idcs
-        else:
-            # The features aren't global to the tree, so we should be resampling the features at every node
-            self.feature_idcs = choose_features(data, self.feature_subsampling)
-            if self.tree.discrete_features is not None:
-                self.discrete_features = remap_discrete_features(
-                    self.feature_idcs, self.tree.discrete_features
-                )
         # Reindex minmax
         if self.tree.minmax is not None:
             self.minmax = (
@@ -86,7 +86,7 @@ class Node:
 
         # NOTE: Do not assume labels are all integers from 0 to num_classes-1
         if is_classification:
-            self.counts = counts_of_labels(self.tree.classes, labels)
+            self.counts = counts_of_labels(self.tree.classes, self.labels)
 
         # We need a separate variable for already_split, because self.split_feature can be truthy
         # even if the split hasn't been performed
@@ -115,7 +115,7 @@ class Node:
             return self.split_reduction
 
         if self.tree.use_logarithmic_split:
-            self.num_bins = int(np.log2(self.n_data))
+            self.num_bins = int(np.log2(self.n_data)) + 1
         if self.tree.use_dynamic_epsilon:
             self.epsilon = self.tree.epsilon * np.sqrt(self.depth)
         else:
@@ -123,7 +123,7 @@ class Node:
 
         if self.solver == MAB:
             results = solve_mab(
-                data=self.data[:, self.feature_idcs],
+                data=self.data,
                 labels=self.labels,
                 minmax=self.minmax,
                 discrete_bins_dict=self.discrete_features,
@@ -135,10 +135,11 @@ class Node:
                 budget=budget,
                 epsilon=self.epsilon,
                 batch_size=self.batch_size,
+                rng=self.tree.rng,
             )
         elif self.solver == EXACT:
             results = solve_exactly(
-                data=self.data[:, self.feature_idcs],
+                data=self.data,
                 labels=self.labels,
                 minmax=self.minmax,
                 discrete_bins_dict=self.discrete_features,
@@ -161,6 +162,7 @@ class Node:
                 self.split_reduction,
                 self.num_queries,
             ) = results
+            self.prev_split_feature = self.split_feature
             self.split_feature = self.feature_idcs[
                 self.split_feature
             ]  # Feature index of original dataset
@@ -175,15 +177,12 @@ class Node:
             self.num_queries = results
 
     def create_child_node(self, idcs: np.ndarray) -> Node:
-        child_data = self.data[idcs]
-        child_labels = self.labels[idcs]
         return Node(
             tree=self.tree,
             parent=self,
-            data=child_data,
-            labels=child_labels,
+            idcs=idcs,
             depth=self.depth + 1,
-            proportion=self.proportion * (len(child_labels) / len(self.labels)),
+            proportion=self.proportion * (len(idcs) / len(self.labels)),
             bin_type=self.bin_type,
             num_bins=self.num_bins,
             is_classification=self.is_classification,
@@ -191,7 +190,6 @@ class Node:
             verbose=self.verbose,
             criterion=self.criterion,
             feature_subsampling=self.feature_subsampling,
-            tree_global_feature_subsampling=self.tree_global_feature_subsampling,
             with_replacement=self.with_replacement,
             batch_size=self.batch_size,
         )
@@ -215,14 +213,18 @@ class Node:
             ), "Error: splitting this node would increase impurity. Should never be here"
 
             # NOTE: Asymmetry with <= and >
-            left_idcs = np.where(self.data[:, self.split_feature] <= self.split_value)
-            right_idcs = np.where(self.data[:, self.split_feature] > self.split_value)
+            left_idcs = self.idcs[
+                np.where(self.data[:, self.prev_split_feature] <= self.split_value)
+            ]
+            right_idcs = self.idcs[
+                np.where(self.data[:, self.prev_split_feature] > self.split_value)
+            ]
 
-            if len(left_idcs[0]) == 0 or len(right_idcs[0]) == 0:
+            if len(left_idcs) == 0 or len(right_idcs) == 0:
                 # Our MAB erroneously identified a split as good, but it actually wasn't and puts all the children on
                 # one side
-                raise AttributeError("Wrong split!!")
                 self.already_split = True
+                raise AttributeError("Wrong split!!")
             else:
                 self.left = self.create_child_node(left_idcs)
                 self.right = self.create_child_node(right_idcs)
@@ -232,6 +234,9 @@ class Node:
                 self.predicted_label = None
                 self.predicted_value = None
                 self.already_split = True
+
+                # Free memory
+                del self.data, self.labels
 
     def n_print(self) -> None:
         """
