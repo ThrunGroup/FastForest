@@ -125,7 +125,7 @@ def sample_targets(
         idcs = (
             np.arange(M, dtype=np.int64)
             if batch_size >= M
-            else np.random.choice(M, batch_size, replace=False)
+            else rng.choice(M, batch_size, replace=False)
         )
         sample_idcs = population_idcs[idcs]
         population_idcs = np.delete(
@@ -251,7 +251,6 @@ def solve_exactly(
         return best_feature, best_value, best_reduction, total_queries
     else:
         return total_queries
-
 
 
 def solve_mab(
