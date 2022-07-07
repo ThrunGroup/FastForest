@@ -147,6 +147,7 @@ class Histogram:
                     )
                 )
             hist -= 1
+            # Uncomment the next four lines to optimize for loop by using numpy function.
             # cum_sum_from_left = hist.cumsum(axis=0)
             # cum_sum_from_right = hist.sum(axis=0) - hist.cumsum(axis=0)
             # self.left += cum_sum_from_left
