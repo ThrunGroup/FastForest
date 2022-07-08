@@ -319,8 +319,12 @@ def get_impurity_reductions(
     histogram's bin edges. Impurity is measured either by Gini index or entropy
 
     :param is_classification: Whether the problem is a classification problem(True) or a regression problem(False)
-    :returns: Impurity reduction when splitting node by bins in bin_edge_idcs
+    :param histogram: Histogram class object
+    :param bin_edge_idcs: Bin edge indices that we consider
+    :param ret_vars: Whether to return variance
+    :param impurity_measure: A type of impurity measure
     :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
+    :param is_vectorization: Whether to use vectorization
     :returns: Impurity reduction when splitting node by bins in _bin_edge_idcs
     """
     ### Vectorization
