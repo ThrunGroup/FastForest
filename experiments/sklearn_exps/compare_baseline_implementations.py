@@ -326,12 +326,12 @@ def compare_accuracies(
 def main():
     # Classification
     pca_train_vecs, train_labels, pca_test_vecs, test_labels, classes = load_pca_ng()
-    # print("Performing Experiment: Random Forest Classifier")
-    # print(
-    #     compare_accuracies(
-    #         "RFC", pca_train_vecs, train_labels, pca_test_vecs, test_labels
-    #     )
-    # )
+    print("Performing Experiment: Random Forest Classifier")
+    print(
+        compare_accuracies(
+            "RFC", pca_train_vecs, train_labels, pca_test_vecs, test_labels
+        )
+    )
 
     print("Performing Experiment: Extremely Random Forest Classifier")
     print(
