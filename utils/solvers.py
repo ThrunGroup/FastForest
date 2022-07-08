@@ -426,7 +426,7 @@ def solve_mab(
         # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
         min_idx = np.unravel_index(estimates.argmin(), estimates.shape)
         tied_arms = np.zeros((F, B))
-        tied_arms[np.where((lcbs < (1 - epsilon) * estimates[min_idx]))] = 1
+        tied_arms[np.where((estimates < (1 - epsilon) * estimates[min_idx]))] = 1
         tied_arms[min_idx] = 0
         cand_condition = np.where(
             (exact_mask == 0)
