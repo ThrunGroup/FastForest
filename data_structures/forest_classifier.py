@@ -16,7 +16,7 @@ class ForestClassifier(ForestBase, Classifier):
         data: np.ndarray = None,
         labels: np.ndarray = None,
         n_estimators: int = 100,
-        max_depth: int = None,
+        max_depth: int = float("inf"),
         bootstrap: bool = True,
         feature_subsampling: str = None,
         tree_global_feature_subsampling: bool = False,

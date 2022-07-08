@@ -374,3 +374,11 @@ class ForestBase(ABC):
         else:
             self.recursive_mdi_helper(node.left, mdg_array)
             self.recursive_mdi_helper(node.right, mdg_array)
+
+    def reset(self, budget: int = None):
+        self.data = self.org_targets = self.curr_targets = None
+        self.trees = []
+        self.num_queries = 0
+        self.budget = budget
+        if self.oob_score:
+            self.oob_list = []
