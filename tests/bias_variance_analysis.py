@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Callable, Union
+from typing import Callable, Union, List
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.base import BaseEstimator
 import matplotlib.pyplot as plt
@@ -19,13 +19,18 @@ def generate_data(
     return X, Y
 
 
-def random_bayes_model1(X: np.ndarray) -> np.ndarray:
+def toy_bayes_model(
+    X: np.ndarray, coefficients: List[float] = [5.0, 5.0, -1.0, 3.0, 10.0],
+) -> np.ndarray:
     """
     A random model that maps 2d-vector X to 1d-vector Y.
     """
     return (
-        np.sin(X[:, 0]) ** 2 * 5 + np.square(X[:, 1]) * 5 - np.sqrt(np.exp(X[:, 2])) + 3
-    ) / 10
+        coefficients[0] * np.sin(X[:, 0]) ** 2
+        + coefficients[1] * np.square(X[:, 1])
+        + coefficients[2] * np.sqrt(np.exp(X[:, 2]))
+        + coefficients[3]
+    ) / coefficients[4]
 
 
 def bias_variance_analysis(
@@ -37,10 +42,10 @@ def bias_variance_analysis(
     rng = np.random.default_rng(random_state)
     rng2 = np.random.default_rng(random_state + 1)
     X, Y = generate_data(
-        bayes_model=random_bayes_model1, num_data=num_data, noise=0.5, rng=rng
+        bayes_model=toy_bayes_model, num_data=num_data, noise=0.5, rng=rng
     )
     X_test, Y_test = generate_data(
-        bayes_model=random_bayes_model1, num_data=num_data, noise=0.5, rng=rng2
+        bayes_model=toy_bayes_model, num_data=num_data, noise=0.5, rng=rng2
     )
     train_size = 1000
     num_trials = 10
@@ -57,13 +62,12 @@ def bias_variance_analysis(
             model_predict_array[i, :] = model.predict_batch(X_test)
             print("num_queries:", model.num_queries)
             model.reset()
-    bayes_predict = random_bayes_model1(X_test)
+    bayes_predict = toy_bayes_model(X_test)
     noise = (bayes_predict - Y_test) ** 2
     mean_model_predict_array = model_predict_array.mean(axis=0)
     bias_square = (bayes_predict - mean_model_predict_array) ** 2
     variance = ((mean_model_predict_array - model_predict_array) ** 2).mean(axis=0)
     error = ((model_predict_array - Y_test) ** 2).mean(axis=0)
-
     return noise, bias_square, variance, error, X_test, Y_test
 
 
