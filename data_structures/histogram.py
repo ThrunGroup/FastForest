@@ -237,9 +237,14 @@ class Histogram:
     @staticmethod
     def replace_array(array: np.ndarray, dictionary: dict):
         """
-        Assume that all the elements of array should be one of the keys of dictionary and they are integers.
-        As all the elements are the keys of dictionary, we can replace them with the values of dictionary.
-        Returns the new replaced array.
+        Assert that all the elements of array should be integers.
+        Apply a dictionary mapping to every elements of the array.
+        And returns the new replaced array.
+
+        Ex)
+        dictionary = {0: 3, 1: 4)
+        array = np.array([0, 0, 1, 1, 0, 0])
+        replace_array(array, dictionary) gives np.array([3, 3, 4, 4, 3, 3])
         """
         # A vectorized way to replace elements, see https://bit.ly/3tk4h64.
         keys = np.array(list(dictionary.keys()))

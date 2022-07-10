@@ -182,10 +182,8 @@ def make_histograms(
                 min_bin, max_bin = np.min(f_data), np.max(f_data)
             else:
                 min_bin, max_bin = minmax[0][f_idx], minmax[1][f_idx]
-            num_bins = B
         elif bin_type == RANDOM:  # For extremely random forests
             min_bin, max_bin = np.min(f_data), np.max(f_data)
-            num_bins = B
         else:
             NotImplementedError("Invalid choice of bin_type")
 
@@ -273,6 +271,9 @@ def empty_histograms(histograms: List[Histogram], arms: Tuple[np.ndarray, np.nda
 
 @jit(nopython=True)
 def get_subset_2d(source_array: np.ndarray, row_idcs: np.ndarray, col_idcs: np.ndarray):
+    """
+    Why to implement this: there's no faster NumPy function that can replace this.
+    """
     subset_array = np.empty((len(row_idcs), len(col_idcs)))
     for i in range(len(row_idcs)):
         for j in range(len(col_idcs)):
