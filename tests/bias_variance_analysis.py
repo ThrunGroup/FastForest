@@ -116,5 +116,4 @@ if __name__ == "__main__":
     plt.legend()
     plt.show()
 
-    for elem in [names, noise_list, bias_list, variance_list, error_list]:
-        print(elem, "\n")
+    print("\n".join(map(str, [names, noise_list, bias_list, variance_list, error_list])))
