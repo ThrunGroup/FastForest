@@ -209,30 +209,30 @@ def make_histograms(
 
 
 def choose_features(
-    feautre_idcs: np.ndarray,
+    feature_idcs: np.ndarray,
     feature_subsampling: Union[str, int, float],
     rng: np.random.Generator = np.random.default_rng(0),
 ):
     """
     Choose a random subset of features from all available features.
 
-    :param feauture_idcs: feature indices we consider
+    :param feature_idcs: feature indices we consider
     :param feature_subsampling: The feature subsampling method; None, SQRT, or int
     :param rng: numpy random default generator
     :return:
     """
-    F = len(feautre_idcs)  # Number of features
+    F = len(feature_idcs)  # Number of features
     if feature_subsampling is None:
-        return feautre_idcs
+        return feature_idcs
     elif feature_subsampling == SQRT:
-        return rng.choice(feautre_idcs, math.ceil(math.sqrt(F)), replace=False)
+        return rng.choice(feature_idcs, math.ceil(math.sqrt(F)), replace=False)
     elif type(feature_subsampling) == int:
         # If an int, subsample feature_subsampling features.
-        return rng.choice(feautre_idcs, feature_subsampling, replace=False)
+        return rng.choice(feature_idcs, feature_subsampling, replace=False)
     elif type(feature_subsampling) == float:
         # If an float, return feature_subsampling*num_features features.
         return rng.choice(
-            feautre_idcs, math.ceil(feature_subsampling * F), replace=False
+            feature_idcs, math.ceil(feature_subsampling * F), replace=False
         )
     else:
         raise NotImplementedError("Invalid type of feature_subsampling")

@@ -147,11 +147,6 @@ class Histogram:
                     )
                 )
             hist -= 1
-            # Uncomment the next four lines to optimize for loop by using numpy function.
-            # cum_sum_from_left = hist.cumsum(axis=0)
-            # cum_sum_from_right = hist.sum(axis=0) - hist.cumsum(axis=0)
-            # self.left += cum_sum_from_left
-            # self.right[:-1] += cum_sum_from_right[1:]
             for b_idx in range(self.num_bins + 1):
                 self.right[:b_idx] += hist[b_idx]
                 self.left[b_idx:] += hist[b_idx]
@@ -241,10 +236,9 @@ class Histogram:
         Apply a dictionary mapping to every elements of the array.
         And returns the new replaced array.
 
-        Ex)
-        dictionary = {0: 3, 1: 4)
-        array = np.array([0, 0, 1, 1, 0, 0])
-        replace_array(array, dictionary) gives np.array([3, 3, 4, 4, 3, 3])
+        Ex) dictionary = {0: 3, 1: 4)
+            array = np.array([0, 0, 1, 1, 0, 0])
+            replace_array(array, dictionary) gives np.array([3, 3, 4, 4, 3, 3])
         """
         # A vectorized way to replace elements, see https://bit.ly/3tk4h64.
         keys = np.array(list(dictionary.keys()))

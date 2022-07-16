@@ -7,47 +7,6 @@ from utils.constants import GINI, ENTROPY, VARIANCE, MSE, KURTOSIS
 
 
 def get_gini(
-    counts: np.ndarray, ret_var: bool = False, pop_size: int = None, n: int = None,
-) -> Union[Tuple[float, float], float]:
-    """
-    Compute the Gini impurity for a given node, where the node is represented by the number of counts of each class
-    label. The Gini impurity is equal to 1 - sum_{i=1}^k (p_i^2)
-
-    :param counts: 1d array of counts where ith element is the number of counts on the ith class(label).
-    :param ret_var: Whether to return the variance of the estimate
-    :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
-    :param n: The sum of counts.
-    :return: the Gini impurity of the node, as well as its estimated variance if ret_var
-    """
-    if n is None:
-        n = np.sum(counts, dtype=np.int64)
-    if n == 0:
-        if ret_var:
-            return 0, 0
-        return 0
-    p = counts / n
-    V_p = p * (1 - p) / n
-    if pop_size is not None:
-        assert pop_size >= n, "Sample size is greater than the population size"
-        if pop_size <= 1:
-            return 0, 0
-        # Use FPC for variance calculation, see
-        # https://stats.stackexchange.com/questions/376417/sampling-from-finite-population-with-replacement
-        V_p *= (pop_size - n) / (pop_size - 1)
-
-    G = 1 - np.dot(p, p)
-    # This variance comes from propagation of error formula, see
-    # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
-    if ret_var:
-        dG_dp = (
-            -2 * p[:-1] + 2 * p[-1]
-        )  # Note: len(dG_dp) is len(p) - 1 since p[-1] is dependent variable on p[:-1]
-        V_G = np.dot(dG_dp ** 2, V_p[:-1])
-        return float(G), float(V_G)
-    return float(G)
-
-
-def get_gini_vectorize(
     counts_vec: np.ndarray,
     ret_var: bool = False,
     pop_size: np.ndarray = None,
@@ -64,26 +23,35 @@ def get_gini_vectorize(
     :param n: 1d array of the sum of counts for each bin.
     :return: the Gini impurity of the node, as well as its estimated variance if ret_var
     """
+    if len(counts_vec.shape) == 1:
+        counts_vec = np.expand_dims(counts_vec, 0)
     if n is None:
         n = np.sum(counts_vec, axis=1, dtype=np.int64)
-    p = counts_vec / np.expand_dims(n, axis=1)
-    V_p = p * (1 - p) / np.expand_dims(n, axis=1)
-    if pop_size is not None:
-        V_p *= np.expand_dims((pop_size - n) / (pop_size - 1), axis=1)
+    p = counts_vec / np.expand_dims(n, axis=1)  # Expand dimension to broadcast
+    p = np.nan_to_num(p, nan=0, posinf=0, neginf=0)  # Deal with the case when n = 0
     G = 1 - np.sum(p * p, axis=1)
     if ret_var:
+        V_p = p * (1 - p) / np.expand_dims(n, axis=1)
+        if pop_size is not None:
+            # Use FPC for variance calculation, see
+            # https://stats.stackexchange.com/questions/376417/sampling-from-finite-population-with-replacement
+            V_p *= np.expand_dims((pop_size - n) / (pop_size - 1), axis=1)   # Expand dimension to broadcast
+
+        # This variance comes from propagation of error formula, see
+        # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
         dG_dp = -2 * p[:, :-1] + 2 * np.expand_dims(
             p[:, -1], axis=1
         )  # Note: len(dG_dp) is len(p) - 1 since p[-1] is dependent variable on p[:-1]
         V_G = np.sum(dG_dp ** 2 * V_p[:, :-1], axis=1)
-        G = np.nan_to_num(G, nan=0, posinf=0, neginf=0)
-        V_G = np.nan_to_num(V_G, nan=0, posinf=0, neginf=0)
         return G, V_G
     return G
 
 
 def get_entropy(
-    counts: np.ndarray, ret_var=False, pop_size: int = None, n: int = None,
+    counts: np.ndarray,
+    ret_var=False,
+    pop_size: int = None,
+    n: int = None,
 ) -> Union[Tuple[float, float], float]:
     """
     Compute the entropy impurity for a given node, where the node is represented by the number of counts of each class
@@ -160,8 +128,10 @@ def get_variance(
 
 
 def get_mse(
-    args: np.ndarray, ret_var: bool = False, pop_size: int = None,
-) -> Union[Tuple[float, float], float]:
+    args: np.ndarray,
+    ret_var: bool = False,
+    pop_size: np.ndarray = None,
+) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
     """
     Compute the MSE for a given node, where the node is represented by the pile of all target values. Also Compute the
     confidence bound of our estimation by using Hoeffding's inequality for bounded values
@@ -173,101 +143,53 @@ def get_mse(
     """
     n = args[0]
     second_moment = args[2]
-    fourth_moment = (
-        3 * second_moment ** 2
-    )  # see https://en.wikipedia.org/wiki/Kurtosis#Pearson_moments
-
-    if n <= 1:
-        if ret_var:
-            return 0, 0
-        return 0
-
-    if pop_size == n:
-        if ret_var:
-            return second_moment, 0
-        return second_moment
-    estimated_mse = (
-        second_moment * n / (n - 1)
-    )  # 2nd central moment is mse with mean as a predicted value and use Bessel's correction
-
-    if pop_size is not None and pop_size > 3:
-        assert pop_size >= n, "Sample size is greater than population size"
-        # Todo: Add a formula when pop_size is equal to 3.
-        N = pop_size
-        c1 = (
-            N
-            * (N - n)
-            * (N * n - N - n - 1)
-            / (n * (n - 1) * (N - 1) * (N - 2) * (N - 3))
-        )
-        c3 = -(
-            N
-            * (N - n)
-            * ((N ** 2) * n - 3 * n - 3 * (N ** 2) + 6 * N - 3)
-            / (n * (n - 1) * ((N - 1) ** 2) * (N - 2) * (N - 3))
-        )
-        # Use the formula of the variance of sample variance when sampled with replacement, see
-        # https://www.asasrms.org/Proceedings/y2008/Files/300992.pdf#page=2
-        V_mse = c1 * fourth_moment + c3 * (second_moment ** 2)
-
-        # Derive myself with reference to
-        # https://stats.stackexchange.com/questions/5158/explanation-of-finite-population-correction-factor
-        estimated_mse = estimated_mse * (pop_size - 1) / pop_size
+    if pop_size is None:
+        estimated_mse = (
+                second_moment * n / (n - 1)
+        )  # 2nd central moment is mse with mean as a predicted value and use Bessel's correction
     else:
-        if n == 2:
-            # This variance comes from the variance of sample variance, see
-            # https://math.stackexchange.com/questions/72975/variance-of-sample-variance
-            # Use sample variance as an estimation of population variance.
-            V_mse = (fourth_moment + estimated_mse ** 2) / 2
+        assert pop_size >= n, "population size should not be less than sample size"
+        estimated_mse = second_moment * (n * (pop_size - 1)) / ((n - 1) * pop_size)  # Derive myself with reference to
+        # https://stats.stackexchange.com/questions/5158/explanation-of-finite-population-correction-factor
+    estimated_mse = np.nan_to_num(estimated_mse, nan=0, posinf=0, neginf=0)  # Deal with case when n = 1
+    if ret_var:
+        estimated_fourth_moment = (
+                3 * estimated_mse ** 2
+        )  # see https://en.wikipedia.org/wiki/Kurtosis#Pearson_moments
+        if pop_size is not None:
+            assert pop_size >= n, "Sample size is greater than population size"
+            # Todo: Add a formula when pop_size is equal to 3.
+            N = pop_size
+            c1 = (
+                N
+                * (N - n)
+                * (N * n - N - n - 1)
+                / (n * (n - 1) * (N - 1) * (N - 2) * (N - 3))
+            )
+            c3 = -(
+                N
+                * (N - n)
+                * ((N ** 2) * n - 3 * n - 3 * (N ** 2) + 6 * N - 3)
+                / (n * (n - 1) * ((N - 1) ** 2) * (N - 2) * (N - 3))
+            )
+            # Use the formula of the variance of sample variance when sampled with replacement, see
+            # https://www.asasrms.org/Proceedings/y2008/Files/300992.pdf#page=2
+            V_mse = c1 * estimated_fourth_moment + c3 * (estimated_mse ** 2)
         else:
             # This variance comes from the variance of sample variance, see
             # https://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance
             # Use sample variance as an estimation of population variance.
-            V_mse = (fourth_moment - (second_moment ** 2) * (n - 3) / (n - 1)) / n
-    if ret_var:
-        return estimated_mse, V_mse
-    return estimated_mse
-
-
-def get_mse_vectorize(
-    args_vec: np.ndarray, ret_var: bool = False, pop_size: int = None,
-) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
-    """
-    Compute the MSE for a given node, where the node is represented by the pile of all target values. Also Compute the
-    confidence bound of our estimation by using Hoeffding's inequality for bounded values
-
-    :param args_vec: args_vec[i] = (number of samples, mean of samples, variance of samples) of ith bin
-    :param ret_var: Whether to return the variance of the estimate
-    :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
-    :return: the mse(variance) of the node, as well as its estimated variance if ret_var
-    """
-    n = args_vec[:, 0]
-    second_moment = args_vec[:, 2]
-    if pop_size is None:
-        estimated_mse = (
-            second_moment * n / (n - 1)
-        )  # 2nd central moment is mse with mean as a predicted value and use Bessel's correction
-    else:
-        estimated_mse = second_moment * np.nan_to_num(
-            (n * (pop_size - 1)) / ((n - 1) * pop_size), nan=1
-        )
-    estimated_fourth_moment = (
-        3 * estimated_mse ** 2
-    )  # see https://en.wikipedia.org/wiki/Kurtosis#Pearson_moments
-
-    # https://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance
-    # Use sample variance as an estimation of population variance.
-    V_mse = (estimated_fourth_moment - (estimated_mse ** 2) * (n - 3) / (n - 1)) / n
-    estimated_mse = np.nan_to_num(estimated_mse, nan=0, posinf=0, neginf=0)
-    V_mse = np.nan_to_num(V_mse, nan=0, posinf=0, neginf=0)
-    if ret_var:
-        V_mse = np.nan_to_num(V_mse, nan=0, posinf=0, neginf=0)
+            V_mse = (estimated_fourth_moment - (estimated_mse ** 2) * (n - 3) / (n - 1)) / n
+        V_mse = np.nan_to_num(V_mse, nan=0, posinf=0, neginf=0)  # Deal with the case when n <= 3
+        # or pop_size = n
         return estimated_mse, V_mse
     return estimated_mse
 
 
 def get_mse_with_chi(
-    args: np.ndarray, ret_var: bool = False, pop_size: int = None,
+    args: np.ndarray,
+    ret_var: bool = False,
+    pop_size: int = None,
 ) -> Union[Tuple[float, float], float]:
     """
     Compute the MSE for a given node, where the node is represented by the pile of all target values. Also Compute the
@@ -327,7 +249,6 @@ def get_impurity_reductions(
     :param is_vectorization: Whether to use vectorization
     :returns: Impurity reduction when splitting node by bins in _bin_edge_idcs
     """
-    ### Vectorization
     if is_vectorization:
         h = histogram
         if is_classification:
@@ -349,20 +270,15 @@ def get_impurity_reductions(
             left_weight = left_sum / n
             right_weight = right_sum / n
 
-            left_impurity, left_var = get_gini_vectorize(
+            left_impurity, left_var = get_gini(
                 counts_vec=left, ret_var=True, pop_size=left_size, n=left_sum
             )
-            right_impurity, right_var = get_gini_vectorize(
+            right_impurity, right_var = get_gini(
                 counts_vec=right, ret_var=True, pop_size=right_size, n=right_sum
             )
             curr_impurity, curr_var = get_gini(
-                counts=left[0] + right[0], ret_var=True, pop_size=pop_size
+                counts_vec=left[0] + right[0], ret_var=True, pop_size=pop_size
             )
-
-            left_impurity *= left_weight
-            left_var *= left_weight ** 2
-            right_impurity *= right_weight
-            right_var *= right_weight ** 2
         else:
             left = h.left_pile[bin_edge_idcs]
             right = h.right_pile[bin_edge_idcs]
@@ -382,20 +298,20 @@ def get_impurity_reductions(
             left_weight = left_sum / n
             right_weight = right_sum / n
 
-            left_impurity, left_var = get_mse_vectorize(
-                args_vec=left, ret_var=True, pop_size=left_size
+            left_impurity, left_var = get_mse(
+                args=left, ret_var=True, pop_size=left_size
             )
-            right_impurity, right_var = get_mse_vectorize(
-                args_vec=right, ret_var=True, pop_size=right_size
+            right_impurity, right_var = get_mse(
+                args=right, ret_var=True, pop_size=right_size
             )
             curr_impurity, curr_var = get_mse(
                 args=h.curr_pile, ret_var=True, pop_size=pop_size
             )
 
-            left_impurity *= left_weight
-            left_var *= left_weight ** 2
-            right_impurity *= right_weight
-            right_var *= right_weight ** 2
+        left_impurity *= left_weight
+        left_var *= left_weight ** 2
+        right_impurity *= right_weight
+        right_var *= right_weight ** 2
 
         return (
             (left_impurity + right_impurity - curr_impurity),
