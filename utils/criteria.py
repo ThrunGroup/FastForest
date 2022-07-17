@@ -82,7 +82,7 @@ def get_entropy(
         # This variance comes from propagation of error formula, see
         # https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Simplification
         dE_dp = (
-                -log_p[:, -1] + np.expand_dims(log_p[-1], axis=1)
+                -log_p[:, :-1] + np.expand_dims(log_p[-1], axis=0 )
         )  # Note: len(dE_dp) is len(p) - 1 since p[-1] is dependent variable on p[:-1]
         V_E = np.sum(dE_dp ** 2 * V_p[:, :-1], axis=1)
         return E, V_E
