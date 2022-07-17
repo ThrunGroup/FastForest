@@ -45,7 +45,10 @@ def find_hessian(
 
 
 def get_next_targets(
-    loss_type: str, is_classification, targets: np.ndarray, predictions: np.ndarray,
+    loss_type: str,
+    is_classification,
+    targets: np.ndarray,
+    predictions: np.ndarray,
 ) -> np.ndarray:
     """
     Updates the targets for the next iteration of boosting. For classification, the resulting new training set will
