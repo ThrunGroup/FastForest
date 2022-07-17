@@ -48,10 +48,10 @@ def get_gini(
 
 
 def get_entropy(
-        counts_vec: np.ndarray,
-        ret_var=False,
-        pop_size: int = None,
-        n: int = None,
+    counts_vec: np.ndarray,
+    ret_var=False,
+    pop_size: int = None,
+    n: int = None,
 ) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
     """
     Compute the entropy impurity for a given node, where the node is represented by the number of counts of each class
@@ -165,13 +165,13 @@ def get_impurity_fn(impurity_measure: str) -> Callable:
 
 
 def get_impurity_reductions(
-        is_classification: bool,
-        histogram: Histogram,
-        bin_edge_idcs: List[int],
-        ret_vars: bool = False,
-        impurity_measure: str = "",
-        pop_size: int = None,
-        is_vectorization: bool = True,
+    is_classification: bool,
+    histogram: Histogram,
+    bin_edge_idcs: List[int],
+    ret_vars: bool = False,
+    impurity_measure: str = "",
+    pop_size: int = None,
+    is_vectorization: bool = True,
 ) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
     """
     Given a histogram of counts for each bin, compute the impurity reductions if we were to split a node on any of the
