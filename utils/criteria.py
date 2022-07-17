@@ -23,7 +23,7 @@ def get_gini(
     :param n: 1d array of the sum of counts for each bin.
     :return: the Gini impurity of the node, as well as its estimated variance if ret_var
     """
-    if len(counts_vec.shape) == 1:
+    if len(counts_vec.shape) == 1:  # If counts_vec only contains the one bin's counts
         counts_vec = np.expand_dims(counts_vec, 0)
     if n is None:
         n = np.sum(counts_vec, axis=1, dtype=np.int64)
@@ -64,7 +64,7 @@ def get_entropy(
     :param n: The sum of counts.
     :return: the entropy impurity of the node, as well as its estimated variance if ret_var
     """
-    if len(counts_vec.shape) == 1:
+    if len(counts_vec.shape) == 1:  # If counts_vec only contains the one bin's counts
         counts_vec = np.expand_dims(counts_vec, 0)
     if n is None:
         n = np.sum(counts_vec, axis=1, dtype=np.int64)
@@ -103,8 +103,10 @@ def get_mse(
     :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
     :return: the mse(variance) of the node, as well as its estimated variance if ret_var
     """
-    n = args[0]
-    second_moment = args[2]
+    if len(args.shape) == 1:  # Deal with the case when args only contains the information of one bin
+        args = np.expand_dims(args, 0)
+    n = args[:, 0]
+    second_moment = args[:, 2]
     if pop_size is None:
         estimated_mse = (
                 second_moment * n / (n - 1)
@@ -197,9 +199,8 @@ def get_impurity_reductions(
         else:
             left = h.left_pile[bin_edge_idcs]
             right = h.right_pile[bin_edge_idcs]
-            left_sum = left[:, 0]
-            right_sum = right[:, 0]
-            n = left_sum + right_sum
+            left_sum = left[bin_edge_idcs, 0]
+            right_sum = right[bin_edge_idcs, 0]
         n = left_sum + right_sum
 
         # Population of left and right node is approximated by left_weight and right_weight

@@ -211,7 +211,7 @@ class Histogram:
         return np.sort(splits, kind="mergesort")
 
     @staticmethod
-    def update_bins(prev: np.ndarray, curr_data: np.ndarray):
+    def update_bins(prev: np.ndarray, curr_data: np.ndarray) -> np.ndarray:
         """
         Update bins for regression. prev contains (number of samples, mean of samples, variance of samples) that
         are previously drawn. curr_data is the array of data we newly sample.
@@ -227,7 +227,7 @@ class Histogram:
         new_num = num1 + num2
         new_mean = (num1 * mean1 + num2 * mean2) / new_num
         new_var = welford_variance_calc(num1, mean1, var1, num2, mean2, var2)
-        return new_num, new_mean, new_var
+        return np.array([new_num, new_mean, new_var])
 
     @staticmethod
     def replace_array(array: np.ndarray, dictionary: dict):
