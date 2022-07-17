@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Callable, Union, List
+from typing import Callable, Union, List, Tuple
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.base import BaseEstimator
 import matplotlib.pyplot as plt
@@ -20,17 +20,17 @@ def generate_data(
 
 
 def toy_bayes_model(
-    X: np.ndarray, coefficients: List[float] = [5.0, 5.0, -1.0, 3.0, 10.0],
+    x: np.ndarray, coef: List[float] = [5.0, 5.0, -1.0, 3.0, 10.0],
 ) -> np.ndarray:
     """
     A random model that maps 2d-vector X to 1d-vector Y.
     """
     return (
-        coefficients[0] * np.sin(X[:, 0]) ** 2
-        + coefficients[1] * np.square(X[:, 1])
-        + coefficients[2] * np.sqrt(np.exp(X[:, 2]))
-        + coefficients[3]
-    ) / coefficients[4]
+        coef[0] * np.sin(x[:, 0]) ** 2
+        + coef[1] * np.square(x[:, 1])
+        + coef[2] * np.sqrt(np.exp(x[:, 2]))
+        + coef[3]
+    ) / coef[4]
 
 
 def bias_variance_analysis(
@@ -38,7 +38,16 @@ def bias_variance_analysis(
     is_sklearn: bool = False,
     num_data: int = 100000,
     random_state: int = 0,
-):
+) -> Tuple:
+    """
+    Decompose the generalization error of supervised model (especially, random forest) into noise, bias,
+    and variance by running a few times of experiments.
+    :param model: A supervised model
+    :param is_sklearn: Whether the model is implemented in sklearn package
+    :param num_data: Number of toy data used for acquiring an error by the model
+    :param random_state: Random state(seed) of this function for the purpose or reproducibility
+    :return: A tuple of noise, bias squared, variance and generalization error of the model
+    """
     rng = np.random.default_rng(random_state)
     rng2 = np.random.default_rng(random_state + 1)
     X, Y = generate_data(
@@ -68,7 +77,7 @@ def bias_variance_analysis(
     bias_square = (bayes_predict - mean_model_predict_array) ** 2
     variance = ((mean_model_predict_array - model_predict_array) ** 2).mean(axis=0)
     error = ((model_predict_array - Y_test) ** 2).mean(axis=0)
-    return noise, bias_square, variance, error, X_test, Y_test
+    return noise, bias_square, variance, error
 
 
 if __name__ == "__main__":
@@ -91,29 +100,29 @@ if __name__ == "__main__":
         ("ff regressor exact", model3),
     )
     names = []
-    noise_list = []
-    bias_list = []
-    variance_list = []
-    error_list = []
+    noises = []
+    biases = []
+    variances = []
+    errors = []
     for i, (name, model) in enumerate(models):
         print("-" * 30)
         print(f"Training {name}")
         is_sklearn = "sklearn" in name
-        noise, bias, variance, error, X_test, Y_test = bias_variance_analysis(
+        noise, bias, variance, error= bias_variance_analysis(
             model, is_sklearn=is_sklearn, random_state=1512
         )
         names.append(name)
-        noise_list.append(np.mean(noise))
-        bias_list.append(np.mean(bias))
-        variance_list.append(np.mean(variance))
-        error_list.append(np.mean(error))
+        noises.append(np.mean(noise))
+        biases.append(np.mean(bias))
+        variances.append(np.mean(variance))
+        errors.append(np.mean(error))
     marker = "*"
     plt.figure()
-    plt.plot(names, noise_list, marker=marker, label="Noise")
-    plt.plot(names, bias_list, marker=marker, label="Bias^2")
-    plt.plot(names, variance_list, marker=marker, label="Var")
-    plt.plot(names, error_list, marker=marker, label="Error")
+    plt.plot(names, noises, marker=marker, label="Noise")
+    plt.plot(names, biases, marker=marker, label="Bias^2")
+    plt.plot(names, variances, marker=marker, label="Var")
+    plt.plot(names, errors, marker=marker, label="Error")
     plt.legend()
     plt.show()
 
-    print("\n".join(map(str, [names, noise_list, bias_list, variance_list, error_list])))
+    print("\n".join(map(str, [names, noises, biases, variances, errors])))
