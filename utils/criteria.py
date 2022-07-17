@@ -171,7 +171,7 @@ def get_impurity_reductions(
     ret_vars: bool = False,
     impurity_measure: str = "",
     pop_size: int = None,
-    is_vectorization: bool = True,
+    vectorize: bool = True,
 ) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
     """
     Given a histogram of counts for each bin, compute the impurity reductions if we were to split a node on any of the
@@ -183,13 +183,13 @@ def get_impurity_reductions(
     :param ret_vars: Whether to return variance
     :param impurity_measure: A type of impurity measure
     :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
-    :param is_vectorization: Whether to use vectorization
+    :param vectorize: Whether to use vectorization
     :returns: Impurity reduction when splitting node by bins in _bin_edge_idcs
     """
     if impurity_measure == "":
         impurity_measure = GINI if is_classification else MSE
     get_impurity = get_impurity_fn(impurity_measure)
-    if is_vectorization:
+    if vectorize:
         h = histogram
         if is_classification:
             left = h.left[bin_edge_idcs]
