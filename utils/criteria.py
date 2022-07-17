@@ -7,10 +7,10 @@ from utils.constants import GINI, ENTROPY, MSE, KURTOSIS
 
 
 def get_gini(
-        counts_vec: np.ndarray,
-        ret_var: bool = False,
-        pop_size: np.ndarray = None,
-        n: np.ndarray = None,
+    counts_vec: np.ndarray,
+    ret_var: bool = False,
+    pop_size: np.ndarray = None,
+    n: np.ndarray = None,
 ) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
     """
     Compute the Gini impurity for a given node, where the node is represented by the number of counts of each class
@@ -90,9 +90,9 @@ def get_entropy(
 
 
 def get_mse(
-        args: np.ndarray,
-        ret_var: bool = False,
-        pop_size: np.ndarray = None,
+    args: np.ndarray,
+    ret_var: bool = False,
+    pop_size: np.ndarray = None,
 ) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
     """
     Compute the MSE for a given node, where the node is represented by the pile of all target values. Also Compute the
