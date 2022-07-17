@@ -1,7 +1,4 @@
 ##!/bin/bash
-p=$(pwd)
-echo "You are currently in: $p"
-export PYTHONPATH="$p"
 cd experiments/runtime_exps
 python compare_runtimes.py
 cd ../budget_exps
