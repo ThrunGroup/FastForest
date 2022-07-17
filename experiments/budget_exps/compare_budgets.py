@@ -1,12 +1,16 @@
 from typing import Any
 import pprint
 import os
-import ast
-
-from sklearn.datasets import load_diabetes, make_classification, make_regression
 
 from experiments.exp_utils import *
-from experiments.exp_constants import *
+from experiments.exp_constants import (
+    BUDGET_REGRESSION,
+    BUDGET_CLASSIFCATION,
+    BUDGET_MAX_DEPTH,
+    BUDGET_ALPHA_F,
+    BUDGET_ALPHA_N,
+    BUDGET_SAMPLE_SIZE,
+)
 from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
 from utils.constants import (
     GINI,
@@ -17,7 +21,6 @@ from utils.constants import (
     DEFAULT_NUM_BINS,
     DEFAULT_ALPHA_F,
     DEFAULT_ALPHA_N,
-    SAMPLE_SIZE,
 )
 
 from mnist import MNIST

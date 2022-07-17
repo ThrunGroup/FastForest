@@ -53,7 +53,6 @@ class HistogramRandomForestClassifier(ForestClassifier):
             with_replacement=with_replacement,
             verbose=verbose,
             is_precomputed_minmax=True,
-            batch_size=1000,
             use_logarithmic_split=True,
             epsilon=0.01,
         )

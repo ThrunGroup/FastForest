@@ -7,7 +7,12 @@ import pprint
 import os
 
 from experiments.exp_utils import *
-from experiments.exp_constants import *
+from experiments.exp_constants import (
+    RUNTIME_ALPHA_N,
+    RUNTIME_ALPHA_F,
+    RUNTIME_NUM_SEEDS,
+    RUNTIME_MAX_DEPTH
+)
 from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
 from utils.constants import (
     GINI,
@@ -17,8 +22,6 @@ from utils.constants import (
     MSE,
     DEFAULT_NUM_BINS,
     DEFAULT_MIN_IMPURITY_DECREASE,
-    DEFAULT_ALPHA_N,
-    DEFAULT_ALPHA_F,
 )
 
 from mnist import MNIST
@@ -67,7 +70,11 @@ from data_structures.wrappers.gradient_boosted_histogram_random_patches_regresso
 
 
 def time_measured_fit(
-    model: Any, compare: str = None, ours_or_theirs: str = None, seed: int = None,
+    model: Any,
+    compare: str = None,
+    ours_or_theirs:
+    str = None,
+    seed: int = None,
 ) -> float:
     """
     Returns wall clock time of training the model, in seconds.
@@ -698,8 +705,10 @@ def main():
     mndata = MNIST(os.path.join("..", "mnist"))
 
     train_images, train_labels = mndata.load_training()
-    train_images = np.repeat(np.array(train_images), 4, axis=0)
-    train_labels = np.repeat(np.array(train_labels), 4, axis=0)
+    rng = np.random.default_rng(0)
+    subsample_idcs = rng.choice(len(train_images), 4 * len(train_images))
+    train_images = np.array(train_images)[subsample_idcs]
+    train_labels = np.array(train_labels)[subsample_idcs]
 
     test_images, test_labels = mndata.load_testing()
     test_images = np.array(test_images)

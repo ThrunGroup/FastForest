@@ -119,7 +119,7 @@ def compare_accuracies(
             )
             their_model = RFR_sklearn(
                 n_estimators=5,
-                # criterion="squared_error",
+                criterion="squared_error",
                 max_depth=5,
                 min_samples_split=2,
                 max_leaf_nodes=None,
@@ -148,7 +148,7 @@ def compare_accuracies(
             )
             their_model = ERFR_sklearn(
                 n_estimators=5,
-                # criterion="squared_error",
+                criterion="squared_error",
                 max_depth=5,
                 min_samples_split=2,
                 max_features="auto",
@@ -179,10 +179,9 @@ def compare_accuracies(
             )
             their_model = GBRFR_sklearn(
                 n_estimators=5,
-                # loss="squared_error",
+                loss="ls",
                 max_depth=5,
                 learning_rate=0.1,
-                # criterion="squared_error",
                 min_samples_split=2,
                 min_samples_leaf=1,
                 min_impurity_decrease=0.0,
@@ -211,7 +210,7 @@ def compare_accuracies(
             )
             their_model = ERFR_sklearn(
                 n_estimators=1,
-                # criterion="squared_error",
+                criterion="squared_error",
                 max_depth=5,
                 min_samples_split=2,
                 max_features="auto",
@@ -326,12 +325,12 @@ def compare_accuracies(
 def main():
     # Classification
     pca_train_vecs, train_labels, pca_test_vecs, test_labels, classes = load_pca_ng()
-    # print("Performing Experiment: Random Forest Classifier")
-    # print(
-    #     compare_accuracies(
-    #         "RFC", pca_train_vecs, train_labels, pca_test_vecs, test_labels
-    #     )
-    # )
+    print("Performing Experiment: Random Forest Classifier")
+    print(
+        compare_accuracies(
+            "RFC", pca_train_vecs, train_labels, pca_test_vecs, test_labels
+        )
+    )
 
     print("Performing Experiment: Extremely Random Forest Classifier")
     print(
