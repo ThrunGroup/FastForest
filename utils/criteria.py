@@ -121,7 +121,7 @@ def get_mse(
                 KURTOSIS * estimated_mse ** 2
         )  # see https://en.wikipedia.org/wiki/Kurtosis#Pearson_moments
         if pop_size is not None:
-            assert pop_size >= n, "Sample size is greater than population size"
+            assert np.all(pop_size >= n), "Sample size is greater than population size"
             # Todo: Add a formula when pop_size is equal to 3.
             N = pop_size
             c1 = (
@@ -199,8 +199,8 @@ def get_impurity_reductions(
         else:
             left = h.left_pile[bin_edge_idcs]
             right = h.right_pile[bin_edge_idcs]
-            left_sum = left[bin_edge_idcs, 0]
-            right_sum = right[bin_edge_idcs, 0]
+            left_sum = left[:, 0]
+            right_sum = right[:, 0]
         n = left_sum + right_sum
 
         # Population of left and right node is approximated by left_weight and right_weight
