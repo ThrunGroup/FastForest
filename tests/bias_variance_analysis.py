@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Callable, Union, List, Tuple
+from typing import Callable, Union, List, Tuple, Iterable
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.base import BaseEstimator
 import matplotlib.pyplot as plt
@@ -122,7 +122,16 @@ if __name__ == "__main__":
     plt.plot(names, biases, marker=marker, label="Bias^2")
     plt.plot(names, variances, marker=marker, label="Var")
     plt.plot(names, errors, marker=marker, label="Error")
+
+    def annotate_yvals(xvals: Iterable, yvals: Iterable):
+        """
+        A helper function for annotating y values in the figure (matplotlib)
+        """
+        for x, y in zip(xvals, yvals):
+            rounded_y = str(round(y, 3))
+            plt.annotate(rounded_y, (x, y), xytext=(0, 5), textcoords="offset points")
+
+    for yvals in [noises, biases, variances, errors]:
+        annotate_yvals(names, yvals)
     plt.legend()
     plt.show()
-
-    print("\n".join(map(str, [names, noises, biases, variances, errors])))
