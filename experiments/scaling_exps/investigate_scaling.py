@@ -11,12 +11,14 @@ def main(is_classification=True):
         filename = "size_to_time_dict"
         models = ["HRFC", "ERFC", "HRPC"]
         subsample_size_list = [
-            1,
+            10000,
+            20000,
             40000,
+            60000,
             80000,
+            120000,
             160000,
-            320000,
-            640000,
+            200000,
         ]
     else:
         train_data, train_labels = make_regression(
@@ -26,12 +28,14 @@ def main(is_classification=True):
         filename = "size_to_time_dict_regression"
         models = ["HRFR", "ERFR", "HRPR"]
         subsample_size_list = [
-            1,
+            10000,
             20000,
             40000,
+            60000,
             80000,
+            120000,
             160000,
-            320000,
+            200000,
         ]
     for model in models:
         for C_SUBSAMPLE_SIZE in subsample_size_list:
@@ -60,7 +64,7 @@ def main(is_classification=True):
                 num_trials += 1
             run_time /= num_trials
             size_to_time_dict[C_SUBSAMPLE_SIZE] = run_time
-        with open(filename, "w+") as fout:
+        with open(model + "_" + filename, "w+") as fout:
             fout.write(str(size_to_time_dict))
 
 
