@@ -170,6 +170,7 @@ class PermutationImportance:
         length = len(v1_ranks)
         if self.stability_metric == JACCARD:
             for i in range(1, length):
+
                 # compare subsections of array
                 sub_v1 = v1_ranks[: i + 1]
                 sub_v2 = v2_ranks[: i + 1]
