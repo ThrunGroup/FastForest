@@ -1,5 +1,5 @@
 from experiments.runtime_exps.compare_runtimes import *
-from experiments.exp_constants import *
+from experiments.exp_constants import SCALING_NUM_SEEDS
 
 
 def main(is_classification=True):

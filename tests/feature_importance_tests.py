@@ -17,7 +17,7 @@ from utils.constants import (
     t5_l4_args,
 )
 from experiments.heart.fit_heart import append_dict_as_row
-from experiments.exp_constants import *
+from experiments.exp_constants import FI_EPSILON
 
 
 def test_stability_with_budget(

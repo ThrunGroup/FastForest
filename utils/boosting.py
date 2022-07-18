@@ -7,7 +7,9 @@ from utils.constants import (
 
 
 def find_gradient(
-    loss_type: str, predictions: np.ndarray, targets: np.ndarray
+    loss_type: str,
+    predictions: np.ndarray,
+    targets: np.ndarray,
 ) -> np.ndarray:
     """
     Computes the gradient for the given loss function w.r.t the prediction target
@@ -43,7 +45,10 @@ def find_hessian(
 
 
 def get_next_targets(
-    loss_type: str, is_classification, targets: np.ndarray, predictions: np.ndarray,
+    loss_type: str,
+    is_classification,
+    targets: np.ndarray,
+    predictions: np.ndarray,
 ) -> np.ndarray:
     """
     Updates the targets for the next iteration of boosting. For classification, the resulting new training set will
