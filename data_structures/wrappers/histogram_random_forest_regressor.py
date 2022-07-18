@@ -53,6 +53,6 @@ class HistogramRandomForestRegressor(ForestRegressor):
             with_replacement=with_replacement,
             verbose=verbose,
             is_precomputed_minmax=True,
-            use_logarithmic_split=True,
+            use_logarithmic_split=False,
             epsilon=0.01,
         )
