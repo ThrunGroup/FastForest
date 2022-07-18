@@ -21,25 +21,25 @@ from experiments.exp_constants import FI_EPSILON
 
 
 def test_stability_with_budget(
-    seed: int = 0,
-    data_size=10000,
-    num_features=30,
-    num_informative=6,
-    num_forests: int = 10,
-    max_depth: int = 6,
-    max_leaf_nodes=40,
-    num_trees_per_feature: int = 10,
-    feature_subsampling: str = "SQRT",
-    best_k_feature: int = 6,
-    epsilon=0.0,
-    budget=350000,
-    importance_score="impurity",
-    is_classification=True,
-    data_name: str = None,
-    file_name: str = None,
-    verbose: bool = False,
-    verbose_test: bool = True,
-    is_log: bool = False,
+        seed: int = 0,
+        data_size=10000,
+        num_features=30,
+        num_informative=6,
+        num_forests: int = 10,
+        max_depth: int = 6,
+        max_leaf_nodes=40,
+        num_trees_per_feature: int = 10,
+        feature_subsampling: str = "SQRT",
+        best_k_feature: int = 6,
+        epsilon=0.0,
+        budget=350000,
+        importance_score="impurity",
+        is_classification=True,
+        data_name: str = None,
+        file_name: str = None,
+        verbose: bool = False,
+        verbose_test: bool = True,
+        is_log: bool = False,
 ) -> None:
     np.random.seed(seed)
     if data_name is None:
@@ -140,33 +140,33 @@ def test_stability_with_budget(
             df.to_csv(log_filename, index=False)
         append_dict_as_row(log_filename, log_dict, log_dict.keys())
     assert (
-        stability_mab > stability_exact
+            stability_mab > stability_exact
     ), "stability of exact is greater than or equal to stability mab"
 
 
 def run_stability_stats_test(
-    seed: int = 0,
-    data_size=10000,
-    num_features=30,
-    num_informative=6,
-    num_trials: int = 30,
-    num_forests: int = 10,
-    max_depth: int = 6,
-    max_leaf_nodes=40,
-    num_trees_per_feature: int = 10,
-    feature_subsampling: str = "SQRT",
-    best_k_feature: int = 6,
-    epsilon=0.0,
-    budget=350000,
-    importance_score="impurity",
-    is_classification=True,
-    conf_multiplier: float = 1.96,
-    data_name: str = None,
-    file_name: str = None,
-    verbose: bool = False,
-    verbose_test: bool = True,
-    is_log: bool = False,
-    csv_log: bool = True,
+        seed: int = 0,
+        data_size=10000,
+        num_features=30,
+        num_informative=6,
+        num_trials: int = 30,
+        num_forests: int = 10,
+        max_depth: int = 6,
+        max_leaf_nodes=40,
+        num_trees_per_feature: int = 10,
+        feature_subsampling: str = "SQRT",
+        best_k_feature: int = 6,
+        epsilon=0.0,
+        budget=350000,
+        importance_score="impurity",
+        is_classification=True,
+        conf_multiplier: float = 1.96,
+        data_name: str = None,
+        file_name: str = None,
+        verbose: bool = False,
+        verbose_test: bool = True,
+        is_log: bool = False,
+        csv_log: bool = True,
 ) -> Tuple[float, float, float, float]:
     if data_name is None:
         data_name = (
@@ -313,39 +313,47 @@ def reproduce_stability():
     print("Reproduce new Table 5\n")
     lb_exact, ub_exact, lb_mab, ub_mab = run_stability_stats_test(**t5_l1_args)
     assert (
-        abs(lb_exact_list[0] - lb_exact) < epsilon
-        and abs(ub_exact_list[0] - ub_exact) < epsilon
-        and abs(lb_mab_list[0] - lb_mab) < epsilon
-        and abs(ub_mab_list[0] - ub_mab) < epsilon
+            abs(lb_exact_list[0] - lb_exact) < epsilon
+            and abs(ub_exact_list[0] - ub_exact) < epsilon
+            and abs(lb_mab_list[0] - lb_mab) < epsilon
+            and abs(ub_mab_list[0] - ub_mab) < epsilon
     )
     print("Table 5 line 1 is successfully reproduced!")
     print("-" * 30)
     lb_exact, ub_exact, lb_mab, ub_mab = run_stability_stats_test(**t5_l2_args)
     assert (
-        abs(lb_exact_list[1] - lb_exact) < epsilon
-        and abs(ub_exact_list[1] - ub_exact) < epsilon
-        and abs(lb_mab_list[1] - lb_mab) < epsilon
-        and abs(ub_mab_list[1] - ub_mab) < epsilon
+            abs(lb_exact_list[1] - lb_exact) < epsilon
+            and abs(ub_exact_list[1] - ub_exact) < epsilon
+            and abs(lb_mab_list[1] - lb_mab) < epsilon
+            and abs(ub_mab_list[1] - ub_mab) < epsilon
     )
     print("Table 5 line 2 is successfully reproduced!")
     print("-" * 30)
     lb_exact, ub_exact, lb_mab, ub_mab = run_stability_stats_test(**t5_l3_args)
     assert (
-        abs(lb_exact_list[2] - lb_exact) < epsilon
-        and abs(ub_exact_list[2] - ub_exact) < epsilon
-        and abs(lb_mab_list[2] - lb_mab) < epsilon
-        and abs(ub_mab_list[2] - ub_mab) < epsilon
+            abs(lb_exact_list[2] - lb_exact) < epsilon
+            and abs(ub_exact_list[2] - ub_exact) < epsilon
+            and abs(lb_mab_list[2] - lb_mab) < epsilon
+            and abs(ub_mab_list[2] - ub_mab) < epsilon
     )
     print("Table 5 line 3 is successfully reproduced!")
     print("-" * 30)
     lb_exact, ub_exact, lb_mab, ub_mab = run_stability_stats_test(**t5_l4_args)
     assert (
-        abs(lb_exact_list[3] - lb_exact) < epsilon
-        and abs(ub_exact_list[3] - ub_exact) < epsilon
-        and abs(lb_mab_list[3] - lb_mab) < epsilon
-        and abs(ub_mab_list[3] - ub_mab) < epsilon
+            abs(lb_exact_list[3] - lb_exact) < epsilon
+            and abs(ub_exact_list[3] - ub_exact) < epsilon
+            and abs(lb_mab_list[3] - lb_mab) < epsilon
+            and abs(ub_mab_list[3] - ub_mab) < epsilon
     )
     print("Table 5 line 4 is successfully reproduced!")
+    print("-" * 30)
+
+
+def produce_test(line_idx, args, file_name):
+    run_stability_stats_test(
+        **args, file_name=file_name, is_log=True, csv_log=False
+    )
+    print(f"Table 5 line {line_idx} is successfully produced")
     print("-" * 30)
 
 
@@ -353,14 +361,6 @@ def produce_stability():
     # RF + MID
     print("=" * 30)
     print("Reproduce new Table 5\n")
-
-    def produce_test(line_idx, args, file_name):
-        run_stability_stats_test(
-            **args, file_name=file_name, is_log=True, csv_log=False
-        )
-        print(f"Table 5 line {line_idx} is successfully produced")
-        print("-" * 30)
-
     args = [t5_l1_args, t5_l2_args, t5_l3_args, t5_l4_args]
     file_names = ["HRFC+MID_dict", "HRFR+MID_dict", "HRFC+Perm_dict", "HRFR+Perm_dict"]
     for idx in range(4):

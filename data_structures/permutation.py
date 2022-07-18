@@ -170,10 +170,10 @@ class PermutationImportance:
         length = len(v1_ranks)
         if self.stability_metric == JACCARD:
             for i in range(1, length):
-                sub_v1, sub_v2 = (
-                    v1_ranks[: i + 1],
-                    v2_ranks[: i + 1],
-                )  # compare subsections of array
+                # compare subsections of array
+                sub_v1 = v1_ranks[: i + 1]
+                sub_v2 = v2_ranks[: i + 1]
+
                 pairwise_stability += len(np.intersect1d(sub_v1, sub_v2)) / len(
                     np.union1d(sub_v1, sub_v2)
                 )

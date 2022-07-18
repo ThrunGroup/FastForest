@@ -1,4 +1,8 @@
-from experiments.runtime_exps.compare_runtimes import *
+from experiments.runtime_exps.compare_runtimes import (
+    compare_runtimes,
+    make_regression,
+    MNIST,
+)
 from experiments.exp_constants import SCALING_NUM_SEEDS
 
 
@@ -31,11 +35,9 @@ def main(is_classification=True):
             10000,
             20000,
             40000,
-            60000,
             80000,
-            120000,
             160000,
-            200000,
+            320000,
         ]
     for model in models:
         for C_SUBSAMPLE_SIZE in subsample_size_list:

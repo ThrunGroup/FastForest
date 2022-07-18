@@ -6,7 +6,7 @@ import sys
 from sklearn.linear_model import LinearRegression
 
 
-def main(filename="size_to_time_dict"):
+def main(filename: str = "HRFC_size_to_time_dict"):
     with open(filename, "r+") as fin:
         size_to_time_dict = ast.literal_eval(fin.read())
         sizes = np.array(sorted(size_to_time_dict.keys()))
@@ -54,4 +54,5 @@ def main(filename="size_to_time_dict"):
 
 
 if __name__ == "__main__":
-    main()
+    main(filename="HRFC_size_to_time_dict")
+    main(filename="HRFR_size_to_time_dict_regression")

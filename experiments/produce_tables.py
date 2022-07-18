@@ -7,6 +7,8 @@ from scaling_exps import make_scaling_plot
 pm = " \u00B1 "  # plus minus
 ndigits = 3  # number of digits for rounding
 
+def s(value: float, ndgits: int = ndigits):
+    return str(round(value, ndigits))
 
 def ordinal_num(num: int):
     """
@@ -36,27 +38,27 @@ def write_runtime_data(table_data: List, log_dict: Dict, filename: str):
     """
     ours_data = [
         filename[: filename.find("_")] + " + MABSplit",
-        str(round(log_dict["our_avg_train_time"], ndigits))
+        s(log_dict["our_avg_train_time"])
         + pm
-        + str(round(log_dict["our_std_train_time"], ndigits)),
-        str(round(log_dict["our_avg_num_queries"], ndigits))
+        + s(log_dict["our_std_train_time"]),
+        s(log_dict["our_avg_num_queries"])
         + pm
-        + str(round(log_dict["our_std_num_queries"], ndigits)),
-        str(round(log_dict["our_avg_test"], ndigits))
+        + s(log_dict["our_std_num_queries"]),
+        s(log_dict["our_avg_test"])
         + pm
-        + str(round(log_dict["our_std_test"], ndigits)),
+        + s(log_dict["our_std_test"]),
     ]
     theirs_data = [
         filename[: filename.find("_")],
-        str(round(log_dict["their_avg_train_time"], ndigits))
+        s(log_dict["their_avg_train_time"])
         + pm
-        + str(round(log_dict["their_std_train_time"], ndigits)),
-        str(round(log_dict["their_avg_num_queries"], ndigits))
+        + s(log_dict["their_std_train_time"]),
+        s(log_dict["their_avg_num_queries"])
         + pm
-        + str(round(log_dict["their_std_num_queries"], ndigits)),
-        str(round(log_dict["their_avg_test"], ndigits))
+        + s(log_dict["their_std_num_queries"]),
+        s(log_dict["their_avg_test"])
         + pm
-        + str(round(log_dict["their_std_test"], ndigits)),
+        + s(log_dict["their_std_test"]),
     ]
     table_data.append(theirs_data)
     table_data.append(ours_data)
@@ -68,21 +70,21 @@ def write_budget_data(table_data: List, log_dict: Dict, filename: str):
     """
     ours_data = [
         filename[: filename.find("_")] + " + MABSplit",
-        str(round(log_dict["our_avg_num_trees"], ndigits))
+        s(log_dict["our_avg_num_trees"])
         + pm
-        + str(round(log_dict["our_std_num_trees"], ndigits)),
-        str(round(log_dict["our_avg_test"], ndigits))
+        + s(log_dict["our_std_num_trees"]),
+        s(log_dict["our_avg_test"])
         + pm
-        + str(round(log_dict["our_std_test"], ndigits)),
+        + s(log_dict["our_std_test"]),
     ]
     theirs_data = [
         filename[: filename.find("_")],
-        str(round(log_dict["their_avg_num_trees"], ndigits))
+        s(log_dict["their_avg_num_trees"])
         + pm
-        + str(round(log_dict["their_std_num_trees"], ndigits)),
-        str(round(log_dict["their_avg_test"], ndigits))
+        + s(log_dict["their_std_num_trees"]),
+        s(log_dict["their_avg_test"])
         + pm
-        + str(round(log_dict["their_std_test"], ndigits)),
+        + s(log_dict["their_std_test"]),
     ]
     table_data.append(theirs_data)
     table_data.append(ours_data)
@@ -98,7 +100,7 @@ def produce_table1():
             log_dict = ast.literal_eval(fin.read())
             write_runtime_data(table1_data, log_dict, filename)
     print("=" * 30)
-    print("Table1 Classification: MNIST")
+    print("Table 1 Classification: MNIST")
     print_table(header, table1_data)
 
 
@@ -112,7 +114,7 @@ def produce_table2():
             log_dict = ast.literal_eval(fin.read())
             write_runtime_data(table2_data, log_dict, filename)
     print("=" * 30)
-    print("Table2 Regression: Random Linear Model")
+    print("Table 2 Regression: Random Linear Model")
     print_table(header, table2_data)
 
 
@@ -126,7 +128,7 @@ def produce_table3():
             log_dict = ast.literal_eval(fin.read())
             write_budget_data(table3_data, log_dict, filename)
     print("=" * 30)
-    print("Table3 Classification: MNIST (budget = 10M)")
+    print("Table 3 Classification: MNIST (budget = 10M)")
     print_table(header, table3_data)
 
 
@@ -140,7 +142,7 @@ def produce_table4():
             log_dict = ast.literal_eval(fin.read())
             write_budget_data(table4_data, log_dict, filename)
     print("=" * 30)
-    print("Table4 Classification: Random Linear (budget = Q * 24M)")
+    print("Table 4 Classification: Random Linear (budget = Q * 24M)")
     print_table(header, table4_data)
 
 
@@ -179,21 +181,21 @@ def produce_table5():
             ours_data = [
                 filename[: filename.find("_")] + " + MABSplit",
                 dataset,
-                str(round(avg_stab_ours, ndigits))
+                s(avg_stab_ours)
                 + pm
-                + str(round(std_stab_ours, ndigits)),
+                + s(std_stab_ours),
             ]
             theirs_data = [
                 filename[: filename.find("_")] + " + MABSplit",
                 dataset,
-                str(round(avg_stab_theirs, ndigits))
+                s(avg_stab_theirs)
                 + pm
-                + str(round(std_stab_theirs, ndigits)),
+                + s(std_stab_theirs),
             ]
             table5_data.append(theirs_data)
             table5_data.append(ours_data)
     print("=" * 30)
-    print("Table5 Stability Model (Budget: Q * 100000)")
+    print("Table 5 Stability Model (Budget: Q * 100000)")
     print_table(header, table5_data)
 
 
@@ -215,29 +217,29 @@ def produce_table6():
                 filename[: filename.find("_")] + "(Ours)",
                 dataset,
                 metric,
-                str(round(log_dict["our_avg_train"], ndigits))
+                s(log_dict["our_avg_train"])
                 + pm
-                + str(round(log_dict["our_std_train"], ndigits)),
+                + s(log_dict["our_std_train"]),
             ]
             theirs_data = [
                 filename[: filename.find("_")] + "(Sklearn)",
                 dataset,
                 metric,
-                str(round(log_dict["their_avg_train"], ndigits))
+                s(log_dict["their_avg_train"])
                 + pm
-                + str(round(log_dict["their_std_train"], ndigits)),
+                + s(log_dict["their_std_train"]),
             ]
             table6_data.append(theirs_data)
             table6_data.append(ours_data)
     print("=" * 30)
-    print("Table6 Compare our model vs sklearn")
+    print("Table 6 Compare our model vs sklearn")
     print_table(header, table6_data)
 
 
 def produce_figure1():
-    make_scaling_plot.main(filename=os.path.join("scaling_exps", "size_to_time_dict"))
+    make_scaling_plot.main(filename=os.path.join("scaling_exps", "HRFC_size_to_time_dict"))
     make_scaling_plot.main(
-        filename=os.path.join("scaling_exps", "size_to_time_dict_regression")
+        filename=os.path.join("scaling_exps", "HRFR_size_to_time_dict_regression")
     )
 
 
