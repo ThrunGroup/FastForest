@@ -77,6 +77,7 @@ def sample_targets(
     batch_size: int,
     impurity_measure: str = GINI,
     population_idcs: np.ndarray = None,
+    rng: np.random.Generator = np.random.default_rng(0),
 ) -> Tuple[np.ndarray, np.ndarray, int, np.ndarray]:
     """
     Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
@@ -91,6 +92,7 @@ def sample_targets(
     :param batch_size: the number of samples we're going to choose
     :param impurity_measure: A name of impurity measure
     :param population_idcs: An array of remaining population indices. If an empty array, sample data with replacement
+    :param rng: numpy default random generator
     :return: impurity_reduction and its variance of accesses
     """
     # TODO(@motiwari): Samples all bin edges for a given feature, should only sample those under consideration.
@@ -117,13 +119,13 @@ def sample_targets(
             sample_idcs = np.arange(N, dtype=np.int64)
             initial_pop_size = N  # Since we're sampling all the samples
         else:
-            sample_idcs = np.random.choice(N, size=batch_size, replace=True)
+            sample_idcs = rng.choice(N, size=batch_size, replace=True)
     else:
         M = len(population_idcs)
         idcs = (
             np.arange(M, dtype=np.int64)
             if batch_size >= M
-            else np.random.choice(M, batch_size, replace=False)
+            else rng.choice(M, batch_size, replace=False)
         )
         sample_idcs = population_idcs[idcs]
         population_idcs = np.delete(
@@ -184,7 +186,7 @@ def solve_exactly(
     :param num_queries: mutable variable to update the number of datapoints queried
     :param is_classification:  Whether is a classification problem(True) or regression problem(False)
     :param impurity_measure: A name of impurity_measure
-    :param impurity_measure: Minimum impurity reduction beyond which to return a nonempty solution
+    :param min_impurity_reduction: Minimum impurity reduction beyond which to return a nonempty solution
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
     N = len(data)
@@ -192,17 +194,6 @@ def solve_exactly(
 
     if binning_type == IDENTITY:
         B = len(data)
-    elif binning_type == RANDOM:
-        assert (
-            num_bins is None
-        ), "When using Extremely Random Forests, please pass num_bins=None explicitly. If you want to set a custom \
-                            number of Extremely Random bins, please update callsites and remove this assertion."
-        if is_classification:
-            B = math.ceil(np.sqrt(F))
-        else:
-            # TODO(@motiwari): change this back to F after ddl
-            # B = math.ceil(np.sqrt(F))
-            B = F
     else:
         B = num_bins
 
@@ -242,6 +233,7 @@ def solve_exactly(
         histograms=histograms,
         batch_size=N,
         impurity_measure=impurity_measure,
+        population_idcs=np.arange(len(data)),
     )
 
     total_queries = num_queries
@@ -276,6 +268,7 @@ def solve_mab(
     budget: int = None,
     verbose: bool = False,
     batch_size: int = BATCH_SIZE,
+    rng: np.random.Generator = np.random.default_rng(0),
 ) -> Tuple[int, float, float, int]:
     """
     Solve a multi-armed bandit problem. The objective is to find the best feature to split on, as well as the value
@@ -296,6 +289,7 @@ def solve_mab(
     :param is_classification:  Whether is a classification problem(True) or regression problem(False)
     :param impurity_measure: A name of impurity_measure
     :param with_replacement: Whether to sample with replacement.
+    :param rng: numpy default random generator
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
     N = len(data)
@@ -305,18 +299,6 @@ def solve_mab(
             "You're running solve_mab without histogramming. Did you mean to?"
         )
         B = N
-    elif binning_type == RANDOM:
-        assert (
-            num_bins is None
-        ), "When using Extremely Random Forests, please pass num_bins=None explicitly. If you want to set a custom \
-                    number of Extremely Random bins, please update callsites and remove this assertion."
-        if is_classification:
-            B = math.ceil(np.sqrt(F))
-        else:
-            # TODO(@motiwari): change this back to F after ddl
-            # B = math.ceil(np.sqrt(F))
-            # B = int(F / 3)
-            B = F
     else:
         B = num_bins
 
@@ -425,6 +407,7 @@ def solve_mab(
             batch_size=batch_size,
             impurity_measure=impurity_measure,
             population_idcs=population_idcs,
+            rng=rng,
         )
         num_samples[accesses] += batch_size
         total_queries += num_queries
@@ -441,10 +424,15 @@ def solve_mab(
 
         # TODO(@motiwari): Can't use nanmin here -- why?
         # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
-        tied_arms_condition = np.where((lcbs < (1 - epsilon) * estimates.min()))
-        exact_mask[tied_arms_condition] = 1
+        min_idx = np.unravel_index(estimates.argmin(), estimates.shape)
+        tied_arms = np.zeros((F, B))
+        tied_arms[np.where((estimates < (1 - epsilon) * estimates[min_idx]))] = 1
+        tied_arms[min_idx] = 0
         cand_condition = np.where(
-            (exact_mask == 0) & (lcbs < ucbs.min()) & (lcbs < min_impurity_reduction)
+            (exact_mask == 0)
+            & (lcbs < ucbs.min())
+            & (lcbs < min_impurity_reduction)
+            & (tied_arms == 0)
         )
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
         round_count += 1

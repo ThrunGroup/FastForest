@@ -37,6 +37,7 @@ class Histogram:
         self.max_bin = max_bin
         self.bin_type = bin_type
         self.is_classification = is_classification
+        self.class_to_idx = dict(zip(self.classes, range(len(self.classes))))
 
         if self.bin_type == LINEAR:
             if self.min_bin == max_bin:  # To resolve the case when self.min == self.max
@@ -124,16 +125,31 @@ class Histogram:
             assert len(X) == len(
                 Y
             ), "Error: sample sizes and label sizes must be the same"
-            class_to_idx = np.vectorize(self.classes.index)
             insert_idcs = self.get_bin(feature_values, self.bin_edges).astype("int64")
-            new_Y = class_to_idx(Y)
-            for idx, f in enumerate(feature_values):
-                y = new_Y[idx]
-                insert_idx = insert_idcs[idx]
-                # left, right[x, y] gives number of points on the left and right of xth bin of yth class
-                self.right[:insert_idx, y] += 1
-                self.left[insert_idx:, y] += 1
-
+            new_Y = self.replace_array(Y, self.class_to_idx)
+            hist = np.zeros(
+                (self.left.shape[0] + 1, self.left.shape[1]), dtype=np.int64
+            )
+            for b_idx in range(self.num_bins + 1):
+                """
+                 Do concatenation to include all labels when calling np.unique
+                 ex) self.classes = (0,1,2)
+                     new_Y[insert_idcs == b_idx] = [0,0,0,0,1,1,1,1]
+                     _, counts = np.unique(new_Y, return_counts=True)
+                     Then, counts = [4,4], but [4, 4, 0] is expected.
+                """
+                hist[b_idx] = np.bincount(
+                    np.concatenate(
+                        (
+                            new_Y[insert_idcs == b_idx],
+                            np.array(range(len(self.classes))),
+                        )
+                    )
+                )
+            hist -= 1
+            for b_idx in range(self.num_bins + 1):
+                self.right[:b_idx] += hist[b_idx]
+                self.left[b_idx:] += hist[b_idx]
         else:
             assert (
                 len(self.bin_edges)
@@ -195,7 +211,7 @@ class Histogram:
         return np.sort(splits, kind="mergesort")
 
     @staticmethod
-    def update_bins(prev: np.ndarray, curr_data: np.ndarray):
+    def update_bins(prev: np.ndarray, curr_data: np.ndarray) -> np.ndarray:
         """
         Update bins for regression. prev contains (number of samples, mean of samples, variance of samples) that
         are previously drawn. curr_data is the array of data we newly sample.
@@ -211,4 +227,23 @@ class Histogram:
         new_num = num1 + num2
         new_mean = (num1 * mean1 + num2 * mean2) / new_num
         new_var = welford_variance_calc(num1, mean1, var1, num2, mean2, var2)
-        return new_num, new_mean, new_var
+        return np.array([new_num, new_mean, new_var])
+
+    @staticmethod
+    def replace_array(array: np.ndarray, dictionary: dict):
+        """
+        Assert that all the elements of array should be integers.
+        Apply a dictionary mapping to every elements of the array.
+        And returns the new replaced array.
+
+        Ex) dictionary = {0: 3, 1: 4)
+            array = np.array([0, 0, 1, 1, 0, 0])
+            replace_array(array, dictionary) gives np.array([3, 3, 4, 4, 3, 3])
+        """
+        # A vectorized way to replace elements, see https://bit.ly/3tk4h64.
+        keys = np.array(list(dictionary.keys()))
+        values = np.array(list(dictionary.values()))
+
+        mapping_ar = np.zeros(keys.max() + 1, dtype=values.dtype)
+        mapping_ar[keys] = values
+        return mapping_ar[array]

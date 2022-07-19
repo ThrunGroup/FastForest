@@ -19,7 +19,6 @@ class ForestClassifier(ForestBase, Classifier):
         max_depth: int = float("inf"),
         bootstrap: bool = True,
         feature_subsampling: str = None,
-        tree_global_feature_subsampling: bool = False,
         min_samples_split: int = 2,
         min_impurity_decrease: float = 0,
         max_leaf_nodes: int = None,
@@ -40,6 +39,8 @@ class ForestClassifier(ForestBase, Classifier):
         epsilon: float = 0,
         oob_score: bool = False,
         batch_size: int = BATCH_SIZE,
+        alpha_F: float = 1.0,
+        alpha_N: float = 1.0,
     ) -> None:
         if classes is None:
             self.classes: dict = class_to_idx(
@@ -55,7 +56,6 @@ class ForestClassifier(ForestBase, Classifier):
             max_depth=max_depth,
             bootstrap=bootstrap,
             feature_subsampling=feature_subsampling,
-            tree_global_feature_subsampling=tree_global_feature_subsampling,
             min_samples_split=min_samples_split,
             min_impurity_decrease=min_impurity_decrease,
             max_leaf_nodes=max_leaf_nodes,
@@ -76,4 +76,6 @@ class ForestClassifier(ForestBase, Classifier):
             epsilon=epsilon,
             oob_score=oob_score,
             batch_size=batch_size,
+            alpha_F=alpha_F,
+            alpha_N=alpha_N,
         )

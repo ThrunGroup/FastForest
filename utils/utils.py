@@ -2,8 +2,10 @@ import random
 import itertools
 import math
 import numpy as np
+import sys
 from collections import defaultdict
-from typing import DefaultDict, Tuple, List
+from typing import DefaultDict, Tuple, List, Union
+from numba import jit
 
 from data_structures.histogram import Histogram
 from utils.constants import (
@@ -180,10 +182,8 @@ def make_histograms(
                 min_bin, max_bin = np.min(f_data), np.max(f_data)
             else:
                 min_bin, max_bin = minmax[0][f_idx], minmax[1][f_idx]
-            num_bins = B
         elif bin_type == RANDOM:  # For extremely random forests
             min_bin, max_bin = np.min(f_data), np.max(f_data)
-            num_bins = np.sqrt(np.shape(data)[0]).astype(int)
         else:
             NotImplementedError("Invalid choice of bin_type")
 
@@ -208,25 +208,32 @@ def make_histograms(
     return histograms, not_considered_idcs, considered_idcs
 
 
-def choose_features(data: np.ndarray, feature_subsampling: str):
+def choose_features(
+    feature_idcs: np.ndarray,
+    feature_subsampling: Union[str, int, float],
+    rng: np.random.Generator = np.random.default_rng(0),
+):
     """
     Choose a random subset of features from all available features.
 
-    :param data: dataset to be fit. Only used for computing the total number of features
+    :param feature_idcs: feature indices we consider
     :param feature_subsampling: The feature subsampling method; None, SQRT, or int
+    :param rng: numpy random default generator
     :return:
     """
-    F = len(data[0])  # Number of features
+    F = len(feature_idcs)  # Number of features
     if feature_subsampling is None:
-        return np.arange(F)
+        return feature_idcs
     elif feature_subsampling == SQRT:
-        return np.random.choice(F, math.ceil(math.sqrt(F)), replace=False)
+        return rng.choice(feature_idcs, math.ceil(math.sqrt(F)), replace=False)
     elif type(feature_subsampling) == int:
         # If an int, subsample feature_subsampling features.
-        return np.random.choice(F, feature_subsampling, replace=False)
+        return rng.choice(feature_idcs, feature_subsampling, replace=False)
     elif type(feature_subsampling) == float:
         # If an float, return feature_subsampling*num_features features.
-        return np.random.choice(F, math.ceil(feature_subsampling * F), replace=False)
+        return rng.choice(
+            feature_idcs, math.ceil(feature_subsampling * F), replace=False
+        )
     else:
         raise NotImplementedError("Invalid type of feature_subsampling")
 
@@ -260,3 +267,15 @@ def empty_histograms(histograms: List[Histogram], arms: Tuple[np.ndarray, np.nda
         # Since we don't obviate bins in arms, even though they are not candidates
         # Todo: change this if we obviate bins later
         histogram.empty_samples(range(histogram.num_bins))
+
+
+@jit(nopython=True)
+def get_subset_2d(source_array: np.ndarray, row_idcs: np.ndarray, col_idcs: np.ndarray):
+    """
+    Why to implement this: there's no faster NumPy function that can replace this.
+    """
+    subset_array = np.empty((len(row_idcs), len(col_idcs)))
+    for i in range(len(row_idcs)):
+        for j in range(len(col_idcs)):
+            subset_array[(i, j)] = source_array[(row_idcs[i], col_idcs[j])]
+    return subset_array
