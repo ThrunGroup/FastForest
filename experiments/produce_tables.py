@@ -7,8 +7,10 @@ from scaling_exps import make_scaling_plot
 pm = " \u00B1 "  # plus minus
 ndigits = 3  # number of digits for rounding
 
+
 def s(value: float, ndgits: int = ndigits):
     return str(round(value, ndigits))
+
 
 def ordinal_num(num: int):
     """
@@ -170,13 +172,13 @@ def produce_table5():
                 dataset = "Random Classification"
             avg_stab_ours = (float(log_dict["lb_mab"]) + float(log_dict["ub_mab"])) / 2
             avg_stab_theirs = (
-                float(log_dict["lb_exact"]) + float(log_dict["ub_exact"])
-            ) / 2
+                                      float(log_dict["lb_exact"]) + float(log_dict["ub_exact"])
+                              ) / 2
             std_stab_ours = (
-                abs(float(log_dict["lb_mab"]) - float(log_dict["ub_mab"])) / 2
+                    abs(float(log_dict["lb_mab"]) - float(log_dict["ub_mab"])) / 2
             )
             std_stab_theirs = (
-                abs(float(log_dict["lb_exact"]) - float(log_dict["ub_exact"])) / 2
+                    abs(float(log_dict["lb_exact"]) - float(log_dict["ub_exact"])) / 2
             )
             ours_data = [
                 filename[: filename.find("_")] + " + MABSplit",
@@ -186,7 +188,7 @@ def produce_table5():
                 + s(std_stab_ours),
             ]
             theirs_data = [
-                filename[: filename.find("_")] + " + MABSplit",
+                filename[: filename.find("_")],
                 dataset,
                 s(avg_stab_theirs)
                 + pm
