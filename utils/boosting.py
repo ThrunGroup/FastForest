@@ -7,7 +7,9 @@ from utils.constants import (
 
 
 def find_gradient(
-    loss_type: str, predictions: np.ndarray, targets: np.ndarray
+    loss_type: str,
+    predictions: np.ndarray,
+    targets: np.ndarray,
 ) -> np.ndarray:
     """
     Computes the gradient for the given loss function w.r.t the prediction target

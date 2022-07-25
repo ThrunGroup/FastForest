@@ -9,3 +9,4 @@ setuptools==59.1.1
 tree==0.2.4
 wandb==0.12.15
 numba==0.55.2
+python-mnist==0.7

@@ -49,10 +49,7 @@ def ground_truth_forest(
     :param show: whether to show the random forest using matplotlib
     :return: None
     """
-    RF = RandomForestClassifier(
-        n_estimators=n_estimators,
-        max_depth=max_depth,
-    )
+    RF = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth,)
     RF.fit(data, labels)
     acc = np.sum(RF.predict(data) == labels) / len(data)
     print("Ground truth random forest Train Accuracy:", acc)
