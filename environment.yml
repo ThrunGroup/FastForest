@@ -23,6 +23,7 @@ dependencies:
   - gitdb=4.0.9=pyhd8ed1ab_0
   - gitpython=3.1.27=pyhd8ed1ab_0
   - idna=3.3=pyhd8ed1ab_0
+  - imbalanced-learn=0.9.1=pyhd8ed1ab_1
   - iniconfig=1.1.1=pyh9f0ad1d_0
   - joblib=1.1.0=pyhd8ed1ab_0
   - jpeg=9e=hac89ed1_2
@@ -108,4 +109,6 @@ dependencies:
   - yaml=0.2.5=h0d85af4_2
   - zlib=1.2.12=hfe4f2af_2
   - zstd=1.5.2=ha9df2e0_2
+  - pip:
+    - python-mnist==0.7
 prefix: /Users/motiwari/opt/anaconda3/envs/fastforest
