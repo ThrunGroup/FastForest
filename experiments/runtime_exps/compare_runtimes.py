@@ -6,9 +6,13 @@ from typing import Any
 import pprint
 import os
 
-from sklearn.datasets import load_diabetes, make_classification, make_regression
-
 from experiments.exp_utils import *
+from experiments.exp_constants import (
+    RUNTIME_ALPHA_N,
+    RUNTIME_ALPHA_F,
+    RUNTIME_NUM_SEEDS,
+    RUNTIME_MAX_DEPTH
+)
 from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
 from utils.constants import (
     GINI,
@@ -68,7 +72,8 @@ from data_structures.wrappers.gradient_boosted_histogram_random_patches_regresso
 def time_measured_fit(
     model: Any,
     compare: str = None,
-    ours_or_theirs: str = None,
+    ours_or_theirs:
+    str = None,
     seed: int = None,
 ) -> float:
     """
@@ -115,9 +120,9 @@ def compare_runtimes(
     their_test_accs = []
 
     # params
-    default_alpha_N = 0.75
-    default_alpha_F = 0.15
-    default_max_depth = 5
+    default_alpha_N = RUNTIME_ALPHA_N
+    default_alpha_F = RUNTIME_ALPHA_F
+    default_max_depth = RUNTIME_MAX_DEPTH
     default_n_estimators = 5
     default_min_samples_split = 2
     default_boosting_lr = 0.1
@@ -160,7 +165,7 @@ def compare_runtimes(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=None,
+                num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
                 max_leaf_nodes=None,
@@ -177,7 +182,7 @@ def compare_runtimes(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=None,
+                num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
                 max_leaf_nodes=None,
@@ -234,7 +239,7 @@ def compare_runtimes(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=None,
+                num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
                 max_leaf_nodes=None,
@@ -251,7 +256,7 @@ def compare_runtimes(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=None,
+                num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
                 max_leaf_nodes=None,
@@ -466,18 +471,10 @@ def compare_runtimes(
         our_num_queries.append(our_model.num_queries)
         print("Ours fitted", our_runtime)
 
-        # Need special re-indexing of features for RP classifiers
-        if "RP" in compare:
-            # THEIR test_data will have a different feature mapping than ours!
-            our_test_data = original_test_data[:, our_model.feature_idcs]
-            our_measured_train_data = train_data[:, our_model.feature_idcs]
-            their_test_data = original_test_data[:, their_model.feature_idcs]
-            their_measured_train_data = train_data[:, their_model.feature_idcs]
-        else:
-            our_test_data = original_test_data
-            our_measured_train_data = train_data
-            their_test_data = original_test_data
-            their_measured_train_data = train_data
+        our_test_data = original_test_data
+        our_measured_train_data = train_data
+        their_test_data = original_test_data
+        their_measured_train_data = train_data
 
         if run_theirs:
             their_runtime = time_measured_fit(
@@ -617,6 +614,7 @@ def compare_runtimes(
         "their_avg_num_queries": their_avg_num_queries if run_theirs else None,
         "their_std_num_queries": their_std_num_queries if run_theirs else None,
     }
+    print(f"Write a new {filename}")
     with open(filename, "w+") as fout:
         fout.write(str(results))
 
@@ -625,7 +623,6 @@ def compare_runtimes(
 
 def main():
     pp = pprint.PrettyPrinter(indent=2)
-
     ############### Regression
     # sklearn regression dataset
     params = {
@@ -654,7 +651,7 @@ def main():
     test_targets = full_targets[train_test_split:]
 
     ## Random Forests
-    NUM_SEEDS = 5
+    NUM_SEEDS = RUNTIME_NUM_SEEDS
     pp.pprint(
         compare_runtimes(
             compare="HRFR",
@@ -671,7 +668,7 @@ def main():
     )
 
     ## Random Patches
-    NUM_SEEDS = 20
+    NUM_SEEDS = RUNTIME_NUM_SEEDS
     pp.pprint(
         compare_runtimes(
             compare="HRPR",
@@ -688,7 +685,7 @@ def main():
     )
 
     ## Extremely Random Forests
-    NUM_SEEDS = 20
+    NUM_SEEDS = RUNTIME_NUM_SEEDS
     pp.pprint(
         compare_runtimes(
             compare="ERFR",
@@ -708,15 +705,17 @@ def main():
     mndata = MNIST(os.path.join("..", "mnist"))
 
     train_images, train_labels = mndata.load_training()
-    train_images = np.array(train_images)[:5000]
-    train_labels = np.array(train_labels)[:5000]
+    rng = np.random.default_rng(0)
+    subsample_idcs = rng.choice(len(train_images), 4 * len(train_images))
+    train_images = np.array(train_images)[subsample_idcs]
+    train_labels = np.array(train_labels)[subsample_idcs]
 
     test_images, test_labels = mndata.load_testing()
     test_images = np.array(test_images)
     test_labels = np.array(test_labels)
 
     ## Random Forests
-    NUM_SEEDS = 5
+    NUM_SEEDS = RUNTIME_NUM_SEEDS
     pp.pprint(
         compare_runtimes(
             compare="HRFC",
@@ -731,9 +730,8 @@ def main():
             verbose=True,
         )
     )
-
     ## Extremely Random Forests
-    NUM_SEEDS = 5
+    NUM_SEEDS = RUNTIME_NUM_SEEDS
     pp.pprint(
         compare_runtimes(
             compare="ERFC",
@@ -750,7 +748,7 @@ def main():
     )
 
     ## Random Patches
-    NUM_SEEDS = 5
+    NUM_SEEDS = RUNTIME_NUM_SEEDS
     pp.pprint(
         compare_runtimes(
             compare="HRPC",

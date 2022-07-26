@@ -1,3 +1,6 @@
+import os
+import ast
+
 from sklearn.ensemble import RandomForestClassifier as RFC_sklearn
 from sklearn.ensemble import ExtraTreesClassifier as ERFC_sklearn
 
@@ -74,7 +77,7 @@ def compare_accuracies(
                 labels=train_targets,
                 n_estimators=5,
                 max_depth=5,
-                num_bins=None,
+                num_bins=1,
                 min_samples_split=2,
                 min_impurity_decrease=0,
                 max_leaf_nodes=None,
@@ -102,8 +105,8 @@ def compare_accuracies(
             our_model = RFR_ours(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=1,
-                max_depth=3,
+                n_estimators=5,
+                max_depth=5,
                 min_samples_split=2,
                 min_impurity_decrease=0,
                 max_leaf_nodes=None,
@@ -115,9 +118,9 @@ def compare_accuracies(
                 verbose=False,
             )
             their_model = RFR_sklearn(
-                n_estimators=1,
+                n_estimators=5,
                 criterion="squared_error",
-                max_depth=3,
+                max_depth=5,
                 min_samples_split=2,
                 max_leaf_nodes=None,
                 min_impurity_decrease=0.0,
@@ -130,9 +133,9 @@ def compare_accuracies(
             our_model = ERFR_ours(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=1,
+                n_estimators=5,
                 max_depth=5,
-                num_bins=None,
+                num_bins=1,
                 min_samples_split=2,
                 min_impurity_decrease=0,
                 max_leaf_nodes=None,
@@ -144,7 +147,7 @@ def compare_accuracies(
                 verbose=False,
             )
             their_model = ERFR_sklearn(
-                n_estimators=1,
+                n_estimators=5,
                 criterion="squared_error",
                 max_depth=5,
                 min_samples_split=2,
@@ -159,8 +162,8 @@ def compare_accuracies(
             our_model = GBRFR_ours(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=3,
-                max_depth=3,
+                n_estimators=5,
+                max_depth=5,
                 bootstrap=False,  # Override for RFR, since sklearn GBR doesn't support bootstrapping
                 min_samples_split=2,
                 min_impurity_decrease=0,
@@ -175,11 +178,10 @@ def compare_accuracies(
                 verbose=False,
             )
             their_model = GBRFR_sklearn(
-                n_estimators=3,
-                loss="squared_error",
-                max_depth=3,
+                n_estimators=5,
+                loss="ls",
+                max_depth=5,
                 learning_rate=0.1,
-                criterion="squared_error",
                 min_samples_split=2,
                 min_samples_leaf=1,
                 min_impurity_decrease=0.0,
@@ -193,7 +195,7 @@ def compare_accuracies(
             our_model = ERFR_ours(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=1,
+                n_estimators=5,
                 max_depth=5,
                 num_bins=None,
                 min_samples_split=2,
@@ -281,6 +283,32 @@ def compare_accuracies(
 
     # See if confidence intervals overlap
     overlap = np.abs(their_avg_test - our_avg_test) < their_std_test + our_std_test
+    results = {
+        "overlap": overlap,
+        "our_train_accs": our_train_accs,
+        "our_avg_train": our_avg_train,
+        "our_std_train": our_std_train,
+        "our_test_accs": our_test_accs,
+        "our_avg_test": our_avg_test,
+        "our_std_test": our_std_test,
+        "their_train_accs": their_train_accs,
+        "their_avg_train": their_avg_train,
+        "their_std_train": their_std_train,
+        "their_test_accs": their_test_accs,
+        "their_avg_test": their_avg_test,
+        "their_std_test": their_std_test,
+    }
+    filename = str(compare) + "_dict"
+    if os.path.exists(filename):
+        with open(filename, "r+") as fin:
+            prev_results = ast.literal_eval(fin.read())
+            print(f"prev_results: {prev_results}")
+            if prev_results == results:
+                print(f"{filename} is successfully reproduced")
+                return results
+    print(f"Write a new {filename}")
+    with open(filename, "w+") as fout:
+        fout.write(str(results))
     return (
         overlap,
         our_avg_train,

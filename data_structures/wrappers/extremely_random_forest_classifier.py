@@ -1,14 +1,14 @@
 import numpy as np
 
 from data_structures.forest_classifier import ForestClassifier
-from utils.constants import SQRT, RANDOM, GINI, BEST, EXACT
+from utils.constants import RANDOM, GINI, BEST, EXACT, DEFAULT_NUM_BINS, SQRT
 
 
 class ExtremelyRandomForestClassifier(ForestClassifier):
     """
     A ExtremelyRandomForestClassifier, which is a ForestClassifier with the following settings:
 
-    bootstrap: bool = True,
+    bootstrap: bool = False,
     feature_subsampling: str = SQRT,
     tree_global_feature_subsampling: bool = False,
     bin_type: str = RANDOM,
@@ -22,7 +22,7 @@ class ExtremelyRandomForestClassifier(ForestClassifier):
         labels: np.ndarray = None,
         n_estimators: int = 100,
         max_depth: int = None,
-        num_bins: int = None,
+        num_bins: int = DEFAULT_NUM_BINS,
         min_samples_split: int = 2,
         min_impurity_decrease: float = 0,
         max_leaf_nodes: int = None,
@@ -39,14 +39,14 @@ class ExtremelyRandomForestClassifier(ForestClassifier):
             labels=labels,
             n_estimators=n_estimators,
             max_depth=max_depth,
-            # https://scikit-learn.org/stable/modules/ensemble.html#extremely-randomized-trees suggests bootstrapping
-            bootstrap=True,  # Fixed
+            # https://scikit-learn.org/stable/modules/ensemble.html#extremely-randomized-trees doesn't suggest
+            # bootstraping
+            bootstrap=False,  # Fixed
             # For ExtraTreesClassifier, feature_subsapling default is SQRT.
             # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html#sklearn.ensemble.ExtraTreesClassifier
             # For ExtraTreesRegressor, feature_subsampling is 'all'
             # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesRegressor.html#sklearn.ensemble.ExtraTreesRegressor
             feature_subsampling=SQRT,  # Fixed
-            tree_global_feature_subsampling=False,  # Fixed.
             min_samples_split=min_samples_split,
             min_impurity_decrease=min_impurity_decrease,
             max_leaf_nodes=max_leaf_nodes,

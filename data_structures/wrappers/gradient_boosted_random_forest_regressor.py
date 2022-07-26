@@ -26,7 +26,7 @@ class GradientBoostedRandomForestRegressor(ForestRegressor):
         max_depth: int = None,
         # Despite the fact that this class is named GBRFR, which suggests bootstrapping, we need to allow passing
         # bootstrap=False for comparison to sklearn's GradientBoostingRegressor, which does not support bootstrapping
-        bootstrap: bool = True,
+        bootstrap: bool = False,
         min_samples_split: int = 2,
         min_impurity_decrease: float = 0,
         max_leaf_nodes: int = None,

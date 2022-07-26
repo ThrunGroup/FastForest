@@ -40,7 +40,6 @@ class RandomForestRegressor(ForestRegressor):
             max_depth=max_depth,
             bootstrap=True,  # Fixed
             feature_subsampling=None,  # Fixed
-            tree_global_feature_subsampling=False,  # Fixed
             min_samples_split=min_samples_split,
             min_impurity_decrease=min_impurity_decrease,
             max_leaf_nodes=max_leaf_nodes,

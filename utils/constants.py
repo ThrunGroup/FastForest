@@ -4,6 +4,9 @@ CONF_MULTIPLIER = 1
 TOLERANCE = -1e-1
 BUFFER = 1000000
 DEFAULT_MIN_IMPURITY_DECREASE = 5e-3
+DEFAULT_ALPHA_N = 0.6
+DEFAULT_ALPHA_F = 0.8
+SAMPLE_SIZE = 60000
 
 # Datasets
 IRIS = "IRIS"
@@ -141,5 +144,3 @@ t5_l4_args = {
     "conf_multiplier": 1.96,
     "data_name": None,
 }
-
-
