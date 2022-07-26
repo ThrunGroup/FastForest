@@ -10,7 +10,6 @@ class GradientBoostedRandomForestRegressor(ForestRegressor):
 
     bootstrap: bool = True,
     feature_subsampling: str = SQRT,
-    tree_global_feature_subsampling: bool = False,
     bin_type: str = IDENTITY,
     num_bins: int = None,
     solver: str = EXACT (default value, not fixed, but cannot use MAB because there's no binning)
@@ -51,7 +50,6 @@ class GradientBoostedRandomForestRegressor(ForestRegressor):
             max_depth=max_depth,
             bootstrap=bootstrap,  # See note above
             feature_subsampling=SQRT,  # Fixed
-            tree_global_feature_subsampling=False,  # Fixed
             min_samples_split=min_samples_split,
             min_impurity_decrease=min_impurity_decrease,
             max_leaf_nodes=max_leaf_nodes,
