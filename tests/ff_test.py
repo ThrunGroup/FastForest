@@ -1,7 +1,6 @@
 import numpy as np
 from sklearn import datasets
 
-from data_structures.forest_classifier import ForestClassifier
 from data_structures.tree_classifier import TreeClassifier
 from utils.utils import class_to_idx
 from utils.constants import LINEAR

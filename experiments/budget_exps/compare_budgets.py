@@ -85,7 +85,7 @@ def compare_budgets(
     alpha_F_override: float = None,
 ):  # TODO(@motiwari) add return typehint
     assert filename is not None, "Need to pass filename_prefix"
-    print("\n\n", "Running comparison for:", compare)
+    print("\n\n", "Running budget comparison for:", compare)
     # Query counts
     our_num_queries = []
     their_num_queries = []
@@ -738,7 +738,7 @@ def main():
             filename="HRPR_dict",
             verbose=True,
             # Divide by 24 for less trees, since only using ~1/4*1/6 of the data
-            default_budget=BUDGET_REGRESSION * 2,
+            default_budget=BUDGET_REGRESSION * 12,
             depth_override=BUDGET_MAX_DEPTH,
         )
     )
@@ -757,7 +757,7 @@ def main():
             run_theirs=True,
             filename="ERFR_dict",
             verbose=True,
-            default_budget=BUDGET_REGRESSION * 12,
+            default_budget=BUDGET_REGRESSION * 16,
             depth_override=BUDGET_MAX_DEPTH,
         )
     )

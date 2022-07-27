@@ -10,7 +10,6 @@ class ExtremelyRandomForestRegressor(ForestRegressor):
 
     bootstrap: bool = False,
     feature_subsampling: str = SQRT,
-    tree_global_feature_subsampling: bool = False,
     bin_type: str = RANDOM,
     num_bins: int = None,
     solver: str = EXACT (default value, not fixed)

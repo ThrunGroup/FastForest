@@ -6,7 +6,7 @@ python compare_budgets.py
 cd ../scaling_exps
 python investigate_scaling.py
 python make_scaling_plot.py
-cd ../../tests
+cd ../feature_stability
 python feature_importance_tests.py
 cd ../experiments/sklearn_exps
 python compare_baseline_implementations.py

@@ -105,7 +105,7 @@ def compare_runtimes(
     verbose: bool = False,
 ):  # TODO(@motiwari) add return typehint
     assert filename is not None, "Need to pass filename_prefix"
-    print("\n\n", "Running comparison for:", compare)
+    print("\n\n", "Running runtime comparison for:", compare)
 
     # Runtimes
     our_train_times = []
@@ -614,7 +614,7 @@ def compare_runtimes(
         "their_avg_num_queries": their_avg_num_queries if run_theirs else None,
         "their_std_num_queries": their_std_num_queries if run_theirs else None,
     }
-    print(f"Write a new {filename}")
+    print(f"Writing a new {filename}")
     with open(filename, "w+") as fout:
         fout.write(str(results))
 
