@@ -49,7 +49,7 @@ def main(filename: str = "HRFC_size_to_time_dict"):
     dataset = "Regression" if "regression" in filename else "Classification"
     plt.ylabel("Number of minibatches queried by MABSplit")
     plt.xlabel(f"{dataset}: Dataset size")
-    plt.legend(loc="upper left")
+    plt.legend(loc="lower right")
     plt.show()
 
 

@@ -598,7 +598,8 @@ def compare_budgets(
         "their_std_num_trees": their_std_num_trees if run_theirs else None,
     }
     print(f"Write a new {filename}")
-    with open(filename, "w+") as fout:
+    os.makedirs("logs", exist_ok=True)
+    with open(os.path.join("logs", filename), "w+") as fout:
         fout.write(str(results))
     return results
 
