@@ -190,7 +190,7 @@ def get_impurity_reductions(
         impurity_measure = GINI if is_classification else MSE
     get_impurity = get_impurity_fn(impurity_measure)
     if vectorize:
-        np.seterr(divide='ignore')
+        np.seterr(divide='ignore', invalid='ignore')
         h = histogram
         if is_classification:
             left = h.left[bin_edge_idcs]
