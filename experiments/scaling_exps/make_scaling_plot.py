@@ -56,3 +56,4 @@ def main(filename: str = "HRFC_size_to_time_dict"):
 if __name__ == "__main__":
     main(filename="HRFC_size_to_time_dict")
     main(filename="HRFR_size_to_time_dict_regression")
+

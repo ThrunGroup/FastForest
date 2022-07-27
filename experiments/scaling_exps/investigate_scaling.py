@@ -1,8 +1,12 @@
+import os
+import numpy as np
+from mnist import MNIST
+
 from experiments.runtime_exps.compare_runtimes import (
     compare_runtimes,
     make_regression,
-    MNIST,
 )
+
 from experiments.exp_constants import SCALING_NUM_SEEDS
 
 
@@ -13,7 +17,7 @@ def main(is_classification=True):
         train_data, train_labels = mndata.load_training()
         size_to_time_dict = {}
         filename = "size_to_time_dict"
-        models = ["HRFC", "ERFC", "HRPC"]
+        models = ["HRFC"] #, "ERFC", "HRPC"]
         subsample_size_list = [
             10000,
             20000,
@@ -30,7 +34,7 @@ def main(is_classification=True):
         )
         size_to_time_dict = {}
         filename = "size_to_time_dict_regression"
-        models = ["HRFR", "ERFR", "HRPR"]
+        models = ["HRFR"] #, "ERFR", "HRPR"]
         subsample_size_list = [
             10000,
             20000,
@@ -73,3 +77,4 @@ def main(is_classification=True):
 if __name__ == "__main__":
     main(is_classification=True)
     main(is_classification=False)
+

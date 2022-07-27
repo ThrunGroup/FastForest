@@ -614,7 +614,7 @@ def compare_runtimes(
         "their_avg_num_queries": their_avg_num_queries if run_theirs else None,
         "their_std_num_queries": their_std_num_queries if run_theirs else None,
     }
-    print(f"Write a new {filename}")
+    print(f"Writing a new {filename}")
     with open(filename, "w+") as fout:
         fout.write(str(results))
 
