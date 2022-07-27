@@ -85,7 +85,7 @@ def compare_budgets(
     alpha_F_override: float = None,
 ):  # TODO(@motiwari) add return typehint
     assert filename is not None, "Need to pass filename_prefix"
-    print("\n\n", "Running comparison for:", compare)
+    print("\n\n", "Running budget comparison for:", compare)
     # Query counts
     our_num_queries = []
     their_num_queries = []

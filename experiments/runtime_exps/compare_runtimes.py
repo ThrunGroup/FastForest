@@ -105,7 +105,7 @@ def compare_runtimes(
     verbose: bool = False,
 ):  # TODO(@motiwari) add return typehint
     assert filename is not None, "Need to pass filename_prefix"
-    print("\n\n", "Running comparison for:", compare)
+    print("\n\n", "Running runtime comparison for:", compare)
 
     # Runtimes
     our_train_times = []
