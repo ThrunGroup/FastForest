@@ -15,8 +15,8 @@ def main(is_classification=True):
         mndata = MNIST(os.path.join("..", "mnist"))
 
         train_data, train_labels = mndata.load_training()
-        size_to_time_dict = {}
-        filename = "size_to_time_dict"
+        size_to_insertions_dict = {}
+        filename = "size_to_insertions_dict"
         models = ["HRFC"] #, "ERFC", "HRPC"]
         subsample_size_list = [
             10000,
@@ -32,8 +32,8 @@ def main(is_classification=True):
         train_data, train_labels = make_regression(
             200000, n_features=50, n_informative=5, random_state=0
         )
-        size_to_time_dict = {}
-        filename = "size_to_time_dict_regression"
+        size_to_insertions_dict = {}
+        filename = "size_to_insertions_dict_regression"
         models = ["HRFR"] #, "ERFR", "HRPR"]
         subsample_size_list = [
             10000,
@@ -46,7 +46,7 @@ def main(is_classification=True):
     for model in models:
         for C_SUBSAMPLE_SIZE in subsample_size_list:
             print("\n\n")
-            run_time = 0.0
+            num_queries = 0.0
             num_trials = 0
             for fitting_seed in range(SCALING_NUM_SEEDS):
                 np.random.seed(fitting_seed)
@@ -66,12 +66,12 @@ def main(is_classification=True):
                     + "_profile_"
                     + str(fitting_seed),
                 )
-                run_time += np.mean(np.array(results["our_train_times"]))
+                num_queries += np.mean(np.array(results["our_num_queries"]))
                 num_trials += 1
-            run_time /= num_trials
-            size_to_time_dict[C_SUBSAMPLE_SIZE] = run_time
+            num_queries /= num_trials
+            size_to_insertions_dict[C_SUBSAMPLE_SIZE] = num_queries
         with open(model + "_" + filename, "w+") as fout:
-            fout.write(str(size_to_time_dict))
+            fout.write(str(size_to_insertions_dict))
 
 
 if __name__ == "__main__":
