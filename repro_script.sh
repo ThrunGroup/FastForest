@@ -1,4 +1,6 @@
 #!/bin/bash
+
+pip install -e .
 cd experiments/runtime_exps
 python compare_runtimes.py
 cd ../budget_exps
