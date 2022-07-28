@@ -615,7 +615,8 @@ def compare_runtimes(
         "their_std_num_queries": their_std_num_queries if run_theirs else None,
     }
     print(f"Writing a new {filename}")
-    with open(filename, "w+") as fout:
+    os.makedirs("logs", exist_ok=True)
+    with open(os.path.join("logs", filename), "w+") as fout:
         fout.write(str(results))
 
     return results

@@ -11,13 +11,15 @@ from experiments.exp_constants import SCALING_NUM_SEEDS
 
 
 def main(is_classification=True):
+    size_to_insertions_dict = {}
+    size_to_time_dict = {}
     if is_classification:
         mndata = MNIST(os.path.join("..", "mnist"))
 
         train_data, train_labels = mndata.load_training()
-        size_to_time_dict = {}
-        filename = "size_to_time_dict"
-        models = ["HRFC"] #, "ERFC", "HRPC"]
+        filename_insertion = "size_to_insertions_dict"
+        filename_time = "size_to_time_dict"
+        models = ["HRFC"]  # , "ERFC", "HRPC"]
         subsample_size_list = [
             10000,
             20000,
@@ -32,9 +34,9 @@ def main(is_classification=True):
         train_data, train_labels = make_regression(
             200000, n_features=50, n_informative=5, random_state=0
         )
-        size_to_time_dict = {}
-        filename = "size_to_time_dict_regression"
-        models = ["HRFR"] #, "ERFR", "HRPR"]
+        filename_insertion = "size_to_insertions_dict_regression"
+        filename_time = "size_to_time_dict_regression"
+        models = ["HRFR"]  # , "ERFR", "HRPR"]
         subsample_size_list = [
             10000,
             20000,
@@ -46,6 +48,7 @@ def main(is_classification=True):
     for model in models:
         for C_SUBSAMPLE_SIZE in subsample_size_list:
             print("\n\n")
+            num_queries = 0.0
             run_time = 0.0
             num_trials = 0
             for fitting_seed in range(SCALING_NUM_SEEDS):
@@ -66,15 +69,19 @@ def main(is_classification=True):
                     + "_profile_"
                     + str(fitting_seed),
                 )
+                num_queries += np.mean(np.array(results["our_num_queries"]))
                 run_time += np.mean(np.array(results["our_train_times"]))
                 num_trials += 1
+            num_queries /= num_trials
             run_time /= num_trials
+            size_to_insertions_dict[C_SUBSAMPLE_SIZE] = num_queries
             size_to_time_dict[C_SUBSAMPLE_SIZE] = run_time
-        with open(model + "_" + filename, "w+") as fout:
+        with open(model + "_" + filename_insertion, "w+") as fout:
+            fout.write(str(size_to_insertions_dict))
+        with open(model + "_" + filename_time, "w+") as fout:
             fout.write(str(size_to_time_dict))
 
 
 if __name__ == "__main__":
     main(is_classification=True)
     main(is_classification=False)
-

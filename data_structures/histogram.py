@@ -3,7 +3,7 @@ import bisect
 import math
 from typing import Any, Tuple
 
-from utils.constants import LINEAR, DISCRETE, IDENTITY, RANDOM, DEFAULT_NUM_BINS
+from utils.constants import LINEAR, DISCRETE, IDENTITY, RANDOM, DEFAULT_NUM_BINS, VECTORIZE
 from utils.utils_histogram import welford_variance_calc
 
 
@@ -126,30 +126,40 @@ class Histogram:
                 Y
             ), "Error: sample sizes and label sizes must be the same"
             insert_idcs = self.get_bin(feature_values, self.bin_edges).astype("int64")
-            new_Y = self.replace_array(Y, self.class_to_idx)
-            hist = np.zeros(
-                (self.left.shape[0] + 1, self.left.shape[1]), dtype=np.int64
-            )
-            for b_idx in range(self.num_bins + 1):
-                """
-                 Do concatenation to include all labels when calling np.unique
-                 ex) self.classes = (0,1,2)
-                     new_Y[insert_idcs == b_idx] = [0,0,0,0,1,1,1,1]
-                     _, counts = np.unique(new_Y, return_counts=True)
-                     Then, counts = [4,4], but [4, 4, 0] is expected.
-                """
-                hist[b_idx] = np.bincount(
-                    np.concatenate(
-                        (
-                            new_Y[insert_idcs == b_idx],
-                            np.array(range(len(self.classes))),
+            if VECTORIZE:
+                new_Y = self.replace_array(Y, self.class_to_idx)
+                hist = np.zeros(
+                    (self.left.shape[0] + 1, self.left.shape[1]), dtype=np.int64
+                )
+                for b_idx in range(self.num_bins + 1):
+                    """
+                     Do concatenation to include all labels when calling np.unique
+                     ex) self.classes = (0,1,2)
+                         new_Y[insert_idcs == b_idx] = [0,0,0,0,1,1,1,1]
+                         _, counts = np.unique(new_Y, return_counts=True)
+                         Then, counts = [4,4], but [4, 4, 0] is expected.
+                    """
+                    hist[b_idx] = np.bincount(
+                        np.concatenate(
+                            (
+                                new_Y[insert_idcs == b_idx],
+                                np.array(range(len(self.classes))),
+                            )
                         )
                     )
-                )
-            hist -= 1
-            for b_idx in range(self.num_bins + 1):
-                self.right[:b_idx] += hist[b_idx]
-                self.left[b_idx:] += hist[b_idx]
+                hist -= 1
+                for b_idx in range(self.num_bins + 1):
+                    self.right[:b_idx] += hist[b_idx]
+                    self.left[b_idx:] += hist[b_idx]
+            else:
+                class_to_idx = np.vectorize(self.classes.index)
+                new_Y = class_to_idx(Y)
+                for idx, f in enumerate(feature_values):
+                    y = new_Y[idx]
+                    insert_idx = insert_idcs[idx]
+                    # left, right[x, y] gives number of points on the left and right of xth bin of yth class
+                    self.right[:insert_idx, y] += 1
+                    self.left[insert_idx:, y] += 1
         else:
             assert (
                 len(self.bin_edges)
