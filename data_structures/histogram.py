@@ -3,7 +3,7 @@ import bisect
 import math
 from typing import Any, Tuple
 
-from utils.constants import LINEAR, DISCRETE, IDENTITY, RANDOM, DEFAULT_NUM_BINS
+from utils.constants import LINEAR, DISCRETE, IDENTITY, RANDOM, DEFAULT_NUM_BINS, VECTORIZE
 from utils.utils_histogram import welford_variance_calc
 
 
@@ -27,7 +27,6 @@ class Histogram:
         min_bin: float = 0.0,
         max_bin: float = 1.0,
         bin_type: str = LINEAR,
-        vectorize: bool = True,
     ):
         self.feature_idx = feature_idx
         self.unique_fvals = unique_fvals
@@ -39,7 +38,6 @@ class Histogram:
         self.bin_type = bin_type
         self.is_classification = is_classification
         self.class_to_idx = dict(zip(self.classes, range(len(self.classes))))
-        self.vectorize = vectorize
 
         if self.bin_type == LINEAR:
             if self.min_bin == max_bin:  # To resolve the case when self.min == self.max
@@ -128,7 +126,7 @@ class Histogram:
                 Y
             ), "Error: sample sizes and label sizes must be the same"
             insert_idcs = self.get_bin(feature_values, self.bin_edges).astype("int64")
-            if self.vectorize:
+            if VECTORIZE:
                 new_Y = self.replace_array(Y, self.class_to_idx)
                 hist = np.zeros(
                     (self.left.shape[0] + 1, self.left.shape[1]), dtype=np.int64

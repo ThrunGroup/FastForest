@@ -3,7 +3,7 @@ import scipy
 import numpy as np
 
 from data_structures.histogram import Histogram
-from utils.constants import GINI, ENTROPY, MSE, KURTOSIS
+from utils.constants import GINI, ENTROPY, MSE, KURTOSIS, VECTORIZE
 
 
 def get_gini(
@@ -27,6 +27,8 @@ def get_gini(
         counts_vec = np.expand_dims(counts_vec, 0)
     if n is None:
         n = np.sum(counts_vec, axis=1, dtype=np.int64)
+    if type(n) is int:
+        n = np.array([n])  # convert n to a numpy array to do broadcasting
     p = counts_vec / np.expand_dims(n, axis=1)  # Expand dimension to broadcast
     p = np.nan_to_num(p, nan=0, posinf=0, neginf=0)  # Deal with the case when n = 0
     G = 1 - np.sum(p * p, axis=1)
@@ -68,6 +70,8 @@ def get_entropy(
         counts_vec = np.expand_dims(counts_vec, 0)
     if n is None:
         n = np.sum(counts_vec, axis=1, dtype=np.int64)
+    if type(n) is int:
+        n = np.array([n])  # convert n to a numpy array to do broadcasting
     p = counts_vec / np.expand_dims(n, axis=1)  # Expand dimension to broadcast
     p = np.nan_to_num(p, nan=0, posinf=0, neginf=0)  # Deal with the case when n = 0
     log_p = np.nan_to_num(np.log(p), nan=0, posinf=0, neginf=0)
@@ -171,7 +175,6 @@ def get_impurity_reductions(
     ret_vars: bool = False,
     impurity_measure: str = "",
     pop_size: int = None,
-    vectorize: bool = True,
 ) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
     """
     Given a histogram of counts for each bin, compute the impurity reductions if we were to split a node on any of the
@@ -183,14 +186,13 @@ def get_impurity_reductions(
     :param ret_vars: Whether to return variance
     :param impurity_measure: A type of impurity measure
     :param pop_size: The size of population size to do FPC(Finite Population Correction). If None, don't do FPC.
-    :param vectorize: Whether to use vectorization
     :returns: Impurity reduction when splitting node by bins in _bin_edge_idcs
     """
+    np.seterr(divide='ignore', invalid='ignore')  # suppress the warnings as they are intended
     if impurity_measure == "":
         impurity_measure = GINI if is_classification else MSE
     get_impurity = get_impurity_fn(impurity_measure)
-    if vectorize:
-        np.seterr(divide='ignore', invalid='ignore')
+    if VECTORIZE:
         h = histogram
         if is_classification:
             left = h.left[bin_edge_idcs]
@@ -238,6 +240,7 @@ def get_impurity_reductions(
         left_var *= left_weight ** 2
         right_impurity *= right_weight
         right_var *= right_weight ** 2
+        np.seterr(all='warn')  # turn on warnings
         return (
             (left_impurity + right_impurity - curr_impurity),
             (curr_var + left_var + right_var),
@@ -301,7 +304,7 @@ def get_impurity_reductions(
 
     if is_classification:
         impurity_curr, V_impurity_curr = get_impurity(
-            h.left[0, :] + h.right[0, :], ret_var=True, pop_size=pop_size
+            h.left[0, :] + h.right[0, :], ret_var=True, pop_size=pop_size, n=left_sum + right_sum,
         )
     else:
         impurity_curr, V_impurity_curr = get_impurity(
@@ -313,7 +316,7 @@ def get_impurity_reductions(
     #  since it doesn't affect reduction in a single feature?
     # (once best feature is determined)
     impurity_reductions = (impurities_left + impurities_right) - impurity_curr
-
+    np.seterr(all='warn')  # turn on warnings
     if ret_vars:
         # Note the last plus because Var(X-Y) = Var(X) + Var(Y) if X, Y are independent (this is an UNDERestimate)
         impurity_vars = V_impurities_left + V_impurities_right + V_impurity_curr
