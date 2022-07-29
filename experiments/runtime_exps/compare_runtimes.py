@@ -73,6 +73,7 @@ from data_structures.wrappers.gradient_boosted_histogram_random_patches_regresso
 
 def time_measured_fit(
     model: Any,
+    dataset_name: str = None,
     compare: str = None,
     ours_or_theirs:
     str = None,
@@ -90,11 +91,12 @@ def time_measured_fit(
     end = time.time()
     prof.disable()
     stats = pstats.Stats(prof).strip_dirs().sort_stats("tottime")
-    stats.dump_stats(compare + "_" + ours_or_theirs + "_5k_" + str(seed) + "_profile")
+    stats.dump_stats(dataset_name + "_" + compare + "_" + ours_or_theirs + "_5k_" + str(seed) + "_profile")
     return end - start
 
 
 def compare_runtimes(
+    dataset_name: str = None,
     compare: str = "HRFC",
     train_data: np.ndarray = None,
     train_targets: np.ndarray = None,
@@ -467,7 +469,7 @@ def compare_runtimes(
         ), "Cannot use sklearn models for runtime comparisons"
 
         our_runtime = time_measured_fit(
-            model=our_model, compare=compare, ours_or_theirs="ours", seed=seed
+            model=our_model, dataset_name=dataset_name, compare=compare, ours_or_theirs="ours", seed=seed
         )
         our_train_times.append(our_runtime)
         our_num_queries.append(our_model.num_queries)
@@ -480,7 +482,7 @@ def compare_runtimes(
 
         if run_theirs:
             their_runtime = time_measured_fit(
-                model=their_model, compare=compare, ours_or_theirs="theirs", seed=seed
+                model=their_model, dataset_name=dataset_name, compare=compare, ours_or_theirs="theirs", seed=seed
             )
             their_train_times.append(their_runtime)
             their_num_queries.append(their_model.num_queries)
@@ -633,6 +635,7 @@ def main():
         for r_m in regression_models:
             pp.pprint(
                 compare_runtimes(
+                    dataset_name=dataset,
                     compare=r_m,
                     train_data=train_data,
                     train_targets=train_targets,
@@ -653,6 +656,7 @@ def main():
         for c_m in classification_models:
             pp.pprint(
                 compare_runtimes(
+                    dataset_name=dataset,
                     compare=c_m,
                     train_data=train_images,
                     train_targets=train_labels,
