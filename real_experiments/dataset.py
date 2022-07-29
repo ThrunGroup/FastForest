@@ -1,0 +1,169 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+from typing import List
+from utils.constants import FLIGHT, AIR, APS, BLOG
+
+
+def get_dummies(d, col):
+    dd = pd.get_dummies(d[col])
+    dd.columns = [col + "_%s" % c for c in dd.columns]
+    return dd
+
+
+def get_data(
+    filename: str,
+    vars_categ: List[str],
+    vars_num: List[str],
+    var_target: str,
+    train_to_test: float = 0.9,
+    seed: int = 0,
+    is_flight: bool = False,
+    is_aps: bool = False,
+):
+    d_train_test = pd.read_csv(filename)
+
+    # Fill nan values and shuffle
+    d_train_test = d_train_test.replace(["na"], np.nan)
+    d_train_test.fillna(method="bfill", inplace=True)
+    d_train_test.fillna(method="ffill", inplace=True)
+    d_train_test.sample(frac=1, random_state=seed)
+    if len(vars_categ) > 0:
+        X_train_test_categ = pd.concat(
+            [get_dummies(d_train_test, col) for col in vars_categ], axis=1
+        )
+    else:
+        X_train_test_categ = pd.DataFrame()
+    X_train_test = pd.concat(
+        [X_train_test_categ, d_train_test[vars_num]], axis=1
+    ).to_numpy(dtype=np.float)
+    if is_flight:
+        y_train_test = np.where(d_train_test[var_target] == "Y", 1, 0)
+    elif is_aps:
+        y_train_test = np.where(d_train_test[var_target] == "pos", 1, 0)
+    else:
+        y_train_test = d_train_test[var_target].to_numpy().squeeze()
+
+    train_size = int(d_train_test.shape[0] * train_to_test)
+    X_train = X_train_test[0:train_size]
+    y_train = y_train_test[0:train_size]
+    X_test = X_train_test[train_size:]
+    y_test = y_train_test[train_size:]
+    return X_train, y_train, X_test, y_test
+
+
+def get_air_data(train_to_test: float = 0.9, seed: int = 0):
+    # Regression
+    # Download from https://archive.ics.uci.edu/ml/datasets/Beijing+Multi-Site+Air-Quality+Data
+    # Merge multiple csv files to one
+    filename = "air_data.csv"
+    vars_categ = ["station", "WSPM"]
+    vars_num = [
+        "year",
+        "month",
+        "day",
+        "hour",
+        "PM2.5",
+        "PM10",
+        "SO2",
+        "NO2",
+        "TEMP",
+        "PRES",
+        "DEWP",
+        "RAIN",
+    ]
+    var_target = "O3"
+    return get_data(
+        filename=filename,
+        vars_categ=vars_categ,
+        vars_num=vars_num,
+        var_target=var_target,
+        train_to_test=train_to_test,
+        seed=seed,
+        is_flight=False,
+    )
+
+
+def get_small_flight_data(train_to_test: float = 0.9, seed: int = 0):
+    # Classification
+    # Download from https://github.com/szilard/benchm-ml/tree/master/z-other-tools
+    filename = "flight_0.1m_data.csv"
+    vars_categ = ["Month", "DayofMonth", "DayOfWeek", "UniqueCarrier", "Origin", "Dest"]
+    vars_num = ["DepTime", "Distance"]
+    var_target = "dep_delayed_15min"
+    return get_data(
+        filename=filename,
+        vars_categ=vars_categ,
+        vars_num=vars_num,
+        var_target=var_target,
+        train_to_test=train_to_test,
+        seed=seed,
+        is_flight=True,
+    )
+
+
+def get_large_flight_data(train_to_test: float = 0.9, seed: int = 0):
+    # Classificaiton
+    # Download from https://github.com/szilard/benchm-ml/tree/master/z-other-tools
+    filename = "flight_1m_data.csv"
+    vars_categ = ["Month", "DayofMonth", "DayOfWeek", "UniqueCarrier", "Origin", "Dest"]
+    vars_num = ["DepTime", "Distance"]
+    var_target = "dep_delayed_15min"
+    return get_data(
+        filename=filename,
+        vars_categ=vars_categ,
+        vars_num=vars_num,
+        var_target=var_target,
+        train_to_test=train_to_test,
+        seed=seed,
+        is_flight=True,
+    )
+
+
+def get_aps_data(train_to_test: float = 0.9, seed: int = 0):
+    # Classification
+    # Download from https://archive.ics.uci.edu/ml/datasets/APS+Failure+at+Scania+Trucks
+    filename = "aps_data.csv"
+    vars_categ = []
+    vars_num = list(pd.read_csv(filename).columns)[1:]  # first column is target
+    var_target = "class"
+    return get_data(
+        filename=filename,
+        vars_categ=vars_categ,
+        vars_num=vars_num,
+        var_target=var_target,
+        train_to_test=train_to_test,
+        seed=seed,
+        is_aps=True,
+    )
+
+
+def get_blog_data(train_to_test: float = 0.9, seed: int = 0):
+    # Regression
+    # Download from https://archive.ics.uci.edu/ml/datasets/BlogFeedback
+    filename = "blog_data.csv"
+    vars_categ = []
+    vars_num = list(pd.read_csv(filename).columns)[:-1]  # last column is target
+    var_target = "target"
+    return get_data(
+        filename=filename,
+        vars_categ=vars_categ,
+        vars_num=vars_num,
+        var_target=var_target,
+        train_to_test=train_to_test,
+        seed=seed,
+    )
+
+
+def fetch_data(dataset: str):
+    if dataset is FLIGHT:
+        return get_small_flight_data()
+    elif dataset is AIR:
+        return get_air_data()
+    elif dataset is APS:
+        return get_aps_data()
+    elif dataset is BLOG:
+        return get_blog_data()
+    else:
+        raise NotImplementedError(f"{dataset} is not implemented")
