@@ -6,10 +6,19 @@ from typing import Any, Union
 from data_structures.wrappers.histogram_random_forest_classifier import HistogramRandomForestClassifier as HRFC
 from data_structures.wrappers.histogram_random_forest_regressor import HistogramRandomForestRegressor as HRFR
 from utils.constants import MAB, EXACT, FLIGHT, AIR, APS, BLOG
-from dataset import fetch_data
+from experiments.datasets.data_loader import fetch_data
 
 
 def experiment(is_classification: bool, model: callable, dataset: str):
+    """
+    Run a single experiment compute runtimes and number of histogram insertions for a single model, datasets, and seed.
+    Marries some of the code in compare_runtimes.py and compare_budgets.py for quicker analysis
+
+    :param is_classification: boolean, self-explanatory
+    :param model: model to train
+    :param dataset: datasets to use
+    :return: None, prints output
+    """
     print(f"\nSTART EXPERIMENT on ***{dataset}***")
     X_train, y_train, X_test, y_test = fetch_data(dataset)
     mab_model = model(

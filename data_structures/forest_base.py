@@ -65,7 +65,7 @@ class ForestBase(ABC):
         self.new_targets = labels
 
         # self.curr_data and self.curr_targets are the data, targets that are used to fit the current tree.
-        # These attributes may be smaller than the original dataset size if self.bootstrap is true.
+        # These attributes may be smaller than the original datasets size if self.bootstrap is true.
         self.curr_data = None
         self.curr_targets = None
         self.trees = []
@@ -169,6 +169,7 @@ class ForestBase(ABC):
             self.data = data
             self.org_targets = labels
             self.new_targets = labels
+
         N = len(self.data)
         F = len(self.data[0])
 
@@ -177,7 +178,7 @@ class ForestBase(ABC):
             self.new_targets = self.new_targets.astype(np.int32)
             if self.classes is None:
                 self.classes: dict = class_to_idx(
-                    np.unique(labels)
+                    np.unique(self.new_targets)
                 )  # a dictionary that maps class name to class index
             self.n_classes = len(self.classes)
 

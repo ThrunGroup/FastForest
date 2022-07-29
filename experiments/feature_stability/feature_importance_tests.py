@@ -116,7 +116,7 @@ def test_stability_with_budget(
 
     log_dict = {
         "stability_diff": stability_mab - stability_exact,
-        "dataset": data_name,
+        "datasets": data_name,
         "data_size": data_size,
         "budget": budget,
         "num_forests": num_forests,
@@ -261,7 +261,7 @@ def run_stability_stats_test(
             "stability_diff": m_avg - e_avg,
             "mab stability": m_avg,
             "is_overlap": is_overlap,
-            "dataset": data_name,
+            "datasets": data_name,
             "data_size": data_size,
             "n_features": num_features,
             "n_informative": num_informative,

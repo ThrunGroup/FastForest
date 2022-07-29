@@ -8,8 +8,8 @@ if __name__ == "__main__":
     metric = {"name": "val_acc", "goal": "maximize"}
     parameters_dict = {
         # Refer to https://docs.wandb.ai/guides/sweeps/configuration#distributions for distribution of hyperparams sweep
-        "dataset": {
-            # select heart_disease dataset
+        "datasets": {
+            # select heart_disease datasets
             "distribution": "categorical",
             "values": [HEART],
         },

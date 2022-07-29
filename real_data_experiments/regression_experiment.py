@@ -5,7 +5,9 @@ import numpy as np
 from data_structures.wrappers.histogram_random_forest_regressor import HistogramRandomForestRegressor as HRFR
 from utils.constants import MAB, EXACT
 
-from dataset import get_air_data
+from experiments.datasets.data_loader import get_air_data
+
+
 if __name__ == "__main__":
     # housing_data = fetch_california_housing()
     # data = housing_data.data

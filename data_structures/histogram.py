@@ -109,8 +109,8 @@ class Histogram:
 
     def add(self, X: np.ndarray, Y: np.ndarray):
         """
-        Given dataset X , add all the points in the dataset to the histogram.
-        :param X: dataset to be histogrammed (subset of original X, although could be the same size)
+        Given datasets X , add all the points in the datasets to the histogram.
+        :param X: datasets to be histogrammed (subset of original X, although could be the same size)
         :return: None, but modify the histogram to include the relevant feature values
         """
         feature_values = X[:, self.feature_idx]

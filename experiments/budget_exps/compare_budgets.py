@@ -679,7 +679,7 @@ def main():
         )
     )
 
-    # sklearn regression dataset
+    # sklearn regression datasets
     params = {
         "data_size": 200000,  # TODO(@motiwari): Update this?
         "n_features": 50,

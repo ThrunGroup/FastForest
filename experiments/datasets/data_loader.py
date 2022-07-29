@@ -1,9 +1,12 @@
+import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-
+import sklearn.datasets
+from mnist import MNIST
 from typing import List
-from utils.constants import FLIGHT, AIR, APS, BLOG
+
+from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN, MNIST_STR
 
 
 def get_dummies(d, col):
@@ -155,6 +158,44 @@ def get_blog_data(train_to_test: float = 0.9, seed: int = 0):
         seed=seed,
     )
 
+def get_sklearn_data(data_size: int = 200000, n_features: int = 50, informative_ratio: float = 0.06, seed: int = 1, epsilon: float = 0.01, use_dynamic_eps: bool = False):
+    # sklearn regression datasets
+    params = {
+        "data_size": data_size,
+        "n_features": n_features,
+        "informative_ratio": informative_ratio,
+        "seed": seed,
+        "epsilon": epsilon,
+    }
+
+    full_data, full_targets = sklearn.datasets.make_regression(
+        params["data_size"],
+        n_features=params["n_features"],
+        n_informative=int(params["n_features"] * params["informative_ratio"]),
+        random_state=params["seed"],
+    )
+
+    train_test_split = int(0.8 * params["data_size"])
+    train_data = full_data[:train_test_split]
+    train_targets = full_targets[:train_test_split]
+
+    test_data = full_data[train_test_split:]
+    test_targets = full_targets[train_test_split:]
+    return train_data, train_targets, test_data, test_targets
+
+def get_mnist():
+    mndata = MNIST(os.path.join("..", "mnist"))
+
+    train_images, train_labels = mndata.load_training()
+    rng = np.random.default_rng(0)
+    subsample_idcs = rng.choice(len(train_images), 4 * len(train_images))
+    train_images = np.array(train_images)[subsample_idcs]
+    train_labels = np.array(train_labels)[subsample_idcs]
+
+    test_images, test_labels = mndata.load_testing()
+    test_images = np.array(test_images)
+    test_labels = np.array(test_labels)
+    return train_images, train_labels, test_images, test_labels
 
 def fetch_data(dataset: str):
     if dataset is FLIGHT:
@@ -165,5 +206,9 @@ def fetch_data(dataset: str):
         return get_aps_data()
     elif dataset is BLOG:
         return get_blog_data()
+    elif dataset is SKLEARN:
+        return get_sklearn_data()
+    elif dataset is MNIST_STR:
+        return get_mnist()
     else:
         raise NotImplementedError(f"{dataset} is not implemented")

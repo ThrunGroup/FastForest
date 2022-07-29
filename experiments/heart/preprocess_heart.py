@@ -55,14 +55,14 @@ def main() -> None:
     Preprocess heart disease data and store it as csv file. Download heart_2020_cleaned.csv from
     https://www.kaggle.com/datasets/kamilpytlak/personal-key-indicators-of-heart-disease
     """
-    os.makedirs("dataset", exist_ok=True)
-    filepath = os.path.join("dataset", "heart_2020_cleaned.csv")
+    os.makedirs("datasets", exist_ok=True)
+    filepath = os.path.join("datasets", "heart_2020_cleaned.csv")
     assert os.path.exists(
         filepath
-    ), "Download data from the link in the comment of line 55 and save it as heart_2020_cleaned.csv in dataset file"
+    ), "Download data from the link in the comment of line 55 and save it as heart_2020_cleaned.csv in datasets file"
     df = pd.read_csv(filepath)
     df = preprocess_heart(df)
-    filepath = os.path.join("dataset", "new_heart_2020_cleaned.csv")
+    filepath = os.path.join("datasets", "new_heart_2020_cleaned.csv")
     df.to_csv(filepath, index=False)
 
 

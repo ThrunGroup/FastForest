@@ -80,7 +80,7 @@ def sample_targets(
     rng: np.random.Generator = np.random.default_rng(0),
 ) -> Tuple[np.ndarray, np.ndarray, int, np.ndarray]:
     """
-    Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
+    Given a datasets and set of features, draw batch_size new datapoints (with replacement) from the datasets. Insert
     their feature values into the (potentially non-empty) histograms and recompute the changes in impurity
     for each potential bin split
 
@@ -344,8 +344,8 @@ def solve_mab(
     total_queries = 0
     num_survived_features = 2
     while len(candidates) > 5 and num_survived_features > 1:
-        # If we have already pulled the arms more times than the number of datapoints in the original dataset,
-        # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
+        # If we have already pulled the arms more times than the number of datapoints in the original datasets,
+        # it would be the same complexity to just compute the arm return explicitly over the whole datasets.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
         if with_replacement:
             # raise Exception("Did you really want to sample with replacement?")
