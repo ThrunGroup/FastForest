@@ -646,39 +646,39 @@ def main():
     test_data = full_data[train_test_split:]
     test_targets = full_targets[train_test_split:]
 
-    # ## Random Forests
-    # NUM_SEEDS = RUNTIME_NUM_SEEDS
-    # pp.pprint(
-    #     compare_runtimes(
-    #         compare="HRFR",
-    #         train_data=train_data,
-    #         train_targets=train_targets,
-    #         original_test_data=test_data,
-    #         test_targets=test_targets,
-    #         num_seeds=NUM_SEEDS,
-    #         predict=True,
-    #         run_theirs=True,
-    #         filename="HRFR_dict",
-    #         verbose=True,
-    #     )
-    # )
-    #
-    # ## Random Patches
-    # NUM_SEEDS = RUNTIME_NUM_SEEDS
-    # pp.pprint(
-    #     compare_runtimes(
-    #         compare="HRPR",
-    #         train_data=train_data,
-    #         train_targets=train_targets,
-    #         original_test_data=test_data,
-    #         test_targets=test_targets,
-    #         num_seeds=NUM_SEEDS,
-    #         predict=True,
-    #         run_theirs=True,
-    #         filename="HRPR_dict",
-    #         verbose=True,
-    #     )
-    # )
+    ## Random Forests
+    NUM_SEEDS = RUNTIME_NUM_SEEDS
+    pp.pprint(
+        compare_runtimes(
+            compare="HRFR",
+            train_data=train_data,
+            train_targets=train_targets,
+            original_test_data=test_data,
+            test_targets=test_targets,
+            num_seeds=NUM_SEEDS,
+            predict=True,
+            run_theirs=True,
+            filename="HRFR_dict",
+            verbose=True,
+        )
+    )
+
+    ## Random Patches
+    NUM_SEEDS = RUNTIME_NUM_SEEDS
+    pp.pprint(
+        compare_runtimes(
+            compare="HRPR",
+            train_data=train_data,
+            train_targets=train_targets,
+            original_test_data=test_data,
+            test_targets=test_targets,
+            num_seeds=NUM_SEEDS,
+            predict=True,
+            run_theirs=True,
+            filename="HRPR_dict",
+            verbose=True,
+        )
+    )
 
     ## Extremely Random Forests
     NUM_SEEDS = RUNTIME_NUM_SEEDS
