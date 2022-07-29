@@ -164,7 +164,6 @@ def compare_runtimes(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=None,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
                 max_leaf_nodes=None,
@@ -181,7 +180,6 @@ def compare_runtimes(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=None,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
                 max_leaf_nodes=None,
@@ -238,7 +236,6 @@ def compare_runtimes(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=None,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
                 max_leaf_nodes=None,
@@ -255,7 +252,6 @@ def compare_runtimes(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=None,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
                 max_leaf_nodes=None,
@@ -684,22 +680,22 @@ def main():
     #     )
     # )
 
-    # ## Extremely Random Forests
-    # NUM_SEEDS = RUNTIME_NUM_SEEDS
-    # pp.pprint(
-    #     compare_runtimes(
-    #         compare="ERFR",
-    #         train_data=train_data,
-    #         train_targets=train_targets,
-    #         original_test_data=test_data,
-    #         test_targets=test_targets,
-    #         num_seeds=NUM_SEEDS,
-    #         predict=True,
-    #         run_theirs=True,
-    #         filename="ERFR_dict",
-    #         verbose=True,
-    #     )
-    # )
+    ## Extremely Random Forests
+    NUM_SEEDS = RUNTIME_NUM_SEEDS
+    pp.pprint(
+        compare_runtimes(
+            compare="ERFR",
+            train_data=train_data,
+            train_targets=train_targets,
+            original_test_data=test_data,
+            test_targets=test_targets,
+            num_seeds=NUM_SEEDS,
+            predict=True,
+            run_theirs=True,
+            filename="ERFR_dict",
+            verbose=True,
+        )
+    )
 
     ############### Classification
     mndata = MNIST(os.path.join("..", "mnist"))
