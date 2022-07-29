@@ -16,7 +16,7 @@ from experiments.exp_constants import (
 )
 
 from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
-from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN, MNIST_STR
+from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR
 from utils.constants import (
     GINI,
     BEST,
@@ -611,9 +611,8 @@ def compare_budgets(
 
 def main():
     pp = pprint.PrettyPrinter(indent=2)
-
     ############### Regression ###############
-    for dataset in [SKLEARN]:
+    for dataset in [SKLEARN_REGRESSION]:
         train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
         regression_models = ["HRFR", "HRPR", "ERFR"]
         for r_m in regression_models:

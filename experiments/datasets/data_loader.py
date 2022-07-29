@@ -6,7 +6,7 @@ import sklearn.datasets
 from mnist import MNIST
 from typing import List
 
-from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN, MNIST_STR
+from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR, HOUSING
 
 
 def get_dummies(d, col):
@@ -198,6 +198,16 @@ def get_mnist():
     test_labels = np.array(test_labels)
     return train_images, train_labels, test_images, test_labels
 
+def get_housing():
+    from sklearn.datasets import fetch_california_housing
+    from sklearn.model_selection import train_test_split
+    cal_housing = fetch_california_housing()
+    X = cal_housing.data
+    y = cal_housing.target
+    y -= y.mean()
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=0)
+    return np.vstack([X_train, X_train, X_train]), np.hstack([y_train, y_train, y_train]), X_test, y_test
+
 def fetch_data(dataset: str):
     if dataset is FLIGHT:
         return get_small_flight_data()
@@ -207,9 +217,11 @@ def fetch_data(dataset: str):
         return get_aps_data()
     elif dataset is BLOG:
         return get_blog_data()
-    elif dataset is SKLEARN:
+    elif dataset is SKLEARN_REGRESSION:
         return get_sklearn_data()
     elif dataset is MNIST_STR:
         return get_mnist()
+    elif dataset is HOUSING:
+        return get_housing()
     else:
         raise NotImplementedError(f"{dataset} is not implemented")
