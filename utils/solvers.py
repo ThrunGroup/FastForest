@@ -218,7 +218,8 @@ def solve_exactly(
         not_considered_access = (not_considered_idcs[:, 0], not_considered_idcs[:, 1])
         estimates[not_considered_access] = float("inf")
         candidates = considered_idcs
-
+    if len(candidates) < 2:
+        return 0
     # Massage arm indices for use by numpy slicing
     accesses = (
         candidates[:, 0],
@@ -338,9 +339,11 @@ def solve_mab(
         ucbs[not_considered_access] = estimates[not_considered_access] = float("inf")
         lcbs[not_considered_access] = -float("inf")
         candidates = considered_idcs
-
+    if len(candidates) < 2:
+        return 0
     total_queries = 0
-    while len(candidates) > 5:
+    num_survived_features = 2
+    while len(candidates) > 5 and num_survived_features > 1:
         # If we have already pulled the arms more times than the number of datapoints in the original dataset,
         # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
@@ -434,6 +437,7 @@ def solve_mab(
             & (lcbs < min_impurity_reduction)
             & (tied_arms == 0)
         )
+        num_survived_features = len(np.unique(cand_condition[0]))
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
         round_count += 1
 

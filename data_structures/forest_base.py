@@ -16,7 +16,7 @@ from utils.constants import (
     DEFAULT_MIN_IMPURITY_DECREASE,
     BATCH_SIZE,
 )
-from utils.utils import data_to_discrete, set_seed, get_subset_2d
+from utils.utils import data_to_discrete, set_seed, get_subset_2d, class_to_idx
 from utils.boosting import get_next_targets
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.tree_regressor import TreeRegressor
@@ -175,6 +175,11 @@ class ForestBase(ABC):
         if self.is_classification:
             self.org_targets = self.org_targets.astype(np.int32)
             self.new_targets = self.new_targets.astype(np.int32)
+            if self.classes is None:
+                self.classes: dict = class_to_idx(
+                    np.unique(labels)
+                )  # a dictionary that maps class name to class index
+            self.n_classes = len(self.classes)
 
         if self.make_discrete:
             self.discrete_features: DefaultDict = data_to_discrete(self.data, n=10)
