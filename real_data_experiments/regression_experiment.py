@@ -9,9 +9,6 @@ from experiments.datasets.data_loader import get_air_data
 
 
 if __name__ == "__main__":
-    # housing_data = fetch_california_housing()
-    # data = housing_data.data
-    # target = housing_data.target
     data, target, test_data, test_target = get_air_data()
     mab_model = HRFR(
         data=data,
@@ -32,19 +29,18 @@ if __name__ == "__main__":
         solver=EXACT,
         verbose=True,
     )
-    print(data.shape)
-    start = time.time()
-    print("fitting MAB model")
-    mab_model.fit()
-    print(f"fitting time: {time.time() - start}")
-    mab_model.predict_batch(data) - target
-    print(f"Mse: {np.mean(np.square((mab_model.predict_batch(test_data)-test_target)))}")
-    print(f"Num_queries: {mab_model.num_queries}")
 
-    start = time.time()
-    print("fitting EXACT model")
-    exact_model.fit()
-    print(f"fitting time: {time.time() - start}")
-    exact_model.predict_batch(data) - target
-    print(f"Mse: {np.mean(np.square((exact_model.predict_batch(test_data)-test_target)))}")
-    print(f"Num_queries: {exact_model.num_queries}")
+    print("Data shape: ", data.shape)
+    for str_ in ["MAB", "EXACT"]:
+        if str_ == "MAB":
+            model = mab_model
+        elif str_ == "EXACT":
+            model = exact_model
+
+        print("Fitting " + str_ + " model")
+        start = time.time()
+        model.fit()
+        print(f"Fitting time: {time.time() - start}")
+        model.predict_batch(data) - target
+        print(f"MSE: {np.mean(np.square((model.predict_batch(test_data) - test_target)))}")
+        print(f"Number of queries: {model.num_queries}")

@@ -7,14 +7,16 @@ from experiments.datasets import data_loader
 from experiments.exp_utils import *
 from experiments.exp_constants import (
     BUDGET_REGRESSION,
-    BUDGET_CLASSIFCATION,
+    BUDGET_CLASSIFICATION,
     BUDGET_MAX_DEPTH,
     BUDGET_ALPHA_F,
     BUDGET_ALPHA_N,
     BUDGET_SAMPLE_SIZE,
+    BUDGET_NUM_SEEDS,
 )
 
 from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
+from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN, MNIST_STR
 from utils.constants import (
     GINI,
     BEST,
@@ -610,129 +612,50 @@ def compare_budgets(
 def main():
     pp = pprint.PrettyPrinter(indent=2)
 
-    ############### Classification
-    train_images, train_labels, test_images, test_labels = data_loader.get_mnist()
+    ############### Regression ###############
+    for dataset in [SKLEARN]:
+        train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
+        regression_models = ["HRFR", "HRPR", "ERFR"]
+        for r_m in regression_models:
+            pp.pprint(
+                compare_budgets(
+                    compare=r_m,
+                    train_data=train_data,
+                    train_targets=train_targets,
+                    original_test_data=test_data,
+                    test_targets=test_targets,
+                    num_seeds=BUDGET_NUM_SEEDS,
+                    predict=True,
+                    run_theirs=True,
+                    filename=dataset + "_" + r_m + "_dict",
+                    verbose=True,
+                    # TODO(@motiwari): May need to jiggle this. Was *12 for RP, *12 for ER, *10 for RF
+                    default_budget=BUDGET_REGRESSION * 16,
+                    depth_override=BUDGET_MAX_DEPTH,
+                )
+            )
 
-    SUBSAMPLE_SIZE = BUDGET_SAMPLE_SIZE  # TODO(@motiwari): Update this?
-    train_images_subsampled = train_images[:SUBSAMPLE_SIZE]
-    train_labels_subsampled = train_labels[:SUBSAMPLE_SIZE]
-
-    ## Random Forests
-    NUM_SEEDS = 5
-    pp.pprint(
-        compare_budgets(
-            compare="HRFC",
-            train_data=train_images_subsampled,
-            train_targets=train_labels_subsampled,
-            original_test_data=test_images,
-            test_targets=test_labels,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRFC_dict",
-            verbose=True,
-            default_budget=int(BUDGET_CLASSIFCATION * 1.3),
-            depth_override=BUDGET_MAX_DEPTH + 1,
-        )
-    )
-
-    ## Extremely Random Forests
-    NUM_SEEDS = 5
-    pp.pprint(
-        compare_budgets(
-            compare="ERFC",
-            train_data=train_images_subsampled,
-            train_targets=train_labels_subsampled,
-            original_test_data=test_images,
-            test_targets=test_labels,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="ERFC_dict",
-            verbose=True,
-            default_budget=int(BUDGET_CLASSIFCATION * 1.3),
-        )
-    )
-
-    ## Random Patches
-    NUM_SEEDS = 5
-    pp.pprint(
-        compare_budgets(
-            compare="HRPC",
-            train_data=train_images_subsampled,
-            train_targets=train_labels_subsampled,
-            original_test_data=test_images,
-            test_targets=test_labels,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRPC_dict",
-            verbose=True,
-            default_budget=int(BUDGET_CLASSIFCATION * 1.3),
-            alpha_N_override=BUDGET_ALPHA_N,
-            alpha_F_override=BUDGET_ALPHA_F,
-        )
-    )
-
-    train_data, train_targets, test_data, test_targets = data_loader.get_sklearn_data()
-
-    ## Random Forests
-    NUM_SEEDS = 5
-    pp.pprint(
-        compare_budgets(
-            compare="HRFR",
-            train_data=train_data,
-            train_targets=train_targets,
-            original_test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRFR_dict",
-            verbose=True,
-            default_budget=BUDGET_REGRESSION * 10,
-            depth_override=BUDGET_MAX_DEPTH,
-        )
-    )
-
-    ## Random Patches
-    NUM_SEEDS = 5
-    pp.pprint(
-        compare_budgets(
-            compare="HRPR",
-            train_data=train_data,
-            train_targets=train_targets,
-            original_test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRPR_dict",
-            verbose=True,
-            # Divide by 24 for less trees, since only using ~1/4*1/6 of the data
-            default_budget=BUDGET_REGRESSION * 12,
-            depth_override=BUDGET_MAX_DEPTH,
-        )
-    )
-
-    ## Extremely Random Forests
-    NUM_SEEDS = 5
-    pp.pprint(
-        compare_budgets(
-            compare="ERFR",
-            train_data=train_data,
-            train_targets=train_targets,
-            original_test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="ERFR_dict",
-            verbose=True,
-            default_budget=BUDGET_REGRESSION * 16,
-            depth_override=BUDGET_MAX_DEPTH,
-        )
-    )
+    ############### Classification ###############
+    for dataset in [MNIST_STR]:
+        train_images, train_labels, test_images, test_labels = data_loader.get_mnist()
+        classification_models = ["HRFC", "HRPC", "ERFC"]
+        for c_m in classification_models:
+            pp.pprint(
+                compare_budgets(
+                    compare=c_m,
+                    train_data=train_images,
+                    train_targets=train_labels,
+                    original_test_data=test_images,
+                    test_targets=test_labels,
+                    num_seeds=BUDGET_NUM_SEEDS,
+                    predict=True,
+                    run_theirs=True,
+                    filename=dataset + "_" + c_m + "_dict",
+                    verbose=True,
+                    default_budget=int(BUDGET_CLASSIFICATION * 1.3),
+                    depth_override=BUDGET_MAX_DEPTH,
+                )
+            )
 
 
 if __name__ == "__main__":

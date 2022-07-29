@@ -17,6 +17,7 @@ from experiments.exp_constants import (
 )
 
 from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
+from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN, MNIST_STR
 from utils.constants import (
     GINI,
     BEST,
@@ -625,113 +626,45 @@ def compare_runtimes(
 
 def main():
     pp = pprint.PrettyPrinter(indent=2)
+    ############### Regression ###############
+    for dataset in [SKLEARN]:
+        train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
+        regression_models = ["HRFR", "HRPR", "ERFR"]
+        for r_m in regression_models:
+            pp.pprint(
+                compare_runtimes(
+                    compare=r_m,
+                    train_data=train_data,
+                    train_targets=train_targets,
+                    original_test_data=test_data,
+                    test_targets=test_targets,
+                    num_seeds=RUNTIME_NUM_SEEDS,
+                    predict=True,
+                    run_theirs=True,
+                    filename=dataset + "_" + r_m + "_dict",
+                    verbose=True,
+                )
+            )
 
-    # ############### Regression
-    # train_data, train_targets, test_data, test_targets = data_loader.get_sklearn_data()
-    #
-    # ## Random Forests
-    # NUM_SEEDS = RUNTIME_NUM_SEEDS
-    # pp.pprint(
-    #     compare_runtimes(
-    #         compare="HRFR",
-    #         train_data=train_data,
-    #         train_targets=train_targets,
-    #         original_test_data=test_data,
-    #         test_targets=test_targets,
-    #         num_seeds=NUM_SEEDS,
-    #         predict=True,
-    #         run_theirs=True,
-    #         filename="HRFR_dict",
-    #         verbose=True,
-    #     )
-    # )
-    #
-    # ## Random Patches
-    # NUM_SEEDS = RUNTIME_NUM_SEEDS
-    # pp.pprint(
-    #     compare_runtimes(
-    #         compare="HRPR",
-    #         train_data=train_data,
-    #         train_targets=train_targets,
-    #         original_test_data=test_data,
-    #         test_targets=test_targets,
-    #         num_seeds=NUM_SEEDS,
-    #         predict=True,
-    #         run_theirs=True,
-    #         filename="HRPR_dict",
-    #         verbose=True,
-    #     )
-    # )
-    #
-    # ## Extremely Random Forests
-    # NUM_SEEDS = RUNTIME_NUM_SEEDS
-    # pp.pprint(
-    #     compare_runtimes(
-    #         compare="ERFR",
-    #         train_data=train_data,
-    #         train_targets=train_targets,
-    #         original_test_data=test_data,
-    #         test_targets=test_targets,
-    #         num_seeds=NUM_SEEDS,
-    #         predict=True,
-    #         run_theirs=True,
-    #         filename="ERFR_dict",
-    #         verbose=True,
-    #     )
-    # )
-
-    ############### Classification
-    train_images, train_labels, test_images, test_labels = data_loader.get_mnist()
-
-    ## Random Forests
-    NUM_SEEDS = RUNTIME_NUM_SEEDS
-    pp.pprint(
-        compare_runtimes(
-            compare="HRFC",
-            train_data=train_images,
-            train_targets=train_labels,
-            original_test_data=test_images,
-            test_targets=test_labels,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRFC_dict",
-            verbose=True,
-        )
-    )
-    ## Extremely Random Forests
-    NUM_SEEDS = RUNTIME_NUM_SEEDS
-    pp.pprint(
-        compare_runtimes(
-            compare="ERFC",
-            train_data=train_images,
-            train_targets=train_labels,
-            original_test_data=test_images,
-            test_targets=test_labels,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="ERFC_dict",
-            verbose=True,
-        )
-    )
-
-    ## Random Patches
-    NUM_SEEDS = RUNTIME_NUM_SEEDS
-    pp.pprint(
-        compare_runtimes(
-            compare="HRPC",
-            train_data=train_images,
-            train_targets=train_labels,
-            original_test_data=test_images,
-            test_targets=test_labels,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRPC_dict",
-            verbose=True,
-        )
-    )
+    ############### Classification ###############
+    for dataset in [MNIST_STR]:
+        train_images, train_labels, test_images, test_labels = data_loader.fetch_data(dataset)
+        classification_models = ["HRFC", "HRPC", "ERFC"]
+        for c_m in classification_models:
+            pp.pprint(
+                compare_runtimes(
+                    compare=c_m,
+                    train_data=train_images,
+                    train_targets=train_labels,
+                    original_test_data=test_images,
+                    test_targets=test_labels,
+                    num_seeds=RUNTIME_NUM_SEEDS,
+                    predict=True,
+                    run_theirs=True,
+                    filename=dataset + "_" + c_m + "_dict",
+                    verbose=True,
+                )
+            )
 
 
 if __name__ == "__main__":

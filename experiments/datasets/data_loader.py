@@ -25,6 +25,7 @@ def get_data(
     is_flight: bool = False,
     is_aps: bool = False,
 ):
+    # TODO(@motiwari): Fix this
     d_train_test = pd.read_csv(filename)
 
     # Fill nan values and shuffle

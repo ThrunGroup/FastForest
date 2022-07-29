@@ -19,7 +19,7 @@ def experiment(is_classification: bool, model: callable, dataset: str):
     :param dataset: datasets to use
     :return: None, prints output
     """
-    print(f"\nSTART EXPERIMENT on ***{dataset}***")
+    print(f"\nRunning {dataset} dataset")
     X_train, y_train, X_test, y_test = fetch_data(dataset)
     mab_model = model(
         max_leaf_nodes=10,
@@ -35,30 +35,27 @@ def experiment(is_classification: bool, model: callable, dataset: str):
         n_estimators=5,
         verbose=False,
     )
-    print("\nStart fitting mab model")
-    start = time.time()
-    mab_model.fit(data=X_train, labels=y_train)
-    print("time taken: ", time.time() - start)
-    if is_classification:
-        print("acc: ", np.mean(mab_model.predict_batch(X_test)[0] == y_test))
-    else:
-        print(f"mse: {np.mean(np.square((mab_model.predict_batch(X_test) - y_test)))}")
-    print("number of queries:", mab_model.num_queries)
 
-    print("\nStart fitting exact model")
-    start = time.time()
-    exact_model.fit(X_train, y_train)
-    print("time taken: ", time.time() - start)
-    if is_classification:
-        print("acc: ", np.mean(exact_model.predict_batch(X_test)[0] == y_test))
-    else:
-        print(f"mse: {np.mean(np.square((exact_model.predict_batch(X_test) - y_test)))}")
-    print("number of queries:", exact_model.num_queries)
+    for str_ in ["MAB", "EXACT"]:
+        if str_ == "MAB":
+            model = mab_model
+        elif str_ == "EXACT":
+            model = exact_model
+
+        print("\nFitting " + str_ + " model")
+        start = time.time()
+        model.fit(data=X_train, labels=y_train)
+        print("time taken: ", time.time() - start)
+        if is_classification:
+            print("Accuracy: ", np.mean(model.predict_batch(X_test)[0] == y_test))
+        else:
+            print(f"MSE: {np.mean(np.square((model.predict_batch(X_test) - y_test)))}")
+        print("Number of queries:", model.num_queries)
 
 
 if __name__ == "__main__":
     # Classification
-    datasets = [FLIGHT, APS]
+    datasets = [APS, FLIGHT]
     for dataset in datasets:
         experiment(True, HRFC, dataset)
 
