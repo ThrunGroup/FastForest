@@ -7,12 +7,11 @@ import pprint
 import os
 
 from experiments.exp_utils import *
-from experiments.exp_constants import (
-    RUNTIME_ALPHA_N,
-    RUNTIME_ALPHA_F,
-    RUNTIME_NUM_SEEDS,
-    RUNTIME_MAX_DEPTH
-)
+RUNTIME_ALPHA_N = 0.7
+RUNTIME_ALPHA_F = 0.85
+RUNTIME_NUM_SEEDS = 1
+RUNTIME_MAX_DEPTH = 5
+
 from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
 from utils.constants import (
     GINI,
@@ -165,7 +164,7 @@ def compare_runtimes(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=DEFAULT_NUM_BINS,
+                num_bins=None,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
                 max_leaf_nodes=None,
@@ -182,7 +181,7 @@ def compare_runtimes(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=DEFAULT_NUM_BINS,
+                num_bins=None,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
                 max_leaf_nodes=None,
@@ -239,7 +238,7 @@ def compare_runtimes(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=DEFAULT_NUM_BINS,
+                num_bins=None,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
                 max_leaf_nodes=None,
@@ -256,7 +255,7 @@ def compare_runtimes(
                 labels=train_targets,
                 n_estimators=default_n_estimators,
                 max_depth=default_max_depth,
-                num_bins=DEFAULT_NUM_BINS,
+                num_bins=None,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
                 max_leaf_nodes=None,
@@ -651,56 +650,56 @@ def main():
     test_data = full_data[train_test_split:]
     test_targets = full_targets[train_test_split:]
 
-    ## Random Forests
-    NUM_SEEDS = RUNTIME_NUM_SEEDS
-    pp.pprint(
-        compare_runtimes(
-            compare="HRFR",
-            train_data=train_data,
-            train_targets=train_targets,
-            original_test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRFR_dict",
-            verbose=True,
-        )
-    )
+    # ## Random Forests
+    # NUM_SEEDS = RUNTIME_NUM_SEEDS
+    # pp.pprint(
+    #     compare_runtimes(
+    #         compare="HRFR",
+    #         train_data=train_data,
+    #         train_targets=train_targets,
+    #         original_test_data=test_data,
+    #         test_targets=test_targets,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="HRFR_dict",
+    #         verbose=True,
+    #     )
+    # )
+    #
+    # ## Random Patches
+    # NUM_SEEDS = RUNTIME_NUM_SEEDS
+    # pp.pprint(
+    #     compare_runtimes(
+    #         compare="HRPR",
+    #         train_data=train_data,
+    #         train_targets=train_targets,
+    #         original_test_data=test_data,
+    #         test_targets=test_targets,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="HRPR_dict",
+    #         verbose=True,
+    #     )
+    # )
 
-    ## Random Patches
-    NUM_SEEDS = RUNTIME_NUM_SEEDS
-    pp.pprint(
-        compare_runtimes(
-            compare="HRPR",
-            train_data=train_data,
-            train_targets=train_targets,
-            original_test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRPR_dict",
-            verbose=True,
-        )
-    )
-
-    ## Extremely Random Forests
-    NUM_SEEDS = RUNTIME_NUM_SEEDS
-    pp.pprint(
-        compare_runtimes(
-            compare="ERFR",
-            train_data=train_data,
-            train_targets=train_targets,
-            original_test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="ERFR_dict",
-            verbose=True,
-        )
-    )
+    # ## Extremely Random Forests
+    # NUM_SEEDS = RUNTIME_NUM_SEEDS
+    # pp.pprint(
+    #     compare_runtimes(
+    #         compare="ERFR",
+    #         train_data=train_data,
+    #         train_targets=train_targets,
+    #         original_test_data=test_data,
+    #         test_targets=test_targets,
+    #         num_seeds=NUM_SEEDS,
+    #         predict=True,
+    #         run_theirs=True,
+    #         filename="ERFR_dict",
+    #         verbose=True,
+    #     )
+    # )
 
     ############### Classification
     mndata = MNIST(os.path.join("..", "mnist"))
