@@ -91,7 +91,7 @@ def time_measured_fit(
     end = time.time()
     prof.disable()
     stats = pstats.Stats(prof).strip_dirs().sort_stats("tottime")
-    stats.dump_stats(dataset_name + "_" + compare + "_" + ours_or_theirs + "_5k_" + str(seed) + "_profile")
+    stats.dump_stats(os.path.join("logs", dataset_name + "_" + compare + "_" + ours_or_theirs + "_5k_" + str(seed) + "_profile"))
     return end - start
 
 
@@ -629,7 +629,7 @@ def compare_runtimes(
 def main():
     pp = pprint.PrettyPrinter(indent=2)
     ############### Regression ###############
-    for dataset in [KDD, HOUSING, SKLEARN_REGRESSION]:
+    for dataset in [SKLEARN_REGRESSION, AIR]:
         train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
         regression_models = ["HRFR", "HRPR", "ERFR"]
         for r_m in regression_models:
@@ -650,7 +650,7 @@ def main():
             )
 
     ############### Classification ###############
-    for dataset in [COVTYPE, MNIST_STR]:
+    for dataset in [COVTYPE, MNIST_STR, APS, FLIGHT]:
         train_images, train_labels, test_images, test_labels = data_loader.fetch_data(dataset)
         classification_models = ["HRFC", "HRPC", "ERFC"]
         for c_m in classification_models:

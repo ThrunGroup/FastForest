@@ -612,7 +612,7 @@ def compare_budgets(
 def main():
     pp = pprint.PrettyPrinter(indent=2)
     ############### Regression ###############
-    for dataset in [SKLEARN_REGRESSION]:
+    for dataset in [SKLEARN_REGRESSION, AIR]:
         train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
         regression_models = ["HRFR", "HRPR", "ERFR"]
         for r_m in regression_models:
@@ -635,7 +635,7 @@ def main():
             )
 
     ############### Classification ###############
-    for dataset in [MNIST_STR]:
+    for dataset in [COVTYPE, MNIST_STR, APS, FLIGHT]:
         train_images, train_labels, test_images, test_labels = data_loader.get_mnist()
         classification_models = ["HRFC", "HRPC", "ERFC"]
         for c_m in classification_models:
