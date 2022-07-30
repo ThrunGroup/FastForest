@@ -41,8 +41,12 @@ def write_runtime_data(table_data: List, log_dict: Dict, filename: str):
     """
     A helper function for producing table 1 and 2 (runtime experiments).
     """
+    model_name = filename.split("_")[1]
+    if "SKLEARN_REGRESSION" in filename:  # Has a _ in the name
+        model_name = filename.split("_")[2]
+
     ours_data = [
-        filename[: filename.find("_")] + " + MABSplit",
+        model_name + " + MABSplit",
         s(log_dict["our_avg_train_time"])
         + pm
         + s(log_dict["our_std_train_time"]),
@@ -54,7 +58,7 @@ def write_runtime_data(table_data: List, log_dict: Dict, filename: str):
         + s(log_dict["our_std_test"]),
     ]
     theirs_data = [
-        filename[: filename.find("_")],
+        model_name,
         s(log_dict["their_avg_train_time"])
         + pm
         + s(log_dict["their_std_train_time"]),
