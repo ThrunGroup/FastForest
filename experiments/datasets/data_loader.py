@@ -10,7 +10,17 @@ from sklearn.datasets import fetch_california_housing
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import fetch_covtype
 
-from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR, HOUSING, COVTYPE, KDD
+from utils.constants import (
+    FLIGHT,
+    AIR,
+    APS,
+    BLOG,
+    SKLEARN_REGRESSION,
+    MNIST_STR,
+    HOUSING,
+    COVTYPE,
+    KDD,
+)
 
 
 def get_dummies(d, col):
@@ -20,23 +30,24 @@ def get_dummies(d, col):
 
 
 def get_data(
-    filename: str,
-    vars_categ: List[str],
-    vars_num: List[str],
-    var_target: str,
-    train_to_test: float = 0.9,
-    seed: int = 0,
-    is_flight: bool = False,
-    is_aps: bool = False,
+        filename: str,
+        vars_categ: List[str],
+        vars_num: List[str],
+        var_target: str,
+        train_to_test: float = 0.9,
+        seed: int = 0,
+        is_flight: bool = False,
+        is_aps: bool = False,
 ):
     # TODO(@motiwari): Fix this
+    filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
     d_train_test = pd.read_csv(filename)
 
     # Fill nan values and shuffle
     d_train_test = d_train_test.replace(["na"], np.nan)
     d_train_test.fillna(method="bfill", inplace=True)
     d_train_test.fillna(method="ffill", inplace=True)
-    d_train_test.sample(frac=1, random_state=seed)
+    d_train_test = d_train_test.sample(frac=1, random_state=seed)
     if len(vars_categ) > 0:
         X_train_test_categ = pd.concat(
             [get_dummies(d_train_test, col) for col in vars_categ], axis=1
@@ -112,7 +123,7 @@ def get_small_flight_data(train_to_test: float = 0.9, seed: int = 0):
 
 
 def get_large_flight_data(train_to_test: float = 0.9, seed: int = 0):
-    # Classificaiton
+    # Classification
     # Download from https://github.com/szilard/benchm-ml/tree/master/z-other-tools
     filename = "flight_1m_data.csv"
     vars_categ = ["Month", "DayofMonth", "DayOfWeek", "UniqueCarrier", "Origin", "Dest"]
@@ -150,7 +161,7 @@ def get_aps_data(train_to_test: float = 0.9, seed: int = 0):
 def get_blog_data(train_to_test: float = 0.9, seed: int = 0):
     # Regression
     # Download from https://archive.ics.uci.edu/ml/datasets/BlogFeedback
-    filename = "blog_data.csv"
+    filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "blog_data.csv")
     vars_categ = []
     vars_num = list(pd.read_csv(filename).columns)[:-1]  # last column is target
     var_target = "target"
@@ -164,7 +175,14 @@ def get_blog_data(train_to_test: float = 0.9, seed: int = 0):
     )
 
 
-def get_sklearn_data(data_size: int = 200000, n_features: int = 50, informative_ratio: float = 0.06, seed: int = 1, epsilon: float = 0.01, use_dynamic_eps: bool = False):
+def get_sklearn_data(
+        data_size: int = 200000,
+        n_features: int = 50,
+        informative_ratio: float = 0.06,
+        seed: int = 1,
+        epsilon: float = 0.01,
+        use_dynamic_eps: bool = False,
+):
     # sklearn regression datasets
     params = {
         "data_size": data_size,
@@ -210,7 +228,9 @@ def get_housing():
     X = cal_housing.data
     y = cal_housing.target
     y -= y.mean()
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=0
+    )
     return X_train, y_train, X_test, y_test
 
 
@@ -218,22 +238,24 @@ def get_covtype():
     covtype = fetch_covtype()
     X = covtype.data
     y = covtype.target
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=0
+    )
     return X_train, y_train, X_test, y_test
 
 
 def get_kdd():
     all_data = np.load("../datasets/kdd98.npz.npy", allow_pickle=True)
     rng = np.random.default_rng()
-    rng.shuffle(all_data) # in-place shuffle
+    rng.shuffle(all_data)  # in-place shuffle
 
     TARGET_IDX = 471  # TODO(@motiwari): Ensure this isn't off-by-one
     y = all_data[:, TARGET_IDX]
     all_data = np.delete(all_data, TARGET_IDX, 1)
-    all_data = pd.get_dummies(all_data) # Fix this
 
-    X_train, X_test, y_train, y_test = train_test_split(all_data, y, test_size=0.2, random_state=0)
-    import ipdb; ipdb.set_trace()
+    X_train, X_test, y_train, y_test = train_test_split(
+        all_data, y, test_size=0.2, random_state=0
+    )
     return X_train, y_train, X_test, y_test
 
 

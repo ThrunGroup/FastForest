@@ -1,34 +1,36 @@
 import os
 import numpy as np
-from mnist import MNIST
 
 from experiments.runtime_exps.compare_runtimes import (
     compare_runtimes,
     make_regression,
 )
 
+from utils.constants import MNIST_STR
 from experiments.exp_constants import SCALING_NUM_SEEDS
+from experiments.datasets import data_loader
 
 
 def main(is_classification=True):
     size_to_insertions_dict = {}
     size_to_time_dict = {}
     if is_classification:
-        mndata = MNIST(os.path.join("..", "mnist"))
-
-        train_data, train_labels = mndata.load_training()
+        train_data, train_labels, _, _ = data_loader.fetch_data(MNIST_STR)
         filename_insertion = "size_to_insertions_dict"
         filename_time = "size_to_time_dict"
         models = ["HRFC"]  # , "ERFC", "HRPC"]
         subsample_size_list = [
+            1000,
+            3000,
+            5000,
             10000,
+            15000,
             20000,
+            30000,
+            35000,
             40000,
+            50000,
             60000,
-            80000,
-            120000,
-            160000,
-            200000,
         ]
     else:
         train_data, train_labels = make_regression(
@@ -38,12 +40,16 @@ def main(is_classification=True):
         filename_time = "size_to_time_dict_regression"
         models = ["HRFR"]  # , "ERFR", "HRPR"]
         subsample_size_list = [
+            5000,
             10000,
             20000,
             40000,
+            60000,
             80000,
+            100000,
+            120000,
             160000,
-            320000,
+            200000,
         ]
     for model in models:
         for C_SUBSAMPLE_SIZE in subsample_size_list:
@@ -55,12 +61,13 @@ def main(is_classification=True):
                 np.random.seed(fitting_seed)
                 rng = np.random.default_rng(fitting_seed)
                 idcs = rng.choice(len(train_data), size=C_SUBSAMPLE_SIZE, replace=True)
-                train_data_subsampled = np.array(train_data)[idcs]
-                train_labels_subsampled = np.array(train_labels)[idcs]
+                train_data_subsampled = train_data[idcs]
+                train_labels_subsampled = train_labels[idcs]
                 results = compare_runtimes(
-                    model,
-                    train_data_subsampled,
-                    train_labels_subsampled,
+                    dataset_name="MNIST",
+                    compare=model,
+                    train_data=train_data_subsampled,
+                    train_targets=train_labels_subsampled,
                     predict=False,
                     run_theirs=False,
                     filename=model
