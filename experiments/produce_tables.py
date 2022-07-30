@@ -4,8 +4,11 @@ import sys
 from typing import List, Dict
 from scaling_exps import make_scaling_plot
 
+from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR, HOUSING, COVTYPE, KDD
+
 pm = " \u00B1 "  # plus minus
 ndigits = 3  # number of digits for rounding
+
 
 
 def s(value: float, ndgits: int = ndigits):
@@ -93,31 +96,37 @@ def write_budget_data(table_data: List, log_dict: Dict, filename: str):
 
 
 def produce_table1():
-    dir = "runtime_exps"
-    filename_list = ["HRFC_dict", "ERFC_dict", "HRPC_dict"]
+    this_dir = os.path.dirname(os.path.realpath(__file__))
+    runtime_logs_dir = os.path.join(this_dir, "runtime_exps", "logs")
     header = ["Model", "Time(s)", "# insertions", "Accuracy"]
-    table1_data = []
-    for filename in filename_list:
-        with open(os.path.join(dir, filename), "r") as fin:
-            log_dict = ast.literal_eval(fin.read())
-            write_runtime_data(table1_data, log_dict, filename)
-    print("=" * 30)
-    print("Table 1 Classification: MNIST")
-    print_table(header, table1_data)
+    classification_models = ["HRFC", "HRPC", "ERFC"]
+    for dataset in [COVTYPE, MNIST_STR, APS, FLIGHT]:
+        filename_list = [dataset + "_" + c_m + "_dict" for c_m in classification_models]
+        table1_data = []
+        for filename in filename_list:
+            with open(os.path.join(runtime_logs_dir, filename), "r") as fin:
+                log_dict = ast.literal_eval(fin.read())
+                write_runtime_data(table1_data, log_dict, filename)
+        print("=" * 30)
+        print("Table 1 Classification: " + dataset)
+        print_table(header, table1_data)
 
 
 def produce_table2():
-    dir = "runtime_exps"
-    filename_list = ["HRFR_dict", "ERFR_dict", "HRPR_dict"]
+    this_dir = os.path.dirname(os.path.realpath(__file__))
+    runtime_logs_dir = os.path.join(this_dir, "runtime_exps", "logs")
     header = ["Model", "Time(s)", "# insertions", "MSE"]
-    table2_data = []
-    for filename in filename_list:
-        with open(os.path.join(dir, filename), "r") as fin:
-            log_dict = ast.literal_eval(fin.read())
-            write_runtime_data(table2_data, log_dict, filename)
-    print("=" * 30)
-    print("Table 2 Regression: Random Linear Model")
-    print_table(header, table2_data)
+    regression_models = ["HRFR", "HRPR", "ERFR"]
+    for dataset in [SKLEARN_REGRESSION, AIR, BLOG]:
+        filename_list = [dataset + "_" + r_m + "_dict" for r_m in regression_models]
+        table2_data = []
+        for filename in filename_list:
+            with open(os.path.join(runtime_logs_dir, filename), "r") as fin:
+                log_dict = ast.literal_eval(fin.read())
+                write_runtime_data(table2_data, log_dict, filename)
+        print("=" * 30)
+        print("Table 2 Regression: " + dataset)
+        print_table(header, table2_data)
 
 
 def produce_table3():
