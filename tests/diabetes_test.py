@@ -123,7 +123,7 @@ if __name__ == "__main__":
         seed=50,
         features_subsampling=SQRT,
         with_replacement=False,
-        is_precomputed_minmax=True,
+        is_precomputed_minmax=False,
         print_sklearn=True,
     )
     print("time taken: ", time.time() - start_time)

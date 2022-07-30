@@ -10,7 +10,7 @@ from sklearn.datasets import fetch_california_housing
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import fetch_covtype
 
-from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR, HOUSING, COVTYPE
+from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR, HOUSING, COVTYPE, KDD
 
 
 def get_dummies(d, col):
@@ -163,6 +163,7 @@ def get_blog_data(train_to_test: float = 0.9, seed: int = 0):
         seed=seed,
     )
 
+
 def get_sklearn_data(data_size: int = 200000, n_features: int = 50, informative_ratio: float = 0.06, seed: int = 1, epsilon: float = 0.01, use_dynamic_eps: bool = False):
     # sklearn regression datasets
     params = {
@@ -188,6 +189,7 @@ def get_sklearn_data(data_size: int = 200000, n_features: int = 50, informative_
     test_targets = full_targets[train_test_split:]
     return train_data, train_targets, test_data, test_targets
 
+
 def get_mnist():
     mndata = MNIST(os.path.join("..", "mnist"))
 
@@ -202,6 +204,7 @@ def get_mnist():
     test_labels = np.array(test_labels)
     return train_images, train_labels, test_images, test_labels
 
+
 def get_housing():
     cal_housing = fetch_california_housing()
     X = cal_housing.data
@@ -210,12 +213,29 @@ def get_housing():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
     return X_train, y_train, X_test, y_test
 
+
 def get_covtype():
     covtype = fetch_covtype()
     X = covtype.data
     y = covtype.target
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
     return X_train, y_train, X_test, y_test
+
+
+def get_kdd():
+    all_data = np.load("../datasets/kdd98.npz.npy", allow_pickle=True)
+    rng = np.random.default_rng()
+    rng.shuffle(all_data) # in-place shuffle
+
+    TARGET_IDX = 471  # TODO(@motiwari): Ensure this isn't off-by-one
+    y = all_data[:, TARGET_IDX]
+    all_data = np.delete(all_data, TARGET_IDX, 1)
+    all_data = pd.get_dummies(all_data) # Fix this
+
+    X_train, X_test, y_train, y_test = train_test_split(all_data, y, test_size=0.2, random_state=0)
+    import ipdb; ipdb.set_trace()
+    return X_train, y_train, X_test, y_test
+
 
 def fetch_data(dataset: str):
     if dataset is FLIGHT:
@@ -234,5 +254,7 @@ def fetch_data(dataset: str):
         return get_housing()
     elif dataset is COVTYPE:
         return get_covtype()
+    elif dataset is KDD:
+        return get_kdd()
     else:
         raise NotImplementedError(f"{dataset} is not implemented")

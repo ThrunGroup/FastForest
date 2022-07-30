@@ -17,7 +17,7 @@ from experiments.exp_constants import (
 )
 
 from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
-from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR, HOUSING, COVTYPE
+from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR, HOUSING, COVTYPE, KDD
 from utils.constants import (
     GINI,
     BEST,
@@ -629,25 +629,25 @@ def compare_runtimes(
 def main():
     pp = pprint.PrettyPrinter(indent=2)
     ############### Regression ###############
-    # for dataset in [HOUSING, SKLEARN_REGRESSION]:
-    #     train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
-    #     regression_models = ["HRFR", "HRPR", "ERFR"]
-    #     for r_m in regression_models:
-    #         pp.pprint(
-    #             compare_runtimes(
-    #                 dataset_name=dataset,
-    #                 compare=r_m,
-    #                 train_data=train_data,
-    #                 train_targets=train_targets,
-    #                 original_test_data=test_data,
-    #                 test_targets=test_targets,
-    #                 num_seeds=RUNTIME_NUM_SEEDS,
-    #                 predict=True,
-    #                 run_theirs=True,
-    #                 filename=dataset + "_" + r_m + "_dict",
-    #                 verbose=True,
-    #             )
-    #         )
+    for dataset in [KDD, HOUSING, SKLEARN_REGRESSION]:
+        train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
+        regression_models = ["HRFR", "HRPR", "ERFR"]
+        for r_m in regression_models:
+            pp.pprint(
+                compare_runtimes(
+                    dataset_name=dataset,
+                    compare=r_m,
+                    train_data=train_data,
+                    train_targets=train_targets,
+                    original_test_data=test_data,
+                    test_targets=test_targets,
+                    num_seeds=RUNTIME_NUM_SEEDS,
+                    predict=True,
+                    run_theirs=True,
+                    filename=dataset + "_" + r_m + "_dict",
+                    verbose=True,
+                )
+            )
 
     ############### Classification ###############
     for dataset in [COVTYPE, MNIST_STR]:
