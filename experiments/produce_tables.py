@@ -102,7 +102,7 @@ def write_budget_data(table_data: List, log_dict: Dict, filename: str):
 def produce_table1():
     this_dir = os.path.dirname(os.path.realpath(__file__))
     runtime_logs_dir = os.path.join(this_dir, "runtime_exps", "logs")
-    header = ["Model", "Time(s)", "# insertions", "Accuracy"]
+    header = ["Model", "Time (s)", "Number of insertions", "Accuracy"]
     classification_models = ["HRFC", "HRPC", "ERFC"]
     for dataset in [COVTYPE, MNIST_STR, APS, FLIGHT]:
         filename_list = [dataset + "_" + c_m + "_dict" for c_m in classification_models]

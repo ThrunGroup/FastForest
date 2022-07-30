@@ -629,7 +629,7 @@ def main():
                     filename=dataset + "_" + r_m + "_dict",
                     verbose=True,
                     # TODO(@motiwari): May need to jiggle this. Was *12 for RP, *12 for ER, *10 for RF
-                    default_budget=BUDGET_REGRESSION * 16,
+                    default_budget=BUDGET_REGRESSION * 32,
                     depth_override=BUDGET_MAX_DEPTH,
                 )
             )
@@ -651,7 +651,7 @@ def main():
                     run_theirs=True,
                     filename=dataset + "_" + c_m + "_dict",
                     verbose=True,
-                    default_budget=int(BUDGET_CLASSIFICATION * 1.3),
+                    default_budget=int(BUDGET_CLASSIFICATION * 2.6),
                     depth_override=BUDGET_MAX_DEPTH,
                 )
             )
