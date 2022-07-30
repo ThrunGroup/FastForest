@@ -6,7 +6,11 @@ import sklearn.datasets
 from mnist import MNIST
 from typing import List
 
-from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR, HOUSING
+from sklearn.datasets import fetch_california_housing
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import fetch_covtype
+
+from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR, HOUSING, COVTYPE
 
 
 def get_dummies(d, col):
@@ -199,14 +203,19 @@ def get_mnist():
     return train_images, train_labels, test_images, test_labels
 
 def get_housing():
-    from sklearn.datasets import fetch_california_housing
-    from sklearn.model_selection import train_test_split
     cal_housing = fetch_california_housing()
     X = cal_housing.data
     y = cal_housing.target
     y -= y.mean()
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=0)
-    return np.vstack([X_train, X_train, X_train]), np.hstack([y_train, y_train, y_train]), X_test, y_test
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+    return X_train, y_train, X_test, y_test
+
+def get_covtype():
+    covtype = fetch_covtype()
+    X = covtype.data
+    y = covtype.target
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+    return X_train, y_train, X_test, y_test
 
 def fetch_data(dataset: str):
     if dataset is FLIGHT:
@@ -223,5 +232,7 @@ def fetch_data(dataset: str):
         return get_mnist()
     elif dataset is HOUSING:
         return get_housing()
+    elif dataset is COVTYPE:
+        return get_covtype()
     else:
         raise NotImplementedError(f"{dataset} is not implemented")

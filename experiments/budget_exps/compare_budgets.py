@@ -16,7 +16,7 @@ from experiments.exp_constants import (
 )
 
 from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
-from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR
+from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR, COVTYPE
 from utils.constants import (
     GINI,
     BEST,
