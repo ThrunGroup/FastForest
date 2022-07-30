@@ -629,7 +629,7 @@ def compare_runtimes(
 def main():
     pp = pprint.PrettyPrinter(indent=2)
     ############### Regression ###############
-    for dataset in [AIR]: #[SKLEARN_REGRESSION, AIR]:
+    for dataset in [BLOG]: #[SKLEARN_REGRESSION, AIR]:
         train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
         regression_models = ["HRFR", "HRPR", "ERFR"]
         for r_m in regression_models:
