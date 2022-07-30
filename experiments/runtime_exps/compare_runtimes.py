@@ -629,28 +629,28 @@ def compare_runtimes(
 def main():
     pp = pprint.PrettyPrinter(indent=2)
     ############### Regression ###############
-    for dataset in [SKLEARN_REGRESSION, AIR]:
-        train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
-        regression_models = ["HRFR", "HRPR", "ERFR"]
-        for r_m in regression_models:
-            pp.pprint(
-                compare_runtimes(
-                    dataset_name=dataset,
-                    compare=r_m,
-                    train_data=train_data,
-                    train_targets=train_targets,
-                    original_test_data=test_data,
-                    test_targets=test_targets,
-                    num_seeds=RUNTIME_NUM_SEEDS,
-                    predict=True,
-                    run_theirs=True,
-                    filename=dataset + "_" + r_m + "_dict",
-                    verbose=True,
-                )
-            )
+    # for dataset in [AIR]: #[SKLEARN_REGRESSION, AIR]:
+    #     train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
+    #     regression_models = ["HRFR", "HRPR", "ERFR"]
+    #     for r_m in regression_models:
+    #         pp.pprint(
+    #             compare_runtimes(
+    #                 dataset_name=dataset,
+    #                 compare=r_m,
+    #                 train_data=train_data,
+    #                 train_targets=train_targets,
+    #                 original_test_data=test_data,
+    #                 test_targets=test_targets,
+    #                 num_seeds=RUNTIME_NUM_SEEDS,
+    #                 predict=True,
+    #                 run_theirs=True,
+    #                 filename=dataset + "_" + r_m + "_dict",
+    #                 verbose=True,
+    #             )
+    #         )
 
     ############### Classification ###############
-    for dataset in [COVTYPE, MNIST_STR, APS, FLIGHT]:
+    for dataset in [APS, FLIGHT]:  #[COVTYPE, MNIST_STR, APS, FLIGHT]:
         train_images, train_labels, test_images, test_labels = data_loader.fetch_data(dataset)
         classification_models = ["HRFC", "HRPC", "ERFC"]
         for c_m in classification_models:

@@ -29,8 +29,8 @@ def get_data(
     is_flight: bool = False,
     is_aps: bool = False,
 ):
-    # TODO(@motiwari): Fix this
-    d_train_test = pd.read_csv(filename)
+    this_dir = os.path.dirname(os.path.realpath(__file__))
+    d_train_test = pd.read_csv(os.path.join(this_dir, filename))
 
     # Fill nan values and shuffle
     d_train_test = d_train_test.replace(["na"], np.nan)
