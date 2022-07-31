@@ -7,3 +7,5 @@ experiments/.ipynb_checkpoints/*
 experiments/mnist
 experiments/.DS_Store
 experiments/datasets/cup98*
+experiments/datasets/gpu*
+experiments/datasets/new_gpu*

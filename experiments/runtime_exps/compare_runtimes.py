@@ -636,7 +636,15 @@ def main():
     ############### Regression ###############
     for dataset in [GPU, AIR]:  #[BLOG, SKLEARN_REGRESSION]:
         train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
-        regression_models = ["HRFR"] #, "HRPR", "ERFR"]
+
+        if dataset == GPU:
+            max_depth = 100
+            max_leaf_nodes = 5
+        else:
+            max_depth = None
+            max_leaf_nodes = None
+
+        regression_models = ["HRFR" , "HRPR", "ERFR"]
         for r_m in regression_models:
             pp.pprint(
                 compare_runtimes(
@@ -651,8 +659,8 @@ def main():
                     run_theirs=True,
                     filename=dataset + "_" + r_m + "_dict",
                     verbose=False,
-                    max_depth=100,
-                    max_leaf_nodes=5,
+                    max_depth=max_depth,
+                    max_leaf_nodes=max_leaf_nodes,
                 )
             )
 
