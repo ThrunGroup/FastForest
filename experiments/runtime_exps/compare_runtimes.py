@@ -644,7 +644,7 @@ def main():
             max_depth = None
             max_leaf_nodes = None
 
-        regression_models = ["HRFR" , "HRPR", "ERFR"]
+        regression_models = ["HRFR", "HRPR", "ERFR"]
         for r_m in regression_models:
             pp.pprint(
                 compare_runtimes(

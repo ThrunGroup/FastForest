@@ -16,7 +16,7 @@ from experiments.exp_constants import (
 )
 
 from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
-from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR, COVTYPE, KDD
+from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR, COVTYPE, KDD, GPU
 from utils.constants import (
     GINI,
     BEST,
@@ -612,7 +612,7 @@ def compare_budgets(
 def main():
     pp = pprint.PrettyPrinter(indent=2)
     ############### Regression ###############
-    for dataset in [AIR]:  # SKLEARN_REGRESSION
+    for dataset in [GPU]:  # SKLEARN_REGRESSION, AIR
         if dataset == SKLEARN_REGRESSION or dataset == AIR:
             budget = BUDGET_REGRESSION * 32
         else:
@@ -640,35 +640,35 @@ def main():
             )
 
     ############### Classification ###############
-    for dataset in [FLIGHT, COVTYPE, APS]:  # MNIST_STR
-        if dataset == COVTYPE or dataset == APS:
-            budget = int(BUDGET_CLASSIFICATION * 3)
-        elif dataset == FLIGHT:
-            budget = int(BUDGET_CLASSIFICATION * 2.6)
-        elif dataset == MNIST_STR:
-            budget = int(BUDGET_CLASSIFICATION * 2.6)
-        else:
-            budget = int(BUDGET_CLASSIFICATION * 2.6)  # Default
-
-        train_images, train_labels, test_images, test_labels = data_loader.get_mnist()
-        classification_models = ["HRFC", "HRPC", "ERFC"]
-        for c_m in classification_models:
-            pp.pprint(
-                compare_budgets(
-                    compare=c_m,
-                    train_data=train_images,
-                    train_targets=train_labels,
-                    original_test_data=test_images,
-                    test_targets=test_labels,
-                    num_seeds=BUDGET_NUM_SEEDS,
-                    predict=True,
-                    run_theirs=True,
-                    filename=dataset + "_" + c_m + "_dict",
-                    verbose=True,
-                    default_budget=budget,
-                    depth_override=BUDGET_MAX_DEPTH,
-                )
-            )
+    # for dataset in [FLIGHT, COVTYPE, APS]:  # MNIST_STR
+    #     if dataset == COVTYPE or dataset == APS:
+    #         budget = int(BUDGET_CLASSIFICATION * 3)
+    #     elif dataset == FLIGHT:
+    #         budget = int(BUDGET_CLASSIFICATION * 2.6)
+    #     elif dataset == MNIST_STR:
+    #         budget = int(BUDGET_CLASSIFICATION * 2.6)
+    #     else:
+    #         budget = int(BUDGET_CLASSIFICATION * 2.6)  # Default
+    #
+    #     train_images, train_labels, test_images, test_labels = data_loader.get_mnist()
+    #     classification_models = ["HRFC", "HRPC", "ERFC"]
+    #     for c_m in classification_models:
+    #         pp.pprint(
+    #             compare_budgets(
+    #                 compare=c_m,
+    #                 train_data=train_images,
+    #                 train_targets=train_labels,
+    #                 original_test_data=test_images,
+    #                 test_targets=test_labels,
+    #                 num_seeds=BUDGET_NUM_SEEDS,
+    #                 predict=True,
+    #                 run_theirs=True,
+    #                 filename=dataset + "_" + c_m + "_dict",
+    #                 verbose=True,
+    #                 default_budget=budget,
+    #                 depth_override=BUDGET_MAX_DEPTH,
+    #             )
+    #         )
 
 
 if __name__ == "__main__":
