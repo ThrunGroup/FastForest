@@ -20,6 +20,8 @@ from utils.constants import (
     HOUSING,
     COVTYPE,
     KDD,
+    GPU,
+    GPU_NUM_NON_INFORMATIVE
 )
 
 
@@ -30,14 +32,14 @@ def get_dummies(d, col):
 
 
 def get_data(
-    filename: str,
-    vars_categ: List[str],
-    vars_num: List[str],
-    var_target: str,
-    train_to_test: float = 0.9,
-    seed: int = 0,
-    is_flight: bool = False,
-    is_aps: bool = False,
+        filename: str,
+        vars_categ: List[str],
+        vars_num: List[str],
+        var_target: str,
+        train_to_test: float = 0.9,
+        seed: int = 0,
+        is_flight: bool = False,
+        is_aps: bool = False,
 ):
     this_dir = os.path.dirname(os.path.realpath(__file__))
     d_train_test = pd.read_csv(os.path.join(this_dir, filename))
@@ -178,7 +180,8 @@ def get_blog_data(train_to_test: float = 0.9, seed: int = 0):
     )
 
 
-def get_sklearn_data(data_size: int = 200000, n_features: int = 50, informative_ratio: float = 0.06, seed: int = 1, epsilon: float = 0.01, use_dynamic_eps: bool = False):
+def get_sklearn_data(data_size: int = 200000, n_features: int = 50, informative_ratio: float = 0.06, seed: int = 1,
+                     epsilon: float = 0.01, use_dynamic_eps: bool = False):
     # sklearn regression datasets
     params = {
         "data_size": data_size,
@@ -243,17 +246,55 @@ def get_covtype():
 def get_kdd():
     all_data = np.load("../datasets/kdd98.npz.npy", allow_pickle=True)
     rng = np.random.default_rng()
-    rng.shuffle(all_data) # in-place shuffle
+    rng.shuffle(all_data)  # in-place shuffle
 
     TARGET_IDX = 471  # TODO(@motiwari): Ensure this isn't off-by-one
     y = all_data[:, TARGET_IDX]
     all_data = np.delete(all_data, TARGET_IDX, 1)
-    all_data = pd.get_dummies(all_data) # Fix this
+    all_data = pd.get_dummies(all_data)  # Fix this
 
     X_train, X_test, y_train, y_test = train_test_split(
         all_data, y, test_size=0.2, random_state=0
     )
     return X_train, y_train, X_test, y_test
+
+
+def get_gpu(seed: int = 0, do_preprocess: bool = True):
+    # Regression
+    # Download form https://archive.ics.uci.edu/ml/datasets/SGEMM+GPU+kernel+performance
+    this_dir = os.path.dirname(os.path.realpath(__file__))
+    if not do_preprocess:  # preprocess gpu data and add adversarial features
+        filename = os.path.join(this_dir, "gpu_performance_data.csv")
+        df = pd.read_csv(filename)
+
+        targets_columns = list(df.columns)[-4:]
+        new_target_data = df[targets_columns].to_numpy().mean(axis=1)
+
+        # Add adversarial features
+        num_rows = len(df.index)
+        rng = np.random.default_rng(seed)
+        for idx in range(GPU_NUM_NON_INFORMATIVE):
+            df["non_informative_" + str(idx)] = rng.normal(size=num_rows)
+
+        # Add a new target
+        df.drop(targets_columns, axis=1, inplace=True)
+        df["runtime(ms)"] = new_target_data
+
+        new_filename = os.path.join(this_dir, "new_gpu_performance_data.csv")
+        df.to_csv(new_filename)
+    else:
+        new_filename = os.path.join(this_dir, "new_gpu_performance_data.csv")
+        df = pd.read_csv(new_filename)
+
+    vars_categ = []
+    vars_num = list(df.columns)[:-1]
+    var_target = df.columns[-1]  # var_target = "runtime(ms)"
+    return get_data(
+        filename=new_filename,
+        vars_categ=vars_categ,
+        vars_num=vars_num,
+        var_target=var_target,
+    )
 
 
 def fetch_data(dataset: str):
@@ -275,5 +316,7 @@ def fetch_data(dataset: str):
         return get_covtype()
     elif dataset is KDD:
         return get_kdd()
+    elif dataset is GPU:
+        return get_gpu()
     else:
         raise NotImplementedError(f"{dataset} is not implemented")

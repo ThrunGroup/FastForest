@@ -17,7 +17,7 @@ from experiments.exp_constants import (
 )
 
 from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
-from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR, HOUSING, COVTYPE, KDD
+from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR, HOUSING, COVTYPE, KDD, GPU
 from utils.constants import (
     GINI,
     BEST,
@@ -634,9 +634,9 @@ def compare_runtimes(
 def main():
     pp = pprint.PrettyPrinter(indent=2)
     ############### Regression ###############
-    for dataset in [AIR]:  #[BLOG, SKLEARN_REGRESSION]:
+    for dataset in [GPU, AIR]:  #[BLOG, SKLEARN_REGRESSION]:
         train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
-        regression_models = ["HRFR", "HRPR", "ERFR"]
+        regression_models = ["HRFR"] #, "HRPR", "ERFR"]
         for r_m in regression_models:
             pp.pprint(
                 compare_runtimes(
@@ -650,9 +650,9 @@ def main():
                     predict=True,
                     run_theirs=True,
                     filename=dataset + "_" + r_m + "_dict",
-                    verbose=True,
-                    max_depth=None,
-                    max_leaf_nodes=None,
+                    verbose=False,
+                    max_depth=100,
+                    max_leaf_nodes=5,
                 )
             )
 

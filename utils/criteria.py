@@ -3,7 +3,7 @@ import scipy
 import numpy as np
 
 from data_structures.histogram import Histogram
-from utils.constants import GINI, ENTROPY, MSE, KURTOSIS, VECTORIZE
+from utils.constants import GINI, ENTROPY, MSE, KURTOSIS, VECTORIZE_IMPURITY
 
 
 def get_gini(
@@ -192,7 +192,7 @@ def get_impurity_reductions(
     if impurity_measure == "":
         impurity_measure = GINI if is_classification else MSE
     get_impurity = get_impurity_fn(impurity_measure)
-    if VECTORIZE:
+    if VECTORIZE_IMPURITY:
         h = histogram
         if is_classification:
             left = h.left[bin_edge_idcs]

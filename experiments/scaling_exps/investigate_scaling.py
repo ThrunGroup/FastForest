@@ -1,5 +1,7 @@
 import os
 import numpy as np
+import pandas as pd
+from collections import defaultdict
 
 from experiments.runtime_exps.compare_runtimes import (
     compare_runtimes,
@@ -12,12 +14,10 @@ from experiments.datasets import data_loader
 
 
 def main(is_classification=True):
-    size_to_insertions_dict = {}
-    size_to_time_dict = {}
+    log_data = defaultdict(list)
     if is_classification:
         train_data, train_labels, _, _ = data_loader.fetch_data(MNIST_STR)
-        filename_insertion = "size_to_insertions_dict"
-        filename_time = "size_to_time_dict"
+        filename = "scaling_classification"
         models = ["HRFC"]  # , "ERFC", "HRPC"]
         subsample_size_list = [
             1000,
@@ -36,8 +36,7 @@ def main(is_classification=True):
         train_data, train_labels = make_regression(
             200000, n_features=50, n_informative=5, random_state=0
         )
-        filename_insertion = "size_to_insertions_dict_regression"
-        filename_time = "size_to_time_dict_regression"
+        filename = "scaling_regression"
         models = ["HRFR"]  # , "ERFR", "HRPR"]
         subsample_size_list = [
             5000,
@@ -54,8 +53,8 @@ def main(is_classification=True):
     for model in models:
         for C_SUBSAMPLE_SIZE in subsample_size_list:
             print("\n\n")
-            num_queries = 0.0
-            run_time = 0.0
+            num_queries = []
+            run_time = []
             num_trials = 0
             for fitting_seed in range(SCALING_NUM_SEEDS):
                 np.random.seed(fitting_seed)
@@ -75,18 +74,22 @@ def main(is_classification=True):
                     + str(C_SUBSAMPLE_SIZE)
                     + "_profile_"
                     + str(fitting_seed),
+                    max_depth=5,
                 )
-                num_queries += np.mean(np.array(results["our_num_queries"]))
-                run_time += np.mean(np.array(results["our_train_times"]))
+                num_queries.append(np.mean(np.array(results["our_num_queries"])))
+                run_time.append(np.array(results["our_train_times"]))
                 num_trials += 1
-            num_queries /= num_trials
-            run_time /= num_trials
-            size_to_insertions_dict[C_SUBSAMPLE_SIZE] = num_queries
-            size_to_time_dict[C_SUBSAMPLE_SIZE] = run_time
-        with open(model + "_" + filename_insertion, "w+") as fout:
-            fout.write(str(size_to_insertions_dict))
-        with open(model + "_" + filename_time, "w+") as fout:
-            fout.write(str(size_to_time_dict))
+            avg_num_queries = np.mean(num_queries)
+            avg_run_time = np.mean(run_time)
+            std_num_queries = np.std(num_queries) / np.sqrt(num_trials)
+            std_run_time = np.std(run_time) / np.sqrt(num_trials)
+            log_data["size"].append(C_SUBSAMPLE_SIZE)
+            log_data["avg_num_queries"].append(avg_num_queries)
+            log_data["avg_run_time"].append(avg_run_time)
+            log_data["std_num_queries"].append(std_num_queries)
+            log_data["std_run_time"].append(std_run_time)
+        log_data_df = pd.DataFrame(log_data)
+        log_data_df.to_csv(model + "_" + filename, index=False)
 
 
 if __name__ == "__main__":
