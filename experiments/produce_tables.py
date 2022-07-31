@@ -112,7 +112,7 @@ def produce_table1():
                 log_dict = ast.literal_eval(fin.read())
                 write_runtime_data(table1_data, log_dict, filename)
         print("=" * 30)
-        print("Table 1 Classification: " + dataset)
+        print("Table 1 (Classification): " + dataset)
         print_table(header, table1_data)
 
 
@@ -129,7 +129,7 @@ def produce_table2():
                 log_dict = ast.literal_eval(fin.read())
                 write_runtime_data(table2_data, log_dict, filename)
         print("=" * 30)
-        print("Table 2 Regression: " + dataset)
+        print("Table 2 (Regression): " + dataset)
         print_table(header, table2_data)
 
 
@@ -146,7 +146,7 @@ def produce_table3():
                 log_dict = ast.literal_eval(fin.read())
                 write_budget_data(table3_data, log_dict, filename)
         print("=" * 30)
-        print("Table 3 Classification: " + dataset)
+        print("Table 3 (Classification): " + dataset)
         print_table(header, table3_data)
 
 
@@ -163,7 +163,7 @@ def produce_table4():
                 log_dict = ast.literal_eval(fin.read())
                 write_budget_data(table4_data, log_dict, filename)
         print("=" * 30)
-        print("Table 4 Classification:" + dataset)
+        print("Table 4 (Regression):" + dataset)
         print_table(header, table4_data)
 
 
