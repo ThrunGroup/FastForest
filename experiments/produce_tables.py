@@ -4,7 +4,7 @@ import sys
 from typing import List, Dict
 from scaling_exps import make_scaling_plot
 
-from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR, HOUSING, COVTYPE, KDD
+from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR, HOUSING, COVTYPE, KDD, GPU
 
 pm = " \u00B1 "  # plus minus
 ndigits = 3  # number of digits for rounding
@@ -102,9 +102,9 @@ def write_budget_data(table_data: List, log_dict: Dict, filename: str):
 def produce_table1():
     this_dir = os.path.dirname(os.path.realpath(__file__))
     runtime_logs_dir = os.path.join(this_dir, "runtime_exps", "logs")
-    header = ["Model", "Time (s)", "Number of insertions", "Accuracy"]
+    header = ["Model", "Time (s)", "Number of Insertions", "Accuracy"]
     classification_models = ["HRFC", "HRPC", "ERFC"]
-    for dataset in [COVTYPE, MNIST_STR, APS, FLIGHT]:
+    for dataset in [APS, FLIGHT, COVTYPE, MNIST_STR]:
         filename_list = [dataset + "_" + c_m + "_dict" for c_m in classification_models]
         table1_data = []
         for filename in filename_list:
@@ -119,9 +119,9 @@ def produce_table1():
 def produce_table2():
     this_dir = os.path.dirname(os.path.realpath(__file__))
     runtime_logs_dir = os.path.join(this_dir, "runtime_exps", "logs")
-    header = ["Model", "Time(s)", "# insertions", "MSE"]
+    header = ["Model", "Time(s)", "Number of Insertions", "MSE"]
     regression_models = ["HRFR", "HRPR", "ERFR"]
-    for dataset in [SKLEARN_REGRESSION, AIR, BLOG]:
+    for dataset in [AIR, GPU]: # BLOG, SKLEARN_REGRESSION
         filename_list = [dataset + "_" + r_m + "_dict" for r_m in regression_models]
         table2_data = []
         for filename in filename_list:
@@ -134,31 +134,37 @@ def produce_table2():
 
 
 def produce_table3():
-    dir = "budget_exps"
-    filename_list = ["HRFC_dict", "ERFC_dict", "HRPC_dict"]
-    header = ["Model", "# trees", "Accuracy"]
-    table3_data = []
-    for filename in filename_list:
-        with open(os.path.join(dir, filename), "r") as fin:
-            log_dict = ast.literal_eval(fin.read())
-            write_budget_data(table3_data, log_dict, filename)
-    print("=" * 30)
-    print("Table 3 Classification: MNIST (budget = 10M)")
-    print_table(header, table3_data)
+    this_dir = os.path.dirname(os.path.realpath(__file__))
+    budget_logs_dir = os.path.join(this_dir, "budget_exps", "logs")
+    classification_models = ["HRFC", "HRPC", "ERFC"]
+    header = ["Model", "Number of Trees", "Accuracy"]
+    for dataset in [APS, FLIGHT, COVTYPE]:  # MNIST_STR
+        filename_list = [dataset + "_" + c_m + "_dict" for c_m in classification_models]
+        table3_data = []
+        for filename in filename_list:
+            with open(os.path.join(budget_logs_dir, filename), "r") as fin:
+                log_dict = ast.literal_eval(fin.read())
+                write_budget_data(table3_data, log_dict, filename)
+        print("=" * 30)
+        print("Table 3 Classification: " + dataset)
+        print_table(header, table3_data)
 
 
 def produce_table4():
-    dir = "budget_exps"
-    filename_list = ["HRFR_dict", "ERFR_dict", "HRPR_dict"]
-    header = ["Model", "# trees", "MSE"]
-    table4_data = []
-    for filename in filename_list:
-        with open(os.path.join(dir, filename), "r") as fin:
-            log_dict = ast.literal_eval(fin.read())
-            write_budget_data(table4_data, log_dict, filename)
-    print("=" * 30)
-    print("Table 4 Classification: Random Linear (budget = Q * 24M)")
-    print_table(header, table4_data)
+    this_dir = os.path.dirname(os.path.realpath(__file__))
+    budget_logs_dir = os.path.join(this_dir, "budget_exps", "logs")
+    regression_models = ["HRFR", "HRPR", "ERFR"]
+    header = ["Model", "Number of Trees", "Test MSE"]
+    for dataset in [AIR, GPU]:  # BLOG, SKLEARN_REGRESSION
+        filename_list = [dataset + "_" + r_m + "_dict" for r_m in regression_models]
+        table4_data = []
+        for filename in filename_list:
+            with open(os.path.join(budget_logs_dir, filename), "r") as fin:
+                log_dict = ast.literal_eval(fin.read())
+                write_budget_data(table4_data, log_dict, filename)
+        print("=" * 30)
+        print("Table 4 Classification:" + dataset)
+        print_table(header, table4_data)
 
 
 def produce_table5():

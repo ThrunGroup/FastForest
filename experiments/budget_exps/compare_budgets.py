@@ -616,7 +616,7 @@ def main():
         if dataset == SKLEARN_REGRESSION or dataset == AIR:
             budget = BUDGET_REGRESSION * 32
         else:
-            BUDGET_REGRESSION * 32  # Default
+            budget = BUDGET_REGRESSION * 32  # Default
 
         train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
         regression_models = ["HRFR", "HRPR", "ERFR"]
