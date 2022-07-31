@@ -613,10 +613,8 @@ def main():
     pp = pprint.PrettyPrinter(indent=2)
     ############### Regression ###############
     for dataset in [AIR]:  # SKLEARN_REGRESSION
-        if dataset == SKLEARN_REGRESSION:
+        if dataset == SKLEARN_REGRESSION or dataset == AIR:
             budget = BUDGET_REGRESSION * 32
-        elif dataset == AIR:
-            budget = int(BUDGET_REGRESSION * 0.1)  # 420768*18*32*5  # N * F * L * 5
         else:
             BUDGET_REGRESSION * 32  # Default
 
@@ -644,13 +642,13 @@ def main():
     ############### Classification ###############
     for dataset in [FLIGHT, COVTYPE, APS]:  # MNIST_STR
         if dataset == COVTYPE or dataset == APS:
-            budget = int(BUDGET_CLASSIFICATION * 2.6)*3
+            budget = int(BUDGET_CLASSIFICATION * 3)
         elif dataset == FLIGHT:
-            budget = int(BUDGET_CLASSIFICATION * 2.6) # TODO(@motiwari): Unknown, please update
+            budget = int(BUDGET_CLASSIFICATION * 2.6)
         elif dataset == MNIST_STR:
             budget = int(BUDGET_CLASSIFICATION * 2.6)
         else:
-            int(BUDGET_CLASSIFICATION * 2.6)  # Default
+            budget = int(BUDGET_CLASSIFICATION * 2.6)  # Default
 
         train_images, train_labels, test_images, test_labels = data_loader.get_mnist()
         classification_models = ["HRFC", "HRPC", "ERFC"]

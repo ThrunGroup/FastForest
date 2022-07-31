@@ -354,7 +354,7 @@ class ForestBase(ABC):
                 # In the case of classification, we use the priors as the prediction
                 # WARNING: This may not work when the labels are not contiguous integers starting at 0. Fix after deadline.
                 # TODO(@motiwari): See warning above.
-                avg_preds = np.bincounts(self.labels) / N
+                avg_preds = np.bincount(self.labels) / N
                 return np.argmax(avg_preds), avg_preds
             else:
                 return np.mean(self.org_targets)
