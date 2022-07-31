@@ -10,7 +10,17 @@ from sklearn.datasets import fetch_california_housing
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import fetch_covtype
 
-from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR, HOUSING, COVTYPE, KDD
+from utils.constants import (
+    FLIGHT,
+    AIR,
+    APS,
+    BLOG,
+    SKLEARN_REGRESSION,
+    MNIST_STR,
+    HOUSING,
+    COVTYPE,
+    KDD,
+)
 
 
 def get_dummies(d, col):
@@ -36,7 +46,7 @@ def get_data(
     d_train_test = d_train_test.replace(["na"], np.nan)
     d_train_test.fillna(method="bfill", inplace=True)
     d_train_test.fillna(method="ffill", inplace=True)
-    d_train_test.sample(frac=1, random_state=seed)
+    d_train_test = d_train_test.sample(frac=1, random_state=seed)
     if len(vars_categ) > 0:
         X_train_test_categ = pd.concat(
             [get_dummies(d_train_test, col) for col in vars_categ], axis=1
@@ -112,7 +122,7 @@ def get_small_flight_data(train_to_test: float = 0.9, seed: int = 0):
 
 
 def get_large_flight_data(train_to_test: float = 0.9, seed: int = 0):
-    # Classificaiton
+    # Classification
     # Download from https://github.com/szilard/benchm-ml/tree/master/z-other-tools
     filename = "flight_1m_data.csv"
     vars_categ = ["Month", "DayofMonth", "DayOfWeek", "UniqueCarrier", "Origin", "Dest"]
@@ -214,7 +224,9 @@ def get_housing():
     X = cal_housing.data
     y = cal_housing.target
     y -= y.mean()
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=0
+    )
     return X_train, y_train, X_test, y_test
 
 
@@ -222,7 +234,9 @@ def get_covtype():
     covtype = fetch_covtype()
     X = covtype.data
     y = covtype.target
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=0
+    )
     return X_train, y_train, X_test, y_test
 
 
@@ -236,7 +250,9 @@ def get_kdd():
     all_data = np.delete(all_data, TARGET_IDX, 1)
     all_data = pd.get_dummies(all_data) # Fix this
 
-    X_train, X_test, y_train, y_test = train_test_split(all_data, y, test_size=0.2, random_state=0)
+    X_train, X_test, y_train, y_test = train_test_split(
+        all_data, y, test_size=0.2, random_state=0
+    )
     return X_train, y_train, X_test, y_test
 
 
