@@ -612,9 +612,11 @@ def compare_budgets(
 def main():
     pp = pprint.PrettyPrinter(indent=2)
     ############### Regression ###############
-    for dataset in [GPU]:  # SKLEARN_REGRESSION, AIR
+    for dataset in [AIR, GPU]:  # SKLEARN_REGRESSION, AIR, GPU
         if dataset == SKLEARN_REGRESSION or dataset == AIR:
             budget = BUDGET_REGRESSION * 32
+        elif dataset == GPU:
+            budget = BUDGET_REGRESSION * 10
         else:
             budget = BUDGET_REGRESSION * 32  # Default
 
