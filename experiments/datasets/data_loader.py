@@ -265,7 +265,7 @@ def get_kdd():
     return X_train, y_train, X_test, y_test
 
 
-def get_gpu(seed: int = 0, already_preprocess: bool = True):
+def get_gpu(seed: int = 0, already_preprocess: bool = False):
     # Regression
     # Download form https://archive.ics.uci.edu/ml/datasets/SGEMM+GPU+kernel+performance
     this_dir = os.path.dirname(os.path.realpath(__file__))
