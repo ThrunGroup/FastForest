@@ -21,7 +21,7 @@ from utils.constants import (
     COVTYPE,
     KDD,
     GPU,
-    GPU_NUM_NON_INFORMATIVE
+    GPU_NUM_NON_INFORMATIVE,
 )
 
 
@@ -32,14 +32,14 @@ def get_dummies(d, col):
 
 
 def get_data(
-        filename: str,
-        vars_categ: List[str],
-        vars_num: List[str],
-        var_target: str,
-        train_to_test: float = 0.9,
-        seed: int = 0,
-        is_flight: bool = False,
-        is_aps: bool = False,
+    filename: str,
+    vars_categ: List[str],
+    vars_num: List[str],
+    var_target: str,
+    train_to_test: float = 0.9,
+    seed: int = 0,
+    is_flight: bool = False,
+    is_aps: bool = False,
 ):
     this_dir = os.path.dirname(os.path.realpath(__file__))
     d_train_test = pd.read_csv(os.path.join(this_dir, filename))
@@ -180,8 +180,14 @@ def get_blog_data(train_to_test: float = 0.9, seed: int = 0):
     )
 
 
-def get_sklearn_data(data_size: int = 200000, n_features: int = 50, informative_ratio: float = 0.06, seed: int = 1,
-                     epsilon: float = 0.01, use_dynamic_eps: bool = False):
+def get_sklearn_data(
+    data_size: int = 200000,
+    n_features: int = 50,
+    informative_ratio: float = 0.06,
+    seed: int = 1,
+    epsilon: float = 0.01,
+    use_dynamic_eps: bool = False,
+):
     # sklearn regression datasets
     params = {
         "data_size": data_size,
