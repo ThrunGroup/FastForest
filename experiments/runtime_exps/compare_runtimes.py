@@ -651,8 +651,8 @@ def main():
                     run_theirs=True,
                     filename=dataset + "_" + r_m + "_dict",
                     verbose=True,
-                    max_depth=100,
-                    max_leaf_nodes=10,
+                    max_depth=None,
+                    max_leaf_nodes=None,
                 )
             )
 
@@ -674,8 +674,8 @@ def main():
                     run_theirs=True,
                     filename=dataset + "_" + c_m + "_dict",
                     verbose=True,
-                    max_depth=100,
-                    max_leaf_nodes=10,
+                    max_depth=None,
+                    max_leaf_nodes=None,
                 )
             )
 
