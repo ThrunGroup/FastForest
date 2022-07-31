@@ -143,8 +143,10 @@ def get_aps_data(train_to_test: float = 0.9, seed: int = 0):
     # Classification
     # Download from https://archive.ics.uci.edu/ml/datasets/APS+Failure+at+Scania+Trucks
     filename = "aps_data.csv"
+    this_dir = os.path.dirname(os.path.realpath(__file__))
+    full_filename = os.path.join(this_dir, filename)
     vars_categ = []
-    vars_num = list(pd.read_csv(filename).columns)[1:]  # first column is target
+    vars_num = list(pd.read_csv(full_filename).columns)[1:]  # first column is target
     var_target = "class"
     return get_data(
         filename=filename,
@@ -161,8 +163,10 @@ def get_blog_data(train_to_test: float = 0.9, seed: int = 0):
     # Regression
     # Download from https://archive.ics.uci.edu/ml/datasets/BlogFeedback
     filename = "blog_data.csv"
+    this_dir = os.path.dirname(os.path.realpath(__file__))
+    full_filename = os.path.join(this_dir, filename)
     vars_categ = []
-    vars_num = list(pd.read_csv(filename).columns)[:-1]  # last column is target
+    vars_num = list(pd.read_csv(full_filename).columns)[:-1]  # last column is target
     var_target = "target"
     return get_data(
         filename=filename,

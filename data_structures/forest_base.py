@@ -16,7 +16,7 @@ from utils.constants import (
     DEFAULT_MIN_IMPURITY_DECREASE,
     BATCH_SIZE,
 )
-from utils.utils import data_to_discrete, set_seed, get_subset_2d, class_to_idx
+from utils.utils import data_to_discrete, set_seed, get_subset_2d, class_to_idx, counts_of_labels
 from utils.boosting import get_next_targets
 from data_structures.tree_classifier import TreeClassifier
 from data_structures.tree_regressor import TreeRegressor
@@ -295,6 +295,9 @@ class ForestBase(ABC):
             ):
                 self.trees.append(tree)
             else:
+                # We have been unable to fit the tree within the budget.
+                # In this case, we do not add the tree to the list
+                # In the case of the very first tree not being able to be fit, this implies that self.trees = []
                 break
 
             if self.boosting:
@@ -342,27 +345,41 @@ class ForestBase(ABC):
                   (Regressor) the averaged mean value of labels in each tree
         """
         T = len(self.trees)
-        if self.is_classification:
-            agg_preds = np.empty((T, self.n_classes))
-            for tree_idx, tree in enumerate(self.trees):
-                # Average over predicted probabilities, not just hard labels
-                agg_preds[tree_idx] = tree.predict(datapoint)[1]
-            avg_preds = agg_preds.mean(axis=0)
-            label_pred = list(self.classes.keys())[avg_preds.argmax()]
-            return label_pred, avg_preds
-        else:
-            if self.boosting:
-                for tree_idx, tree in enumerate(self.trees):
-                    if tree_idx == 0:
-                        agg_pred = tree.predict(datapoint)
-                    else:
-                        agg_pred += self.boosting_lr * tree.predict(datapoint)
-                return agg_pred
+
+        if T == 0:
+            # We handle the case where no full trees were able to be split specially. In this case, we instantiate
+            # a stump (single root node) and predict the datapoint as the average (regression) or priors (classification).
+            N = len(self.data)
+            if self.is_classification:
+                # In the case of classification, we use the priors as the prediction
+                # WARNING: This may not work when the labels are not contiguous integers starting at 0. Fix after deadline.
+                # TODO(@motiwari): See warning above.
+                avg_preds = np.bincount(self.labels) / N
+                return np.argmax(avg_preds), avg_preds
             else:
-                agg_pred = np.empty(T)
+                return np.mean(self.org_targets)
+        else:
+            if self.is_classification:
+                agg_preds = np.empty((T, self.n_classes))
                 for tree_idx, tree in enumerate(self.trees):
-                    agg_pred[tree_idx] = tree.predict(datapoint)
-                return float(agg_pred.mean())
+                    # Average over predicted probabilities, not just hard labels
+                    agg_preds[tree_idx] = tree.predict(datapoint)[1]
+                avg_preds = agg_preds.mean(axis=0)
+                label_pred = list(self.classes.keys())[avg_preds.argmax()]
+                return label_pred, avg_preds
+            else:
+                if self.boosting:
+                    for tree_idx, tree in enumerate(self.trees):
+                        if tree_idx == 0:
+                            agg_pred = tree.predict(datapoint)
+                        else:
+                            agg_pred += self.boosting_lr * tree.predict(datapoint)
+                    return agg_pred
+                else:
+                    agg_pred = np.empty(T)
+                    for tree_idx, tree in enumerate(self.trees):
+                        agg_pred[tree_idx] = tree.predict(datapoint)
+                    return float(agg_pred.mean())
 
     def get_oob_score(self, data=None) -> float:
         """

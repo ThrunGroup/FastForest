@@ -634,7 +634,7 @@ def compare_runtimes(
 def main():
     pp = pprint.PrettyPrinter(indent=2)
     ############### Regression ###############
-    for dataset in [AIR]:
+    for dataset in [AIR]:  #[BLOG, SKLEARN_REGRESSION]:
         train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
         regression_models = ["HRFR", "HRPR", "ERFR"]
         for r_m in regression_models:
@@ -657,27 +657,27 @@ def main():
             )
 
     ############### Classification ###############
-    for dataset in [APS, FLIGHT]:  #[COVTYPE, MNIST_STR, APS, FLIGHT]:
-        train_images, train_labels, test_images, test_labels = data_loader.fetch_data(dataset)
-        classification_models = ["HRFC", "HRPC", "ERFC"]
-        for c_m in classification_models:
-            pp.pprint(
-                compare_runtimes(
-                    dataset_name=dataset,
-                    compare=c_m,
-                    train_data=train_images,
-                    train_targets=train_labels,
-                    original_test_data=test_images,
-                    test_targets=test_labels,
-                    num_seeds=RUNTIME_NUM_SEEDS,
-                    predict=True,
-                    run_theirs=True,
-                    filename=dataset + "_" + c_m + "_dict",
-                    verbose=True,
-                    max_depth=None,
-                    max_leaf_nodes=None,
-                )
-            )
+    # for dataset in [APS, FLIGHT]:  #[COVTYPE, MNIST_STR, APS, FLIGHT]:
+    #     train_images, train_labels, test_images, test_labels = data_loader.fetch_data(dataset)
+    #     classification_models = ["HRFC", "HRPC", "ERFC"]
+    #     for c_m in classification_models:
+    #         pp.pprint(
+    #             compare_runtimes(
+    #                 dataset_name=dataset,
+    #                 compare=c_m,
+    #                 train_data=train_images,
+    #                 train_targets=train_labels,
+    #                 original_test_data=test_images,
+    #                 test_targets=test_labels,
+    #                 num_seeds=RUNTIME_NUM_SEEDS,
+    #                 predict=True,
+    #                 run_theirs=True,
+    #                 filename=dataset + "_" + c_m + "_dict",
+    #                 verbose=True,
+    #                 max_depth=None,
+    #                 max_leaf_nodes=None,
+    #             )
+    #         )
 
 
 if __name__ == "__main__":
