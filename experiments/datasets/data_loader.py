@@ -237,7 +237,6 @@ def get_kdd():
     all_data = pd.get_dummies(all_data) # Fix this
 
     X_train, X_test, y_train, y_test = train_test_split(all_data, y, test_size=0.2, random_state=0)
-    import ipdb; ipdb.set_trace()
     return X_train, y_train, X_test, y_test
 
 
