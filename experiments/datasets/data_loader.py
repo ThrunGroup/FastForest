@@ -265,11 +265,11 @@ def get_kdd():
     return X_train, y_train, X_test, y_test
 
 
-def get_gpu(seed: int = 0, do_preprocess: bool = True):
+def get_gpu(seed: int = 0, already_preprocess: bool = False):
     # Regression
     # Download form https://archive.ics.uci.edu/ml/datasets/SGEMM+GPU+kernel+performance
     this_dir = os.path.dirname(os.path.realpath(__file__))
-    if not do_preprocess:  # preprocess gpu data and add adversarial features
+    if not already_preprocess:  # preprocess gpu data and add adversarial features
         filename = os.path.join(this_dir, "gpu_performance_data.csv")
         df = pd.read_csv(filename)
 
