@@ -594,7 +594,7 @@ def compare_runtimes(
         their_std_num_queries = np.std(their_num_queries) / np.sqrt(num_seeds)
 
         # See if confidence intervals overlap
-        overlap = np.abs(their_avg_test - our_avg_test) < their_std_test + our_std_test
+        overlap = np.abs(their_avg_test - our_avg_test) < their_std_test + our_std_test if run_theirs and predict else None
 
     results = {
         "overlap": overlap if run_theirs else None,

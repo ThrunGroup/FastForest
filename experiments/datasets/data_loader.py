@@ -214,8 +214,8 @@ def get_sklearn_data(
 
 
 def get_mnist():
-    mndata = MNIST(os.path.join("..", "mnist"))
-
+    this_dir = os.path.dirname(os.path.realpath(__file__))
+    mndata = MNIST(os.path.join(this_dir, "..", "mnist"))
     train_images, train_labels = mndata.load_training()
     rng = np.random.default_rng(0)
     subsample_idcs = rng.choice(len(train_images), 4 * len(train_images))
