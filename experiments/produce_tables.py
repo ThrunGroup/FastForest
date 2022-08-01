@@ -96,7 +96,7 @@ def write_budget_data(table_data: List, log_dict: Dict, filename: str):
     if "SKLEARN_REGRESSION" in filename:  # Has a _ in the name
         model_name = filename.split("_")[2]
     s_model_name = standardize_model_name(model_name)
-    
+
     ours_data = [
         s_model_name + " + MABSplit",
         s(log_dict["our_avg_num_trees"])
@@ -139,7 +139,7 @@ def produce_table1():
 def produce_table2():
     this_dir = os.path.dirname(os.path.realpath(__file__))
     runtime_logs_dir = os.path.join(this_dir, "runtime_exps", "logs")
-    header = ["Model", "Time(s)", "Number of Insertions", "MSE"]
+    header = ["Model", "Time (s)", "Number of Insertions", "MSE"]
     regression_models = ["HRFR", "ERFR", "HRPR"]
     for dataset in [AIR, GPU]: # BLOG, SKLEARN_REGRESSION
         filename_list = [dataset + "_" + r_m + "_dict" for r_m in regression_models]
