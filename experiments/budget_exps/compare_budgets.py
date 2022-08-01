@@ -652,7 +652,7 @@ def main():
         else:
             budget = int(BUDGET_CLASSIFICATION * 2.6)  # Default
 
-        train_images, train_labels, test_images, test_labels = data_loader.get_mnist()
+        train_images, train_labels, test_images, test_labels = data_loader.fetch_data(dataset)
         classification_models = ["HRFC", "HRPC", "ERFC"]
         for c_m in classification_models:
             pp.pprint(
