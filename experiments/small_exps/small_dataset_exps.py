@@ -13,6 +13,7 @@ MAX_DATA_SIZE = 1801
 INTERVAL = 100
 NUM_BINS = int((MAX_DATA_SIZE - MIN_DATA_SIZE)/INTERVAL) + 1  # Rounds down, NOT banker's rounding
 EXP_SIZES = range(MIN_DATA_SIZE, MAX_DATA_SIZE, INTERVAL)
+FIGSIZE = (5, 3)
 
 def make_plots():
     queries = np.zeros((2, NUM_BINS))
@@ -38,6 +39,7 @@ def make_plots():
     print(queries)
     print(runtimes)
 
+    plt.figure(figsize=FIGSIZE)
     plt.title("RF vs. RF + MABSplit Sample Complexity")
     plt.ylabel("Number of samples drawn (sample complexity)")
     plt.xlabel("Subset size ($N$)")
@@ -58,6 +60,7 @@ def make_plots():
     plt.legend()
     plt.show()
 
+    plt.figure(figsize=FIGSIZE)
     plt.title("RF vs. RF + MABSplit Runtime")
     plt.ylabel("Wall clock time (s)")
     plt.xlabel("Subset size ($N$)")

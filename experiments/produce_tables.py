@@ -141,7 +141,7 @@ def produce_table2():
     runtime_logs_dir = os.path.join(this_dir, "runtime_exps", "logs")
     header = ["Model", "Time (s)", "Number of Insertions", "MSE"]
     regression_models = ["HRFR", "ERFR", "HRPR"]
-    for dataset in [AIR, GPU]: # BLOG, SKLEARN_REGRESSION
+    for dataset in [AIR, GPU]:  # BLOG, AIR, GPU, SKLEARN_REGRESSION
         filename_list = [dataset + "_" + r_m + "_dict" for r_m in regression_models]
         table2_data = []
         for filename in filename_list:
@@ -158,8 +158,9 @@ def produce_table3():
     budget_logs_dir = os.path.join(this_dir, "budget_exps", "logs")
     classification_models = ["HRFC", "ERFC", "HRPC"]
     header = ["Model", "Number of Trees", "Accuracy"]
-    for dataset in [APS, FLIGHT, COVTYPE]:  # MNIST_STR
+    for dataset in [FLIGHT, COVTYPE]:#, COVTYPE, APS]:  # MNIST_STR
         filename_list = [dataset + "_" + c_m + "_dict" for c_m in classification_models]
+        print(filename_list)
         table3_data = []
         for filename in filename_list:
             with open(os.path.join(budget_logs_dir, filename), "r") as fin:

@@ -60,6 +60,6 @@ def main(filename: str = "HRFC_scaling_classification.csv"):
 
 
 if __name__ == "__main__":
-    main(filename="HRFC_scaling_classification")
-    main(filename="HRFR_scaling_regression")
+    main(filename="HRFC_scaling_classification.csv")
+    main(filename="HRFR_scaling_regression.csv")
 
