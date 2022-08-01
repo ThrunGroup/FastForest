@@ -14,6 +14,9 @@ ndigits = 3  # number of digits for rounding
 def s(value: float, ndgits: int = ndigits):
     return str(round(value, ndigits))
 
+def scientific(value: float):
+    return str(f"{value:.2E}")
+
 
 def ordinal_num(num: int):
     """
@@ -28,6 +31,18 @@ def ordinal_num(num: int):
         return "3rd"
     else:
         return f"{num}th"
+
+def standardize_model_name(model_name: str):
+    model_dict = {
+        'HRFC': 'RF',
+        'HRPC': 'RP',
+        'ERFC': 'ExtraTrees',
+
+        'HRFR': 'RF',
+        'HRPR': 'RP',
+        'ERFR': 'ExtraTrees',
+    }
+    return model_dict[model_name]
 
 
 def print_table(headers: List, data: List):
@@ -46,25 +61,25 @@ def write_runtime_data(table_data: List, log_dict: Dict, filename: str):
         model_name = filename.split("_")[2]
 
     ours_data = [
-        model_name + " + MABSplit",
+        standardize_model_name(model_name) + " + MABSplit",
         s(log_dict["our_avg_train_time"])
         + pm
         + s(log_dict["our_std_train_time"]),
-        s(log_dict["our_avg_num_queries"])
+        scientific(log_dict["our_avg_num_queries"])
         + pm
-        + s(log_dict["our_std_num_queries"]),
+        + scientific(log_dict["our_std_num_queries"]),
         s(log_dict["our_avg_test"])
         + pm
         + s(log_dict["our_std_test"]),
     ]
     theirs_data = [
-        model_name,
+        standardize_model_name(model_name),
         s(log_dict["their_avg_train_time"])
         + pm
         + s(log_dict["their_std_train_time"]),
-        s(log_dict["their_avg_num_queries"])
+        scientific(log_dict["their_avg_num_queries"])
         + pm
-        + s(log_dict["their_std_num_queries"]),
+        + scientific(log_dict["their_std_num_queries"]),
         s(log_dict["their_avg_test"])
         + pm
         + s(log_dict["their_std_test"]),
@@ -77,8 +92,13 @@ def write_budget_data(table_data: List, log_dict: Dict, filename: str):
     """
     A helper function for producing table 3 and 4 (budget experiments).
     """
+    model_name = filename.split("_")[1]
+    if "SKLEARN_REGRESSION" in filename:  # Has a _ in the name
+        model_name = filename.split("_")[2]
+    s_model_name = standardize_model_name(model_name)
+    
     ours_data = [
-        filename[: filename.find("_")] + " + MABSplit",
+        s_model_name + " + MABSplit",
         s(log_dict["our_avg_num_trees"])
         + pm
         + s(log_dict["our_std_num_trees"]),
@@ -87,7 +107,7 @@ def write_budget_data(table_data: List, log_dict: Dict, filename: str):
         + s(log_dict["our_std_test"]),
     ]
     theirs_data = [
-        filename[: filename.find("_")],
+        s_model_name,
         s(log_dict["their_avg_num_trees"])
         + pm
         + s(log_dict["their_std_num_trees"]),
@@ -103,8 +123,8 @@ def produce_table1():
     this_dir = os.path.dirname(os.path.realpath(__file__))
     runtime_logs_dir = os.path.join(this_dir, "runtime_exps", "logs")
     header = ["Model", "Time (s)", "Number of Insertions", "Accuracy"]
-    classification_models = ["HRFC", "HRPC", "ERFC"]
-    for dataset in [APS, FLIGHT, COVTYPE, MNIST_STR]:
+    classification_models = ["HRFC", "ERFC", "HRPC"]
+    for dataset in [APS, FLIGHT, COVTYPE]: # MNIST_STR
         filename_list = [dataset + "_" + c_m + "_dict" for c_m in classification_models]
         table1_data = []
         for filename in filename_list:
@@ -120,7 +140,7 @@ def produce_table2():
     this_dir = os.path.dirname(os.path.realpath(__file__))
     runtime_logs_dir = os.path.join(this_dir, "runtime_exps", "logs")
     header = ["Model", "Time(s)", "Number of Insertions", "MSE"]
-    regression_models = ["HRFR", "HRPR", "ERFR"]
+    regression_models = ["HRFR", "ERFR", "HRPR"]
     for dataset in [AIR, GPU]: # BLOG, SKLEARN_REGRESSION
         filename_list = [dataset + "_" + r_m + "_dict" for r_m in regression_models]
         table2_data = []
@@ -136,7 +156,7 @@ def produce_table2():
 def produce_table3():
     this_dir = os.path.dirname(os.path.realpath(__file__))
     budget_logs_dir = os.path.join(this_dir, "budget_exps", "logs")
-    classification_models = ["HRFC", "HRPC", "ERFC"]
+    classification_models = ["HRFC", "ERFC", "HRPC"]
     header = ["Model", "Number of Trees", "Accuracy"]
     for dataset in [APS, FLIGHT, COVTYPE]:  # MNIST_STR
         filename_list = [dataset + "_" + c_m + "_dict" for c_m in classification_models]
@@ -266,9 +286,15 @@ def produce_figure1():
 
 if __name__ == "__main__":
     produce_table1()
+    print("\n" * 3)
     produce_table2()
+    print("\n" * 3)
     produce_table3()
+    print("\n" * 3)
     produce_table4()
+    print("\n" * 3)
     produce_table5()
+    print("\n" * 3)
     produce_table6()
+    print("\n" * 3)
     produce_figure1()
