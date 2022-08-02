@@ -642,13 +642,13 @@ def main():
     #         )
 
     ############### Classification ###############
-    for dataset in [COVTYPE, APS]:  # MNIST_STR, FLIGHT
+    for dataset in [FLIGHT, COVTYPE, APS]:  # MNIST_STR, FLIGHT
         if dataset == APS:
             budget = int(BUDGET_CLASSIFICATION * 3)
         elif dataset == COVTYPE:
-            budget = int(BUDGET_CLASSIFICATION * 3 / 5)
+            budget = int(BUDGET_CLASSIFICATION * 6 / 5)
         elif dataset == FLIGHT:
-            budget = int(BUDGET_CLASSIFICATION / 2)
+            budget = int(BUDGET_CLASSIFICATION)
         elif dataset == MNIST_STR:
             budget = int(BUDGET_CLASSIFICATION * 2.6)
         else:
