@@ -51,6 +51,7 @@ def main():
     sklearn_RFC.predict(X_test)
     print(sklearn_RFC.score(X_test, y_test))
 
+
     # Hoeffding Tree for classification
     ht_classifier = HoeffdingTreeClassifier(
         max_byte_size=float("inf"),
