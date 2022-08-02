@@ -17,8 +17,6 @@ from data_structures.wrappers.random_forest_classifier import (
 from data_structures.wrappers.extremely_random_forest_classifier import (
     ExtremelyRandomForestClassifier as ERFC_ours,
 )
-
-
 from data_structures.wrappers.random_forest_regressor import (
     RandomForestRegressor as RFR_ours,
 )

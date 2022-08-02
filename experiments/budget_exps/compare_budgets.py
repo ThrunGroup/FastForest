@@ -646,7 +646,7 @@ def main():
         if dataset == COVTYPE or dataset == APS:
             budget = int(BUDGET_CLASSIFICATION * 3)
         elif dataset == FLIGHT:
-            budget = int(BUDGET_CLASSIFICATION * 2.6)
+            budget = int(BUDGET_CLASSIFICATION / 2)
         elif dataset == MNIST_STR:
             budget = int(BUDGET_CLASSIFICATION * 2.6)
         else:
