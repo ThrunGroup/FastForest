@@ -158,7 +158,7 @@ def produce_table3():
     budget_logs_dir = os.path.join(this_dir, "budget_exps", "logs")
     classification_models = ["HRFC", "ERFC", "HRPC"]
     header = ["Model", "Number of Trees", "Accuracy"]
-    for dataset in [FLIGHT, COVTYPE]:#, COVTYPE, APS]:  # MNIST_STR
+    for dataset in [APS, FLIGHT, COVTYPE]:#, COVTYPE, APS]:  # MNIST_STR
         filename_list = [dataset + "_" + c_m + "_dict" for c_m in classification_models]
         print(filename_list)
         table3_data = []
