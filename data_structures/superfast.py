@@ -178,19 +178,18 @@ if __name__ == "__main__":
     """
     TEST!!!
     """
-    config.DISABLE_JIT = False
-    data = np.random.randint(low=0, high=1000, size=(1000000, 30))
-    label = np.random.randint(low=0, high=2, size=1000000)
-    bins_list = convert_to_discrete(data, 10)
-    histograms = numba.typed.List(get_histograms(bins_list))
+    ## Compiling ##
+    data = np.random.randint(low=1, high=3, size=(10,3))
+    labels = np.random.randint(low=0, high=2, size=10)
+    histograms = numba.typed.List(get_histograms(convert_to_discrete(data, 10)))
     indices = np.arange(data.shape[0])
     candidates = np.arange(data.shape[1])
     start = 0
     end = data.shape[0] - 1
-    batch_size = 1000
+    batch_size = 3
     find_mab_split(
         data=data,
-        labels=label,
+        labels=labels,
         histograms=histograms,
         indices=indices,
         candidates=candidates,
@@ -199,10 +198,21 @@ if __name__ == "__main__":
         batch_size=batch_size,
     )
 
+    config.DISABLE_JIT = False
+    data = np.random.randint(low=0, high=1000, size=(1000000, 30))
+    data_2 = np.copy(data)
+    labels = np.random.randint(low=0, high=2, size=1000000)
     a = time.time()
+    bins_list = convert_to_discrete(data, 10)
+    histograms = numba.typed.List(get_histograms(bins_list))
+    indices = np.arange(data.shape[0])
+    candidates = np.arange(data.shape[1])
+    start = 0
+    end = data.shape[0] - 1
+    batch_size = 1000
     print(find_mab_split(
         data=data,
-        labels=label,
+        labels=labels,
         histograms=histograms,
         indices=indices,
         candidates=candidates,
@@ -210,4 +220,7 @@ if __name__ == "__main__":
         end=end,
         batch_size=batch_size,
     ))
+    print(time.time() - a)
+    a = time.time()
+    print(solve_mab(data_2, labels))
     print(time.time() - a)
