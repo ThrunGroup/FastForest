@@ -642,17 +642,22 @@ def main():
     #         )
 
     ############### Classification ###############
-    for dataset in [FLIGHT, COVTYPE, APS]:  # MNIST_STR, FLIGHT
-        if dataset == APS:
-            budget = int(BUDGET_CLASSIFICATION * 3)
-        elif dataset == COVTYPE:
+    for dataset in [APS, COVTYPE, FLIGHT]:  # MNIST_STR, FLIGHT, COVTYPE, APS
+        if dataset == APS:  # This budget works
+            budget = int(BUDGET_CLASSIFICATION / 10)
+        elif dataset == COVTYPE:  # This budget works
             budget = int(BUDGET_CLASSIFICATION * 6 / 5)
-        elif dataset == FLIGHT:
-            budget = int(BUDGET_CLASSIFICATION)
+        elif dataset == FLIGHT:  # Fitting does not work, see #232
+            budget = int(BUDGET_CLASSIFICATION / 3)
         elif dataset == MNIST_STR:
             budget = int(BUDGET_CLASSIFICATION * 2.6)
         else:
             budget = int(BUDGET_CLASSIFICATION * 2.6)  # Default
+
+        if dataset == FLIGHT:
+            max_depth = 5
+        else:
+            max_depth = BUDGET_MAX_DEPTH
 
         train_images, train_labels, test_images, test_labels = data_loader.fetch_data(dataset)
         classification_models = ["HRFC", "HRPC", "ERFC"]
@@ -670,7 +675,7 @@ def main():
                     filename=dataset + "_" + c_m + "_dict",
                     verbose=True,
                     default_budget=budget,
-                    depth_override=BUDGET_MAX_DEPTH,
+                    depth_override=max_depth,
                 )
             )
 

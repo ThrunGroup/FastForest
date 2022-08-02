@@ -345,16 +345,15 @@ class ForestBase(ABC):
                   (Regressor) the averaged mean value of labels in each tree
         """
         T = len(self.trees)
-
         if T == 0:
             # We handle the case where no full trees were able to be split specially. In this case, we instantiate
             # a stump (single root node) and predict the datapoint as the average (regression) or priors (classification).
             N = len(self.data)
             if self.is_classification:
                 # In the case of classification, we use the priors as the prediction
-                # WARNING: This may not work when the labels are not contiguous integers starting at 0. Fix after deadline.
+                # WARNING: This may not work when the labels are not contiguous integers starting at 0. Fix after ddl.
                 # TODO(@motiwari): See warning above.
-                avg_preds = np.bincount(self.labels) / N
+                avg_preds = np.bincount(self.new_targets) / N
                 return np.argmax(avg_preds), avg_preds
             else:
                 return np.mean(self.org_targets)
