@@ -49,6 +49,8 @@ def main(filename: str = "HRFC_scaling_classification.csv"):
             color="orange",
             label=f"Logarithmic fit fit, $R^2 = {hashes_log_R2}$",
         )
+        ymin, ymax = plt.ylim()
+        plt.ylim([0, ymax])
         dataset = "Regression" if "regression" in filename else "Classification"
         if idx == 0:  # Number of queries comparison
             plt.ylabel("Number of histogram insertions queried by MABSplit")
