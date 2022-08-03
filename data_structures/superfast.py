@@ -1,23 +1,24 @@
 import numba
 from numba import njit, config
 from numba.typed import List
+from typing import Union, Tuple
 
 import numpy as np
 import time
 
 
-
-
 @njit
 def equal_den_histogram(x, num_bin):  # see https://bit.ly/3zOyBcA
     npt = len(x)
-    return np.interp(np.linspace(0, npt, num_bin + 1), np.arange(npt), np.sort(x))
+    return np.interp(
+        np.linspace(0, npt, num_bin + 1), np.arange(npt), np.sort(x)
+    ).astype(x.dtype)
+
 
 @njit
 def convert_to_discrete(
-    data:np.ndarray, num_bins: int, max_samples: int = 10000, use_quantile: bool = True
+    data: np.ndarray, num_bins: int, max_samples: int = 10000, use_quantile: bool = True
 ):
-    # print(numba.typeof(data[:, 0]))
     n: int = data.shape[0]
     f: int = data.shape[1]
     num_bins_list = []  # New num bins
@@ -37,9 +38,9 @@ def convert_to_discrete(
                     data[sample_indices, feature_idx], num_bins
                 )[1:]
                 new_num_bin = num_bins
-            # print(numba.typeof(data))
-            a = data[:, feature_idx]
-            new_data[:, feature_idx] = np.searchsorted(histogram, data[:, feature_idx]).astype(np.int8)
+            new_data[:, feature_idx] = np.searchsorted(
+                histogram, data[:, feature_idx]
+            ).astype(np.int8)
             num_bins_list.append(new_num_bin)
     return new_data, np.array(num_bins_list)
 
@@ -74,6 +75,7 @@ def find_mab_split(
     start: int,
     end: int,
     batch_size: int,
+    min_impurity_decrease: float = 0.0,
 ):
     NUM_CLASSES = 2
     time_step = 0
@@ -152,11 +154,12 @@ def find_mab_split(
             # Update
             impurity_array[candidate_idx] = gini_vec[min_idx, 0]
             cb_deltas[candidate_idx] = np.sqrt(cb_delta)
-        ucbs = impurity_array + cb_deltas * 10
-        lcbs = impurity_array - cb_deltas * 10
+        ucbs = impurity_array + cb_deltas * 3
+        lcbs = impurity_array - cb_deltas * 3
         surviving_candidates = []
         min_ucbs = ucbs.min()
-        min_impurity = impurity_array.min()
+        min_candidate = candidates[impurity_array.argmin()]
+        min_impurity = impurity_array[min_candidate]
         for idx in range(len(candidates)):
             if (
                 (lcbs[idx] <= min_ucbs)
@@ -170,15 +173,60 @@ def find_mab_split(
         candidates = np.array(surviving_candidates)
         if time_step >= data.shape[0] / batch_size:
             break
-    if min_impurity == 0:
+    # if time_step * batch_size <= data.shape[0] / 10:
+    #     new_batch_size = data.shape[0] / 10 * -time_step * batch_size
+    #     feature = min_candidate
+    #     # sample_indices = indices[np.random.randint(start, end + 1, batch_size, replace=False)]
+    #     sample_indices = indices[start : end + 1]
+    #     histogram = histograms[feature]
+    #     for sample_idx in sample_indices:
+    #         histogram[data[sample_idx, feature], labels[sample_idx]] += 1
+    #     counts_left = np.zeros_like(histogram)
+    #     counts_right = np.zeros_like(histogram)
+    #     counts_left[0] = histogram[0]
+    #     for j in range(1, histogram.shape[0]):
+    #         counts_left[j] += counts_left[j - 1] + histogram[j]
+    #         counts_right[histogram.shape[0] - 1 - j] = (
+    #             counts_right[histogram.shape[0] - j] + histogram[histogram.shape[0] - j]
+    #         )
+    #     n_left = np.expand_dims(np.sum(counts_left, axis=1), axis=1)
+    #     n_right = np.expand_dims(np.sum(counts_right, axis=1), axis=1)
+    #     left_weight = n_left / (n_right + n_left)
+    #     right_weight = n_right / (n_right + n_left)
+    #
+    #     p_left = counts_left / n_left
+    #     p_right = counts_right / n_right
+    #
+    #     for idx in range(len(n_left)):
+    #         if n_left[idx] == 0:
+    #             p_left[idx] = np.zeros(2)
+    #         if n_right[idx] == 0:
+    #             p_right[idx] = np.zeros(2)
+    #     curr_gini = (
+    #         1
+    #         - np.sum((counts_left[0, :] + counts_right[0, :]) ** 2)
+    #         / (n_left[0] + n_right[0]) ** 2
+    #     )
+    #     gini_vec = -(
+    #         curr_gini
+    #         - left_weight * np.expand_dims((1 - np.sum(p_left ** 2, axis=1)), axis=1)
+    #         - right_weight * np.expand_dims((1 - np.sum(p_right ** 2, axis=1)), axis=1)
+    #     )
+    #     min_idx = gini_vec.argmin()
+    #     if gini_vec[min_idx] >= min_impurity_decrease:
+    #         return None, None, None
+    #     return feature, min_idx, curr_gini
+
+    if min_impurity >= min_impurity_decrease:
         print("No best impurity exists")
         return None, None, None
-    print("This is the result of mab: ", min_impurity, candidates, time_step)
+    # print("This is the result of mab: ", min_impurity, candidates, time_step)
     return int(candidates[0]), int(min_idcs[0]), curr_gini
 
 
 def get_gini(counts: np.ndarray):
     return 1 - (counts / counts.sum(axis=1, keepdims=True)) ** 2
+
 
 @njit
 def splt_node_helper(
@@ -215,15 +263,15 @@ def splt_node_helper(
 
 class Node(object):
     def __init__(
-        self, data, labels, indices, start, end, histograms, depth, max_features,
+        self, data, labels, indices, start: int, end: int, histograms, depth, max_features,
     ):
         self.data = data
         self.labels = labels
         self.indices = indices
-        self.start = start
-        self.end = end
+        self.start = int(start)
+        self.end = int(end)
         self.histograms = histograms
-        self.depth = depth
+        self.depth = int(depth)
 
         self.left_child = None
         self.right_child = None
@@ -238,7 +286,7 @@ class Node(object):
         self.curr_impurity = None
         self.find_best_threshold = False
 
-    def mab_split(self):
+    def find_best_split(self):
         reset_histograms(self.histograms)
         if not self.find_best_threshold:
             self.split_feature, self.split_value, self.curr_impurity = find_mab_split(
@@ -249,12 +297,15 @@ class Node(object):
                 end=end,
                 histograms=histograms,
                 candidates=self.features,
-                batch_size=min(30, self.data.shape[0] / 1000),
+                batch_size=min(1000, self.data.shape[0] / 1000),
             )
-            print(self.split_feature, self.split_value, self.curr_impurity)
             self.find_best_threshold = True
 
     def split(self):
+        if (
+            self.find_best_threshold and self.split_feature is None
+        ):  # Impurity reduction >= min_impurity_reduction
+            return None, None
         left_start, left_end, right_start, right_end = splt_node_helper(
             data=self.data,
             labels=self.labels,
@@ -287,14 +338,129 @@ class Node(object):
         return self.left_child, self.right_child
 
 
+class Tree:
+    def __init__(
+        self, data, labels, indices, start, end, histograms, max_depth, max_features,
+    ):
+        self.data = data
+        self.labels = labels
+        self.indices = indices
+        self.start = start
+        self.end = end
+        self.histograms = histograms
+        self.max_depth = max_depth
+        self.max_features = max_features
+
+        self.record = None
+        self.num_nodes = 1
+        self.is_record = False
+
+        reset_histograms(self.histograms)
+        self.node = Node(
+            data=self.data,
+            labels=self.labels,
+            indices=self.indices,
+            start=start,
+            end=end,
+            histograms=self.histograms,
+            depth=0,
+            max_features=max_features,
+        )
+
+    def recursive_split(self, node: Node) -> None:
+        """
+        Recursively split nodes till the termination condition is satisfied
+
+        :param node: A root node to be split recursively
+        """
+        node.find_best_split()
+        node.split()
+        if node.left_child is not None:
+            self.recursive_split(node.left_child)
+            self.recursive_split(node.right_child)
+            self.num_nodes += 2
+
+    def fit(self):
+        self.recursive_split(self.node)
+
+    def write_record_recursive(self, node: Node, record: np.ndarray, num_right: int):
+        record[2 ** node.depth + num_right - 1] = (
+            node.start,
+            node.end,
+            node.split_feature,
+            node.split_value,
+        )
+        if node.left_child is not None:
+            assert node.right_child is not None, "Malformed tree"
+            self.write_record_recursive(node.left_child, record, num_right)
+            self.write_record_recursive(node.right_child, record, num_right + 1)
+
+    def get_record(self):
+        self.record = np.empty((2 ** self.max_depth + 1, 4))
+        self.record[:] = np.nan
+        self.write_record_recursive(self.node, self.record, 0)
+        self.is_record = True
+
+    def predict(self, datapoint: np.ndarray):
+        assert len(datapoint.shape) == 1, "Invalid dimension"
+        assert self.is_record, "Should write tree record first"
+        return _predict(datapoint, self.record, self.labels, self.indices)
+
+    def predict_batch(self, data: np.ndarray):
+        assert len(data.shape) == 2, "Invalid choice of dimension"
+        assert self.is_record, "Should write tree record first"
+        return _predict_batch(data, self.record, self.labels, self.indices)
+
+
+"""
+Numba functions for Tree class and Node class
+"""
+### Tree Class ###
+def _predict_batch(
+    data: np.ndarray, record: np.ndarray, labels: np.ndarray, indices: np.ndarray
+):
+    predicted_labels = np.empty(data.shape[0])
+    for idx in range(data.shape[0]):
+        predicted_labels[idx] = _predict(data[idx], record, labels, indices)
+    return predicted_labels
+
+
+def _predict(
+    datapoint: np.ndarray, record: np.ndarray, labels: np.ndarray, indices: np.ndarray
+):
+    """
+    Classifier: calculate the predicted probabilities that the given datapoint belongs to each classifier
+    Regressor: calculate the mean of all labels(targets)
+
+    :param datapoint: datapoint to fit
+    :param record: stores (start, end, split feature, split value) of each node / ith element is ith node (
+    start from root and traverse from left to right and increase the depth by 1)
+    :return: the probabilities of the datapoint being each class label or the mean value of labels
+    """
+    depth = 0
+    idx = 0
+    node_record = record[idx]
+    while not np.isnan(node_record[2]): # means that node is not splitted
+        feature_value = datapoint[node_record[2]]
+        if feature_value <= node_record[3]:
+            idx += 2 ** depth
+        else:
+            idx += 2 ** depth + 1
+        depth += 1
+    start = int(node_record[0])
+    end = int(node_record[1])
+    predicted_label = np.bincount(labels[indices[start: end + 1]]).argmax()
+    return predicted_label
+
 
 if __name__ == "__main__":
     """
     TEST!!!
     """
+
     ## Compiling ##
     # Jay: need to fix bug when type is integer
-    data = np.random.random(size=(10,3)).astype(np.float32)
+    data = np.random.random(size=(10, 3))
     a = np.copy(data)
     labels = np.random.randint(low=0, high=2, size=10).astype(np.int8)
     data, num_bins_list = convert_to_discrete(data, 10)
@@ -304,7 +470,6 @@ if __name__ == "__main__":
     start = 0
     end = data.shape[0] - 1
     batch_size = 3
-    print(data.dtype)
     find_mab_split(
         data=data,
         labels=labels,
@@ -315,11 +480,71 @@ if __name__ == "__main__":
         end=end,
         batch_size=batch_size,
     )
-
+    tree = Tree(
+        data=data,
+        labels=labels,
+        indices=indices,
+        start=start,
+        end=end,
+        histograms=histograms,
+        max_depth=0,
+        max_features=1,
+    )
+    tree.get_record()
+    print(tree.predict(data[0]) == labels[0])
+    print(np.sum(tree.predict_batch(data) == labels) / len(labels))
     config.DISABLE_JIT = False
-    data = np.random.random(size=(1000000, 30)).astype(np.float32)
+    rng = np.random.default_rng(0)
+    data = rng.random(size=(1000000, 30))
+    labels = np.ones(1000000).astype(int)
+    for i in range(5):
+        labels = labels & (data[:, rng.integers(low=0, high=30, size=1)[0]] < rng.random())
+        labels = labels | (data[:, rng.integers(low=0, high=30, size=1)[0]] > rng.random())
+    labels = labels.astype(int)
+    from experiments.dataset import fetch_data
+    data, num_bins_list = convert_to_discrete(data, 10)
+    histograms = numba.typed.List(get_histograms(num_bins_list))
+    indices = np.arange(data.shape[0])
+    candidates = np.arange(data.shape[1])
+    start = 0
+    end = data.shape[0] - 1
+    batch_size = 1000
+    a = time.time()
+    tree = Tree(
+        data=data,
+        labels=labels,
+        indices=indices,
+        start=start,
+        end=end,
+        histograms=histograms,
+        max_depth=5,
+        max_features=1,
+    )
+    tree.fit()
+    print(time.time() - a)
+    tree.get_record()
+    print(np.sum(tree.predict_batch(data[:1000]) == labels[:1000]) / len(labels[:1000]))
+
+    a = time.time()
+    tree = Tree(
+        data=data,
+        labels=labels,
+        indices=indices,
+        start=start,
+        end=end,
+        histograms=histograms,
+        max_depth=5,
+        max_features=1,
+    )
+    tree.fit()
+    print(time.time() - a)
+    tree.get_record()
+    print(np.sum(tree.predict_batch(data[:1000]) == labels[:1000]) / len(labels[:1000]))
+    print(tree.record)
+    exit()
+
+    # labels = rng.integers(low=0, high=2, size=1000000)
     # labels = np.random.randint(low=0, high=2, size=1000000)
-    labels = np.random.randint(low=0, high=2, size=1000000)
     a = time.time()
     data, num_bins_list = convert_to_discrete(data, 10)
     histograms = numba.typed.List(get_histograms(num_bins_list))
@@ -356,7 +581,7 @@ if __name__ == "__main__":
         max_features=1,
     )
     a = time.time()
-    root_node.mab_split()
+    root_node.find_best_split()
     root_node.split()
     print(time.time() - a)
 
@@ -371,6 +596,6 @@ if __name__ == "__main__":
         max_features=1,
     )
     a = time.time()
-    root_node.mab_split()
+    root_node.find_best_split()
     root_node.split()
     print(time.time() - a)
