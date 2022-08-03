@@ -5,11 +5,7 @@ from numba.typed import List
 import numpy as np
 import time
 
-from utils.solvers import solve_mab
 
-from matplotlib import pyplot as plt
-
-from utils.utils import get_subset_2d
 
 
 @njit
@@ -17,29 +13,35 @@ def equal_den_histogram(x, num_bin):  # see https://bit.ly/3zOyBcA
     npt = len(x)
     return np.interp(np.linspace(0, npt, num_bin + 1), np.arange(npt), np.sort(x))
 
-
 @njit
 def convert_to_discrete(
-    data: np.ndarray, num_bins: int, max_samples: int = 10000, use_quantile: bool = True
+    data:np.ndarray, num_bins: int, max_samples: int = 10000, use_quantile: bool = True
 ):
+    # print(numba.typeof(data[:, 0]))
     n: int = data.shape[0]
     f: int = data.shape[1]
     num_bins_list = []  # New num bins
+    new_data = np.empty(shape=data.shape, dtype=np.int8)
     if n > max_samples:
         sample_indices = np.random.randint(0, n, size=max_samples)
     else:
         sample_indices = np.arange(n)
     for feature_idx in range(f):
         if use_quantile:
-            new_num_bin = min(
-                len(np.unique(data[sample_indices, feature_idx])), num_bins
-            )
-            histogram = equal_den_histogram(
-                data[sample_indices, feature_idx], new_num_bin
-            )[1:]
-            data[:, feature_idx] = np.searchsorted(histogram, data[:, feature_idx])
+            unique_samples = np.unique(data[sample_indices, feature_idx])
+            if len(unique_samples) <= num_bins:
+                histogram = unique_samples
+                new_num_bin = len(unique_samples)
+            else:
+                histogram = equal_den_histogram(
+                    data[sample_indices, feature_idx], num_bins
+                )[1:]
+                new_num_bin = num_bins
+            # print(numba.typeof(data))
+            a = data[:, feature_idx]
+            new_data[:, feature_idx] = np.searchsorted(histogram, data[:, feature_idx]).astype(np.int8)
             num_bins_list.append(new_num_bin)
-    return np.array(num_bins_list)
+    return new_data, np.array(num_bins_list)
 
 
 @njit
@@ -80,7 +82,7 @@ def find_mab_split(
         cb_deltas = np.empty(len(candidates))
         min_idcs = np.empty(len(candidates))
         time_step += 1
-        sample_indices = np.random.randint(indices[start], indices[end] + 1, batch_size)
+        sample_indices = indices[np.random.randint(start, end + 1, batch_size)]
         for candidate_idx in range(len(candidates)):
             feature = candidates[candidate_idx]
             histogram = histograms[feature]
@@ -115,8 +117,10 @@ def find_mab_split(
             )
             gini_vec = -(
                 curr_gini
-                - left_weight * np.expand_dims((1 - np.sum(p_left ** 2, axis=1)), axis=1)
-                - right_weight * np.expand_dims((1 - np.sum(p_right ** 2, axis=1)), axis=1)
+                - left_weight
+                * np.expand_dims((1 - np.sum(p_left ** 2, axis=1)), axis=1)
+                - right_weight
+                * np.expand_dims((1 - np.sum(p_right ** 2, axis=1)), axis=1)
             )
             min_idx = gini_vec.argmin()
             min_idcs[candidate_idx] = min_idx
@@ -148,8 +152,8 @@ def find_mab_split(
             # Update
             impurity_array[candidate_idx] = gini_vec[min_idx, 0]
             cb_deltas[candidate_idx] = np.sqrt(cb_delta)
-        ucbs = impurity_array + cb_deltas * 3
-        lcbs = impurity_array - cb_deltas * 3
+        ucbs = impurity_array + cb_deltas * 10
+        lcbs = impurity_array - cb_deltas * 10
         surviving_candidates = []
         min_ucbs = ucbs.min()
         min_impurity = impurity_array.min()
@@ -166,12 +170,122 @@ def find_mab_split(
         candidates = np.array(surviving_candidates)
         if time_step >= data.shape[0] / batch_size:
             break
-    print(candidates)
-    return candidates[0], min_idcs[0], time_step, cb_deltas, impurity_array
+    if min_impurity == 0:
+        print("No best impurity exists")
+        return None, None, None
+    print("This is the result of mab: ", min_impurity, candidates, time_step)
+    return int(candidates[0]), int(min_idcs[0]), curr_gini
 
 
 def get_gini(counts: np.ndarray):
     return 1 - (counts / counts.sum(axis=1, keepdims=True)) ** 2
+
+@njit
+def splt_node_helper(
+    data: np.ndarray,
+    labels: np.ndarray,
+    indices: np.ndarray,
+    start: np.ndarray,
+    end: np.ndarray,
+    split_feature: np.ndarray,
+    split_value: np.ndarray,
+):
+    left_idx = start
+    right_idx = end
+    while left_idx != right_idx:
+        if data[indices[left_idx], split_feature] <= split_value:
+            left_idx += 1
+        else:
+            indices[left_idx], indices[right_idx] = (
+                indices[right_idx],
+                indices[left_idx],
+            )
+            right_idx -= 1
+    left_start = start
+    right_end = end
+    if data[indices[left_idx], split_feature] <= split_value:
+        left_end = left_idx
+        right_start = left_idx + 1
+    else:
+        left_end = left_idx - 1
+        right_start = left_idx
+
+    return left_start, left_end, right_start, right_end
+
+
+class Node(object):
+    def __init__(
+        self, data, labels, indices, start, end, histograms, depth, max_features,
+    ):
+        self.data = data
+        self.labels = labels
+        self.indices = indices
+        self.start = start
+        self.end = end
+        self.histograms = histograms
+        self.depth = depth
+
+        self.left_child = None
+        self.right_child = None
+        self.max_features = max_features
+        self.features = np.arange(data.shape[1])
+        self.features = np.random.choice(
+            data.shape[1], int(max_features * data.shape[1]), replace=False
+        )
+
+        self.split_feature = None
+        self.split_value = None
+        self.curr_impurity = None
+        self.find_best_threshold = False
+
+    def mab_split(self):
+        reset_histograms(self.histograms)
+        if not self.find_best_threshold:
+            self.split_feature, self.split_value, self.curr_impurity = find_mab_split(
+                data=data,
+                labels=labels,
+                indices=indices,
+                start=start,
+                end=end,
+                histograms=histograms,
+                candidates=self.features,
+                batch_size=min(30, self.data.shape[0] / 1000),
+            )
+            print(self.split_feature, self.split_value, self.curr_impurity)
+            self.find_best_threshold = True
+
+    def split(self):
+        left_start, left_end, right_start, right_end = splt_node_helper(
+            data=self.data,
+            labels=self.labels,
+            indices=self.indices,
+            start=self.start,
+            end=self.end,
+            split_feature=self.split_feature,
+            split_value=self.split_value,
+        )
+        self.left_child = Node(
+            data=self.data,
+            labels=self.labels,
+            indices=self.indices,
+            start=left_start,
+            end=left_end,
+            histograms=self.histograms,
+            depth=self.depth + 1,
+            max_features=self.max_features,
+        )
+        self.right_child = Node(
+            data=self.data,
+            labels=self.labels,
+            indices=self.indices,
+            start=right_start,
+            end=right_end,
+            histograms=self.histograms,
+            depth=self.depth + 1,
+            max_features=self.max_features,
+        )
+        return self.left_child, self.right_child
+
 
 
 if __name__ == "__main__":
@@ -179,14 +293,18 @@ if __name__ == "__main__":
     TEST!!!
     """
     ## Compiling ##
-    data = np.random.randint(low=1, high=3, size=(10,3))
-    labels = np.random.randint(low=0, high=2, size=10)
-    histograms = numba.typed.List(get_histograms(convert_to_discrete(data, 10)))
+    # Jay: need to fix bug when type is integer
+    data = np.random.random(size=(10,3)).astype(np.float32)
+    a = np.copy(data)
+    labels = np.random.randint(low=0, high=2, size=10).astype(np.int8)
+    data, num_bins_list = convert_to_discrete(data, 10)
+    histograms = numba.typed.List(get_histograms(num_bins_list))
     indices = np.arange(data.shape[0])
     candidates = np.arange(data.shape[1])
     start = 0
     end = data.shape[0] - 1
     batch_size = 3
+    print(data.dtype)
     find_mab_split(
         data=data,
         labels=labels,
@@ -199,28 +317,60 @@ if __name__ == "__main__":
     )
 
     config.DISABLE_JIT = False
-    data = np.random.randint(low=0, high=1000, size=(1000000, 30))
-    data_2 = np.copy(data)
+    data = np.random.random(size=(1000000, 30)).astype(np.float32)
+    # labels = np.random.randint(low=0, high=2, size=1000000)
     labels = np.random.randint(low=0, high=2, size=1000000)
     a = time.time()
-    bins_list = convert_to_discrete(data, 10)
-    histograms = numba.typed.List(get_histograms(bins_list))
+    data, num_bins_list = convert_to_discrete(data, 10)
+    histograms = numba.typed.List(get_histograms(num_bins_list))
     indices = np.arange(data.shape[0])
     candidates = np.arange(data.shape[1])
     start = 0
     end = data.shape[0] - 1
     batch_size = 1000
-    print(find_mab_split(
+    print(
+        find_mab_split(
+            data=data,
+            labels=labels,
+            histograms=histograms,
+            indices=indices,
+            candidates=candidates,
+            start=start,
+            end=end,
+            batch_size=batch_size,
+        )
+    )
+    # print(time.time() - a)
+    # a = time.time()
+    # print(solve_mab(data_2, labels))
+    # print(time.time() - a)
+
+    root_node = Node(
         data=data,
         labels=labels,
-        histograms=histograms,
         indices=indices,
-        candidates=candidates,
         start=start,
         end=end,
-        batch_size=batch_size,
-    ))
-    print(time.time() - a)
+        histograms=histograms,
+        depth=0,
+        max_features=1,
+    )
     a = time.time()
-    print(solve_mab(data_2, labels))
+    root_node.mab_split()
+    root_node.split()
+    print(time.time() - a)
+
+    root_node = Node(
+        data=data,
+        labels=labels,
+        indices=np.arange(data.shape[0]),
+        start=start,
+        end=end,
+        histograms=histograms,
+        depth=0,
+        max_features=1,
+    )
+    a = time.time()
+    root_node.mab_split()
+    root_node.split()
     print(time.time() - a)
