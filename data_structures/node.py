@@ -165,7 +165,7 @@ class Node:
             self.prev_split_feature = self.split_feature
             self.split_feature = self.feature_idcs[
                 self.split_feature
-            ]  # Feature index of original dataset
+            ]  # Feature index of original datasets
             self.split_reduction *= self.proportion  # Normalize by number of datapoints
             if self.verbose:
                 print("Calculated split with", self.num_queries, "queries")

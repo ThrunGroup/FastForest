@@ -3,7 +3,7 @@ import bisect
 import math
 from typing import Any, Tuple
 
-from utils.constants import LINEAR, DISCRETE, IDENTITY, RANDOM, DEFAULT_NUM_BINS, VECTORIZE
+from utils.constants import LINEAR, DISCRETE, IDENTITY, RANDOM, DEFAULT_NUM_BINS, VECTORIZE_HISTOGRAM
 from utils.utils_histogram import welford_variance_calc
 
 
@@ -109,8 +109,8 @@ class Histogram:
 
     def add(self, X: np.ndarray, Y: np.ndarray):
         """
-        Given dataset X , add all the points in the dataset to the histogram.
-        :param X: dataset to be histogrammed (subset of original X, although could be the same size)
+        Given datasets X , add all the points in the datasets to the histogram.
+        :param X: datasets to be histogrammed (subset of original X, although could be the same size)
         :return: None, but modify the histogram to include the relevant feature values
         """
         feature_values = X[:, self.feature_idx]
@@ -126,7 +126,7 @@ class Histogram:
                 Y
             ), "Error: sample sizes and label sizes must be the same"
             insert_idcs = self.get_bin(feature_values, self.bin_edges).astype("int64")
-            if VECTORIZE:
+            if VECTORIZE_HISTOGRAM:
                 new_Y = self.replace_array(Y, self.class_to_idx)
                 hist = np.zeros(
                     (self.left.shape[0] + 1, self.left.shape[1]), dtype=np.int64

@@ -13,7 +13,7 @@ def ground_truth_tree(
     data: np.ndarray, labels: np.ndarray, max_depth: int = 1, show: bool = False
 ) -> None:
     """
-    Given a dataset, create the ground truth tree using sklearn.
+    Given a datasets, create the ground truth tree using sklearn.
     If max_depth = 1, perform the first step of making a tree: find the single best (feature, feature_value) pair
     to split on using the sklearn implementation.
 
@@ -40,7 +40,7 @@ def ground_truth_forest(
     n_classes: int = 2,
 ) -> None:
     """
-    Given a dataset, create the ground truth tree using sklearn.
+    Given a datasets, create the ground truth tree using sklearn.
     If n_estimators = 1, fits only the first ree
 
     :param data: data to fit

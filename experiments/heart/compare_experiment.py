@@ -32,10 +32,10 @@ def experiment_single() -> None:
     Compare the test accuracy of fastforest and sklearn algorithm with best hyperparameters found in sweep_heart.py.
     """
     config = find_best_hyper()
-    filepath = os.path.join("dataset", "new_heart_2020_cleaned.csv")
+    filepath = os.path.join("datasets", "new_heart_2020_cleaned.csv")
     assert os.path.exists(
         filepath
-    ), "Heart disease dataset isn't available. Run preprocess_heart.py"
+    ), "Heart disease datasets isn't available. Run preprocess_heart.py"
     X, Y = load_data(filepath)
     X_train, X_val, X_test, Y_train, Y_val, Y_test = split_data(
         X, Y, [0.6, 0.2, 0.2], config["sub_size"], config["seed"], config["is_balanced"]
@@ -77,10 +77,10 @@ def experiment_cf(
     """
     config = find_best_hyper()
     config["n_estimators"] = 10
-    filepath = os.path.join("dataset", "new_heart_2020_cleaned.csv")
+    filepath = os.path.join("datasets", "new_heart_2020_cleaned.csv")
     assert os.path.exists(
         filepath
-    ), "Heart disease dataset isn't available. Run preprocess_heart.py"
+    ), "Heart disease datasets isn't available. Run preprocess_heart.py"
     X, Y = load_data(filepath)
     X_train, X_val, X_test, Y_train, Y_val, Y_test = split_data(
         X, Y, [0.6, 0.2, 0.2], config["sub_size"], config["seed"], config["is_balanced"]

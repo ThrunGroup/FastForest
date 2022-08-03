@@ -19,7 +19,7 @@ def test_tree_diabetes(
     print_sklearn: bool = False,
 ):
     if verbose:
-        print("--DT experiment with diabetes dataset--")
+        print("--DT experiment with diabetes datasets--")
     np.random.seed(seed)
     random.seed(seed)
     diabetes = load_diabetes()
@@ -71,7 +71,7 @@ def test_forest_diabetes(
     is_precomputed_minmax: bool = False,
 ):
     if verbose:
-        print("--RF experiment with diabetes dataset--")
+        print("--RF experiment with diabetes datasets--")
     diabetes = load_diabetes()
     data, labels = diabetes.data, diabetes.target
     if print_sklearn:
@@ -123,7 +123,7 @@ if __name__ == "__main__":
         seed=50,
         features_subsampling=SQRT,
         with_replacement=False,
-        is_precomputed_minmax=True,
+        is_precomputed_minmax=False,
         print_sklearn=True,
     )
     print("time taken: ", time.time() - start_time)

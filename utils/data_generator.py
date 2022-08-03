@@ -9,7 +9,7 @@ def create_data(N=1000):
     Datasets created by this method should be split by the first feature at 0.5.
 
     :param N: Dataset size
-    :return: dataset
+    :return: datasets
     """
     seed = 0
     np.random.seed(seed)
