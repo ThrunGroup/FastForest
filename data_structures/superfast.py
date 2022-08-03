@@ -375,7 +375,7 @@ class Tree:
         """
         node.find_best_split()
         node.split()
-        if node.left_child is not None:
+        if node.left_child is not None and node.depth < self.max_depth:
             self.recursive_split(node.left_child)
             self.recursive_split(node.right_child)
             self.num_nodes += 2
@@ -501,7 +501,11 @@ if __name__ == "__main__":
         labels = labels & (data[:, rng.integers(low=0, high=30, size=1)[0]] < rng.random())
         labels = labels | (data[:, rng.integers(low=0, high=30, size=1)[0]] > rng.random())
     labels = labels.astype(int)
-    from experiments.dataset import fetch_data
+    # from experiments.datasets.data_loader import fetch_data
+    # from utils.constants import FLIGHT
+    # from sklearn.tree import DecisionTreeClassifier
+    # print("STARTING EXPERIMENTS")
+    # data, labels, test_data, test_labels = fetch_data(FLIGHT)
     data, num_bins_list = convert_to_discrete(data, 10)
     histograms = numba.typed.List(get_histograms(num_bins_list))
     indices = np.arange(data.shape[0])
@@ -513,7 +517,7 @@ if __name__ == "__main__":
     tree = Tree(
         data=data,
         labels=labels,
-        indices=indices,
+        indices=np.arange(data.shape[0]),
         start=start,
         end=end,
         histograms=histograms,
@@ -523,13 +527,13 @@ if __name__ == "__main__":
     tree.fit()
     print(time.time() - a)
     tree.get_record()
-    print(np.sum(tree.predict_batch(data[:1000]) == labels[:1000]) / len(labels[:1000]))
+    # print(np.sum(tree.predict_batch(test_data) == test_labels) / len(test_labels))
 
     a = time.time()
     tree = Tree(
         data=data,
         labels=labels,
-        indices=indices,
+        indices=np.arange(data.shape[0]),
         start=start,
         end=end,
         histograms=histograms,
@@ -539,8 +543,17 @@ if __name__ == "__main__":
     tree.fit()
     print(time.time() - a)
     tree.get_record()
-    print(np.sum(tree.predict_batch(data[:1000]) == labels[:1000]) / len(labels[:1000]))
-    print(tree.record)
+    # print(np.sum(tree.predict_batch(test_data) == test_labels) / len(test_labels))
+
+    # tree = DecisionTreeClassifier(
+    #     max_depth=5,
+    #     max_features=1,
+    # )
+    # a = time.time()
+    # tree.fit(data, labels)
+    # print(time.time() - a)
+    # print(np.sum(tree.predict(test_data) == test_labels) / len(test_labels))
+
     exit()
 
     # labels = rng.integers(low=0, high=2, size=1000000)
