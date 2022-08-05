@@ -551,6 +551,7 @@ def compiling_jit(data_dtype, labels_dtype):
     print(
         "Compiling functions with njit decorator by running them with right type of parameters beforehand..."
     )
+    start_time = time.time()
     data = np.random.random(size=(300, 3)).astype(data_dtype)
     labels = (data[:, 1] < 0.3).astype(labels_dtype)
     data, num_bins_list = convert_to_discrete(data, 10)
@@ -585,8 +586,7 @@ def compiling_jit(data_dtype, labels_dtype):
     a = time.time()
     tree.fit()
     tree.predict_batch(data)
-    print(np.sum(tree.predict_batch(data) == labels) / len(labels))
-
+    print(time.time() - start_time)
     print("Compile ends\n")
 
 
@@ -729,27 +729,27 @@ if __name__ == "__main__":
     labels.astype(np.int8)
     data_dtype, labels_dtype = data.dtype, labels.dtype
     compiling_jit(data_dtype, labels_dtype)
-    run_comparison(data=data, labels=labels, max_depth=3, dataset="Flight delay(100k)")
-    run_comparison(data=data, labels=labels, max_depth=8, dataset="Flight delay(100k)")
+    run_comparison(data=data, labels=labels, is_prev_mab=False, max_depth=3, dataset="Flight delay(100k)")
+    run_comparison(data=data, labels=labels, is_prev_mab=False, max_depth=8, dataset="Flight delay(100k)")
 
     data, labels, _, _ = get_large_flight_data()
     labels.astype(np.int8)
     data_dtype, labels_dtype = data.dtype, labels.dtype
     compiling_jit(data_dtype, labels_dtype)
-    run_comparison(data=data, labels=labels, max_depth=3, dataset="Flight delay(100k)")
-    run_comparison(data=data, labels=labels, max_depth=8, dataset="Flight delay(100k)")
+    run_comparison(data=data, labels=labels, is_prev_mab=False, max_depth=3, dataset="Flight delay(1m)")
+    run_comparison(data=data, labels=labels, is_prev_mab=False, max_depth=8, dataset="Flight delay(1m)")
 
     data, labels, _, _ = fetch_data(COVTYPE)
     labels.astype(np.int8)
     data_dtype, labels_dtype = data.dtype, labels.dtype
     compiling_jit(data_dtype, labels_dtype)
-    run_comparison(data=data, labels=labels, max_depth=3, dataset="Covtype")
-    run_comparison(data=data, labels=labels, max_depth=8, dataset="Covtype")
+    run_comparison(data=data, labels=labels, is_prev_mab=False, max_depth=3, dataset="Covtype")
+    run_comparison(data=data, labels=labels, is_prev_mab=False, max_depth=8, dataset="Covtype")
 
     data, labels, _, _ = fetch_data(APS)
     labels.astype(np.int8)
     data_dtype, labels_dtype = data.dtype, labels.dtype
     compiling_jit(data_dtype, labels_dtype)
-    run_comparison(data=data, labels=labels, max_depth=3, dataset="APS")
-    run_comparison(data=data, labels=labels, max_depth=8, dataset="APS")
+    run_comparison(data=data, labels=labels, is_prev_mab=False, max_depth=3, dataset="APS")
+    run_comparison(data=data, labels=labels, is_prev_mab=False, max_depth=8, dataset="APS")
     exit()
