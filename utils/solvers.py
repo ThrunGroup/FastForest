@@ -436,7 +436,7 @@ def solve_mab(
             break
 
         # None of the CIs overlap with 0. We are confident that there is no possible impurity reduction.
-        if lcbs.min() > 0:
+        if np.nanmin(lcbs) > 0:
             break
 
         # TODO(@motiwari): Can't use nanmin here -- why?
@@ -447,7 +447,7 @@ def solve_mab(
         tied_arms[min_idx] = 0
         cand_condition = np.where(
             (exact_mask == 0)
-            & (lcbs < ucbs.min())
+            & (lcbs < np.nanmin(ucbs))
             & (lcbs < min_impurity_reduction)
             & (tied_arms == 0)
         )

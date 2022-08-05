@@ -1,11 +1,20 @@
 import numba
 import sklearn.tree
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.datasets import make_classification
 from numba import njit, config
 from numba.typed import List
 from typing import Union, Tuple
-from data_structures.wrappers.histogram_random_patches_classifier import HistogramRandomPatchesClassifier as HRFR
 import numpy as np
 import time
+
+from experiments.datasets.data_loader import fetch_data, get_large_flight_data
+from utils.constants import FLIGHT, COVTYPE, APS
+from data_structures.tree_classifier import TreeClassifier
+
+
+def r(num):
+    return round(num, 3)
 
 
 @njit
@@ -18,7 +27,10 @@ def equal_den_histogram(x, num_bin):  # see https://bit.ly/3zOyBcA
 
 @njit
 def convert_to_discrete(
-    data: np.ndarray, num_bins: int, max_samples: int = 100000, use_quantile: bool = True
+    data: np.ndarray,
+    num_bins: int,
+    max_samples: int = 100000,
+    use_quantile: bool = True,
 ):
     n: int = data.shape[0]
     f: int = data.shape[1]
@@ -37,7 +49,7 @@ def convert_to_discrete(
             else:
                 bin_edges = equal_den_histogram(
                     data[sample_indices, feature_idx], num_bins
-                )[1: -1]
+                )[1:-1]
                 new_num_bin = num_bins
             new_data[:, feature_idx] = np.searchsorted(
                 bin_edges, data[:, feature_idx]
@@ -86,7 +98,7 @@ def find_mab_split(
         min_bin_idcs = np.empty(len(candidates))
         time_step += 1
         if batch_size >= (end - start + 1):
-            sample_indices = indices[start: end+1]
+            sample_indices = indices[start : end + 1]
         else:
             sample_indices = indices[np.random.randint(start, end + 1, batch_size)]
         for candidate_idx in range(len(candidates)):
@@ -94,7 +106,9 @@ def find_mab_split(
             histogram = histograms[feature]
             for sample_idx in sample_indices:
                 histogram[data[sample_idx, feature], labels[sample_idx]] += 1
-            counts_left = np.zeros((histogram.shape[0] - 1, histogram.shape[1]))  # Split point = # of bins - 1
+            counts_left = np.zeros(
+                (histogram.shape[0] - 1, histogram.shape[1])
+            )  # Split point = # of bins - 1
             counts_right = np.zeros((histogram.shape[0] - 1, histogram.shape[1]))
             counts_left[0] = histogram[0]
             counts_right[-1] = histogram[-1]
@@ -151,7 +165,11 @@ def find_mab_split(
                         ** 2
                     )  # dG/dp ** 2
                     * (
-                        (p_right[min_idx, 0] * (1 - p_right[min_idx, 0]) / n_right[min_idx])
+                        (
+                            p_right[min_idx, 0]
+                            * (1 - p_right[min_idx, 0])
+                            / n_right[min_idx]
+                        )
                         ** 2
                     )  # V_p ** 2
                 )
@@ -238,40 +256,6 @@ def get_gini(counts: np.ndarray):
     return 1 - (counts / counts.sum(axis=1, keepdims=True)) ** 2
 
 
-@njit
-def splt_node_helper(
-    data: np.ndarray,
-    labels: np.ndarray,
-    indices: np.ndarray,
-    start: np.ndarray,
-    end: np.ndarray,
-    split_feature: np.ndarray,
-    split_value: np.ndarray,
-):
-    left_idx = start
-    right_idx = end
-    while left_idx != right_idx:
-        if data[indices[left_idx], split_feature] <= split_value:
-            left_idx += 1
-        else:
-            indices[left_idx], indices[right_idx] = (
-                indices[right_idx],
-                indices[left_idx],
-            )
-            right_idx -= 1
-    left_start = start
-    right_end = end
-    if data[indices[left_idx], split_feature] <= split_value:
-        left_end = left_idx
-        right_start = left_idx + 1
-    else:
-        left_end = left_idx - 1
-        right_start = left_idx
-    if left_start > left_end or right_start > right_end:
-        return None, None, None, None
-    return left_start, left_end, right_start, right_end
-
-
 class Node(object):
     def __init__(
         self,
@@ -318,9 +302,9 @@ class Node(object):
                 end=self.end,
                 histograms=self.histograms,
                 candidates=self.features,
-                # batch_size=1000,
-                batch_size=(self.end - self.start + 1) if self.batch_size is None else batch_size
-                # batch_size=int(min(1000, self.data.shape[0]/100)),
+                batch_size=(self.end - self.start + 1)
+                if self.batch_size is None
+                else self.batch_size,
             )
             self.find_best_threshold = True
 
@@ -329,7 +313,7 @@ class Node(object):
             self.split_feature is None
         ):  # Impurity reduction >= min_impurity_reduction
             return None, None
-        left_start, left_end, right_start, right_end = splt_node_helper(
+        left_start, left_end, right_start, right_end = split_node_helper(
             data=self.data,
             labels=self.labels,
             indices=self.indices,
@@ -391,12 +375,24 @@ class Node(object):
             )
             self.right_child.n_print()
         else:
-            class_idx_pred = np.argmax(np.bincount(self.labels[self.indices[self.start: self.end+1]]))
+            class_idx_pred = np.argmax(
+                np.bincount(self.labels[self.indices[self.start : self.end + 1]])
+            )
             print(("|   " * self.depth) + "|--- " + "class: " + str(class_idx_pred))
+
 
 class Tree:
     def __init__(
-        self, data, labels, indices, start, end, histograms, max_depth, max_features, batch_size = None,
+        self,
+        data,
+        labels,
+        indices,
+        start,
+        end,
+        histograms,
+        max_depth,
+        max_features,
+        batch_size=None,
     ):
         self.data = data
         self.labels = labels
@@ -473,9 +469,45 @@ class Tree:
 
 
 """
-Numba functions for Tree class and Node class
+Njit functions for Tree class and Node class
 """
-### Tree Class ###
+
+# Node class helper
+@njit
+def split_node_helper(
+    data: np.ndarray,
+    labels: np.ndarray,
+    indices: np.ndarray,
+    start: np.ndarray,
+    end: np.ndarray,
+    split_feature: np.ndarray,
+    split_value: np.ndarray,
+):
+    left_idx = start
+    right_idx = end
+    while left_idx != right_idx:
+        if data[indices[left_idx], split_feature] <= split_value:
+            left_idx += 1
+        else:
+            indices[left_idx], indices[right_idx] = (
+                indices[right_idx],
+                indices[left_idx],
+            )
+            right_idx -= 1
+    left_start = start
+    right_end = end
+    if data[indices[left_idx], split_feature] <= split_value:
+        left_end = left_idx
+        right_start = left_idx + 1
+    else:
+        left_end = left_idx - 1
+        right_start = left_idx
+    if left_start > left_end or right_start > right_end:
+        return None, None, None, None
+    return left_start, left_end, right_start, right_end
+
+
+# Tree class helpers
 @njit
 def _predict_batch(
     data: np.ndarray, record: np.ndarray, labels: np.ndarray, indices: np.ndarray
@@ -485,13 +517,13 @@ def _predict_batch(
         predicted_labels[idx] = _predict(data[idx], record, labels, indices)
     return predicted_labels
 
+
 @njit
 def _predict(
     datapoint: np.ndarray, record: np.ndarray, labels: np.ndarray, indices: np.ndarray
 ):
     """
-    Classifier: calculate the predicted probabilities that the given datapoint belongs to each classifier
-    Regressor: calculate the mean of all labels(targets)
+    Classifier: calculate the predicted label
 
     :param datapoint: datapoint to fit
     :param record: stores (start, end, split feature, split value) of each node / ith element is ith node (
@@ -511,20 +543,16 @@ def _predict(
     start = int(node_record[0])
     end = int(node_record[1])
     if np.isnan(node_record[4]):
-        node_record[4] = np.bincount(labels[indices[start: end + 1]]).argmax()
+        node_record[4] = np.bincount(labels[indices[start : end + 1]]).argmax()
     return node_record[4]
 
 
-if __name__ == "__main__":
-    """
-    TEST!!!
-    """
-
-    ## Compiling ##
-    # Jay: need to fix bug when type is integer
-    data = np.random.random(size=(10, 3))
-    a = np.copy(data)
-    labels = (data[:,1] < 0.3).astype(np.int8)
+def compiling_jit(data_dtype, labels_dtype):
+    print(
+        "Compiling functions with njit decorator by running them with right type of parameters beforehand..."
+    )
+    data = np.random.random(size=(300, 3)).astype(data_dtype)
+    labels = (data[:, 1] < 0.3).astype(labels_dtype)
     data, num_bins_list = convert_to_discrete(data, 10)
     histograms = numba.typed.List(get_histograms(num_bins_list))
     indices = np.arange(data.shape[0])
@@ -532,7 +560,7 @@ if __name__ == "__main__":
     start = 0
     end = data.shape[0] - 1
     batch_size = 9
-    print(find_mab_split(
+    find_mab_split(
         data=data,
         labels=labels,
         histograms=histograms,
@@ -541,7 +569,7 @@ if __name__ == "__main__":
         start=start,
         end=end,
         batch_size=batch_size,
-    ))
+    )
     tree = Tree(
         data=data,
         labels=labels,
@@ -549,161 +577,172 @@ if __name__ == "__main__":
         start=start,
         end=end,
         histograms=histograms,
-        max_depth=0,
+        max_depth=5,
         max_features=1,
+        batch_size=10,
     )
     tree.get_record()
-    print(tree.predict(data[0]) == labels[0])
-    print(np.sum(tree.predict_batch(data) == labels) / len(labels))
-    config.DISABLE_JIT = False
-    rng = np.random.default_rng(0)
-    data = rng.random(size=(100000, 30))
-    labels = np.ones(100000).astype(int)
-    for i in range(5):
-        labels = labels & (
-            data[:, rng.integers(low=0, high=30, size=1)[0]] < rng.random()
-        )
-        labels = labels | (
-            data[:, rng.integers(low=0, high=30, size=1)[0]] > rng.random()
-        )
-    labels = labels.astype(int)
-    from experiments.datasets.data_loader import fetch_data, get_large_flight_data
-    from utils.constants import FLIGHT
-    from sklearn.tree import DecisionTreeClassifier
-    from sklearn.datasets import make_classification
-
-    print("STARTING EXPERIMENTS")
-    # data, labels, test_data, test_labels = get_large_flight_data()
-    data, labels = make_classification(500000, n_features=50, n_informative=5, random_state=0)
-    # data, labels = make_classification(1000000, n_features=500, n_informative=5, random_state=0)
-    test_data, test_labels = data, labels
-    labels.astype(np.int8)
-    test_data = test_data
-    test_labels = test_labels
-    sklearn_data = np.copy(data)
     a = time.time()
-    data, num_bins_list = convert_to_discrete(data, 30)
+    tree.fit()
+    tree.predict_batch(data)
+    print(np.sum(tree.predict_batch(data) == labels) / len(labels))
+
+    print("Compile ends\n")
+
+
+def run_comparison(
+    data,
+    labels,
+    is_exact: bool = True,
+    is_mab: bool = True,
+    is_sklearn: bool = True,
+    is_prev_mab: bool = True,
+    max_depth: int = 8,
+    num_experiments: int = 5,
+    dataset: str = "",
+):
+    print(f"Starts Comparison Experiments (dataset: {dataset}, max depth = {max_depth})\n")
+    pm = " \u00B1 "
+    NUM_BINS = 30  # Hard-coded
+    BATCH_SIZE = 1000
+
+    start_time = time.time()
+    histogrammed_data, num_bins_list = convert_to_discrete(data, NUM_BINS)
     histograms = numba.typed.List(get_histograms(num_bins_list))
-    indices = np.arange(data.shape[0])
-    candidates = np.arange(data.shape[1])
     start = 0
-    end = data.shape[0] - 1
-    batch_size = 1000
-    print("Preprocess time: ", time.time() - a)
-    a = time.time()
-    tree = Tree(
-        data=data,
-        labels=labels,
-        indices=np.arange(data.shape[0]),
-        start=start,
-        end=end,
-        histograms=histograms,
-        max_depth=1,
-        max_features=1,
-    )
-    tree.fit()
-    print("Fit: ", time.time() - a)
-    tree.get_record()
-    print(np.sum(tree.predict_batch(data) == labels) / len(labels))
+    end = histogrammed_data.shape[0] - 1
+    print(f"---Histogramming (preprocess): {time.time() - start_time} (s)")
 
-    tree = Tree(
-        data=data,
-        labels=labels,
-        indices=np.arange(data.shape[0]),
-        start=start,
-        end=end,
-        histograms=histograms,
-        max_depth=8,
-        max_features=1.0,
-        batch_size=None,
-    )
-    a = time.time()
-    tree.fit()
-    print("WO MAB fitting: ", time.time() - a)
-    tree.get_record()
-    print(np.sum(tree.predict_batch(data) == labels) / len(labels))
-    print("num_nodes: ", tree.num_nodes)
-    # print(tree.node.n_print())
-
-    a = time.time()
-    tree = Tree(
-        data=data,
-        labels=labels,
-        indices=np.arange(data.shape[0]),
-        start=start,
-        end=end,
-        histograms=histograms,
-        max_depth=8,
-        max_features=1,
-        batch_size=1000,
-    )
-    tree.fit()
-    print("W/ Fit: ", time.time() - a)
-    tree.get_record()
-    print(np.sum(tree.predict_batch(data) == labels) / len(labels))
-
-    a = time.time()
-    tree = DecisionTreeClassifier(max_depth=8, max_features=None,)
-    tree.fit(sklearn_data, labels)
-    print("Their fitting: ", time.time() - a)
-    print(np.sum(tree.predict(sklearn_data) == labels) / len(labels))
-    print("num_nodes: ", tree.tree_.node_count)
-    # print(sklearn.tree.export_text(tree))
-    exit()
-
-    # labels = rng.integers(low=0, high=2, size=1000000)
-    # labels = np.random.randint(low=0, high=2, size=1000000)
-    a = time.time()
-    data, num_bins_list = convert_to_discrete(data, 10)
-    histograms = numba.typed.List(get_histograms(num_bins_list))
-    indices = np.arange(data.shape[0])
-    candidates = np.arange(data.shape[1])
-    start = 0
-    end = data.shape[0] - 1
-    batch_size = 1000
-    print(
-        find_mab_split(
-            data=sklearn_data,
+    def run_numba_tree(batch_size, verbose: bool = True):
+        tree = Tree(
+            data=histogrammed_data,
             labels=labels,
-            histograms=histograms,
-            indices=indices,
-            candidates=candidates,
+            indices=np.arange(histogrammed_data.shape[0]),
             start=start,
             end=end,
+            histograms=histograms,
+            max_depth=max_depth,
+            max_features=1.0,
             batch_size=batch_size,
         )
-    )
-    # print(time.time() - a)
-    # a = time.time()
-    # print(solve_mab(data_2, labels))
-    # print(time.time() - a)
+        start_time = time.time()
+        tree.fit()
+        fit_time = time.time() - start_time
+        tree.get_record()
+        accuracy = (
+            np.sum(tree.predict_batch(histogrammed_data) == labels) / len(labels) * 100
+        )
+        num_nodes = tree.num_nodes
+        if verbose:
+            print(f"---fit time: {fit_time}s")
+            print(f"---accuracy: {accuracy}%")
+            print(f"---num_nodes: {tree.num_nodes}")
+        return fit_time, accuracy, num_nodes
 
-    root_node = Node(
-        data=data,
-        labels=labels,
-        indices=indices,
-        start=start,
-        end=end,
-        histograms=histograms,
-        depth=0,
-        max_features=1,
-    )
-    a = time.time()
-    root_node.find_best_split()
-    root_node.split()
-    print("our fitting: ", time.time() - a)
+    def print_results(fit_time_list, accuracy_list, num_nodes_list):
+        print(
+            f"---fit time: {r(np.mean(fit_time_list))}"
+            + pm
+            + f"{r(np.std(fit_time_list) / np.sqrt(num_experiments))} (s)"
+        )
+        print(
+            f"---accuracy: {r(np.mean(accuracy_list))}"
+            + pm
+            + f"{r(np.std(accuracy_list) / np.sqrt(num_experiments))} (%)"
+        )
+        print(
+            f"---num_nodes: {r(np.mean(num_nodes_list))}"
+            + pm
+            + f"{r(np.std(num_nodes_list) / np.sqrt(num_experiments))}"
+        )
 
-    root_node = Node(
-        data=data,
-        labels=labels,
-        indices=np.arange(data.shape[0]),
-        start=start,
-        end=end,
-        histograms=histograms,
-        depth=0,
-        max_features=1,
+    if is_exact:
+        print("\nHistogrammed decision tree without MAB")
+        fit_time_list = []
+        accuracy_list = []
+        num_nodes_list = []
+        for _ in range(num_experiments):
+            fit_time, accuracy, num_nodes = run_numba_tree(None, False)
+            fit_time_list.append(fit_time)
+            accuracy_list.append(accuracy)
+            num_nodes_list.append(num_nodes)
+        print_results(fit_time_list, accuracy_list, num_nodes_list)
+    if is_mab:
+        print("\nHistogrammed decision tree with MAB")
+        fit_time_list = []
+        accuracy_list = []
+        num_nodes_list = []
+        for _ in range(num_experiments):
+            fit_time, accuracy, num_nodes = run_numba_tree(BATCH_SIZE, False)
+            fit_time_list.append(fit_time)
+            accuracy_list.append(accuracy)
+            num_nodes_list.append(num_nodes)
+        print(f"---batch_size: {BATCH_SIZE}")
+        print_results(fit_time_list, accuracy_list, num_nodes_list)
+    if is_sklearn:
+        print("\nSklearn decision tree")
+        fit_time_list = []
+        accuracy_list = []
+        num_nodes_list = []
+        for _ in range(num_experiments):
+            tree = DecisionTreeClassifier(max_depth=max_depth, max_features=None,)
+            start_time = time.time()
+            tree.fit(data, labels)
+            fit_time_list.append(time.time() - start_time)
+            accuracy_list.append(np.sum((tree.predict(data) == labels) / data.shape[0] * 100))
+            num_nodes_list.append(tree.tree_.node_count)
+        print_results(fit_time_list, accuracy_list, num_nodes_list)
+
+    if is_prev_mab:
+        print("\nOur previous mab decision tree")
+        fit_time_list = []
+        accuracy_list = []
+        num_nodes_list = []
+        for _ in range(num_experiments):
+            tree = TreeClassifier(
+                data=data, labels=labels, classes={0: 0, 1: 1}, max_depth=max_depth
+            )
+            start_time = time.time()
+            tree.fit()
+            fit_time_list.append(time.time() - start_time)
+            accuracy_list.append(
+                np.sum((tree.predict_batch(data)[0] == labels) / data.shape[0] * 100)
+            )
+            num_nodes_list.append(2 * tree.num_splits + 1)
+        print_results(fit_time_list, accuracy_list, num_nodes_list)
+
+
+if __name__ == "__main__":
+    """
+    TEST!!!
+    """
+    data, labels = make_classification(
+        500000, n_features=50, n_informative=5, random_state=0
     )
-    a = time.time()
-    root_node.find_best_split()
-    root_node.split()
-    print("sklearn fitting: ", time.time() - a)
+    labels.astype(np.int8)
+    data_dtype, labels_dtype = data.dtype, labels.dtype
+    compiling_jit(data_dtype, labels_dtype)
+    run_comparison(data=data, labels=labels, max_depth=3, dataset="Random Classification(500k)")
+    run_comparison(data=data, labels=labels, max_depth=8, dataset="Random Classification(500k)")
+
+    data, labels = fetch_data(FLIGHT)
+    labels.astype(np.int8)
+    data_dtype, labels_dtype = data.dtype, labels.dtype
+    compiling_jit(data_dtype, labels_dtype)
+    run_comparison(data=data, labels=labels, max_depth=3, dataset="Flight delay(100k)")
+    run_comparison(data=data, labels=labels, max_depth=8, dataset="Flight delay(100k)")
+
+    data, labels = fetch_data(COVTYPE)
+    labels.astype(np.int8)
+    data_dtype, labels_dtype = data.dtype, labels.dtype
+    compiling_jit(data_dtype, labels_dtype)
+    run_comparison(data=data, labels=labels, max_depth=3, dataset="Covtype")
+    run_comparison(data=data, labels=labels, max_depth=8, dataset="Covtype")
+
+    data, labels = fetch_data(APS)
+    labels.astype(np.int8)
+    data_dtype, labels_dtype = data.dtype, labels.dtype
+    compiling_jit(data_dtype, labels_dtype)
+    run_comparison(data=data, labels=labels, max_depth=3, dataset="APS")
+    run_comparison(data=data, labels=labels, max_depth=8, dataset="APS")
+    exit()
