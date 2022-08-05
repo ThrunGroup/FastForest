@@ -725,21 +725,28 @@ if __name__ == "__main__":
     run_comparison(data=data, labels=labels, max_depth=3, dataset="Random Classification(500k)")
     run_comparison(data=data, labels=labels, max_depth=8, dataset="Random Classification(500k)")
 
-    data, labels = fetch_data(FLIGHT)
+    data, labels, _, _ = fetch_data(FLIGHT)
     labels.astype(np.int8)
     data_dtype, labels_dtype = data.dtype, labels.dtype
     compiling_jit(data_dtype, labels_dtype)
     run_comparison(data=data, labels=labels, max_depth=3, dataset="Flight delay(100k)")
     run_comparison(data=data, labels=labels, max_depth=8, dataset="Flight delay(100k)")
 
-    data, labels = fetch_data(COVTYPE)
+    data, labels, _, _ = get_large_flight_data()
+    labels.astype(np.int8)
+    data_dtype, labels_dtype = data.dtype, labels.dtype
+    compiling_jit(data_dtype, labels_dtype)
+    run_comparison(data=data, labels=labels, max_depth=3, dataset="Flight delay(100k)")
+    run_comparison(data=data, labels=labels, max_depth=8, dataset="Flight delay(100k)")
+
+    data, labels, _, _ = fetch_data(COVTYPE)
     labels.astype(np.int8)
     data_dtype, labels_dtype = data.dtype, labels.dtype
     compiling_jit(data_dtype, labels_dtype)
     run_comparison(data=data, labels=labels, max_depth=3, dataset="Covtype")
     run_comparison(data=data, labels=labels, max_depth=8, dataset="Covtype")
 
-    data, labels = fetch_data(APS)
+    data, labels, _, _ = fetch_data(APS)
     labels.astype(np.int8)
     data_dtype, labels_dtype = data.dtype, labels.dtype
     compiling_jit(data_dtype, labels_dtype)
