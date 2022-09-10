@@ -235,7 +235,7 @@ class PermutationImportance:
         best_idcs = sort_idcs[:, :best_k_features]
 
         # zero-out the top k importances that aren't below threshold (default 0.0)
-        best_idcs = np.where(imp_data[sort_idcs] >= MIN_IMPORTANCE, best_idcs, -1)
+        best_idcs = np.where(np.take_along_axis(imp_data, best_idcs, axis=1) >= MIN_IMPORTANCE, best_idcs, -1)
 
         c_var = 0
         for i in range(F):

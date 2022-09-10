@@ -124,10 +124,13 @@ def produce_table1():
     runtime_logs_dir = os.path.join(this_dir, "runtime_exps", "logs")
     header = ["Model", "Time (s)", "Number of Insertions", "Accuracy"]
     classification_models = ["HRFC", "ERFC", "HRPC"]
-    for dataset in [APS, FLIGHT, COVTYPE]: # MNIST_STR
+    for dataset in [MNIST_STR, APS, FLIGHT, COVTYPE]:
         filename_list = [dataset + "_" + c_m + "_dict" for c_m in classification_models]
         table1_data = []
         for filename in filename_list:
+            if not os.path.exists(os.path.join(runtime_logs_dir, filename)):
+                print(f"Warning: {filename} experiments was not produced.")
+                pass
             with open(os.path.join(runtime_logs_dir, filename), "r") as fin:
                 log_dict = ast.literal_eval(fin.read())
                 write_runtime_data(table1_data, log_dict, filename)
@@ -141,10 +144,13 @@ def produce_table2():
     runtime_logs_dir = os.path.join(this_dir, "runtime_exps", "logs")
     header = ["Model", "Time (s)", "Number of Insertions", "MSE"]
     regression_models = ["HRFR", "ERFR", "HRPR"]
-    for dataset in [AIR, GPU]:  # BLOG, AIR, GPU, SKLEARN_REGRESSION
+    for dataset in [SKLEARN_REGRESSION, AIR, GPU]:
         filename_list = [dataset + "_" + r_m + "_dict" for r_m in regression_models]
         table2_data = []
         for filename in filename_list:
+            if not os.path.exists(os.path.join(runtime_logs_dir, filename)):
+                print(f"Warning: {filename} experiments was not produced.")
+                pass
             with open(os.path.join(runtime_logs_dir, filename), "r") as fin:
                 log_dict = ast.literal_eval(fin.read())
                 write_runtime_data(table2_data, log_dict, filename)
@@ -158,11 +164,13 @@ def produce_table3():
     budget_logs_dir = os.path.join(this_dir, "budget_exps", "logs")
     classification_models = ["HRFC", "ERFC", "HRPC"]
     header = ["Model", "Number of Trees", "Accuracy"]
-    for dataset in [FLIGHT, COVTYPE]:#, COVTYPE, APS]:  # MNIST_STR
+    for dataset in [MNIST_STR, APS, FLIGHT, COVTYPE]:
         filename_list = [dataset + "_" + c_m + "_dict" for c_m in classification_models]
-        print(filename_list)
         table3_data = []
         for filename in filename_list:
+            if not os.path.exists(os.path.join(budget_logs_dir, filename)):
+                print(f"Warning: {filename} experiments was not produced.")
+                continue
             with open(os.path.join(budget_logs_dir, filename), "r") as fin:
                 log_dict = ast.literal_eval(fin.read())
                 write_budget_data(table3_data, log_dict, filename)
@@ -176,10 +184,13 @@ def produce_table4():
     budget_logs_dir = os.path.join(this_dir, "budget_exps", "logs")
     regression_models = ["HRFR", "HRPR", "ERFR"]
     header = ["Model", "Number of Trees", "Test MSE"]
-    for dataset in [AIR, GPU]:  # BLOG, SKLEARN_REGRESSION
+    for dataset in [SKLEARN_REGRESSION, AIR, GPU]:  # BLOG, SKLEARN_REGRESSION
         filename_list = [dataset + "_" + r_m + "_dict" for r_m in regression_models]
         table4_data = []
         for filename in filename_list:
+            if not os.path.exists(os.path.join(budget_logs_dir, filename)):
+                print(f"Warning: {filename} experiments was not produced.")
+                pass
             with open(os.path.join(budget_logs_dir, filename), "r") as fin:
                 log_dict = ast.literal_eval(fin.read())
                 write_budget_data(table4_data, log_dict, filename)
@@ -189,12 +200,8 @@ def produce_table4():
 
 
 def produce_table5():
-    dir = os.path.join(
-        os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tests"
-        ),
-        "stat_test_stability_log",
-    )
+    this_dir = os.path.dirname(os.path.realpath(__file__))
+    stability_exps_dir = os.path.join(os.path.join(this_dir, "feature_stability"), "stat_test_stability_log")
     filename_list = [
         "HRFC+MID_dict",
         "HRFR+MID_dict",
@@ -204,7 +211,7 @@ def produce_table5():
     header = ["Importance Model", "Dataset", "Stability"]
     table5_data = []
     for filename in filename_list:
-        with open(os.path.join(dir, filename), "r+") as fin:
+        with open(os.path.join(stability_exps_dir, filename), "r+") as fin:
             log_dict = ast.literal_eval(fin.read())
             if "RFR" in filename:
                 dataset = "Random Regression"
@@ -242,12 +249,13 @@ def produce_table5():
 
 
 def produce_table6():
-    dir = "sklearn_exps"
+    this_dir = os.path.dirname(os.path.realpath(__file__))
+    stability_logs_dir = os.path.join(this_dir, "sklearn_exps")
     filename_list = ["RFC_dict", "ERFC_dict", "RFR_dict", "ERFR_dict"]
     header = ["Model", "Task and Dataset", "Performance Metric", "Test Performance"]
     table6_data = []
     for filename in filename_list:
-        with open(os.path.join(dir, filename), "r+") as fin:
+        with open(os.path.join(stability_logs_dir, filename), "r+") as fin:
             log_dict = ast.literal_eval(fin.read())
             if "RFR" in filename:
                 dataset = "Regression: California Housing"
@@ -279,9 +287,11 @@ def produce_table6():
 
 
 def produce_figure1():
-    make_scaling_plot.main(filename=os.path.join("scaling_exps", "HRFC_size_to_time_dict"))
+    this_dir = os.path.dirname(os.path.realpath(__file__))
+    scaling_exps_dir = os.path.join(this_dir, "scaling_exps")
+    make_scaling_plot.main(filename=os.path.join(scaling_exps_dir, "HRFC_scaling_classification"))
     make_scaling_plot.main(
-        filename=os.path.join("scaling_exps", "HRFR_size_to_time_dict_regression")
+        filename=os.path.join(scaling_exps_dir, "HRFR_scaling_regression")
     )
 
 

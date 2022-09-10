@@ -612,37 +612,37 @@ def compare_budgets(
 def main():
     pp = pprint.PrettyPrinter(indent=2)
     ############### Regression ###############
-    # for dataset in [AIR, GPU]:  # SKLEARN_REGRESSION, AIR, GPU
-    #     if dataset == SKLEARN_REGRESSION or dataset == AIR:
-    #         budget = BUDGET_REGRESSION * 32
-    #     elif dataset == GPU:
-    #         budget = BUDGET_REGRESSION * 10
-    #     else:
-    #         budget = BUDGET_REGRESSION * 32  # Default
-    #
-    #     train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
-    #     regression_models = ["HRFR", "HRPR", "ERFR"]
-    #     for r_m in regression_models:
-    #         pp.pprint(
-    #             compare_budgets(
-    #                 compare=r_m,
-    #                 train_data=train_data,
-    #                 train_targets=train_targets,
-    #                 original_test_data=test_data,
-    #                 test_targets=test_targets,
-    #                 num_seeds=BUDGET_NUM_SEEDS,
-    #                 predict=True,
-    #                 run_theirs=True,
-    #                 filename=dataset + "_" + r_m + "_dict",
-    #                 verbose=True,
-    #                 # TODO(@motiwari): May need to jiggle this. Was *12 for RP, *12 for ER, *10 for RF
-    #                 default_budget=budget,
-    #                 depth_override=BUDGET_MAX_DEPTH,
-    #             )
-    #         )
+    for dataset in [SKLEARN_REGRESSION, AIR, GPU]:
+        if dataset == SKLEARN_REGRESSION or dataset == AIR:
+            budget = BUDGET_REGRESSION * 32
+        elif dataset == GPU:
+            budget = BUDGET_REGRESSION * 10
+        else:
+            budget = BUDGET_REGRESSION * 32  # Default
+
+        train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
+        regression_models = ["HRFR", "HRPR", "ERFR"]
+        for r_m in regression_models:
+            pp.pprint(
+                compare_budgets(
+                    compare=r_m,
+                    train_data=train_data,
+                    train_targets=train_targets,
+                    original_test_data=test_data,
+                    test_targets=test_targets,
+                    num_seeds=BUDGET_NUM_SEEDS,
+                    predict=True,
+                    run_theirs=True,
+                    filename=dataset + "_" + r_m + "_dict",
+                    verbose=True,
+                    # TODO(@motiwari): May need to jiggle this. Was *12 for RP, *12 for ER, *10 for RF
+                    default_budget=budget,
+                    depth_override=BUDGET_MAX_DEPTH,
+                )
+            )
 
     ############### Classification ###############
-    for dataset in [APS, COVTYPE, FLIGHT]:  # MNIST_STR, FLIGHT, COVTYPE, APS
+    for dataset in [MNIST_STR, APS, COVTYPE, FLIGHT]:
         if dataset == APS:  # This budget works
             budget = int(BUDGET_CLASSIFICATION / 10)
         elif dataset == COVTYPE:  # This budget works
