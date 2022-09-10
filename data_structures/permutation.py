@@ -144,7 +144,7 @@ class PermutationImportance:
         Trains all of its forests and computes the importance vector for each of the trained forests.
         This is the main function that an object of this class will call.
 
-        :return: an array of importance vectors.
+        :return: an array of importance vectors. (i, j) = ith random forest, jth feature's importance score.
         """
         self.is_train = True
         self.train_forests()
@@ -229,11 +229,13 @@ class PermutationImportance:
         ), "Feature subset size should be less than feature dimension"
 
         # preprocess data
-        best_idcs = np.argsort(-imp_data)[:, :best_k_features]
-        for i in range(N):
-            top_k_imps = imp_data[i][best_idcs[i]]
-            # zero-out the top k importances that aren't below threshold (default 0.0)
-            best_idcs[i] = np.where(top_k_imps >= MIN_IMPORTANCE, best_idcs[i], -1)
+        random_noise = np.random.random(imp_data.shape)
+        sort_idcs = np.lexsort((random_noise, -imp_data), axis=1)  # Why use lexsort: to randomly sort the indices that
+        # have equal values, see https://bit.ly/3DeAnFY
+        best_idcs = sort_idcs[:, :best_k_features]
+
+        # zero-out the top k importances that aren't below threshold (default 0.0)
+        best_idcs = np.where(imp_data[sort_idcs] >= MIN_IMPORTANCE, best_idcs, -1)
 
         c_var = 0
         for i in range(F):
