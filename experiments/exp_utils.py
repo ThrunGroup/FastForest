@@ -11,7 +11,7 @@ import utils.utils
 
 def load_pca_ng(n_components: int = 100):
     """
-    Loads the 20 newgroups dataset, choosing just 2 subcategories, and PCA transforms their TF-IDF vectors
+    Loads the 20 newgroups datasets, choosing just 2 subcategories, and PCA transforms their TF-IDF vectors
 
     :param n_components: Number of components to use in PCA
     :return: tuple of PCA train vectors, train labels, PCA test vectors, test labels, and classes dict

@@ -80,7 +80,7 @@ def sample_targets(
     rng: np.random.Generator = np.random.default_rng(0),
 ) -> Tuple[np.ndarray, np.ndarray, int, np.ndarray]:
     """
-    Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
+    Given a datasets and set of features, draw batch_size new datapoints (with replacement) from the datasets. Insert
     their feature values into the (potentially non-empty) histograms and recompute the changes in impurity
     for each potential bin split
 
@@ -225,7 +225,8 @@ def solve_exactly(
         not_considered_access = (not_considered_idcs[:, 0], not_considered_idcs[:, 1])
         estimates[not_considered_access] = float("inf")
         candidates = considered_idcs
-
+    if len(candidates) < 2:
+        return 0
     # Massage arm indices for use by numpy slicing
     accesses = (
         candidates[:, 0],
@@ -352,11 +353,13 @@ def solve_mab(
         ucbs[not_considered_access] = estimates[not_considered_access] = float("inf")
         lcbs[not_considered_access] = -float("inf")
         candidates = considered_idcs
-
+    if len(candidates) < 2:
+        return 0
     total_queries = 0
-    while len(candidates) > 5:
-        # If we have already pulled the arms more times than the number of datapoints in the original dataset,
-        # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
+    num_survived_features = 2
+    while len(candidates) > 5 and num_survived_features > 1:
+        # If we have already pulled the arms more times than the number of datapoints in the original datasets,
+        # it would be the same complexity to just compute the arm return explicitly over the whole datasets.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
         if with_replacement:
             # raise Exception("Did you really want to sample with replacement?")
@@ -448,6 +451,7 @@ def solve_mab(
             & (lcbs < min_impurity_reduction)
             & (tied_arms == 0)
         )
+        num_survived_features = len(np.unique(cand_condition[0]))
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
         round_count += 1
 

@@ -14,3 +14,5 @@ cd ../experiments/sklearn_exps
 python compare_baseline_implementations.py
 cd ..
 python produce_tables.py
+
+/bin/bash

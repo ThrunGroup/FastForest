@@ -6,6 +6,8 @@ from typing import Any
 import pprint
 import os
 
+from experiments.datasets import data_loader
+
 from experiments.exp_utils import *
 from experiments.exp_constants import (
     RUNTIME_ALPHA_N,
@@ -13,7 +15,9 @@ from experiments.exp_constants import (
     RUNTIME_NUM_SEEDS,
     RUNTIME_MAX_DEPTH
 )
+
 from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
+from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR, HOUSING, COVTYPE, KDD, GPU
 from utils.constants import (
     GINI,
     BEST,
@@ -23,8 +27,6 @@ from utils.constants import (
     DEFAULT_NUM_BINS,
     DEFAULT_MIN_IMPURITY_DECREASE,
 )
-
-from mnist import MNIST
 
 
 # Classification #########################
@@ -71,6 +73,7 @@ from data_structures.wrappers.gradient_boosted_histogram_random_patches_regresso
 
 def time_measured_fit(
     model: Any,
+    dataset_name: str = None,
     compare: str = None,
     ours_or_theirs:
     str = None,
@@ -88,11 +91,12 @@ def time_measured_fit(
     end = time.time()
     prof.disable()
     stats = pstats.Stats(prof).strip_dirs().sort_stats("tottime")
-    stats.dump_stats(compare + "_" + ours_or_theirs + "_5k_" + str(seed) + "_profile")
+    stats.dump_stats(os.path.join("logs", dataset_name + "_" + compare + "_" + ours_or_theirs + "_5k_" + str(seed) + "_profile"))
     return end - start
 
 
 def compare_runtimes(
+    dataset_name: str = None,
     compare: str = "HRFC",
     train_data: np.ndarray = None,
     train_targets: np.ndarray = None,
@@ -103,7 +107,10 @@ def compare_runtimes(
     run_theirs: bool = True,
     filename: str = None,
     verbose: bool = False,
-):  # TODO(@motiwari) add return typehint
+    max_depth: int = None,
+    n_estimators: int = None,
+    max_leaf_nodes: int = None
+):  # TODO(@motiwari) add return typehintp
     assert filename is not None, "Need to pass filename_prefix"
     print("\n\n", "Running runtime comparison for:", compare)
 
@@ -122,77 +129,79 @@ def compare_runtimes(
     # params
     default_alpha_N = RUNTIME_ALPHA_N
     default_alpha_F = RUNTIME_ALPHA_F
-    default_max_depth = RUNTIME_MAX_DEPTH
-    default_n_estimators = 5
     default_min_samples_split = 2
     default_boosting_lr = 0.1
+    if max_depth is None:
+        max_depth = RUNTIME_MAX_DEPTH
+    if n_estimators is None:
+        n_estimators = 5
 
     for seed in range(num_seeds):
         if compare == "HRFC":
             our_model = HRFC(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=default_n_estimators,
-                max_depth=default_max_depth,
+                n_estimators=n_estimators,
+                max_depth=max_depth,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
-                max_leaf_nodes=None,
+                max_leaf_nodes=max_leaf_nodes,
                 budget=None,
                 criterion=GINI,
                 splitter=BEST,
                 solver=MAB,
                 random_state=seed,
-                verbose=False,
+                verbose=verbose,
             )
             their_model = HRFC(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=default_n_estimators,
-                max_depth=default_max_depth,
+                n_estimators=n_estimators,
+                max_depth=max_depth,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
-                max_leaf_nodes=None,
+                max_leaf_nodes=max_leaf_nodes,
                 budget=None,
                 criterion=GINI,
                 splitter=BEST,
                 solver=EXACT,
                 random_state=seed,
-                verbose=False,
+                verbose=verbose,
             )
         elif compare == "ERFC":
             our_model = ERFC(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=default_n_estimators,
-                max_depth=default_max_depth,
+                n_estimators=n_estimators,
+                max_depth=max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
-                max_leaf_nodes=None,
+                max_leaf_nodes=max_leaf_nodes,
                 budget=None,
                 criterion=GINI,
                 splitter=BEST,
                 solver=MAB,
                 random_state=seed,
                 with_replacement=False,
-                verbose=False,
+                verbose=verbose,
             )
             their_model = ERFC(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=default_n_estimators,
-                max_depth=default_max_depth,
+                n_estimators=n_estimators,
+                max_depth=max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
-                max_leaf_nodes=None,
+                max_leaf_nodes=max_leaf_nodes,
                 budget=None,
                 criterion=GINI,
                 splitter=BEST,
                 solver=EXACT,
                 random_state=seed,
                 with_replacement=False,
-                verbose=False,
+                verbose=verbose,
             )
         elif compare == "HRPC":
             our_model = HRPC(
@@ -200,181 +209,181 @@ def compare_runtimes(
                 labels=train_targets,
                 alpha_N=default_alpha_N,
                 alpha_F=default_alpha_F,
-                n_estimators=default_n_estimators,
-                max_depth=default_max_depth,
+                n_estimators=n_estimators,
+                max_depth=max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
-                max_leaf_nodes=None,
+                max_leaf_nodes=max_leaf_nodes,
                 budget=None,
                 criterion=GINI,
                 splitter=BEST,
                 solver=MAB,
                 random_state=seed,
                 with_replacement=False,
-                verbose=False,
+                verbose=verbose,
             )
             their_model = HRPC(
                 data=train_data,
                 labels=train_targets,
                 alpha_N=default_alpha_N,
                 alpha_F=default_alpha_F,
-                n_estimators=default_n_estimators,
-                max_depth=default_max_depth,
+                n_estimators=n_estimators,
+                max_depth=max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
-                max_leaf_nodes=None,
+                max_leaf_nodes=max_leaf_nodes,
                 budget=None,
                 criterion=GINI,
                 splitter=BEST,
                 solver=EXACT,
                 random_state=seed,
                 with_replacement=False,
-                verbose=False,
+                verbose=verbose,
             )
         elif compare == "ERFR":
             our_model = ERFR(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=default_n_estimators,
-                max_depth=default_max_depth,
+                n_estimators=n_estimators,
+                max_depth=max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
-                max_leaf_nodes=None,
+                max_leaf_nodes=max_leaf_nodes,
                 budget=None,
                 criterion=MSE,
                 splitter=BEST,
                 solver=MAB,
                 random_state=seed,
                 with_replacement=False,
-                verbose=False,
+                verbose=verbose,
             )
             their_model = ERFR(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=default_n_estimators,
-                max_depth=default_max_depth,
+                n_estimators=n_estimators,
+                max_depth=max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
-                max_leaf_nodes=None,
+                max_leaf_nodes=max_leaf_nodes,
                 budget=None,
                 criterion=MSE,
                 splitter=BEST,
                 solver=EXACT,
                 random_state=seed,
                 with_replacement=False,
-                verbose=False,
+                verbose=verbose,
             )
         elif compare == "GBERFR":
             our_model = GBERFR(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=default_n_estimators,
-                max_depth=default_max_depth,
+                n_estimators=n_estimators,
+                max_depth=max_depth,
                 num_bins=None,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
-                max_leaf_nodes=None,
+                max_leaf_nodes=max_leaf_nodes,
                 budget=None,
                 criterion=MSE,
                 splitter=BEST,
                 solver=MAB,
                 random_state=seed,
                 with_replacement=False,
-                verbose=False,
+                verbose=verbose,
                 boosting_lr=default_boosting_lr,
             )
             their_model = GBERFR(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=default_n_estimators,
-                max_depth=default_max_depth,
+                n_estimators=n_estimators,
+                max_depth=max_depth,
                 num_bins=None,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
-                max_leaf_nodes=None,
+                max_leaf_nodes=max_leaf_nodes,
                 budget=None,
                 criterion=MSE,
                 splitter=BEST,
                 solver=EXACT,
                 random_state=seed,
                 with_replacement=False,
-                verbose=False,
+                verbose=verbose,
                 boosting_lr=default_boosting_lr,
             )
         elif compare == "HRFR":
             our_model = HRFR(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=default_n_estimators,
-                max_depth=default_max_depth,
+                n_estimators=n_estimators,
+                max_depth=max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
-                max_leaf_nodes=None,
+                max_leaf_nodes=max_leaf_nodes,
                 budget=None,
                 criterion=MSE,
                 splitter=BEST,
                 solver=MAB,
                 random_state=seed,
                 with_replacement=False,
-                verbose=False,
+                verbose=verbose,
             )
             their_model = HRFR(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=default_n_estimators,
-                max_depth=default_max_depth,
+                n_estimators=n_estimators,
+                max_depth=max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
-                max_leaf_nodes=None,
+                max_leaf_nodes=max_leaf_nodes,
                 budget=None,
                 criterion=MSE,
                 splitter=BEST,
                 solver=EXACT,
                 random_state=seed,
                 with_replacement=False,
-                verbose=False,
+                verbose=verbose,
             )
         elif compare == "GBHRFR":
             our_model = GBHRFR(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=default_n_estimators,
-                max_depth=default_max_depth,
+                n_estimators=n_estimators,
+                max_depth=max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
-                max_leaf_nodes=None,
+                max_leaf_nodes=max_leaf_nodes,
                 budget=None,
                 criterion=MSE,
                 splitter=BEST,
                 solver=MAB,
                 random_state=seed,
                 with_replacement=False,
-                verbose=False,
+                verbose=verbose,
                 boosting_lr=default_boosting_lr,
             )
             their_model = GBHRFR(
                 data=train_data,
                 labels=train_targets,
-                n_estimators=default_n_estimators,
-                max_depth=default_max_depth,
+                n_estimators=n_estimators,
+                max_depth=max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
-                max_leaf_nodes=None,
+                max_leaf_nodes=max_leaf_nodes,
                 budget=None,
                 criterion=MSE,
                 splitter=BEST,
                 solver=EXACT,
                 random_state=seed,
                 with_replacement=False,
-                verbose=False,
+                verbose=verbose,
                 boosting_lr=default_boosting_lr,
             )
         elif compare == "HRPR":
@@ -383,38 +392,38 @@ def compare_runtimes(
                 labels=train_targets,
                 alpha_N=default_alpha_N,
                 alpha_F=default_alpha_F,
-                n_estimators=default_n_estimators,
-                max_depth=default_max_depth,
+                n_estimators=n_estimators,
+                max_depth=max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
-                max_leaf_nodes=None,
+                max_leaf_nodes=max_leaf_nodes,
                 budget=None,
                 criterion=MSE,
                 splitter=BEST,
                 solver=MAB,
                 random_state=seed,
                 with_replacement=False,
-                verbose=False,
+                verbose=verbose,
             )
             their_model = HRPR(
                 data=train_data,
                 labels=train_targets,
                 alpha_N=default_alpha_N,
                 alpha_F=default_alpha_F,
-                n_estimators=default_n_estimators,
-                max_depth=default_max_depth,
+                n_estimators=n_estimators,
+                max_depth=max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
-                max_leaf_nodes=None,
+                max_leaf_nodes=max_leaf_nodes,
                 budget=None,
                 criterion=MSE,
                 splitter=BEST,
                 solver=EXACT,
                 random_state=seed,
                 with_replacement=False,
-                verbose=False,
+                verbose=verbose,
             )
         elif compare == "GBHRPR":
             our_model = GBHRPR(
@@ -422,19 +431,19 @@ def compare_runtimes(
                 labels=train_targets,
                 alpha_N=default_alpha_N,
                 alpha_F=default_alpha_F,
-                n_estimators=default_n_estimators,
-                max_depth=default_max_depth,
+                n_estimators=n_estimators,
+                max_depth=max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
-                max_leaf_nodes=None,
+                max_leaf_nodes=max_leaf_nodes,
                 budget=None,
                 criterion=MSE,
                 splitter=BEST,
                 solver=MAB,
                 random_state=seed,
                 with_replacement=False,
-                verbose=False,
+                verbose=verbose,
                 boosting_lr=default_boosting_lr,
             )
             their_model = GBHRPR(
@@ -442,19 +451,19 @@ def compare_runtimes(
                 labels=train_targets,
                 alpha_N=default_alpha_N,
                 alpha_F=default_alpha_F,
-                n_estimators=default_n_estimators,
-                max_depth=default_max_depth,
+                n_estimators=n_estimators,
+                max_depth=max_depth,
                 num_bins=DEFAULT_NUM_BINS,
                 min_samples_split=default_min_samples_split,
                 min_impurity_decrease=DEFAULT_MIN_IMPURITY_DECREASE,
-                max_leaf_nodes=None,
+                max_leaf_nodes=max_leaf_nodes,
                 budget=None,
                 criterion=MSE,
                 splitter=BEST,
                 solver=EXACT,
                 random_state=seed,
                 with_replacement=False,
-                verbose=False,
+                verbose=verbose,
                 boosting_lr=default_boosting_lr,
             )
         else:
@@ -465,7 +474,7 @@ def compare_runtimes(
         ), "Cannot use sklearn models for runtime comparisons"
 
         our_runtime = time_measured_fit(
-            model=our_model, compare=compare, ours_or_theirs="ours", seed=seed
+            model=our_model, dataset_name=dataset_name, compare=compare, ours_or_theirs="ours", seed=seed
         )
         our_train_times.append(our_runtime)
         our_num_queries.append(our_model.num_queries)
@@ -478,7 +487,7 @@ def compare_runtimes(
 
         if run_theirs:
             their_runtime = time_measured_fit(
-                model=their_model, compare=compare, ours_or_theirs="theirs", seed=seed
+                model=their_model, dataset_name=dataset_name, compare=compare, ours_or_theirs="theirs", seed=seed
             )
             their_train_times.append(their_runtime)
             their_num_queries.append(their_model.num_queries)
@@ -585,7 +594,7 @@ def compare_runtimes(
         their_std_num_queries = np.std(their_num_queries) / np.sqrt(num_seeds)
 
         # See if confidence intervals overlap
-        overlap = np.abs(their_avg_test - our_avg_test) < their_std_test + our_std_test
+        overlap = np.abs(their_avg_test - our_avg_test) < their_std_test + our_std_test if run_theirs and predict else None
 
     results = {
         "overlap": overlap if run_theirs else None,
@@ -624,146 +633,59 @@ def compare_runtimes(
 
 def main():
     pp = pprint.PrettyPrinter(indent=2)
-    ############### Regression
-    # sklearn regression dataset
-    params = {
-        "data_size": 200000,
-        "n_features": 50,
-        "informative_ratio": 0.06,
-        "seed": 1,
-        "epsilon": 0.01,
-        "use_dynamic_epsilon": False,
-        "use_logarithmic split point": True,
-    }
+    ############### Regression ###############
+    for dataset in [GPU, AIR, SKLEARN_REGRESSION]:
+        train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
 
-    n_informative = int(params["n_features"] * params["informative_ratio"])
-    full_data, full_targets = make_regression(
-        params["data_size"],
-        n_features=params["n_features"],
-        n_informative=n_informative,
-        random_state=params["seed"],
-    )
+        if dataset == GPU:
+            max_depth = 100
+            max_leaf_nodes = 5
+        else:
+            max_depth = None
+            max_leaf_nodes = None
 
-    train_test_split = int(0.8 * params["data_size"])
-    train_data = full_data[:train_test_split]
-    train_targets = full_targets[:train_test_split]
+        regression_models = ["HRFR", "HRPR", "ERFR"]
+        for r_m in regression_models:
+            pp.pprint(
+                compare_runtimes(
+                    dataset_name=dataset,
+                    compare=r_m,
+                    train_data=train_data,
+                    train_targets=train_targets,
+                    original_test_data=test_data,
+                    test_targets=test_targets,
+                    num_seeds=RUNTIME_NUM_SEEDS,
+                    predict=True,
+                    run_theirs=True,
+                    filename=dataset + "_" + r_m + "_dict",
+                    verbose=False,
+                    max_depth=max_depth,
+                    max_leaf_nodes=max_leaf_nodes,
+                )
+            )
 
-    test_data = full_data[train_test_split:]
-    test_targets = full_targets[train_test_split:]
-
-    ## Random Forests
-    NUM_SEEDS = RUNTIME_NUM_SEEDS
-    pp.pprint(
-        compare_runtimes(
-            compare="HRFR",
-            train_data=train_data,
-            train_targets=train_targets,
-            original_test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRFR_dict",
-            verbose=True,
-        )
-    )
-
-    ## Random Patches
-    NUM_SEEDS = RUNTIME_NUM_SEEDS
-    pp.pprint(
-        compare_runtimes(
-            compare="HRPR",
-            train_data=train_data,
-            train_targets=train_targets,
-            original_test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRPR_dict",
-            verbose=True,
-        )
-    )
-
-    ## Extremely Random Forests
-    NUM_SEEDS = RUNTIME_NUM_SEEDS
-    pp.pprint(
-        compare_runtimes(
-            compare="ERFR",
-            train_data=train_data,
-            train_targets=train_targets,
-            original_test_data=test_data,
-            test_targets=test_targets,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="ERFR_dict",
-            verbose=True,
-        )
-    )
-
-    ############### Classification
-    mndata = MNIST(os.path.join("..", "mnist"))
-
-    train_images, train_labels = mndata.load_training()
-    rng = np.random.default_rng(0)
-    subsample_idcs = rng.choice(len(train_images), 4 * len(train_images))
-    train_images = np.array(train_images)[subsample_idcs]
-    train_labels = np.array(train_labels)[subsample_idcs]
-
-    test_images, test_labels = mndata.load_testing()
-    test_images = np.array(test_images)
-    test_labels = np.array(test_labels)
-
-    ## Random Forests
-    NUM_SEEDS = RUNTIME_NUM_SEEDS
-    pp.pprint(
-        compare_runtimes(
-            compare="HRFC",
-            train_data=train_images,
-            train_targets=train_labels,
-            original_test_data=test_images,
-            test_targets=test_labels,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRFC_dict",
-            verbose=True,
-        )
-    )
-    ## Extremely Random Forests
-    NUM_SEEDS = RUNTIME_NUM_SEEDS
-    pp.pprint(
-        compare_runtimes(
-            compare="ERFC",
-            train_data=train_images,
-            train_targets=train_labels,
-            original_test_data=test_images,
-            test_targets=test_labels,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="ERFC_dict",
-            verbose=True,
-        )
-    )
-
-    ## Random Patches
-    NUM_SEEDS = RUNTIME_NUM_SEEDS
-    pp.pprint(
-        compare_runtimes(
-            compare="HRPC",
-            train_data=train_images,
-            train_targets=train_labels,
-            original_test_data=test_images,
-            test_targets=test_labels,
-            num_seeds=NUM_SEEDS,
-            predict=True,
-            run_theirs=True,
-            filename="HRPC_dict",
-            verbose=True,
-        )
-    )
+    ############### Classification ###############
+    for dataset in [MNIST_STR, COVTYPE, APS, FLIGHT]:
+        train_images, train_labels, test_images, test_labels = data_loader.fetch_data(dataset)
+        classification_models = ["HRFC", "HRPC", "ERFC"]
+        for c_m in classification_models:
+            pp.pprint(
+                compare_runtimes(
+                    dataset_name=dataset,
+                    compare=c_m,
+                    train_data=train_images,
+                    train_targets=train_labels,
+                    original_test_data=test_images,
+                    test_targets=test_labels,
+                    num_seeds=RUNTIME_NUM_SEEDS,
+                    predict=True,
+                    run_theirs=True,
+                    filename=dataset + "_" + c_m + "_dict",
+                    verbose=True,
+                    max_depth=None,
+                    max_leaf_nodes=None,
+                )
+            )
 
 
 if __name__ == "__main__":

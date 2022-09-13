@@ -12,7 +12,7 @@ from utils.constants import IRIS, DIGITS, FASTFOREST, SKLEARN
 
 def main() -> None:
     """
-    main() provides profiling of random forest algorithms with different dataset.
+    main() provides profiling of random forest algorithms with different datasets.
     The statistics of the profile are stored in a file.
     """
     args = parse_args()
@@ -33,7 +33,7 @@ def main() -> None:
 
 def fit_forest(args: argparse.Namespace) -> None:
     """
-    For specific RF algorithm and dataset given in "args", run the alogorithm to fit to the dataset.
+    For specific RF algorithm and datasets given in "args", run the alogorithm to fit to the datasets.
     :param args: args is an object of argparse.Namespace that contains variables needed for an experiment
     """
     if args.dataset == IRIS:
@@ -43,7 +43,7 @@ def fit_forest(args: argparse.Namespace) -> None:
         digits = sklearn.datasets.load_digits()
         data, labels = digits.data, digits.target
     else:
-        raise Exception("Invalid choice of dataset")
+        raise Exception("Invalid choice of datasets")
 
     if args.algorithm == FASTFOREST:
         forest = Forest(
@@ -90,7 +90,7 @@ def parse_args() -> None:
         help="Number of tree estimators in a random forest (default: 1)",
     )
     parser.add_argument(
-        "--dataset",
+        "--datasets",
         type=str,
         default=IRIS,
         choices=[IRIS, DIGITS],

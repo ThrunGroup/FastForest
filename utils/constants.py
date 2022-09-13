@@ -7,12 +7,24 @@ DEFAULT_MIN_IMPURITY_DECREASE = 5e-3
 DEFAULT_ALPHA_N = 0.6
 DEFAULT_ALPHA_F = 0.8
 SAMPLE_SIZE = 60000
-VECTORIZE = False
+VECTORIZE_IMPURITY = True
+VECTORIZE_HISTOGRAM = False
+GPU_NUM_NON_INFORMATIVE = 50
 
 # Datasets
 IRIS = "IRIS"
 DIGITS = "DIGITS"
 HEART = "HEART"
+AIR = "AIR"
+FLIGHT = "FLIGHT"
+APS = "APS"
+BLOG = "BLOG"
+MNIST_STR = "MNIST"
+SKLEARN_REGRESSION = "SKLEARN_REGRESSION"
+HOUSING = "HOUSING"
+COVTYPE = "COVTYPE"
+KDD = "KDD"
+GPU = "GPU"
 
 # Algorithms
 FASTFOREST = "FASTFOREST"
@@ -98,7 +110,7 @@ t5_l2_args = {
     "max_depth": 6,
     "max_leaf_nodes": 40,
     "num_trees_per_feature": 10,
-    "feature_subsampling": "SQRT",
+    "feature_subsampling": 0.35,
     "best_k_feature": 6,
     "epsilon": 0.03,
     "budget": 500000,
@@ -136,7 +148,7 @@ t5_l4_args = {
     "max_depth": 6,
     "max_leaf_nodes": 40,
     "num_trees_per_feature": 10,
-    "feature_subsampling": "SQRT",
+    "feature_subsampling": 0.35,
     "best_k_feature": 6,
     "epsilon": 0.03,
     "budget": 500000,

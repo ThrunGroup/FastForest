@@ -17,8 +17,6 @@ from data_structures.wrappers.random_forest_classifier import (
 from data_structures.wrappers.extremely_random_forest_classifier import (
     ExtremelyRandomForestClassifier as ERFC_ours,
 )
-
-
 from data_structures.wrappers.random_forest_regressor import (
     RandomForestRegressor as RFR_ours,
 )
@@ -93,7 +91,7 @@ def compare_accuracies(
                 criterion="gini",
                 max_depth=5,
                 min_samples_split=2,
-                max_features="auto",
+                max_features="sqrt",
                 max_leaf_nodes=None,
                 min_impurity_decrease=0.0,
                 bootstrap=False,
@@ -151,7 +149,7 @@ def compare_accuracies(
                 criterion="squared_error",
                 max_depth=5,
                 min_samples_split=2,
-                max_features="auto",
+                max_features="sqrt",
                 min_impurity_decrease=0.0,
                 bootstrap=False,
                 n_jobs=-1,
@@ -213,7 +211,7 @@ def compare_accuracies(
                 criterion="squared_error",
                 max_depth=5,
                 min_samples_split=2,
-                max_features="auto",
+                max_features="sqrt",
                 min_impurity_decrease=0.0,
                 bootstrap=False,
                 n_jobs=-1,
@@ -341,7 +339,7 @@ def main():
 
     # Regression
     train_data, train_targets, test_data, test_targets = load_housing()
-    # Subsample the data because training on 20k points (the full housing dataset) takes too long for RFR
+    # Subsample the data because training on 20k points (the full housing datasets) takes too long for RFR
     train_data_subsampled = train_data[:1000]
     train_targets_subsampled = train_targets[:1000]
 
