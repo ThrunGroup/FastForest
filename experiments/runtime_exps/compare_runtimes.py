@@ -634,7 +634,7 @@ def compare_runtimes(
 def main():
     pp = pprint.PrettyPrinter(indent=2)
     ############### Regression ###############
-    for dataset in [GPU, AIR, SKLEARN_REGRESSION]:
+    for dataset in [AIR, SKLEARN_REGRESSION]:  # TODO: Add GPU in the future
         train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
 
         if dataset == GPU:

@@ -144,7 +144,7 @@ def produce_table2():
     runtime_logs_dir = os.path.join(this_dir, "runtime_exps", "logs")
     header = ["Model", "Time (s)", "Number of Insertions", "MSE"]
     regression_models = ["HRFR", "ERFR", "HRPR"]
-    for dataset in [SKLEARN_REGRESSION, AIR, GPU]:
+    for dataset in [SKLEARN_REGRESSION, AIR]:  # TODO: Add GPU
         filename_list = [dataset + "_" + r_m + "_dict" for r_m in regression_models]
         table2_data = []
         for filename in filename_list:
@@ -184,7 +184,7 @@ def produce_table4():
     budget_logs_dir = os.path.join(this_dir, "budget_exps", "logs")
     regression_models = ["HRFR", "HRPR", "ERFR"]
     header = ["Model", "Number of Trees", "Test MSE"]
-    for dataset in [SKLEARN_REGRESSION, AIR, GPU]:  # BLOG, SKLEARN_REGRESSION
+    for dataset in [SKLEARN_REGRESSION, AIR]:  # BLOG, SKLEARN_REGRESSION # TODO: Add GPU
         filename_list = [dataset + "_" + r_m + "_dict" for r_m in regression_models]
         table4_data = []
         for filename in filename_list:
