@@ -6,6 +6,7 @@ from experiments.datasets import data_loader
 
 from experiments.exp_utils import *
 from experiments.exp_constants import (
+    MAX_DEPTH,
     BUDGET_REGRESSION,
     BUDGET_CLASSIFICATION,
     BUDGET_MAX_DEPTH,
@@ -603,7 +604,8 @@ def compare_budgets(
         "their_std_num_trees": their_std_num_trees if run_theirs else None,
     }
     print(f"Write a new {filename}")
-    os.makedirs("logs", exist_ok=True)
+    this_dir = os.path.dirname(os.path.realpath(__file__))
+    os.makedirs(os.path.join(this_dir, "logs"), exist_ok=True)
     with open(os.path.join("logs", filename), "w+") as fout:
         fout.write(str(results))
     return results
@@ -613,12 +615,16 @@ def main():
     pp = pprint.PrettyPrinter(indent=2)
     ############### Regression ###############
     for dataset in [SKLEARN_REGRESSION, AIR]:  # TODO: Add GPU in the future
-        if dataset == SKLEARN_REGRESSION or dataset == AIR:
+        max_depth = BUDGET_MAX_DEPTH
+        if dataset == AIR:
             budget = BUDGET_REGRESSION * 32
         elif dataset == GPU:
             budget = BUDGET_REGRESSION * 10
+        elif dataset == SKLEARN_REGRESSION:
+            budget = BUDGET_REGRESSION * 12
+            max_depth = MAX_DEPTH
         else:
-            budget = BUDGET_REGRESSION * 32  # Default
+            budget = BUDGET_REGRESSION * 32 # Default
 
         train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
         regression_models = ["HRFR", "HRPR", "ERFR"]
@@ -637,7 +643,7 @@ def main():
                     verbose=True,
                     # TODO(@motiwari): May need to jiggle this. Was *12 for RP, *12 for ER, *10 for RF
                     default_budget=budget,
-                    depth_override=BUDGET_MAX_DEPTH,
+                    depth_override=max_depth,
                 )
             )
 
@@ -650,11 +656,11 @@ def main():
         elif dataset == FLIGHT:  # Fitting does not work, see #232
             budget = int(BUDGET_CLASSIFICATION / 3)
         elif dataset == MNIST_STR:
-            budget = int(BUDGET_CLASSIFICATION * 2.6)
+            budget = int(BUDGET_CLASSIFICATION * 1.3)
         else:
             budget = int(BUDGET_CLASSIFICATION * 2.6)  # Default
 
-        if dataset == FLIGHT:
+        if dataset in [FLIGHT, MNIST_STR]:
             max_depth = 5
         else:
             max_depth = BUDGET_MAX_DEPTH

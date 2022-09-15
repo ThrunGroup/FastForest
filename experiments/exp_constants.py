@@ -1,3 +1,6 @@
+# Experiment constants of the first submission
+MAX_DEPTH = 5
+
 # Budget experiment constants
 BUDGET_ALPHA_N = 0.8
 BUDGET_ALPHA_F = 0.5

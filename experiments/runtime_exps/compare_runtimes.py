@@ -10,6 +10,7 @@ from experiments.datasets import data_loader
 
 from experiments.exp_utils import *
 from experiments.exp_constants import (
+    MAX_DEPTH,
     RUNTIME_ALPHA_N,
     RUNTIME_ALPHA_F,
     RUNTIME_NUM_SEEDS,
@@ -624,7 +625,8 @@ def compare_runtimes(
         "their_std_num_queries": their_std_num_queries if run_theirs else None,
     }
     print(f"Writing a new {filename}")
-    os.makedirs("logs", exist_ok=True)
+    this_dir = os.path.dirname(os.path.realpath(__file__))
+    os.makedirs(os.path.join(this_dir, "logs"), exist_ok=True)
     with open(os.path.join("logs", filename), "w+") as fout:
         fout.write(str(results))
 
@@ -666,6 +668,10 @@ def main():
 
     ############### Classification ###############
     for dataset in [MNIST_STR, COVTYPE, APS, FLIGHT]:
+        if dataset == MNIST_STR:
+            max_depth = MAX_DEPTH
+        else:
+            max_depth = None
         train_images, train_labels, test_images, test_labels = data_loader.fetch_data(dataset)
         classification_models = ["HRFC", "HRPC", "ERFC"]
         for c_m in classification_models:
@@ -682,7 +688,7 @@ def main():
                     run_theirs=True,
                     filename=dataset + "_" + c_m + "_dict",
                     verbose=True,
-                    max_depth=None,
+                    max_depth=max_depth,
                     max_leaf_nodes=None,
                 )
             )
