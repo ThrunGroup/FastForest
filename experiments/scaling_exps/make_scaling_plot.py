@@ -58,7 +58,7 @@ def main(filename: str = "HRFC_scaling_classification.csv"):
             plt.ylabel("Runtime(seconds) by MABSplit")
         plt.xlabel(f"{dataset}: Dataset size")
         plt.legend(loc="lower right")
-        # plt.show()  # TODO: uncomment
+        plt.show()
 
 
 if __name__ == "__main__":
