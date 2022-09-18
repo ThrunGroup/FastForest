@@ -23,6 +23,7 @@ from utils.constants import (
     GPU,
     GPU_NUM_NON_INFORMATIVE,
 )
+from utils.utils import make_contiguous
 
 
 def get_dummies(d, col):
@@ -246,7 +247,7 @@ def get_covtype():
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=0
     )
-    return X_train, y_train, X_test, y_test
+    return X_train, make_contiguous(y_train), X_test, make_contiguous(y_test)
 
 
 def get_kdd():

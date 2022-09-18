@@ -1,4 +1,6 @@
 #!/bin/bash
+
+pip install -e .
 cd experiments/runtime_exps
 python compare_runtimes.py
 cd ../budget_exps
@@ -12,3 +14,5 @@ cd ../experiments/sklearn_exps
 python compare_baseline_implementations.py
 cd ..
 python produce_tables.py
+
+/bin/bash

@@ -189,6 +189,13 @@ def solve_exactly(
     :param min_impurity_reduction: Minimum impurity reduction beyond which to return a nonempty solution
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
+    try:
+        assert len(data.shape) == 2, "Error: Must pass 2-D data"
+    except AssertionError as e:
+        print("Data was:")
+        print(data)
+        raise e
+
     N = len(data)
     F = len(data[0])
 
@@ -293,6 +300,13 @@ def solve_mab(
     :param rng: numpy default random generator
     :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
     """
+    try:
+        assert len(data.shape) == 2, "Error: Must pass 2-D data"
+    except AssertionError as e:
+        print("Data was:")
+        print(data)
+        raise e
+    
     N = len(data)
     F = len(data[0])
     if binning_type == IDENTITY:

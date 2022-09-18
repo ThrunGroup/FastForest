@@ -11,7 +11,7 @@ def main(filename: str = "HRFC_scaling_classification.csv"):
     df = pd.read_csv(filename)
     columns = ["num_queries", "run_time"]
     sizes = np.array(df["size"])
-    for idx in range(2):
+    for idx in range(2):  # idx = 0 corresponds to sample complexity plot, and idx = 1 corresponds to runtime plot
         counts = np.array(df["avg_" + columns[idx]])
         counts_err = np.array(df["std_" + columns[idx]])
         mean_counts = np.mean(counts)

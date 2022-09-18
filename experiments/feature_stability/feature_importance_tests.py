@@ -282,12 +282,13 @@ def run_stability_stats_test(
             "ub_mab": mab_CI[1],
             "f_importance": importance_score,
         }
-        dir_name = "stat_test_stability_log"
+        this_dir = os.path.dirname(os.path.realpath(__file__))
+        log_dir = os.path.join(this_dir, "stat_test_stability_log")
         if csv_log:
             file_name = "statistics_log_tables.csv" if file_name is None else file_name
-            log_filename = os.path.join(dir_name, file_name)
+            log_filename = os.path.join(log_dir, file_name)
             if not os.path.exists(log_filename):
-                os.makedirs(dir_name, exist_ok=True)
+                os.makedirs(log_dir, exist_ok=True)
                 df = pd.DataFrame(columns=log_dict.keys())
                 df.to_csv(log_filename, index=False)
             append_dict_as_row(log_filename, log_dict, log_dict.keys())
