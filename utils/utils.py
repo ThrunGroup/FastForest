@@ -284,3 +284,14 @@ def get_subset_2d(source_array: np.ndarray, row_idcs: np.ndarray, col_idcs: np.n
 #     return source_array[np.repeat(row_idcs, len(col_idcs)), np.tile(col_idcs, len(row_idcs))].reshape(
 #         (len(row_idcs), len(col_idcs))
 #     )
+
+
+def make_contiguous(classes: np.ndarray):
+    """
+    Convert all classes into contiguous integers starting from 0
+    """
+    assert len(classes.shape) == 1, "Invalid dimension of classes array"
+    unique_classes = np.unique(classes)
+    class_dict = dict(zip(unique_classes, np.arange(len(unique_classes))))
+
+    return Histogram.replace_array(classes, class_dict)

@@ -605,8 +605,9 @@ def compare_budgets(
     }
     print(f"Write a new {filename}")
     this_dir = os.path.dirname(os.path.realpath(__file__))
-    os.makedirs(os.path.join(this_dir, "logs"), exist_ok=True)
-    with open(os.path.join("logs", filename), "w+") as fout:
+    log_dir = os.path.join(this_dir, "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    with open(os.path.join(log_dir, filename), "w+") as fout:
         fout.write(str(results))
     return results
 
@@ -614,7 +615,7 @@ def compare_budgets(
 def main():
     pp = pprint.PrettyPrinter(indent=2)
     ############### Regression ###############
-    for dataset in [SKLEARN_REGRESSION, AIR]:  # TODO: Add GPU in the future
+    for dataset in [SKLEARN_REGRESSION, GPU, AIR]:
         max_depth = BUDGET_MAX_DEPTH
         if dataset == AIR:
             budget = BUDGET_REGRESSION * 32
@@ -648,7 +649,7 @@ def main():
             )
 
     ############### Classification ###############
-    for dataset in [MNIST_STR, APS, COVTYPE, FLIGHT]:
+    for dataset in [COVTYPE, FLIGHT]:
         if dataset == APS:  # This budget works
             budget = int(BUDGET_CLASSIFICATION / 10)
         elif dataset == COVTYPE:  # This budget works

@@ -626,17 +626,17 @@ def compare_runtimes(
     }
     print(f"Writing a new {filename}")
     this_dir = os.path.dirname(os.path.realpath(__file__))
-    os.makedirs(os.path.join(this_dir, "logs"), exist_ok=True)
-    with open(os.path.join("logs", filename), "w+") as fout:
+    log_dir = os.path.join(this_dir, "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    with open(os.path.join(log_dir, filename), "w+") as fout:
         fout.write(str(results))
-
     return results
 
 
 def main():
     pp = pprint.PrettyPrinter(indent=2)
     ############### Regression ###############
-    for dataset in [AIR, SKLEARN_REGRESSION]:  # TODO: Add GPU in the future
+    for dataset in [SKLEARN_REGRESSION, AIR, GPU]:  
         train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
 
         if dataset == GPU:
