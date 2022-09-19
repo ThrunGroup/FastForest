@@ -642,6 +642,9 @@ def main():
         if dataset == GPU:
             max_depth = 100
             max_leaf_nodes = 5
+        elif dataset == SKLEARN_REGRESSION:
+            max_depth = 5
+            max_leaf_nodes = None
         else:
             max_depth = None
             max_leaf_nodes = None

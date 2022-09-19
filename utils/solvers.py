@@ -356,8 +356,7 @@ def solve_mab(
     if len(candidates) < 2:
         return 0
     total_queries = 0
-    num_survived_features = 2
-    while len(candidates) > 5 and num_survived_features > 1:
+    while len(candidates) > 2:
         # If we have already pulled the arms more times than the number of datapoints in the original datasets,
         # it would be the same complexity to just compute the arm return explicitly over the whole datasets.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
