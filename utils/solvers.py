@@ -49,6 +49,7 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
     # This is already a pure node
     if len(left_idcs[0]) == 0:
         return False
+
     p_L = L_counts / np.sum(L_counts)
 
     right_idcs = np.where(data[:, feature] > value)
@@ -58,6 +59,7 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
     # This is already a pure node
     if len(right_idcs[0]) == 0:
         return False
+
     p_R = R_counts / np.sum(R_counts)
 
     split_impurity = (1 - np.dot(p_L, p_L)) * np.sum(L_counts) + (
@@ -325,6 +327,7 @@ def solve_mab(
 
     if verbose:
         print("Number of arms:", B * F)
+
     candidates = np.array(list(itertools.product(range(F), range(B))))
     estimates = np.empty((F, B))
     lcbs = np.empty((F, B))
@@ -347,16 +350,19 @@ def solve_mab(
 
     considered_idcs = np.array(considered_idcs)
     not_considered_idcs = np.array(not_considered_idcs)
+
     if len(not_considered_idcs) > 0:
         not_considered_access = (not_considered_idcs[:, 0], not_considered_idcs[:, 1])
         exact_mask[not_considered_access] = 1
         ucbs[not_considered_access] = estimates[not_considered_access] = float("inf")
         lcbs[not_considered_access] = -float("inf")
         candidates = considered_idcs
-    if len(candidates) < 2:
+
+    if len(candidates) < 1:
         return 0
+
     total_queries = 0
-    while len(candidates) > 2:
+    while len(candidates) > 1:
         # If we have already pulled the arms more times than the number of datapoints in the original datasets,
         # it would be the same complexity to just compute the arm return explicitly over the whole datasets.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
@@ -365,6 +371,7 @@ def solve_mab(
             exact_accesses = np.where(
                 (num_samples + batch_size >= N) & (exact_mask == 0)
             )
+
             if len(exact_accesses[0]) > 0:
                 empty_histograms(histograms, exact_accesses)
                 estimates[exact_accesses], _vars, num_queries, _ = sample_targets(
