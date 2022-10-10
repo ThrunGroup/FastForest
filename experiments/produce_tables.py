@@ -6,9 +6,8 @@ from scaling_exps import make_scaling_plot
 
 from utils.constants import FLIGHT, AIR, APS, BLOG, SKLEARN_REGRESSION, MNIST_STR, HOUSING, COVTYPE, KDD, GPU
 
-pm = " \u00B1 "  # plus minus
+pm = " +/- "  # plus minus
 ndigits = 3  # number of digits for rounding
-
 
 
 def s(value: float, ndgits: int = ndigits):
@@ -45,11 +44,20 @@ def standardize_model_name(model_name: str):
     return model_dict[model_name]
 
 
-def print_table(headers: List, data: List):
-    format_row = "{:<40}" * (len(headers) + 1)
-    print(format_row.format("", *headers))
+def print_table(headers: List, data: List, outfile_name = None):
+    format_row = "{:<40}," * (len(headers) + 1)
+
+    # Print the table to console
+    print(format_row.format("", *headers).strip().strip(","))
     for i, row in enumerate(data):
-        print(format_row.format(f"{ordinal_num(int(i / 2 + 1))} row", *row))
+        print(format_row.format(f"", *row).strip().strip(","))
+
+    # Also write it to file
+    with open(outfile_name, 'w+') as fout:
+        fout.write(format_row.format("", *headers).strip().strip(","))
+        for i, row in enumerate(data):
+            fout.write("\n")
+            fout.write(format_row.format(f"", *row).strip().strip(","))
 
 
 def write_runtime_data(table_data: List, log_dict: Dict, filename: str):
@@ -136,7 +144,7 @@ def produce_table1():
                 write_runtime_data(table1_data, log_dict, filename)
         print("=" * 30)
         print("Table 1 (Classification): " + dataset)
-        print_table(header, table1_data)
+        print_table(header, table1_data, "table1_" + dataset + ".csv")
 
 
 def produce_table2():
@@ -156,7 +164,7 @@ def produce_table2():
                 write_runtime_data(table2_data, log_dict, filename)
         print("=" * 30)
         print("Table 2 (Regression): " + dataset)
-        print_table(header, table2_data)
+        print_table(header, table2_data, "table2_" + dataset + ".csv")
 
 
 def produce_table3():
@@ -176,7 +184,7 @@ def produce_table3():
                 write_budget_data(table3_data, log_dict, filename)
         print("=" * 30)
         print("Table 3 (Classification): " + dataset)
-        print_table(header, table3_data)
+        print_table(header, table3_data, "table3_" + dataset + ".csv")
 
 
 def produce_table4():
@@ -196,7 +204,7 @@ def produce_table4():
                 write_budget_data(table4_data, log_dict, filename)
         print("=" * 30)
         print("Table 4 (Regression):" + dataset)
-        print_table(header, table4_data)
+        print_table(header, table4_data, "table4_" + dataset + ".csv")
 
 
 def produce_table5():
@@ -245,7 +253,7 @@ def produce_table5():
             table5_data.append(ours_data)
     print("=" * 30)
     print("Table 5 Stability Model (Budget: Q * 100000)")
-    print_table(header, table5_data)
+    print_table(header, table5_data, "table5.csv")
 
 
 def produce_table6():
@@ -283,7 +291,7 @@ def produce_table6():
             table6_data.append(ours_data)
     print("=" * 30)
     print("Table 6 Compare our model vs sklearn")
-    print_table(header, table6_data)
+    print_table(header, table6_data, "table6.csv")
 
 
 def produce_figure1():
