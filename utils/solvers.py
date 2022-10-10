@@ -358,6 +358,7 @@ def solve_mab(
         lcbs[not_considered_access] = -float("inf")
         candidates = considered_idcs
 
+    # TODO: Can change this to < 2 if there is only one candidate
     if len(candidates) < 1:
         return 0
 

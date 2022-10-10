@@ -124,7 +124,7 @@ def produce_table1():
     runtime_logs_dir = os.path.join(this_dir, "runtime_exps", "logs")
     header = ["Model", "Time (s)", "Number of Insertions", "Accuracy"]
     classification_models = ["HRFC", "ERFC", "HRPC"]
-    for dataset in [MNIST_STR, APS, FLIGHT, COVTYPE]:
+    for dataset in [MNIST_STR, APS, COVTYPE]:  # FLIGHT,
         filename_list = [dataset + "_" + c_m + "_dict" for c_m in classification_models]
         table1_data = []
         for filename in filename_list:
@@ -144,7 +144,7 @@ def produce_table2():
     runtime_logs_dir = os.path.join(this_dir, "runtime_exps", "logs")
     header = ["Model", "Time (s)", "Number of Insertions", "MSE"]
     regression_models = ["HRFR", "ERFR", "HRPR"]
-    for dataset in [SKLEARN_REGRESSION, AIR, GPU]:
+    for dataset in [AIR, GPU]:  # SKLEARN_REGRESSION,
         filename_list = [dataset + "_" + r_m + "_dict" for r_m in regression_models]
         table2_data = []
         for filename in filename_list:
@@ -164,7 +164,7 @@ def produce_table3():
     budget_logs_dir = os.path.join(this_dir, "budget_exps", "logs")
     classification_models = ["HRFC", "ERFC", "HRPC"]
     header = ["Model", "Number of Trees", "Accuracy"]
-    for dataset in [MNIST_STR, APS, FLIGHT, COVTYPE]:
+    for dataset in [MNIST_STR, APS, COVTYPE]:  #FLIGHT
         filename_list = [dataset + "_" + c_m + "_dict" for c_m in classification_models]
         table3_data = []
         for filename in filename_list:
@@ -184,7 +184,7 @@ def produce_table4():
     budget_logs_dir = os.path.join(this_dir, "budget_exps", "logs")
     regression_models = ["HRFR", "HRPR", "ERFR"]
     header = ["Model", "Number of Trees", "Test MSE"]
-    for dataset in [SKLEARN_REGRESSION, AIR]:  # BLOG, SKLEARN_REGRESSION # TODO: Add GPU
+    for dataset in [AIR, GPU]:  # SKLEARN_REGRESSION
         filename_list = [dataset + "_" + r_m + "_dict" for r_m in regression_models]
         table4_data = []
         for filename in filename_list:
