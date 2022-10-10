@@ -1,0 +1,7 @@
+Model                                   ,Number of Trees                         ,Accuracy                                
+RF                                      ,1.0 +/- 0.0                             ,0.985 +/- 0.0                           
+RF + MABSplit                           ,5.8 +/- 0.179                           ,0.989 +/- 0.0                           
+ExtraTrees                              ,1.0 +/- 0.0                             ,0.985 +/- 0.0                           
+ExtraTrees + MABSplit                   ,5.6 +/- 0.219                           ,0.989 +/- 0.0                           
+RP                                      ,1.0 +/- 0.0                             ,0.985 +/- 0.0                           
+RP + MABSplit                           ,6.8 +/- 0.179                           ,0.989 +/- 0.0                           

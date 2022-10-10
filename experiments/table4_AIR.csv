@@ -1,0 +1,7 @@
+Model                                   ,Number of Trees                         ,Test MSE                                
+RF                                      ,0.0 +/- 0.0                             ,3208.93 +/- 0.0                         
+RF + MABSplit                           ,12.0 +/- 0.0                            ,927.013 +/- 2.042                       
+RP                                      ,0.0 +/- 0.0                             ,3208.93 +/- 0.0                         
+RP + MABSplit                           ,11.0 +/- 0.4                            ,875.764 +/- 3.064                       
+ExtraTrees                              ,0.0 +/- 0.0                             ,3208.93 +/- 0.0                         
+ExtraTrees + MABSplit                   ,9.0 +/- 0.0                             ,834.338 +/- 4.377                       

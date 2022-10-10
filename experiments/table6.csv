@@ -1,0 +1,9 @@
+Model                                   ,Task and Dataset                        ,Performance Metric                      ,Test Performance                        
+RFC(Sklearn)                            ,Classification: 20 Newsgroups           ,Accuracy                                ,0.862 +/- 0.018                         
+RFC(Ours)                               ,Classification: 20 Newsgroups           ,Accuracy                                ,0.871 +/- 0.01                          
+ERFC(Sklearn)                           ,Classification: 20 Newsgroups           ,Accuracy                                ,0.74 +/- 0.045                          
+ERFC(Ours)                              ,Classification: 20 Newsgroups           ,Accuracy                                ,0.768 +/- 0.039                         
+RFR(Sklearn)                            ,Regression: California Housing          ,MSE                                     ,0.322 +/- 0.009                         
+RFR(Ours)                               ,Regression: California Housing          ,MSE                                     ,0.324 +/- 0.008                         
+ERFR(Sklearn)                           ,Regression: California Housing          ,MSE                                     ,0.909 +/- 0.076                         
+ERFR(Ours)                              ,Regression: California Housing          ,MSE                                     ,0.615 +/- 0.023                         
