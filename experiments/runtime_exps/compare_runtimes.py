@@ -24,6 +24,7 @@ from utils.constants import (
     BEST,
     EXACT,
     MAB,
+    RANDOM_SOLVER,
     MSE,
     DEFAULT_NUM_BINS,
     DEFAULT_MIN_IMPURITY_DECREASE,
@@ -137,9 +138,9 @@ def compare_runtimes(
         max_depth = RUNTIME_MAX_DEPTH
 
     if n_estimators is None:
-        n_estimators = 5
+        n_estimators = 1
 
-    for seed in range(num_seeds):
+    for seed in range(6, 6+num_seeds):
         if compare == "HRFC":
             our_model = HRFC(
                 data=train_data,
@@ -154,6 +155,7 @@ def compare_runtimes(
                 splitter=BEST,
                 solver=MAB,
                 random_state=seed,
+                with_replacement=False,
                 verbose=verbose,
             )
             their_model = HRFC(
@@ -167,8 +169,9 @@ def compare_runtimes(
                 budget=None,
                 criterion=GINI,
                 splitter=BEST,
-                solver=EXACT,
+                solver=RANDOM_SOLVER,
                 random_state=seed,
+                with_replacement=False,
                 verbose=verbose,
             )
         elif compare == "ERFC":
@@ -566,6 +569,8 @@ def compare_runtimes(
                 print("(Theirs) Num queries:", their_model.num_queries)
 
         print("/" * 30)
+        print()
+        print()
 
     # For accuracies
     our_avg_train = np.mean(our_train_accs)
@@ -638,49 +643,49 @@ def compare_runtimes(
 def main():
     pp = pprint.PrettyPrinter(indent=2)
     ############### Regression ###############
-    for dataset in [SKLEARN_REGRESSION, AIR, GPU]:
-        train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
-
-        if dataset == GPU:
-            # TODO(@motiwari): These options seem contradictory
-            max_depth = 100
-            max_leaf_nodes = 5
-        elif dataset == SKLEARN_REGRESSION:
-            max_depth = 5
-            max_leaf_nodes = None
-        else:
-            max_depth = None
-            max_leaf_nodes = None
-
-        regression_models = ["HRFR", "HRPR", "ERFR"]
-        for r_m in regression_models:
-            pp.pprint(
-                compare_runtimes(
-                    dataset_name=dataset,
-                    compare=r_m,
-                    train_data=train_data,
-                    train_targets=train_targets,
-                    original_test_data=test_data,
-                    test_targets=test_targets,
-                    num_seeds=RUNTIME_NUM_SEEDS,
-                    predict=True,
-                    run_theirs=True,
-                    filename=dataset + "_" + r_m + "_dict",
-                    verbose=False,
-                    max_depth=max_depth,
-                    max_leaf_nodes=max_leaf_nodes,
-                )
-            )
+    # for dataset in [SKLEARN_REGRESSION, AIR, GPU]:
+    #     train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
+    #
+    #     if dataset == GPU:
+    #         # TODO(@motiwari): These options seem contradictory
+    #         max_depth = 100
+    #         max_leaf_nodes = 5
+    #     elif dataset == SKLEARN_REGRESSION:
+    #         max_depth = 5
+    #         max_leaf_nodes = None
+    #     else:
+    #         max_depth = None
+    #         max_leaf_nodes = None
+    #
+    #     regression_models = ["HRFR", "HRPR", "ERFR"]
+    #     for r_m in regression_models:
+    #         pp.pprint(
+    #             compare_runtimes(
+    #                 dataset_name=dataset,
+    #                 compare=r_m,
+    #                 train_data=train_data,
+    #                 train_targets=train_targets,
+    #                 original_test_data=test_data,
+    #                 test_targets=test_targets,
+    #                 num_seeds=RUNTIME_NUM_SEEDS,
+    #                 predict=True,
+    #                 run_theirs=True,
+    #                 filename=dataset + "_" + r_m + "_dict",
+    #                 verbose=False,
+    #                 max_depth=max_depth,
+    #                 max_leaf_nodes=max_leaf_nodes,
+    #             )
+    #         )
 
     ############### Classification ###############
-    for dataset in [MNIST_STR, COVTYPE, APS, FLIGHT]:
+    for dataset in [MNIST_STR]:#, COVTYPE, APS, FLIGHT]:
         if dataset == MNIST_STR:
-            max_depth = MAX_DEPTH
+            max_depth = 5
         else:
             max_depth = None
 
         train_images, train_labels, test_images, test_labels = data_loader.fetch_data(dataset)
-        classification_models = ["HRFC", "HRPC", "ERFC"]
+        classification_models = ["HRFC"]#, "HRPC", "ERFC"]
         for c_m in classification_models:
             pp.pprint(
                 compare_runtimes(
