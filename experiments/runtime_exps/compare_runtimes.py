@@ -132,8 +132,10 @@ def compare_runtimes(
     default_alpha_F = RUNTIME_ALPHA_F
     default_min_samples_split = 2
     default_boosting_lr = 0.1
+
     if max_depth is None:
         max_depth = RUNTIME_MAX_DEPTH
+
     if n_estimators is None:
         n_estimators = 5
 
@@ -640,6 +642,7 @@ def main():
         train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
 
         if dataset == GPU:
+            # TODO(@motiwari): These options seem contradictory
             max_depth = 100
             max_leaf_nodes = 5
         elif dataset == SKLEARN_REGRESSION:
@@ -675,6 +678,7 @@ def main():
             max_depth = MAX_DEPTH
         else:
             max_depth = None
+
         train_images, train_labels, test_images, test_labels = data_loader.fetch_data(dataset)
         classification_models = ["HRFC", "HRPC", "ERFC"]
         for c_m in classification_models:
