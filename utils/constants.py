@@ -13,7 +13,7 @@ VECTORIZE_HISTOGRAM = False
 GPU_NUM_NON_INFORMATIVE = 50
 
 # For random solver baseline
-PULL_EACH_ARM = 333
+PULL_EACH_ARM = 1000
 
 # Datasets
 IRIS = "IRIS"
