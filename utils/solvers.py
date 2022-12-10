@@ -461,7 +461,9 @@ def solve_mab(
         num_survived_features = len(np.unique(cand_condition[0]))
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
         round_count += 1
+        print("Number of candidates survived: ", len(candidates), "ucbs.min(): ", ucbs.min())
 
+    print("Terminated after ", round_count, " rounds")
     best_splits = zip(
         np.where(estimates == np.nanmin(estimates))[0],
         np.where(estimates == np.nanmin(estimates))[1],
