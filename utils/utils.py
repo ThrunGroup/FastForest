@@ -200,7 +200,9 @@ def make_histograms(
         )
         histograms.append(histogram)
 
-        # Filtering extraneous bins
+        # Filtering extraneous bins.
+        # This is a really hacky way to determine if feature value is degenerate and should be ignored. If it is NOT
+        # degenerate, then the histogram will have B bins and range(histogram.num_bins, B) will be empty.
         not_considered_idcs += list(
             itertools.product([f_idx], range(histogram.num_bins, B))
         )
@@ -221,6 +223,10 @@ def choose_features(
     :param rng: numpy random default generator
     :return:
     """
+    # TODO(@motiwari): Use this seed setting to compare against the random_solver baseline to make sure
+    #  both models have access to the same features
+    # rng = np.random.default_rng(0)
+
     F = len(feature_idcs)  # Number of features
     if feature_subsampling is None:
         return feature_idcs

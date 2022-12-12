@@ -219,10 +219,8 @@ def get_mnist():
     mndata = MNIST(os.path.join(this_dir, "..", "mnist"))
     train_images, train_labels = mndata.load_training()
     rng = np.random.default_rng(0)
-    subsample_idcs = rng.choice(len(train_images), 4 * len(train_images))
-    train_images = np.array(train_images)[subsample_idcs]
-    train_labels = np.array(train_labels)[subsample_idcs]
-
+    train_images = np.array(train_images)
+    train_labels = np.array(train_labels)
     test_images, test_labels = mndata.load_testing()
     test_images = np.array(test_images)
     test_labels = np.array(test_labels)

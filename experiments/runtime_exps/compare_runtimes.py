@@ -24,6 +24,7 @@ from utils.constants import (
     BEST,
     EXACT,
     MAB,
+    RANDOM_SOLVER,
     MSE,
     DEFAULT_NUM_BINS,
     DEFAULT_MIN_IMPURITY_DECREASE,
@@ -566,6 +567,8 @@ def compare_runtimes(
                 print("(Theirs) Num queries:", their_model.num_queries)
 
         print("/" * 30)
+        print()
+        print()
 
     # For accuracies
     our_avg_train = np.mean(our_train_accs)
