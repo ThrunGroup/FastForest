@@ -149,7 +149,7 @@ def compare_accuracies(
                 criterion="squared_error",
                 max_depth=5,
                 min_samples_split=2,
-                max_features="sqrt",
+                max_features=1.0,
                 min_impurity_decrease=0.0,
                 bootstrap=False,
                 n_jobs=-1,
@@ -211,7 +211,7 @@ def compare_accuracies(
                 criterion="squared_error",
                 max_depth=5,
                 min_samples_split=2,
-                max_features="sqrt",
+                max_features="sqrt",  # TODO: This should be 1.0?
                 min_impurity_decrease=0.0,
                 bootstrap=False,
                 n_jobs=-1,
