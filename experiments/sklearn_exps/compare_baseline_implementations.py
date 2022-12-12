@@ -304,9 +304,11 @@ def compare_accuracies(
             if prev_results == results:
                 print(f"{filename} is successfully reproduced")
                 return results
+
     print(f"Write a new {filename}")
     with open(filename, "w+") as fout:
         fout.write(str(results))
+
     return (
         overlap,
         our_avg_train,
