@@ -229,8 +229,11 @@ def solve_exactly(
         not_considered_access = (not_considered_idcs[:, 0], not_considered_idcs[:, 1])
         estimates[not_considered_access] = float("inf")
         candidates = considered_idcs
+
     if len(candidates) < 2:
+        raise Warning("Not properly returning arm in this case")
         return 0
+
     # Massage arm indices for use by numpy slicing
     accesses = (
         candidates[:, 0],
@@ -362,7 +365,8 @@ def solve_mab(
         candidates = considered_idcs
 
     # TODO: Can change this to < 2 if there is only one candidate
-    if len(candidates) < 1:
+    if len(candidates) < 2:
+        raise Warning("Not properly returning arm in this case")
         return 0
 
     total_queries = 0
@@ -409,6 +413,7 @@ def solve_mab(
         # Last candidates were exactly computed
         if len(candidates) <= 1:
             break
+
         if population_idcs is not None and len(population_idcs) == 0:
             lcbs = ucbs = estimates
             break
@@ -461,7 +466,6 @@ def solve_mab(
             & (lcbs < min_impurity_reduction)
             & (tied_arms == 0)
         )
-        num_survived_features = len(np.unique(cand_condition[0]))
         candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
         round_count += 1
 
@@ -574,12 +578,17 @@ def solve_randomly(
 
     considered_idcs = np.array(considered_idcs)
     not_considered_idcs = np.array(not_considered_idcs)
+
     if len(not_considered_idcs) > 0:
         not_considered_access = (not_considered_idcs[:, 0], not_considered_idcs[:, 1])
         estimates[not_considered_access] = float("inf")
         candidates = considered_idcs
+
     if len(candidates) < 2:
+        # If there are no candidates left, don't solve anything and return 0 total queries
+        raise Warning("Not properly returning arm in this case")
         return 0
+
     # Massage arm indices for use by numpy slicing
     accesses = (
         candidates[:, 0],
