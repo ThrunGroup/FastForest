@@ -51,9 +51,9 @@ class Node:
         # but indices
         # The features aren't global to the tree, so we should be resampling the features at every node
 
-        # TODO(@motiwari): Change "None" back to self.feature_subsampling
+        # Note: To compare with random solver, change self.feature_subsampling to None
         self.feature_idcs = choose_features(
-            self.tree.feature_idcs, None, self.tree.rng
+            self.tree.feature_idcs, self.feature_subsampling, self.tree.rng
         )
 
         if self.tree.discrete_features is not None:

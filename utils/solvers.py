@@ -115,8 +115,8 @@ def sample_targets(
     cb_deltas = np.array([], dtype=float)
     N = len(data)
 
-    # TODO(@motiwari): Change this back
-    with_replacement = False  # population_idcs is None
+    # NOTE: Might need to change with_replacement to False for comparison with random solver
+    with_replacement = population_idcs is None
     initial_pop_size = None if population_idcs is None else N
     if with_replacement:  # Sample with replacement
         if N <= batch_size:
@@ -275,7 +275,7 @@ def solve_mab(
     is_classification: bool = True,
     impurity_measure: str = GINI,
     min_impurity_reduction: float = 0,
-    epsilon=0.00,  # TODO(@motiwari): change this back to 0.01
+    epsilon=0.01,  # Note: Might need to change this to 0.00 for comparison with random solver
     with_replacement: bool = False,
     budget: int = None,
     verbose: bool = False,
@@ -356,9 +356,9 @@ def solve_mab(
     if len(not_considered_idcs) > 0:
         not_considered_access = (not_considered_idcs[:, 0], not_considered_idcs[:, 1])
         exact_mask[not_considered_access] = 1
-        ucbs[not_considered_access] = estimates[not_considered_access] = float("inf")
-        lcbs[not_considered_access] = -float("inf")  # TODO(@motiwari): change this to +float("inf")?
-        # TODO(@motiwari): Add estimates[not_considered_access] = +float("inf")?
+        ucbs[not_considered_access] = float("inf")
+        lcbs[not_considered_access] = float("inf")
+        estimates[not_considered_access] = float("inf")
         candidates = considered_idcs
 
     # TODO: Can change this to < 2 if there is only one candidate

@@ -13,8 +13,8 @@ BUDGET_CLASSIFICATION = 7840000
 # Runtime experiment constants
 RUNTIME_ALPHA_N = 0.7
 RUNTIME_ALPHA_F = 0.85
-RUNTIME_NUM_SEEDS = 4
-RUNTIME_MAX_DEPTH = 5  # Should this be 3 or 5?
+RUNTIME_NUM_SEEDS = 5
+RUNTIME_MAX_DEPTH = 1  # Should this be 3 or 5?
 
 # Scaling experiment constants
 SCALING_NUM_SEEDS = 5

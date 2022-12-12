@@ -223,9 +223,9 @@ def choose_features(
     :param rng: numpy random default generator
     :return:
     """
-    # TODO(@motiwari): Remove this seed-setting. It is only to compare against the random_solver baseline to make sure
+    # TODO(@motiwari): Use this seed setting to compare against the random_solver baseline to make sure
     #  both models have access to the same features
-    rng = np.random.default_rng(0)
+    # rng = np.random.default_rng(0)
 
     F = len(feature_idcs)  # Number of features
     if feature_subsampling is None:

@@ -14,7 +14,7 @@ from experiments.exp_constants import (
     RUNTIME_ALPHA_N,
     RUNTIME_ALPHA_F,
     RUNTIME_NUM_SEEDS,
-    RUNTIME_MAX_DEPTH
+    RUNTIME_MAX_DEPTH,
 )
 
 from utils.constants import CLASSIFICATION_MODELS, REGRESSION_MODELS
@@ -24,6 +24,7 @@ from utils.constants import (
     BEST,
     EXACT,
     MAB,
+    RANDOM_SOLVER,
     MSE,
     DEFAULT_NUM_BINS,
     DEFAULT_MIN_IMPURITY_DECREASE,
@@ -39,7 +40,13 @@ def main():
     dataset = MNIST_STR
     max_depth = 1
 
-    train_images, train_labels, test_images, test_labels = data_loader.fetch_data(dataset)
+    train_data, train_targets, _test_data, _test_labels = data_loader.fetch_data(dataset)
+
+    n_estimators = 5
+    default_min_samples_split = 2
+    max_leaf_nodes = None
+    seed = 0
+    verbose = True
 
     our_model = HRFC(
         data=train_data,
