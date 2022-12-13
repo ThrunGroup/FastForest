@@ -1,9 +1,9 @@
-Importance Model                        ,Importance Metric,Dataset                                 ,Stability                               
-RF,MID,Random Classification                   ,0.536 +/- 0.039                         
-RF + MABSplit,MID,Random Classification                   ,0.863 +/- 0.016                         
-RF,MID,Random Regression                       ,0.134 +/- 0.021                         
-RF + MABSplit,MID,Random Regression                       ,0.674 +/- 0.043                         
-RF,Permutation,Random Classification                   ,0.579 +/- 0.023                         
-RF + MABSplit,Permutation,Random Classification                   ,0.69 +/- 0.023                          
-RF,Permutation,Random Regression                       ,0.116 +/- 0.017                         
-RF + MABSplit,Permutation,Random Regression                       ,0.437 +/- 0.044                         
+Importance Model                        ,Dataset                                 ,Stability                               
+HRFC+MID                                ,Random Classification                   ,0.536 +/- 0.039                         
+HRFC+MID + MABSplit                     ,Random Classification                   ,0.863 +/- 0.016                         
+HRFR+MID                                ,Random Regression                       ,0.134 +/- 0.021                         
+HRFR+MID + MABSplit                     ,Random Regression                       ,0.674 +/- 0.043                         
+HRFC+Perm                               ,Random Classification                   ,0.579 +/- 0.023                         
+HRFC+Perm + MABSplit                    ,Random Classification                   ,0.69 +/- 0.023                          
+HRFR+Perm                               ,Random Regression                       ,0.116 +/- 0.017                         
+HRFR+Perm + MABSplit                    ,Random Regression                       ,0.437 +/- 0.044                         

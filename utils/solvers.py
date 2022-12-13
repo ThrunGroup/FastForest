@@ -253,7 +253,8 @@ def solve_exactly(
 
     total_queries = num_queries
     # TODO(@motiwari): Can't use nanmin here -- why?
-    # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
+    # TODO(@motiwari): Throw out nan arms!
+    # BUG: Fix this since it's 2D
     best_split = zip(
         np.where(estimates == np.nanmin(estimates))[0],
         np.where(estimates == np.nanmin(estimates))[1],

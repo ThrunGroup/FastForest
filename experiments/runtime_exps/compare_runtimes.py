@@ -641,39 +641,39 @@ def compare_runtimes(
 def main():
     pp = pprint.PrettyPrinter(indent=2)
     ############### Regression ###############
-    for dataset in [SKLEARN_REGRESSION, AIR, GPU]:
-        train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
-
-        if dataset == GPU:
-            # TODO(@motiwari): These options seem contradictory
-            max_depth = 100
-            max_leaf_nodes = 5
-        elif dataset == SKLEARN_REGRESSION:
-            max_depth = 5
-            max_leaf_nodes = None
-        else:
-            max_depth = None
-            max_leaf_nodes = None
-
-        regression_models = ["HRFR", "HRPR", "ERFR"]
-        for r_m in regression_models:
-            pp.pprint(
-                compare_runtimes(
-                    dataset_name=dataset,
-                    compare=r_m,
-                    train_data=train_data,
-                    train_targets=train_targets,
-                    original_test_data=test_data,
-                    test_targets=test_targets,
-                    num_seeds=RUNTIME_NUM_SEEDS,
-                    predict=True,
-                    run_theirs=True,
-                    filename=dataset + "_" + r_m + "_dict",
-                    verbose=False,
-                    max_depth=max_depth,
-                    max_leaf_nodes=max_leaf_nodes,
-                )
-            )
+    # for dataset in [SKLEARN_REGRESSION, AIR, GPU]:
+    #     train_data, train_targets, test_data, test_targets = data_loader.fetch_data(dataset)
+    #
+    #     if dataset == GPU:
+    #         # TODO(@motiwari): These options seem contradictory
+    #         max_depth = 100
+    #         max_leaf_nodes = 5
+    #     elif dataset == SKLEARN_REGRESSION:
+    #         max_depth = 5
+    #         max_leaf_nodes = None
+    #     else:
+    #         max_depth = None
+    #         max_leaf_nodes = None
+    #
+    #     regression_models = ["HRFR", "HRPR", "ERFR"]
+    #     for r_m in regression_models:
+    #         pp.pprint(
+    #             compare_runtimes(
+    #                 dataset_name=dataset,
+    #                 compare=r_m,
+    #                 train_data=train_data,
+    #                 train_targets=train_targets,
+    #                 original_test_data=test_data,
+    #                 test_targets=test_targets,
+    #                 num_seeds=RUNTIME_NUM_SEEDS,
+    #                 predict=True,
+    #                 run_theirs=True,
+    #                 filename=dataset + "_" + r_m + "_dict",
+    #                 verbose=False,
+    #                 max_depth=max_depth,
+    #                 max_leaf_nodes=max_leaf_nodes,
+    #             )
+    #         )
 
     ############### Classification ###############
     for dataset in [MNIST_STR, COVTYPE, APS, FLIGHT]:
