@@ -11,7 +11,7 @@ import utils.utils
 
 def preprocess_news(verbose: bool = False):
     """
-    Returns training and test dataest of sklearn newsgroups dataset. Reduce the size of dataset using PCA and only
+    Returns training and test dataest of sklearn newsgroups datasets. Reduce the size of datasets using PCA and only
     considering 2 target values.
     """
     # Download the data from two categories
@@ -82,7 +82,7 @@ def test_tree_news(
     train_acc = np.mean(tc.predict_batch(X_train)[0] == Y_train)
     test_acc = np.mean(tc.predict_batch(X_test)[0] == Y_test)
     if verbose:
-        print("--Experiment FastTree with Newsgroups dataset--")
+        print("--Experiment FastTree with Newsgroups datasets--")
         print(f"Seed : {seed}")
         print(f"Solver: {solver}")
         print(f"Sample with replacement: {with_replacement}")

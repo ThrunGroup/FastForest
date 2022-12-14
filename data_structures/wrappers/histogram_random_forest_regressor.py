@@ -1,7 +1,7 @@
 import numpy as np
 
 from data_structures.forest_regressor import ForestRegressor
-from utils.constants import SQRT, LINEAR, DEFAULT_NUM_BINS, BEST, EXACT, MSE
+from utils.constants import BATCH_SIZE, SQRT, LINEAR, DEFAULT_NUM_BINS, BEST, EXACT, MSE
 
 
 class HistogramRandomForestRegressor(ForestRegressor):
@@ -32,6 +32,7 @@ class HistogramRandomForestRegressor(ForestRegressor):
         random_state: int = 0,
         with_replacement: bool = False,
         verbose: bool = False,
+        batch_size: int = BATCH_SIZE,
     ) -> None:
         super().__init__(
             data=data,
@@ -52,7 +53,8 @@ class HistogramRandomForestRegressor(ForestRegressor):
             random_state=random_state,
             with_replacement=with_replacement,
             verbose=verbose,
-            is_precomputed_minmax=True,
+            is_precomputed_minmax=False,
             use_logarithmic_split=False,
             epsilon=0.01,
+            batch_size=batch_size,
         )

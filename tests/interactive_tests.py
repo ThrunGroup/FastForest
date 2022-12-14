@@ -28,7 +28,7 @@ def test_forest_diabetes(
     boosting: bool = False,
 ):
     if verbose:
-        print("--RF experiment with diabetes dataset--")
+        print("--RF experiment with diabetes datasets--")
     diabetes = load_diabetes()
     data, labels = diabetes.data, diabetes.target
     if print_sklearn:

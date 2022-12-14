@@ -21,8 +21,8 @@ def check_dimension(X: np.ndarray, Y: np.ndarray) -> bool:
     """
     Check the dimension of X and Y
 
-    :param X: input dataset
-    :param Y: target dataset
+    :param X: input datasets
+    :param Y: target datasets
     :return: return whether the dimensions of X and Y are valid.
     """
     return (len(X) == len(Y)) and (len(X.shape) == 2) and (len(Y.shape) == 1)
@@ -32,16 +32,16 @@ def get_subset(
     X: np.ndarray, Y: np.ndarray, subset_size: int, seed: int
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Get a subset of dataset X and Y.
+    Get a subset of datasets X and Y.
 
-    :param X: an input dataset
-    :param Y: a target dataset
+    :param X: an input datasets
+    :param Y: a target datasets
     :param subset_size: subset_size (# of rows) of X and Y
     :param seed: random seed when taking a subset of X and Y
     :return: the subset of X and Y
     """
     assert len(Y) >= subset_size, "Invalid subset_size of dataframe"
-    assert check_dimension(X, Y), "Invalid dimension size of dataset"
+    assert check_dimension(X, Y), "Invalid dimension size of datasets"
 
     random_state = np.random.RandomState(seed)
     idcs = random_state.choice(len(Y), subset_size, replace=False)
@@ -57,11 +57,11 @@ def split_data(
     is_balanced: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
-    Take a subset of dataset and split it into train, validation, and test set
+    Take a subset of datasets and split it into train, validation, and test set
 
-    :param X: an input dataset
-    :param Y: a target dataset
-    :param ratio: the ratio of splitting dataset into train, validation, and test set
+    :param X: an input datasets
+    :param Y: a target datasets
+    :param ratio: the ratio of splitting datasets into train, validation, and test set
     :param subset_size: subset_size (# of rows) of X and Y we want to consider
     :param seed: random seed
     :param is_balanced: whether to return balanced data
@@ -72,7 +72,7 @@ def split_data(
         X, Y = rus.fit_sample(X, Y)
 
     ratio = np.array(ratio)
-    assert len(ratio) == 3, "invalid split ratio of dataset"
+    assert len(ratio) == 3, "invalid split ratio of datasets"
     ratio /= np.sum(ratio)
 
     if subset_size != -1:
@@ -125,7 +125,7 @@ def fit(
     config: argparse.Namespace = None, use_wandb: bool = True, use_sweep: bool = True
 ) -> None:
     """
-    Fit a random forest with config.algorithm to config.dataset with different hyperparameters specified in
+    Fit a random forest with config.algorithm to config.datasets with different hyperparameters specified in
     config variable and log the result
 
     :param config: contains values needed to construct random forest and train it.
@@ -145,9 +145,9 @@ def fit(
     random.seed(config.seed)
 
     if config.dataset == HEART:
-        filepath = os.path.join("dataset", "new_heart_2020_cleaned.csv")
+        filepath = os.path.join("datasets", "new_heart_2020_cleaned.csv")
     else:
-        raise NotImplementedError("Invalid choice of dataset")
+        raise NotImplementedError("Invalid choice of datasets")
     if not os.path.exists(filepath):
         preprocess_heart.main()
 
@@ -192,7 +192,7 @@ def fit(
         {
             "algorithm": config.algorithm,
             "bootstrap": config.bootstrap,
-            "dataset": config.dataset,
+            "datasets": config.dataset,
             "sub_size": config.sub_size,
             "seed": config.seed,
             "max_depth": config.max_depth,

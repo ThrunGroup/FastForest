@@ -7,7 +7,7 @@ from typing import Union
 from collections import defaultdict
 from utils.utils import get_subset_2d
 
-from utils.solvers import solve_mab, solve_exactly
+from utils.solvers import solve_mab, solve_exactly, solve_randomly
 from utils.utils import (
     type_check,
     counts_of_labels,
@@ -17,6 +17,7 @@ from utils.utils import (
 from utils.constants import (
     MAB,
     EXACT,
+    RANDOM_SOLVER,
     GINI,
     LINEAR,
     DEFAULT_NUM_BINS,
@@ -49,9 +50,12 @@ class Node:
         # To decrease memory usage and cost for making a copy of large array, we don't pass data array to child node
         # but indices
         # The features aren't global to the tree, so we should be resampling the features at every node
+
+        # Note: To compare with random solver, change self.feature_subsampling to None
         self.feature_idcs = choose_features(
             self.tree.feature_idcs, self.feature_subsampling, self.tree.rng
         )
+
         if self.tree.discrete_features is not None:
             self.discrete_features = remap_discrete_features(
                 self.feature_idcs, self.tree.discrete_features
@@ -149,6 +153,17 @@ class Node:
                 impurity_measure=self.criterion,
                 # NOTE: not implemented with budget yet
             )
+        elif self.solver == RANDOM_SOLVER:
+            results = solve_randomly(
+                data=self.data,
+                labels=self.labels,
+                minmax=self.minmax,
+                discrete_bins_dict=self.discrete_features,
+                binning_type=self.bin_type,
+                num_bins=self.num_bins,
+                is_classification=self.is_classification,
+                impurity_measure=self.criterion,
+            )
         else:
             raise Exception("Invalid solver specified, must be MAB or EXACT")
 
@@ -165,7 +180,7 @@ class Node:
             self.prev_split_feature = self.split_feature
             self.split_feature = self.feature_idcs[
                 self.split_feature
-            ]  # Feature index of original dataset
+            ]  # Feature index of original datasets
             self.split_reduction *= self.proportion  # Normalize by number of datapoints
             if self.verbose:
                 print("Calculated split with", self.num_queries, "queries")

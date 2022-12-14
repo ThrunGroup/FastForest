@@ -52,7 +52,7 @@ class HistogramRandomForestClassifier(ForestClassifier):
             random_state=random_state,
             with_replacement=with_replacement,
             verbose=verbose,
-            is_precomputed_minmax=True,
+            is_precomputed_minmax=False,
             use_logarithmic_split=False,
             epsilon=0.01,
         )

@@ -42,7 +42,7 @@ def count_occurrence(class_: np.ndarray, labels: np.ndarray) -> int:
     Helper function for counting the occurrence of class_ in labels
 
     :param class_: class name to count
-    :param labels: labels of the dataset
+    :param labels: labels of the datasets
     :return: number of datapoints with the given class name
     """
     return len(np.where(labels == class_)[0])
@@ -53,7 +53,7 @@ def class_to_idx(classes: np.ndarray) -> dict:
     Helpful function for generating dictionary that maps class names to class index
     Helper function for function for generating dictionary that maps class names to class index
 
-    :param classes: A list of unique class names for the dataset
+    :param classes: A list of unique class names for the datasets
     :return: A dictionary from class names to class indices
     """
     return dict(zip(classes, range(len(classes))))
@@ -64,7 +64,7 @@ def counts_of_labels(class_dict: dict, labels: np.ndarray) -> np.ndarray:
     Helper function for generating counts array.
 
     :param: class_dict: dict from class name to class index
-    :param labels: labels of dataset
+    :param labels: labels of datasets
     :return: array of counts of each class label, indexed by class index
     """
     classes = np.unique(labels)
@@ -200,7 +200,9 @@ def make_histograms(
         )
         histograms.append(histogram)
 
-        # Filtering extraneous bins
+        # Filtering extraneous bins.
+        # This is a really hacky way to determine if feature value is degenerate and should be ignored. If it is NOT
+        # degenerate, then the histogram will have B bins and range(histogram.num_bins, B) will be empty.
         not_considered_idcs += list(
             itertools.product([f_idx], range(histogram.num_bins, B))
         )
@@ -221,6 +223,10 @@ def choose_features(
     :param rng: numpy random default generator
     :return:
     """
+    # TODO(@motiwari): Use this seed setting to compare against the random_solver baseline to make sure
+    #  both models have access to the same features
+    # rng = np.random.default_rng(0)
+
     F = len(feature_idcs)  # Number of features
     if feature_subsampling is None:
         return feature_idcs
@@ -279,3 +285,19 @@ def get_subset_2d(source_array: np.ndarray, row_idcs: np.ndarray, col_idcs: np.n
         for j in range(len(col_idcs)):
             subset_array[(i, j)] = source_array[(row_idcs[i], col_idcs[j])]
     return subset_array
+# Uncomment this when profiling (Since cprofile regard jit function takes time longer than real time taken
+# def get_subset_2d(source_array: np.ndarray, row_idcs: np.ndarray, col_idcs: np.ndarray):
+#     return source_array[np.repeat(row_idcs, len(col_idcs)), np.tile(col_idcs, len(row_idcs))].reshape(
+#         (len(row_idcs), len(col_idcs))
+#     )
+
+
+def make_contiguous(classes: np.ndarray):
+    """
+    Convert all classes into contiguous integers starting from 0
+    """
+    assert len(classes.shape) == 1, "Invalid dimension of classes array"
+    unique_classes = np.unique(classes)
+    class_dict = dict(zip(unique_classes, np.arange(len(unique_classes))))
+
+    return Histogram.replace_array(classes, class_dict)

@@ -17,6 +17,7 @@ from utils.constants import (
     DEFAULT_NUM_BINS,
     RANDOM,
     MAX_SEED,
+    PULL_EACH_ARM,
 )
 from utils.criteria import get_impurity_reductions
 from utils.utils import (
@@ -49,6 +50,7 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
     # This is already a pure node
     if len(left_idcs[0]) == 0:
         return False
+
     p_L = L_counts / np.sum(L_counts)
 
     right_idcs = np.where(data[:, feature] > value)
@@ -58,6 +60,7 @@ def verify_reduction(data: np.ndarray, labels: np.ndarray, feature, value) -> bo
     # This is already a pure node
     if len(right_idcs[0]) == 0:
         return False
+
     p_R = R_counts / np.sum(R_counts)
 
     split_impurity = (1 - np.dot(p_L, p_L)) * np.sum(L_counts) + (
@@ -80,7 +83,7 @@ def sample_targets(
     rng: np.random.Generator = np.random.default_rng(0),
 ) -> Tuple[np.ndarray, np.ndarray, int, np.ndarray]:
     """
-    Given a dataset and set of features, draw batch_size new datapoints (with replacement) from the dataset. Insert
+    Given a datasets and set of features, draw batch_size new datapoints (with replacement) from the datasets. Insert
     their feature values into the (potentially non-empty) histograms and recompute the changes in impurity
     for each potential bin split
 
@@ -112,6 +115,7 @@ def sample_targets(
     cb_deltas = np.array([], dtype=float)
     N = len(data)
 
+    # NOTE: Might need to change with_replacement to False for comparison with random solver
     with_replacement = population_idcs is None
     initial_pop_size = None if population_idcs is None else N
     if with_replacement:  # Sample with replacement
@@ -226,6 +230,10 @@ def solve_exactly(
         estimates[not_considered_access] = float("inf")
         candidates = considered_idcs
 
+    if len(candidates) < 2:
+        raise Warning("Not properly returning arm in this case")
+        return 0
+
     # Massage arm indices for use by numpy slicing
     accesses = (
         candidates[:, 0],
@@ -245,7 +253,8 @@ def solve_exactly(
 
     total_queries = num_queries
     # TODO(@motiwari): Can't use nanmin here -- why?
-    # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
+    # TODO(@motiwari): Throw out nan arms!
+    # BUG: Fix this since it's 2D
     best_split = zip(
         np.where(estimates == np.nanmin(estimates))[0],
         np.where(estimates == np.nanmin(estimates))[1],
@@ -270,7 +279,7 @@ def solve_mab(
     is_classification: bool = True,
     impurity_measure: str = GINI,
     min_impurity_reduction: float = 0,
-    epsilon=0.01,
+    epsilon=0.01,  # Note: Might need to change this to 0.00 for comparison with random solver
     with_replacement: bool = False,
     budget: int = None,
     verbose: bool = False,
@@ -324,6 +333,7 @@ def solve_mab(
 
     if verbose:
         print("Number of arms:", B * F)
+
     candidates = np.array(list(itertools.product(range(F), range(B))))
     estimates = np.empty((F, B))
     lcbs = np.empty((F, B))
@@ -346,23 +356,31 @@ def solve_mab(
 
     considered_idcs = np.array(considered_idcs)
     not_considered_idcs = np.array(not_considered_idcs)
+
     if len(not_considered_idcs) > 0:
         not_considered_access = (not_considered_idcs[:, 0], not_considered_idcs[:, 1])
         exact_mask[not_considered_access] = 1
-        ucbs[not_considered_access] = estimates[not_considered_access] = float("inf")
-        lcbs[not_considered_access] = -float("inf")
+        ucbs[not_considered_access] = float("inf")
+        lcbs[not_considered_access] = float("inf")
+        estimates[not_considered_access] = float("inf")
         candidates = considered_idcs
 
+    # TODO: Can change this to < 2 if there is only one candidate
+    if len(candidates) < 2:
+        raise Warning("Not properly returning arm in this case")
+        return 0
+
     total_queries = 0
-    while len(candidates) > 5:
-        # If we have already pulled the arms more times than the number of datapoints in the original dataset,
-        # it would be the same complexity to just compute the arm return explicitly over the whole dataset.
+    while len(candidates) > 1:
+        # If we have already pulled the arms more times than the number of datapoints in the original datasets,
+        # it would be the same complexity to just compute the arm return explicitly over the whole datasets.
         # Do this to avoid scenarios where it may be required to draw \Omega(N) samples to find the best arm.
         if with_replacement:
             # raise Exception("Did you really want to sample with replacement?")
             exact_accesses = np.where(
                 (num_samples + batch_size >= N) & (exact_mask == 0)
             )
+
             if len(exact_accesses[0]) > 0:
                 empty_histograms(histograms, exact_accesses)
                 estimates[exact_accesses], _vars, num_queries, _ = sample_targets(
@@ -396,6 +414,7 @@ def solve_mab(
         # Last candidates were exactly computed
         if len(candidates) <= 1:
             break
+
         if population_idcs is not None and len(population_idcs) == 0:
             lcbs = ucbs = estimates
             break
@@ -444,7 +463,7 @@ def solve_mab(
         tied_arms[min_idx] = 0
         cand_condition = np.where(
             (exact_mask == 0)
-            & (lcbs < ucbs.min())
+            & (lcbs < ucbs[~np.isnan(ucbs)].min())
             & (lcbs < min_impurity_reduction)
             & (tied_arms == 0)
         )
@@ -494,3 +513,112 @@ def filter_tied_arms(candidates: np.ndarray, tied_arms, F, B):
         [[f_c_ind // B, f_c_ind % B] for f_c_ind in filtered_cand_indices]
     )
     return filtered_candidates
+
+
+def solve_randomly(
+    data: np.ndarray,
+    labels: np.ndarray,
+    minmax: Tuple[np.ndarray, np.ndarray] = None,
+    discrete_bins_dict: DefaultDict = None,
+    binning_type: str = IDENTITY,
+    num_bins: int = DEFAULT_NUM_BINS,
+    is_classification: bool = True,
+    impurity_measure: str = GINI,
+    min_impurity_reduction: float = 0,
+    num_each_arm_pulled: int = PULL_EACH_ARM,  # This is the parameter that can be varied
+) -> Tuple[int, float, float, int]:
+    """
+    Find the best feature to split on, as well as the value that feature should be split at, using a random baseline.
+    We assume that we still discretize (which is not true in RF).
+
+    This method may be inefficient because we rely on the same sample_targets that the MAB solution uses. Nonetheless,
+    it gives an accurate measure of the total number of queries and is used for ease of implementation.
+
+    This function exists primarily for a baseline comparison and to satisfy Greg.
+
+    :param data: Feature set
+    :param labels: Labels of datapoints
+    :param minmax: (minimum array of features, maximum array of features)
+    :param discrete_bins_dict: A dictionary of discrete bins
+    :param binning_type: The type of bin to use. There are 3 choices--linear, discrete, and identity.
+    :param num_queries: mutable variable to update the number of datapoints queried
+    :param is_classification:  Whether is a classification problem(True) or regression problem(False)
+    :param impurity_measure: A name of impurity_measure
+    :param min_impurity_reduction: Minimum impurity reduction beyond which to return a nonempty solution
+    :return: Return the indices of the best feature to split on and best bin edge of that feature to split on
+    """
+    try:
+        assert len(data.shape) == 2, "Error: Must pass 2-D data"
+    except AssertionError as e:
+        print("Data was:")
+        print(data)
+        raise e
+
+    N = len(data)
+    F = len(data[0])
+
+    if binning_type == IDENTITY:
+        B = len(data)
+    else:
+        B = num_bins
+
+    candidates = np.array(list(itertools.product(range(F), range(B))))
+    estimates = np.empty((F, B))
+
+    # Make a list of histograms, a list of indices that we don't consider as potential arms, and a list of indices
+    # that we consider as potential arms.
+    histograms, not_considered_idcs, considered_idcs = make_histograms(
+        is_classification=is_classification,
+        data=data,
+        labels=labels,
+        minmax=minmax,
+        discrete_bins_dict=discrete_bins_dict,
+        binning_type=binning_type,
+        num_bins=B,
+    )
+
+    considered_idcs = np.array(considered_idcs)
+    not_considered_idcs = np.array(not_considered_idcs)
+
+    if len(not_considered_idcs) > 0:
+        not_considered_access = (not_considered_idcs[:, 0], not_considered_idcs[:, 1])
+        estimates[not_considered_access] = float("inf")
+        candidates = considered_idcs
+
+    if len(candidates) < 2:
+        # If there are no candidates left, don't solve anything and return 0 total queries
+        raise Warning("Not properly returning arm in this case")
+        return 0
+
+    # Massage arm indices for use by numpy slicing
+    accesses = (
+        candidates[:, 0],
+        candidates[:, 1],
+    )
+
+    estimates[accesses], _cb_delta, num_queries, _ = sample_targets(
+        is_classification=is_classification,
+        data=data,
+        labels=labels,
+        arms=accesses,
+        histograms=histograms,
+        batch_size=num_each_arm_pulled,
+        impurity_measure=impurity_measure,
+        population_idcs=np.arange(len(data)),
+    )
+
+    total_queries = num_queries
+    # TODO(@motiwari): Can't use nanmin here -- why?
+    # BUG: Fix this since it's 2D  # TODO: Throw out nan arms!
+    best_split = zip(
+        np.where(estimates == np.nanmin(estimates))[0],
+        np.where(estimates == np.nanmin(estimates))[1],
+    ).__next__()  # Get first element
+    best_feature = best_split[0]
+    best_value = histograms[best_feature].bin_edges[best_split[1]]
+    best_reduction = estimates[best_split]
+
+    if best_reduction < min_impurity_reduction:
+        return best_feature, best_value, best_reduction, total_queries
+    else:
+        return total_queries
