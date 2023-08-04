@@ -2,7 +2,7 @@ import numpy as np
 
 from data_structures.forest_base import ForestBase
 from data_structures.classifier import Classifier
-from utils.constants import MAB, LINEAR, GINI, BEST, DEFAULT_NUM_BINS, BATCH_SIZE
+from utils.constants import MAB, LINEAR, GINI, BEST, DEFAULT_NUM_BINS, BATCH_SIZE, EXACT
 from utils.utils import class_to_idx
 
 
@@ -27,7 +27,7 @@ class ForestClassifier(ForestBase, Classifier):
         budget: int = None,
         criterion: str = GINI,
         splitter: str = BEST,
-        solver: str = MAB,
+        solver: str = EXACT,
         random_state: int = 0,
         with_replacement: bool = False,
         verbose: bool = False,
