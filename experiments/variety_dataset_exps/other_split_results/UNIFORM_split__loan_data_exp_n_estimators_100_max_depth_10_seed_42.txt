@@ -1,0 +1,22 @@
+LINEAR SPLITTING RESULTS:
+Time to train forest: 214883.953ms
+Time to eval forest on train set: 1295.782ms
+Time to eval forest on test set: 108.306ms
+Accuracy on train set: 100.0%
+Accuracy on test set: 95.312%
+
+
+UNIFORM SPLITTING RESULTS:
+Time to train forest: 145768.079ms
+Time to eval forest on train set: 1079.233ms
+Time to eval forest on test set: 85.106ms
+Accuracy on train set: 100.0%
+Accuracy on test set: 95.833%
+
+
+AGGREGATE RESULTS WITH LINEAR AND UNIFORM SPLITTING:
+UNIFORM trains forest 32.164278921283625% faster
+UNIFORM evals on train set 16.711838874131605% faster
+UNIFORM evals on test set 21.420789245286507% faster
+UNIFORM gains 0.0% on training accuracy
+UNIFORM gains 0.5210000000000008% on training accuracy

@@ -12,7 +12,7 @@ from data_structures import forest_classifier
 from data_structures.forest_classifier import ForestClassifier as FastForestClassifier
 
 import exp_utils
-from exp_utils import get_datasets, compute_RF_accuracy, get_log_file_filepath
+from exp_utils import get_datasets, compute_RF_accuracy, get_log_log_file_filepath
 
 TIME_TO_MS = 1000
 
@@ -23,13 +23,13 @@ def exp_and_results(all_data: Tuple[Sequence[float], Sequence[int], Sequence[flo
                     max_depth : int, 
                     seed : int, 
                     log_split: bool, 
-                    precision: int = 3) -> Tuple[Sequence[str], Sequence[float]]:
+                    precision: int = 3, bin_type = "LINEAR") -> Tuple[Sequence[str], Sequence[float]]:
     random.seed(seed)
     X_train, Y_train, X_test, Y_test = all_data
 
     print("TRAINING FOREST")
     train_start = time.time()
-    FFC = FastForestClassifier(data = X_train, labels = Y_train, n_estimators = n_estimators, max_depth = max_depth, use_logarithmic_split = log_split)
+    FFC = FastForestClassifier(data = X_train, labels = Y_train, n_estimators = n_estimators, max_depth = max_depth, use_logarithmic_split = log_split, bin_type = bin_type)
     FFC.fit()
     train_end   = time.time()
     train_time  = round((train_end - train_start) * TIME_TO_MS, precision)
@@ -116,9 +116,9 @@ def main():
     all_data = get_datasets(args.dataset_name)
     
     print("STARTING NO LOG SPLITTING EXPERIMENT")
-    nls_str_results, nls_pure_results = exp_and_results(all_data, args.tree_count, args.max_layers_per_tree, args.seed, False)
+    nls_str_results, nls_pure_results = exp_and_results(all_data, args.tree_count, args.max_layers_per_tree, args.seed, False, 3, "LINEAR")
     print("STARTING LOG SPLITTING EXPERIMENT")
-    ls_str_results,  ls_pure_results  = exp_and_results(all_data, args.tree_count, args.max_layers_per_tree, args.seed, True)
+    ls_str_results,  ls_pure_results  = exp_and_results(all_data, args.tree_count, args.max_layers_per_tree, args.seed, True, 3, "LINEAR")
     agg_str_results, agg_pure_results = aggregate_results(nls_pure_results, ls_pure_results)
 
     nls_str_results = ["NO LOGARITHMIC SPLITTING RESULTS:"] + nls_str_results
@@ -129,7 +129,7 @@ def main():
     full_print = "\n".join(full_results)
     print(full_print)
 
-    results_filepath = get_log_file_filepath(args.dataset_name, args.tree_count, args.max_layers_per_tree, args.seed)
+    results_filepath = get_log_log_file_filepath(args.dataset_name, args.tree_count, args.max_layers_per_tree, args.seed)
     text_file = open(results_filepath, "w")
     _ = text_file.write(full_print)
     text_file.close()

@@ -34,10 +34,21 @@ def compute_RF_accuracy(RF, X, Y) -> float:
     return correct/len(Y)
 
 # Get the filepath to save the current model's results to
-def get_log_file_filepath(name: str, n_estimators: int, max_depth: int, seed: int) -> str:
-    name_path = "log_results/" + str(name) + "_data_exp"
+def get_log_log_file_filepath(name: str, n_estimators: int, max_depth: int, seed: int) -> str:
+    name_path = "log_split_results/" + str(name) + "_data_exp"
     n_estimators_path = "n_estimators_" + str(n_estimators)
     max_depth_path = "max_depth_" + str(max_depth)
     seed_path = "seed_" + str(seed)
     filepath_components = [name_path, n_estimators_path, max_depth_path, seed_path]
+    return "_".join(filepath_components) + ".txt"
+
+
+# Get the filepath to save the current model's results to
+def get_other_split_log_file_filepath(split_type: str, name: str, n_estimators: int, max_depth: int, seed: int) -> str:
+    type_path = "other_split_results/" + str(split_type) + "_split_"
+    name_path = str(name) + "_data_exp"
+    n_estimators_path = "n_estimators_" + str(n_estimators)
+    max_depth_path = "max_depth_" + str(max_depth)
+    seed_path = "seed_" + str(seed)
+    filepath_components = [type_path, name_path, n_estimators_path, max_depth_path, seed_path]
     return "_".join(filepath_components) + ".txt"

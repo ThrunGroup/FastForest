@@ -1,9 +1,11 @@
 import numpy as np
+import scipy
+from scipy import stats
 import bisect
 import math
 from typing import Any, Tuple
 
-from utils.constants import LINEAR, DISCRETE, IDENTITY, RANDOM, DEFAULT_NUM_BINS, VECTORIZE
+from utils.constants import LINEAR, DISCRETE, IDENTITY, RANDOM, GAUSSIAN, UNIFORM, K_TILE, DEFAULT_NUM_BINS, VECTORIZE
 from utils.utils_histogram import welford_variance_calc
 
 
@@ -50,6 +52,12 @@ class Histogram:
             self.bin_edges = self.identity_bin()
         elif self.bin_type == RANDOM:
             self.bin_edges = self.random_bin()
+        elif self.bin_type == GAUSSIAN:
+            self.bin_edges = self.gaussian_bin()
+        elif self.bin_type == UNIFORM:
+            self.bin_edges = self.uniform_bin()
+        elif self.bin_type == K_TILE:
+            self.bin_edges = self.k_tile_bin()
         else:
             raise NotImplementedError("Invalid type of bin")
 
@@ -208,6 +216,67 @@ class Histogram:
         identity_bin = np.unique(self.f_data)
         self.num_bins = len(identity_bin)
         return identity_bin
+    
+    def gaussian_bin(self) -> np.ndarray:
+        """
+        Returns num_bins based on a gaussian approximation for the distribution
+        Each bin is equally spaced by cdf/area under curve of approx distirbution
+        Ex) self.f_data = [0, 1, 2, 3, 3, 3, 3, 100]
+            mu = np.mean(self.f_data)
+            sd = np.std(self.f_data)
+            For each i in number of bins:
+            bin_i_cdf = i/(num_bins + 1)
+            bin_i = mu + inv(bin_i_cdf) * sd
+
+        :return: Return an unique sorted values array of self.f_data
+        """
+        
+        # Computing the mean and standard deviation is necessasry
+        # This can be done in a running-fashion, but since the current
+        # focus is accuracy, on-spot computation is used despite inefficiency
+        mu = np.mean(self.f_data)
+        sd = np.std(self.f_data)
+        bin_cdfs = np.linspace(1/(self.num_bins + 1), (self.num_bins)/(self.num_bins + 1), self.num_bins)
+        num_sds = stats.norm.ppf(bin_cdfs)
+        splits = mu + sd * num_sds
+        return splits
+
+    def uniform_bin(self) -> np.ndarray:
+        """
+        Returns num_bins based on a uniform approximation for the distribution
+        Each bin is equally spaced by cdf/area under curve of approx uniform dist.
+        Ex) self.f_data = [0, 1, 2, 3, 3, 3, 3, 100]
+            min = 0, max = 100
+            -> Estimated distribution is U(0,100)
+
+        :return: Return an unique sorted values array of self.f_data
+        """
+        
+        itr = (self.max_bin - self.min_bin)/(self.num_bins + 1)
+        return np.linspace(self.min_bin + itr, self.max_bin - itr, self.num_bins)
+    
+    def k_tile_bin(self) -> np.ndarray:
+        """
+        Returns num_bins based on a empirical true distribution
+        Each bin is equally spaced by cdf/area under curve of exact distribution
+        Very similar to discrete bins method
+        Ex) self.f_data = [0, 1, 2, 3, 3, 3, 3, 100]
+            if num_bins = 2 -> idxs = [2,5] -> spits = [2,3]
+
+        :return: Return an unique sorted values array of self.f_data
+        """
+        
+        # Ideally, for efficiency, also check if num_bins < log2(len(self.f_data))
+        # If this is the case, use quickselect instead of sort. However, this uses
+        # sort or all values due to focus on performance and accuracy instead of speed
+        if self.num_bins >= len(self.f_data):
+            idxs = [0 for _ in range(self.num_bins - len(self.f_data))]
+            idxs += [i for i in range(len(self.f_data))]
+        else:
+            itr = len(self.f_data)/(self.num_bins + 1)
+            pre_idxs = np.linspace(itr-1, itr * self.num_bins - 1, self.num_bins)
+            idxs = [int(round(i)) for i in pre_idxs]
+        return np.sort(self.f_data, kind="mergesort")[idxs]
 
     def random_bin(self) -> np.ndarray:
         """
