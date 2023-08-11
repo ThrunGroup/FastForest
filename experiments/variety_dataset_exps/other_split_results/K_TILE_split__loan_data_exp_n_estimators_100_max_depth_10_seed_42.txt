@@ -1,0 +1,22 @@
+LINEAR SPLITTING RESULTS:
+Time to train forest: 174191.657ms
+Time to eval forest on train set: 1007.926ms
+Time to eval forest on test set: 80.035ms
+Accuracy on train set: 100.0%
+Accuracy on test set: 95.312%
+
+
+K_TILE SPLITTING RESULTS:
+Time to train forest: 175309.947ms
+Time to eval forest on train set: 1097.472ms
+Time to eval forest on test set: 100.854ms
+Accuracy on train set: 100.0%
+Accuracy on test set: 96.354%
+
+
+AGGREGATE RESULTS WITH LINEAR AND K_TILE SPLITTING:
+K_TILE trains forest -0.6419882669811098% faster
+K_TILE evals on train set -8.884183957949286% faster
+K_TILE evals on test set -26.01236958830512% faster
+K_TILE gains 0.0% on training accuracy
+K_TILE gains 1.0420000000000016% on training accuracy
