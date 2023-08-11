@@ -1,0 +1,22 @@
+NO LOGARITHMIC SPLITTING RESULTS:
+Time to train forest: 289810.399ms
+Time to eval forest on train set: 1794.221ms
+Time to eval forest on test set: 421.165ms
+Accuracy on train set: 49.539%
+Accuracy on test set: 49.15%
+
+
+WITH LOGARITHMIC SPLITTING RESULTS:
+Time to train forest: 299103.018ms
+Time to eval forest on train set: 1688.562ms
+Time to eval forest on test set: 412.832ms
+Accuracy on train set: 50.685%
+Accuracy on test set: 51.3%
+
+
+AGGREGATE RESULTS WITH AND WITHOUT LOGARITHMIC SPLITTING:
+Logarithmic Splitting trains forest -3.20644774378852% faster
+Logarithmic Splitting evals on train set 5.888850927505592% faster
+Logarithmic Splitting evals on test set 1.978559471940932% faster
+Logarithmic Splitting gains 1.1460000000000008% on training accuracy
+Logarithmic Splitting gains 2.1499999999999986% on training accuracy
